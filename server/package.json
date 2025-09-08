@@ -1,12 +1,26 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "server": "nodemon src/index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Jordandt22",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@arcjet/inspect": "^1.0.0-beta.11",
+    "@arcjet/node": "^1.0.0-beta.11",
+    "@supabase/supabase-js": "^2.57.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.7.0",
+    "morgan": "^1.10.1",
+    "uuid": "^12.0.0",
+    "yup": "^1.7.0"
+  }
 }
