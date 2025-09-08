@@ -8,6 +8,8 @@ import { arcjetMiddleware } from "./middleware/arcjet.mw.js";
 
 // Routes
 import businessesRouter from "./routes/businesses.routes.js";
+import locationRouter from "./routes/location.routes.js";
+import categoriesRouter from "./routes/categories.routes.js";
 
 const app = express();
 
@@ -41,6 +43,12 @@ app.use(arcjetMiddleware);
 
 // Routes for Businesses
 app.use(`/v${API_VERSION}/api/businesses`, businessesRouter);
+
+// Routes for Location
+app.use(`/v${API_VERSION}/api/location`, locationRouter);
+
+// Routes for Categories
+app.use(`/v${API_VERSION}/api/categories`, categoriesRouter);
 
 // PORT and Sever
 const server = http.createServer(app);

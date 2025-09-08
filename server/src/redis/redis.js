@@ -51,3 +51,30 @@ export const getFeaturedBusinessesKey = () => ({
   key: `FEATURED_BUSINESSES`,
   interval: 60 * 60 * 3,
 });
+
+// --- Location ----
+export const getStatesKey = () => ({
+  key: `STATES`,
+  interval: 60 * 60 * 24,
+});
+
+export const getCitiesKey = (state_id) => ({
+  key: `STATE_STATE-ID:${state_id}_CITIES`,
+  interval: 60 * 60 * 24,
+});
+
+export const getPostalCodesKey = (city_id) => ({
+  key: `CITY_CITY-ID:${city_id}_POSTAL_CODES`,
+  interval: 60 * 60 * 24,
+});
+
+// --- Categories ----
+export const getPrimaryCategoriesKey = () => ({
+  key: `PRIMARY_CATEGORIES`,
+  interval: 60 * 60 * 24,
+});
+
+export const getSecondaryCategoriesKey = () => ({
+  key: `SECONDARY_CATEGORIES`,
+  interval: 60 * 60 * 24,
+});
