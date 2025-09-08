@@ -12,10 +12,14 @@ import businessesRouter from "./routes/businesses.routes.js";
 const app = express();
 
 // Middleware
-const { NODE_ENV } = process.env;
+const { NODE_ENV, API_VERSION, PORT, WEB_URL } = process.env;
 const notProduction = NODE_ENV !== "production";
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: notProduction ? "http://localhost:3000" : WEB_URL,
+  })
+);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 if (notProduction) {
@@ -36,13 +40,12 @@ app.use(arcjetMiddleware);
 // ---- API Routes ----
 
 // Routes for Businesses
-app.use(`/v${process.env.API_VERSION}/api/businesses`, businessesRouter);
+app.use(`/v${API_VERSION}/api/businesses`, businessesRouter);
 
 // PORT and Sever
-const PORT = process.env.PORT || 8000;
 const server = http.createServer(app);
-server.listen(PORT, () => {
-  console.log(`CORS Enabled Server, Listening to port: ${PORT}...`);
+server.listen(PORT || 8000, () => {
+  console.log(`CORS Enabled Server, Listening to port: ${PORT || 8000}...`);
 });
 
 export default server;
