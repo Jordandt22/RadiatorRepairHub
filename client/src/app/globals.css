@@ -38,6 +38,53 @@
   animation: pulse-slow 4s ease-in-out infinite;
 }
 
+@keyframes drift {
+  0%,
+  100% {
+    transform: translateX(0px) translateY(0px);
+  }
+  25% {
+    transform: translateX(10px) translateY(-5px);
+  }
+  50% {
+    transform: translateX(-5px) translateY(-10px);
+  }
+  75% {
+    transform: translateX(-10px) translateY(5px);
+  }
+}
+
+@keyframes rotate-slow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes scale-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.animate-drift {
+  animation: drift 8s ease-in-out infinite;
+}
+
+.animate-rotate-slow {
+  animation: rotate-slow 20s linear infinite;
+}
+
+.animate-scale-pulse {
+  animation: scale-pulse 2s ease-in-out infinite;
+}
+
 /* Line clamp utility for text truncation */
 .line-clamp-2 {
   display: -webkit-box;
