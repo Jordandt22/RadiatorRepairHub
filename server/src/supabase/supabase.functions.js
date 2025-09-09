@@ -6,10 +6,23 @@ import { supabase } from "./supabase.js";
 export const getTopRatedBusinesses = async () => {
   const { data, error } = await supabase
     .from("businesses")
-    .select("*")
+    .select(
+      "*, state:states(id, name, code), city:cities(id, name), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name), features:business_features(*)"
+    )
     .gte("reviews_count", 400)
     .order("total_score", { ascending: false })
     .limit(10);
+
+  if (data) {
+    data.map((business) => delete business.additional_info);
+
+    data.map((business) => {
+      business.features = { ...business.features[0] };
+      delete business.features.id;
+      delete business.features.business_id;
+      return business;
+    });
+  }
 
   return { data, error };
 };
@@ -18,7 +31,7 @@ export const getBusinessById = async (business_id) => {
   const { data, error } = await supabase
     .from("businesses")
     .select(
-      `*, state:states(id, name, code), city:cities(id, name), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name), secondary_categories:business_secondary_categories!inner(secondary_categories(id, name)), features:business_features(*), opening_hours_data:business_hours(*))`
+      `*, state:states(id, name, code), city:cities(id, name), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name), secondary_categories:business_secondary_categories!inner(secondary_categories(id, name)), features:business_features(*)`
     )
     .eq("id", business_id)
     .single();
@@ -33,15 +46,6 @@ export const getBusinessById = async (business_id) => {
     data.features = { ...data.features[0] };
     delete data.features.id;
     delete data.features.business_id;
-  }
-
-  if (data?.opening_hours_data) {
-    delete data.opening_hours;
-    data.opening_hours_data = data.opening_hours_data.map((item) => {
-      delete item.id;
-      delete item.business_id;
-      return item;
-    });
   }
 
   return { data, error };
