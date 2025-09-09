@@ -14,6 +14,39 @@ export const getTopRatedBusinesses = async () => {
   return { data, error };
 };
 
+export const getBusinessById = async (business_id) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .select(
+      `*, state:states(id, name, code), city:cities(id, name), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name), secondary_categories:business_secondary_categories!inner(secondary_categories(id, name)), features:business_features(*), opening_hours_data:business_hours(*))`
+    )
+    .eq("id", business_id)
+    .single();
+
+  if (data?.secondary_categories) {
+    data.secondary_categories = data.secondary_categories.map(
+      (item) => item.secondary_categories
+    );
+  }
+
+  if (data?.features) {
+    data.features = { ...data.features[0] };
+    delete data.features.id;
+    delete data.features.business_id;
+  }
+
+  if (data?.opening_hours_data) {
+    delete data.opening_hours;
+    data.opening_hours_data = data.opening_hours_data.map((item) => {
+      delete item.id;
+      delete item.business_id;
+      return item;
+    });
+  }
+
+  return { data, error };
+};
+
 // Location
 export const getAllStates = async () => {
   const { data, error } = await supabase
