@@ -1,5 +1,8 @@
 import React from "react";
 
+// Components
+import HeroSearchBar from "./HeroSearchBar";
+
 function HeroContext() {
   return (
     <section
@@ -229,18 +232,7 @@ function HeroContext() {
           </p>
 
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Enter your city or ZIP code..."
-                className="w-full px-6 py-4 text-lg rounded-lg border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-gray-900"
-              />
-              <button className="absolute right-2 top-2 bottom-2 px-6 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium">
-                Search
-              </button>
-            </div>
-          </div>
+          <HeroSearchBar />
         </div>
       </div>
     </section>
