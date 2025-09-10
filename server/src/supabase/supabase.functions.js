@@ -1,7 +1,7 @@
 import { supabase } from "./supabase.js";
 
-const listingBusinessSelect = `*, state:states(id, name, code), city:cities(id, name), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name), features:business_features(*)`;
-const fullBusinessSelect = `*, state:states(id, name, code), city:cities(id, name), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name), secondary_categories:business_secondary_categories!inner(secondary_categories(id, name)), features:business_features(*)`;
+const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features(*)`;
+const fullBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories!inner(secondary_categories(*)), features:business_features(*)`;
 
 const formatBusinessListings = (data) => {
   data.map((business) => delete business.additional_info);
@@ -59,7 +59,7 @@ export const getBusinessById = async (business_id) => {
 export const countBusinessesByState = async (state_id) => {
   const { count, error } = await supabase
     .from("businesses")
-    .select("*", { count: "exact" })
+    .select("*", { count: "exact", head: true })
     .eq("state_id", state_id);
 
   return { count, error };
@@ -69,6 +69,44 @@ export const getBusinessesByState = async (state_id, page, limit) => {
   const { data, error } = await supabase
     .from("businesses")
     .select(listingBusinessSelect)
+    .eq("state_id", state_id)
+    .order("reviews_count", { ascending: false })
+    .order("total_score", { ascending: false })
+    .range((page - 1) * limit, page * limit - 1);
+
+  if (data) {
+    return { data: formatBusinessListings(data), error };
+  }
+
+  return { data: null, error };
+};
+
+export const getCityBySlug = async (city_slug, state_id) => {
+  const { data, error } = await supabase
+    .from("cities")
+    .select("*")
+    .eq("slug", city_slug)
+    .eq("state_id", state_id)
+    .single();
+
+  return { data, error };
+};
+
+export const countBusinessesByCity = async (city_id, state_id) => {
+  const { count, error } = await supabase
+    .from("businesses")
+    .select("*", { count: "exact", head: true })
+    .eq("city_id", city_id)
+    .eq("state_id", state_id);
+
+  return { count, error };
+};
+
+export const getBusinessesByCity = async (city_id, state_id, page, limit) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .select(listingBusinessSelect)
+    .eq("city_id", city_id)
     .eq("state_id", state_id)
     .order("reviews_count", { ascending: false })
     .order("total_score", { ascending: false })

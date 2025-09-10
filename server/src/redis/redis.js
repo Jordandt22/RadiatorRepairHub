@@ -49,47 +49,62 @@ export const flushDBCache = async () => {
 // --- Businesses ----
 export const getFeaturedBusinessesKey = () => ({
   key: `FEATURED_BUSINESSES`,
-  interval: 60 * 60 * 24,
+  interval: 60 * 60 * 24 * 2,
 });
 
 export const getBusinessByIdKey = (business_id) => ({
-  key: `BUSINESS_BUSINESS-ID:${business_id}`,
-  interval: 60 * 60 * 24,
+  key: `BUSINESS?BUSINESS-ID:${business_id}`,
+  interval: 60 * 60 * 24 * 7,
 });
 
 export const getBusinessesByStateKey = (state_id, page, limit) => ({
-  key: `BUSINESSES_STATE-ID:${state_id}_PAGE:${page}_LIMIT:${limit}`,
-  interval: 60 * 60 * 24,
+  key: `STATE_BUSINESSES?STATE-ID:${state_id}&PAGE:${page}&LIMIT:${limit}`,
+  interval: 60 * 60 * 24 * 7,
 });
 
 export const getCountBusinessesByStateKey = (state_id) => ({
-  key: `COUNT_BUSINESSES_STATE-ID:${state_id}`,
-  interval: 60 * 60 * 24,
+  key: `STATE_BUSINESSES_COUNT?STATE-ID:${state_id}`,
+  interval: 60 * 60 * 24 * 7,
+});
+
+export const getCityBySlugKey = (city_slug, state_id) => ({
+  key: `CITY?CITY-SLUG:${city_slug}&STATE-ID:${state_id}`,
+  interval: 60 * 60 * 24 * 7,
+});
+
+export const getBusinessesByCityKey = (city_id, state_id, page, limit) => ({
+  key: `CITY_BUSINESSES?CITY-ID:${city_id}&STATE-ID:${state_id}&PAGE:${page}&LIMIT:${limit}`,
+  interval: 60 * 60 * 24 * 7,
+});
+
+export const getCountBusinessesByCityKey = (city_id, state_id) => ({
+  key: `CITY_BUSINESSES_COUNT?CITY-ID:${city_id}&STATE-ID:${state_id}`,
+  interval: 60 * 60 * 24 * 7,
 });
 
 // --- Location ----
 export const getStatesKey = () => ({
   key: `STATES`,
-  interval: 60 * 60 * 24,
+  interval: 60 * 60 * 24 * 7,
 });
 
 export const getCitiesKey = (state_id) => ({
-  key: `STATE_STATE-ID:${state_id}_CITIES`,
-  interval: 60 * 60 * 24,
+  key: `STATE?STATE-ID:${state_id}&CITIES`,
+  interval: 60 * 60 * 24 * 7,
 });
 
 export const getPostalCodesKey = (city_id) => ({
-  key: `CITY_CITY-ID:${city_id}_POSTAL_CODES`,
-  interval: 60 * 60 * 24,
+  key: `CITY?CITY-ID:${city_id}&POSTAL_CODES`,
+  interval: 60 * 60 * 24 * 7,
 });
 
 // --- Categories ----
 export const getPrimaryCategoriesKey = () => ({
   key: `PRIMARY_CATEGORIES`,
-  interval: 60 * 60 * 24,
+  interval: 60 * 60 * 24 * 7,
 });
 
 export const getSecondaryCategoriesKey = () => ({
   key: `SECONDARY_CATEGORIES`,
-  interval: 60 * 60 * 24,
+  interval: 60 * 60 * 24 * 7,
 });
