@@ -84,7 +84,7 @@ export const getBusinessesByState = async (state_id, page, limit) => {
 export const getCityBySlug = async (city_slug, state_id) => {
   const { data, error } = await supabase
     .from("cities")
-    .select("*")
+    .select("*, state:states(*)")
     .eq("slug", city_slug)
     .eq("state_id", state_id)
     .single();

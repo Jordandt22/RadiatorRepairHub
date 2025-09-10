@@ -183,6 +183,7 @@ export const getCityBusinesses = async (req, res) => {
   const formattedLimit = Number(limit);
   let count = 0;
   let city_id = null;
+  let cityData = null;
 
   // Get Cached City Data
   const { key: cityKey, interval: cityInterval } = getCityBySlugKey(
@@ -192,15 +193,24 @@ export const getCityBusinesses = async (req, res) => {
   const cachedCityData = await getCacheData(cityKey);
   if (cachedCityData) {
     city_id = cachedCityData.data.id;
+    cityData = cachedCityData.data;
   } else {
     // Get City ID
-    const { data: cityData, error: cityError } = await getCityBySlug(
+    const { data: cityDBData, error: cityError } = await getCityBySlug(
       city_slug,
       state_id
     );
     if (cityError) {
       if (cityError.code === "PGRST116") {
-        return res.status(404).json(customErrorHandler(SUPABASE_ERROR, `City by slug (${city_slug}) in state (${state_id}) not found.`, cityError));
+        return res
+          .status(404)
+          .json(
+            customErrorHandler(
+              SUPABASE_ERROR,
+              `City by slug (${city_slug}) in state (${state_id}) not found.`,
+              cityError
+            )
+          );
       }
 
       return res
@@ -214,8 +224,9 @@ export const getCityBusinesses = async (req, res) => {
         );
     }
 
-    city_id = cityData.id;
-    await cacheData(cityKey, cityInterval, cityData);
+    city_id = cityDBData.id;
+    cityData = cityDBData;
+    await cacheData(cityKey, cityInterval, cityDBData);
   }
 
   // Get Cached Count of Businesses by City Data
@@ -304,6 +315,13 @@ export const getCityBusinesses = async (req, res) => {
     totalPages,
     page: formattedPage,
     limit: formattedLimit,
+    city: {
+      id: city_id,
+      name: cityData.name,
+      slug: cityData.slug,
+      state_id: cityData.state_id,
+    },
+    state: cityData.state,
   };
 
   // Cache Data
