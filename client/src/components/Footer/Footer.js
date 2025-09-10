@@ -4,28 +4,28 @@ import Link from "next/link";
 function Footer() {
   const cities = [
     {
-      name: "New York, NY",
-      path: "/new-york",
+      name: "New York City, NY",
+      path: "/state/NY/city/new-york-city",
     },
     {
       name: "Los Angeles, CA",
-      path: "/los-angeles",
+      path: "/state/CA/city/los-angeles",
     },
     {
       name: "Houston, TX",
-      path: "/houston",
+      path: "/state/TX/city/houston",
     },
     {
       name: "Philadelphia, PA",
-      path: "/philadelphia",
+      path: "/state/PA/city/philadelphia",
     },
     {
       name: "Chicago, IL",
-      path: "/chicago",
+      path: "/state/IL/city/chicago",
     },
   ];
 
-  const services = [
+  const categories = [
     {
       name: "Radiator Repair",
       path: "/radiator-repair",
@@ -90,16 +90,16 @@ function Footer() {
           {/* Service Categories */}
           <div>
             <h4 className="text-lg font-semibold mb-4 font-heading">
-              Services
+              Categories
             </h4>
             <ul className="space-y-2">
-              {services.map((service) => (
-                <li key={service.name} className="mb-2">
+              {categories.map((category) => (
+                <li key={category.name} className="mb-2">
                   <Link
-                    href={`/services/${service.path}`}
+                    href={`/categories/${category.path}`}
                     className="text-gray-400 hover:text-white transition-colors"
                   >
-                    {service.name}
+                      {category.name}
                   </Link>
                 </li>
               ))}
