@@ -10,6 +10,7 @@
   "author": "Jordandt22",
   "license": "ISC",
   "description": "",
+  "type": "module",
   "dependencies": {
     "@arcjet/inspect": "^1.0.0-beta.11",
     "@arcjet/node": "^1.0.0-beta.11",

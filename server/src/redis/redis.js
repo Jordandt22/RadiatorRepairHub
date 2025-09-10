@@ -57,6 +57,16 @@ export const getBusinessByIdKey = (business_id) => ({
   interval: 60 * 60 * 24,
 });
 
+export const getBusinessesByStateKey = (state_id, page, limit) => ({
+  key: `BUSINESSES_STATE-ID:${state_id}_PAGE:${page}_LIMIT:${limit}`,
+  interval: 60 * 60 * 24,
+});
+
+export const getCountBusinessesByStateKey = (state_id) => ({
+  key: `COUNT_BUSINESSES_STATE-ID:${state_id}`,
+  interval: 60 * 60 * 24,
+});
+
 // --- Location ----
 export const getStatesKey = () => ({
   key: `STATES`,

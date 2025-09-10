@@ -9,8 +9,6 @@ export const errorCodes = {
 
   // Supabase
   SUPABASE_ERROR: "supabase-error",
-
-
 };
 
 export const customErrorHandler = (code, message, error) => {

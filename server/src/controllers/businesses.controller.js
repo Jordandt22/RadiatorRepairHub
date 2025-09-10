@@ -8,10 +8,14 @@ import {
   getFeaturedBusinessesKey,
   getCacheData,
   getBusinessByIdKey,
+  getBusinessesByStateKey,
+  getCountBusinessesByStateKey,
 } from "../redis/redis.js";
 import {
   getTopRatedBusinesses,
   getBusinessById,
+  getBusinessesByState,
+  countBusinessesByState,
 } from "../supabase/supabase.functions.js";
 
 const { SUPABASE_ERROR } = errorCodes;
@@ -70,4 +74,98 @@ export const getBusiness = async (req, res) => {
   // Cache Data
   await cacheData(key, interval, data);
   res.status(200).json(successHandler(data));
+};
+
+export const getStateBusinesses = async (req, res) => {
+  const { state_id } = req.params;
+  const { page, limit } = req.query;
+  let formattedPage = Number(page);
+  const formattedLimit = Number(limit);
+  let count = 0;
+
+  // Get Cached Count of Businesses by State Data
+  const { key: countKey, interval: countInterval } =
+    getCountBusinessesByStateKey(state_id);
+  const cachedCountData = await getCacheData(countKey);
+  if (cachedCountData) {
+    count = cachedCountData.data;
+  } else {
+    // Get Count of Businesses by State
+    const { count: countData, error: countError } =
+      await countBusinessesByState(state_id);
+    if (countError) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            `There was an error fetching count of businesses by state (${state_id}).`,
+            countError
+          )
+        );
+    }
+
+    count = countData;
+    await cacheData(countKey, countInterval, count);
+  }
+
+  // Check Page
+  const totalPages = Math.ceil(count / formattedLimit);
+  if (formattedPage > totalPages) {
+    formattedPage = totalPages;
+  }
+
+  // Get Cached Businesses by State Data
+  const { key, interval } = getBusinessesByStateKey(
+    state_id,
+    formattedPage,
+    formattedLimit
+  );
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  // Get Businesses by State
+  const { data, error } = await getBusinessesByState(
+    state_id,
+    formattedPage,
+    formattedLimit
+  );
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          `There was an error fetching businesses by state (${state_id}).`,
+          error
+        )
+      );
+  }
+
+  if (data.length === 0) {
+    return res.status(200).json(
+      successHandler({
+        businesses: [],
+        requestTotal: 0,
+        totalBusinesses: 0,
+        totalPages: 0,
+        page: formattedPage,
+        limit: formattedLimit,
+      })
+    );
+  }
+
+  // Cache Data
+  const compiledData = {
+    businesses: data,
+    requestTotal: data.length,
+    totalBusinesses: count,
+    totalPages,
+    page: formattedPage,
+    limit: formattedLimit,
+  };
+  await cacheData(key, interval, compiledData);
+  res.status(200).json(successHandler(compiledData));
 };
