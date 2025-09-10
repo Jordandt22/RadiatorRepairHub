@@ -1,6 +1,10 @@
 import { Inter, Oswald } from "next/font/google";
 import "./globals.css";
 
+// Components
+import Navbar from "@/components/Navbar/Navbar";
+import Footer from "@/components/Footer/Footer";
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -52,7 +56,9 @@ export default function RootLayout({ children }) {
       <body
         className={`${inter.variable} ${oswald.variable} font-sans antialiased`}
       >
+        <Navbar />
         {children}
+        <Footer />
       </body>
     </html>
   );
