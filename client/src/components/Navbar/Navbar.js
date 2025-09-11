@@ -36,7 +36,8 @@ function Navbar() {
                 <Link
                   key={link.label}
                   href={link.path}
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm
+                  font-medium transition-colors"
                 >
                   {link.label}
                 </Link>

@@ -12,13 +12,13 @@ function Listings({ businesses }) {
           className="bg-white rounded-lg shadow-md hover:shadow-lg border border-gray-200 overflow-hidden hover:scale-105 transition-transform duration-200"
         >
           <div className="relative w-full h-56 bg-gray-200">
-            {/* <Image
+            <Image
               src={business.image_url}
               alt={business.title}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
               className="object-cover"
-            /> */}
+            />
           </div>
 
           <div className="p-5">
