@@ -5,10 +5,10 @@ import { notFound } from "next/navigation";
 import states from "@/lib/data/states";
 
 // Components
-import Header from "./Header";
-import SearchBar from "./SearchBar";
-import Filters from "./Filters";
-import ListingsWrapper from "./ListingsWrapper";
+import Header from "./components/Header";
+import SearchBar from "./components/SearchBar";
+import Filters from "./components/Filters";
+import ListingsWrapper from "./components/ListingsWrapper";
 
 export async function generateStaticParams() {
   const topStates = ["CA", "TX", "FL", "NY", "PA", "IL"];
@@ -18,7 +18,7 @@ export async function generateStaticParams() {
 async function Page({ params, searchParams }) {
   const { state } = await params;
   const { page: pageParam } = await searchParams;
-  const limit = 10;
+  const limit = 12;
   let page = 1;
 
   // Validate Page Param

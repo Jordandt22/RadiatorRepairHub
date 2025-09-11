@@ -148,3 +148,16 @@ html {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
 }
+
+/* 3D Card Flip Animations */
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.transform-gpu {
+  transform: translateZ(0);
+}

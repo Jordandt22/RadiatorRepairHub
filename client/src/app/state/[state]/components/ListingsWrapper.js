@@ -37,6 +37,9 @@ export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
         totalPages={totalPages}
         currentPage={page}
         state={stateData}
+        totalBusinesses={stateBusinessesData.totalBusinesses}
+        requestTotal={stateBusinessesData.requestTotal}
+        limit={limit}
       />
     </div>
   );
