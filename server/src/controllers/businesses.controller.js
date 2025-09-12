@@ -13,6 +13,7 @@ import {
   getCountBusinessesByCityKey,
   getBusinessesByCityKey,
   getCityBySlugKey,
+  getSearchedBusinessesKey,
 } from "../redis/redis.js";
 import {
   getTopRatedBusinesses,
@@ -22,6 +23,7 @@ import {
   countBusinessesByCity,
   getBusinessesByCity,
   getCityBySlug,
+  searchBusinesses,
 } from "../supabase/supabase.functions.js";
 
 const { SUPABASE_ERROR } = errorCodes;
@@ -322,6 +324,99 @@ export const getCityBusinesses = async (req, res) => {
       state_id: cityData.state_id,
     },
     state: cityData.state,
+  };
+
+  // Cache Data
+  await cacheData(key, interval, compiledData);
+  res.status(200).json(successHandler(compiledData));
+};
+
+export const getSearchedBusinesses = async (req, res) => {
+  const { page, limit } = req.query;
+  const { sort_ascending } = req.body;
+  const formattedPage = Number(page);
+  const formattedLimit = Number(limit);
+
+  // Check for Count of Searched Businesses
+
+  // All Possible Search Parameters
+  const searchParamKeys = [
+    { key: "title", filter: "ilike" },
+    { key: "state_id", filter: "eq" },
+    { key: "city_id", filter: "eq" },
+    { key: "total_score", filter: "gte" },
+    { key: "reviews_count", filter: "gte" },
+    { key: "primary_category_id", filter: "eq" },
+  ];
+
+  // Get Search Parameters that were sent
+  const searchParamValues = [];
+  searchParamKeys.forEach((param) => {
+    const key = param.key;
+    const value = req.body[key];
+    if (value) {
+      searchParamValues.push({
+        key,
+        value,
+        filter: param.filter,
+      });
+    }
+  });
+
+  // Get Cached Data
+  const { key, interval } = getSearchedBusinessesKey(
+    searchParamValues,
+    formattedPage,
+    formattedLimit,
+    sort_ascending
+  );
+  console.log(key);
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  // Get Searched Businesses
+  const { data, count, error } = await searchBusinesses(
+    searchParamValues,
+    formattedPage,
+    formattedLimit,
+    sort_ascending
+  );
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error searching businesses.",
+          error
+        )
+      );
+  }
+
+  if (data.length === 0) {
+    return res.status(200).json(
+      successHandler({
+        businesses: [],
+        requestTotal: 0,
+        totalBusinesses: 0,
+        totalPages: 0,
+        page: formattedPage,
+        limit: formattedLimit,
+        sort_ascending,
+      })
+    );
+  }
+
+  const compiledData = {
+    businesses: data,
+    requestTotal: data.length,
+    totalBusinesses: count,
+    totalPages: Math.ceil(count / formattedLimit),
+    page: formattedPage,
+    limit: formattedLimit,
+    sort_ascending,
   };
 
   // Cache Data

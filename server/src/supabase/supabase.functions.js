@@ -119,6 +119,42 @@ export const getBusinessesByCity = async (city_id, state_id, page, limit) => {
   return { data: null, error };
 };
 
+export const searchBusinesses = async (
+  searchParams,
+  page,
+  limit,
+  sort_ascending
+) => {
+  let businessesQuery = supabase
+    .from("businesses")
+    .select(listingBusinessSelect, { count: "exact" });
+
+  // Applying Filters
+  searchParams.map(({ key, value, filter }) => {
+    if (filter === "ilike") {
+      businessesQuery = businessesQuery.ilike(key, `%${value}%`);
+    } else if (filter === "eq") {
+      businessesQuery = businessesQuery.eq(key, value);
+    } else if (filter === "gte") {
+      businessesQuery = businessesQuery.gte(key, value);
+    }
+  });
+
+  // Get Final Data
+  const { data, count, error } = await businessesQuery
+    .order("reviews_count", { ascending: sort_ascending.reviews_count })
+    .order("total_score", { ascending: sort_ascending.total_score })
+    .range((page - 1) * limit, page * limit - 1)
+    .limit(limit);
+
+  // Format Data
+  if (data) {
+    return { data: formatBusinessListings(data), count, error };
+  }
+
+  return { data: null, count, error };
+};
+
 // Location
 export const getAllStates = async () => {
   const { data, error } = await supabase

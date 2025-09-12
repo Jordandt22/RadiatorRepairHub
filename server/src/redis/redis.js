@@ -5,33 +5,46 @@ export const redisClient = new Redis({
   password: process.env.REDIS_PASSWORD,
 });
 
+// Check Key for Development
+export const checkKey = (key) =>
+  process.env.NODE_ENV === "development" ? "DEV_" + key : key;
+
+// Check Interval for Development
+export const checkInterval = (interval) =>
+  process.env.NODE_ENV === "development" ? 60 * 30 : interval;
+
 export const cacheData = async (key, timeInterval, data) => {
   if (process.env.NODE_ENV === "development")
     console.log(`REDIS: Set Data to Cache [${key}]`);
 
-  await redisClient.set(key, JSON.stringify({ data }), "EX", timeInterval);
+  await redisClient.set(
+    checkKey(key),
+    JSON.stringify({ data }),
+    "EX",
+    checkInterval(timeInterval)
+  );
 };
 
 export const getCacheData = async (key) => {
   if (process.env.NODE_ENV === "development")
     console.log(`REDIS: Retrieved Data from Cache [${key}]`);
-  return JSON.parse(await redisClient.get(key));
+  return JSON.parse(await redisClient.get(checkKey(key)));
 };
 
 export const deleteCacheData = async (key) => {
   if (process.env.NODE_ENV === "development")
     console.log(`REDIS: Deleted Data from Cache [${key}]`);
-  await redisClient.del(key);
+  await redisClient.del(checkKey(key));
 };
 
 export const deleteCacheDataByPrefix = async (prefix) => {
   if (process.env.NODE_ENV === "development")
     console.log(`REDIS: Deleted All Data from Cache with [${prefix}]`);
 
-  await redisClient.keys(prefix + "*").then(function (keys) {
+  await redisClient.keys(checkKey(prefix) + "*").then(function (keys) {
     var pipeline = redisClient.pipeline();
     keys.forEach(function (key) {
-      pipeline.del(key);
+      pipeline.del(checkKey(key));
     });
     return pipeline.exec();
   });
@@ -81,6 +94,32 @@ export const getCountBusinessesByCityKey = (city_id, state_id) => ({
   key: `CITY_BUSINESSES_COUNT?CITY-ID:${city_id}&STATE-ID:${state_id}`,
   interval: 60 * 60 * 24 * 7,
 });
+
+export const getSearchedBusinessesKey = (
+  searchParamValues,
+  page,
+  limit,
+  sort_ascending
+) => {
+  let mainKey = `SEARCHED_BUSINESSES?PAGE:${page}&LIMIT:${limit}`;
+
+  // Add Sort Ascending to Key
+  Object.keys(sort_ascending).forEach((key) => {
+    mainKey += `&SORT-ASCENDING-${key.toUpperCase().replace("_", "-")}:${
+      sort_ascending[key]
+    }`;
+  });
+
+  // Add Search Parameters to Key
+  searchParamValues.forEach(({ key, value }) => {
+    mainKey += `&${key.toUpperCase().replace("_", "-")}:${value}`;
+  });
+
+  return {
+    key: mainKey,
+    interval: 60 * 60,
+  };
+};
 
 // --- Location ----
 export const getStatesKey = () => ({

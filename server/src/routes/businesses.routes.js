@@ -4,15 +4,23 @@ import {
   getBusiness,
   getStateBusinesses,
   getCityBusinesses,
+  getSearchedBusinesses,
 } from "../controllers/businesses.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
-import { BusinessIDSchema } from "../schemas/businesses.schemas.js";
+import {
+  BusinessIDSchema,
+  SearchBusinessesSchema,
+} from "../schemas/businesses.schemas.js";
 import { paginationSchema } from "../schemas/query.schemas.js";
 import {
   StateIDSchema,
   StateIDandCitySlugSchema,
 } from "../schemas/location.schemas.js";
-import { paramsValidator, queryValidator } from "../middleware/validators.js";
+import {
+  paramsValidator,
+  queryValidator,
+  bodyValidator,
+} from "../middleware/validators.js";
 
 const businessesRouter = Router();
 
@@ -43,6 +51,18 @@ businessesRouter.get(
   paramsValidator(StateIDandCitySlugSchema),
   queryValidator(paginationSchema),
   serverErrorCatcherWrapper(getCityBusinesses)
+);
+
+/*
+  Search Businesses - Query Params: 
+    - Search Params: Title, State ID, City ID, Total Score, Reviews Count, Primary Category, Secondary Categories, Features, Sort Ascending
+    - Pagination Params: Page, Limit
+*/
+businessesRouter.post(
+  "/search",
+  queryValidator(paginationSchema),
+  bodyValidator(SearchBusinessesSchema),
+  serverErrorCatcherWrapper(getSearchedBusinesses)
 );
 
 export default businessesRouter;
