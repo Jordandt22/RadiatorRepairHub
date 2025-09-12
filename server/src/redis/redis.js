@@ -13,6 +13,29 @@ export const checkKey = (key) =>
 export const checkInterval = (interval) =>
   process.env.NODE_ENV === "development" ? 60 * 30 : interval;
 
+export const createSearchBusinessKey = (
+  mainKey,
+  searchParamValues,
+  sort_ascending
+) => {
+  let udpatedKey = mainKey;
+
+  // Add Sort Ascending to Key
+  Object.keys(sort_ascending).forEach((key) => {
+    udpatedKey += `&SORT-ASCENDING-${key.toUpperCase().replace("_", "-")}:${
+      sort_ascending[key]
+    }`;
+  });
+
+  // Add Search Parameters to Key
+  searchParamValues.forEach(({ key, value }) => {
+    udpatedKey += `&${key.toUpperCase().replace("_", "-")}:${value}`;
+  });
+
+  return udpatedKey;
+};
+
+// Cache Actions
 export const cacheData = async (key, timeInterval, data) => {
   if (process.env.NODE_ENV === "development")
     console.log(`REDIS: Set Data to Cache [${key}]`);
@@ -70,6 +93,7 @@ export const getBusinessByIdKey = (business_id) => ({
   interval: 60 * 60 * 24 * 7,
 });
 
+// State Businesses
 export const getBusinessesByStateKey = (state_id, page, limit) => ({
   key: `STATE_BUSINESSES?STATE-ID:${state_id}&PAGE:${page}&LIMIT:${limit}`,
   interval: 60 * 60 * 24 * 7,
@@ -80,6 +104,7 @@ export const getCountBusinessesByStateKey = (state_id) => ({
   interval: 60 * 60 * 24 * 7,
 });
 
+// City Businesses
 export const getCityBySlugKey = (city_slug, state_id) => ({
   key: `CITY?CITY-SLUG:${city_slug}&STATE-ID:${state_id}`,
   interval: 60 * 60 * 24 * 7,
@@ -95,31 +120,32 @@ export const getCountBusinessesByCityKey = (city_id, state_id) => ({
   interval: 60 * 60 * 24 * 7,
 });
 
+// Search Businesses
+export const getCountBusinessesBySearchKey = (
+  searchParamValues,
+  sort_ascending
+) => ({
+  key: createSearchBusinessKey(
+    `SEARCHED_BUSINESSES_COUNT`,
+    searchParamValues,
+    sort_ascending
+  ),
+  interval: 60 * 30,
+});
+
 export const getSearchedBusinessesKey = (
   searchParamValues,
   page,
   limit,
   sort_ascending
-) => {
-  let mainKey = `SEARCHED_BUSINESSES?PAGE:${page}&LIMIT:${limit}`;
-
-  // Add Sort Ascending to Key
-  Object.keys(sort_ascending).forEach((key) => {
-    mainKey += `&SORT-ASCENDING-${key.toUpperCase().replace("_", "-")}:${
-      sort_ascending[key]
-    }`;
-  });
-
-  // Add Search Parameters to Key
-  searchParamValues.forEach(({ key, value }) => {
-    mainKey += `&${key.toUpperCase().replace("_", "-")}:${value}`;
-  });
-
-  return {
-    key: mainKey,
-    interval: 60 * 60,
-  };
-};
+) => ({
+  key: createSearchBusinessKey(
+    `SEARCHED_BUSINESSES?PAGE:${page}&LIMIT:${limit}`,
+    searchParamValues,
+    sort_ascending
+  ),
+  interval: 60 * 30,
+});
 
 // --- Location ----
 export const getStatesKey = () => ({

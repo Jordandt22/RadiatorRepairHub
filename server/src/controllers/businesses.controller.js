@@ -14,6 +14,7 @@ import {
   getBusinessesByCityKey,
   getCityBySlugKey,
   getSearchedBusinessesKey,
+  getCountBusinessesBySearchKey,
 } from "../redis/redis.js";
 import {
   getTopRatedBusinesses,
@@ -25,6 +26,7 @@ import {
   getCityBySlug,
   searchBusinesses,
 } from "../supabase/supabase.functions.js";
+import { getNestedValue } from "../lib/util.js";
 
 const { SUPABASE_ERROR } = errorCodes;
 
@@ -334,10 +336,10 @@ export const getCityBusinesses = async (req, res) => {
 export const getSearchedBusinesses = async (req, res) => {
   const { page, limit } = req.query;
   const { sort_ascending } = req.body;
-  const formattedPage = Number(page);
+  let formattedPage = Number(page);
   const formattedLimit = Number(limit);
-
-  // Check for Count of Searched Businesses
+  let count = 0;
+  let totalPages = 0;
 
   // All Possible Search Parameters
   const searchParamKeys = [
@@ -349,11 +351,18 @@ export const getSearchedBusinesses = async (req, res) => {
     { key: "primary_category_id", filter: "eq" },
   ];
 
+  // Adding features
+  if (req.body.features) {
+    Object.keys(req.body.features).forEach((featureKey) => {
+      searchParamKeys.push({ key: `features.${featureKey}`, filter: "eq" });
+    });
+  }
+
   // Get Search Parameters that were sent
   const searchParamValues = [];
   searchParamKeys.forEach((param) => {
     const key = param.key;
-    const value = req.body[key];
+    const value = param.value ? param.value : getNestedValue(req.body, key);
     if (value) {
       searchParamValues.push({
         key,
@@ -363,6 +372,32 @@ export const getSearchedBusinesses = async (req, res) => {
     }
   });
 
+  // Adding Secondary Categories
+  if (req.body.secondary_categories) {
+    searchParamValues.push({
+      key: `secondary_categories.secondary_category_id`,
+      value: req.body.secondary_categories,
+      filter: "in",
+    });
+  }
+
+  // Get Cached Count of Searched Businesses
+  const { key: countKey, interval: countInterval } =
+    getCountBusinessesBySearchKey(searchParamValues, sort_ascending);
+  const cachedCountData = await getCacheData(countKey);
+  if (cachedCountData) {
+    count = cachedCountData.data;
+
+    // Check Page
+    totalPages = Math.ceil(count / formattedLimit);
+    if (formattedPage > totalPages) {
+      formattedPage = totalPages;
+    }
+  } else {
+    // Prevent going over total pages
+    formattedPage = 1;
+  }
+
   // Get Cached Data
   const { key, interval } = getSearchedBusinessesKey(
     searchParamValues,
@@ -370,14 +405,17 @@ export const getSearchedBusinesses = async (req, res) => {
     formattedLimit,
     sort_ascending
   );
-  console.log(key);
   const cachedData = await getCacheData(key);
   if (cachedData) {
     return res.status(200).json(successHandler(cachedData.data));
   }
 
   // Get Searched Businesses
-  const { data, count, error } = await searchBusinesses(
+  const {
+    data,
+    count: countData,
+    error,
+  } = await searchBusinesses(
     searchParamValues,
     formattedPage,
     formattedLimit,
@@ -409,15 +447,22 @@ export const getSearchedBusinesses = async (req, res) => {
     );
   }
 
+  // Set Total Pages
+  totalPages = Math.ceil(countData / formattedLimit);
+
+  // Compile Data
   const compiledData = {
     businesses: data,
     requestTotal: data.length,
-    totalBusinesses: count,
-    totalPages: Math.ceil(count / formattedLimit),
+    totalBusinesses: countData,
+    totalPages,
     page: formattedPage,
     limit: formattedLimit,
     sort_ascending,
   };
+
+  // Cache Count
+  await cacheData(countKey, countInterval, countData);
 
   // Cache Data
   await cacheData(key, interval, compiledData);

@@ -1,6 +1,6 @@
 import { supabase } from "./supabase.js";
 
-const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features(*)`;
+const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
 const fullBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories!inner(secondary_categories(*)), features:business_features(*)`;
 
 const formatBusinessListings = (data) => {
@@ -16,6 +16,21 @@ const formatBusinessListings = (data) => {
   return data;
 };
 
+const formatFullBusiness = (data) => {
+  if (data?.secondary_categories) {
+    data.secondary_categories = data.secondary_categories.map((item) => ({
+      ...item.secondary_categories,
+    }));
+  }
+
+  if (data?.features) {
+    data.features = { ...data.features[0] };
+    delete data.features.id;
+    delete data.features.business_id;
+  }
+
+  return data;
+};
 // ---- Database ----
 
 // Businesses
@@ -41,19 +56,7 @@ export const getBusinessById = async (business_id) => {
     .eq("id", business_id)
     .single();
 
-  if (data?.secondary_categories) {
-    data.secondary_categories = data.secondary_categories.map(
-      (item) => item.secondary_categories
-    );
-  }
-
-  if (data?.features) {
-    data.features = { ...data.features[0] };
-    delete data.features.id;
-    delete data.features.business_id;
-  }
-
-  return { data, error };
+  return { data: formatFullBusiness(data), error };
 };
 
 export const countBusinessesByState = async (state_id) => {
@@ -125,9 +128,9 @@ export const searchBusinesses = async (
   limit,
   sort_ascending
 ) => {
-  let businessesQuery = supabase
-    .from("businesses")
-    .select(listingBusinessSelect, { count: "exact" });
+  let businessesQuery = supabase.from("businesses").select(fullBusinessSelect, {
+    count: "exact",
+  });
 
   // Applying Filters
   searchParams.map(({ key, value, filter }) => {
@@ -137,6 +140,8 @@ export const searchBusinesses = async (
       businessesQuery = businessesQuery.eq(key, value);
     } else if (filter === "gte") {
       businessesQuery = businessesQuery.gte(key, value);
+    } else if (filter === "in") {
+      businessesQuery = businessesQuery.in(key, value);
     }
   });
 
@@ -149,7 +154,9 @@ export const searchBusinesses = async (
 
   // Format Data
   if (data) {
-    return { data: formatBusinessListings(data), count, error };
+    const formattedData = data.map((business) => formatFullBusiness(business));
+
+    return { data: formattedData, count, error };
   }
 
   return { data: null, count, error };
