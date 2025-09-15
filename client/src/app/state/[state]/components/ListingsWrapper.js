@@ -3,26 +3,15 @@
 import React from "react";
 import useSWR from "swr";
 
+// Utils
+import { postFetcher } from "@/lib/utils/utils";
+
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
 
 // Components
 import Listings from "./Listings";
 import Pagination from "./Pagination";
-
-// Fetcher function
-const fetcher = (args) => {
-  const url = args[0];
-  const body = args[1];
-
-  return fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  }).then((res) => res.json());
-};
 
 export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
   // Get filter state from context
@@ -45,7 +34,7 @@ export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
         },
       },
     ],
-    fetcher,
+    postFetcher,
     {
       revalidateOnFocus: false,
       revalidateIfStale: false,

@@ -3,20 +3,19 @@
 import React, { createContext, useContext, useState } from "react";
 
 const FilterContext = createContext();
-
 export const useFilters = () => useContext(FilterContext);
-
 export function FilterProvider({ children }) {
   // Filter visibility state
   const [showFilters, setShowFilters] = useState(false);
 
-  // Filter state management
   const defaultFilters = {
-    city: "",
-    minTotalScore: 3,
-    minReviews: 1,
-    primaryCategory: "",
-    secondaryCategories: [],
+    title: "",
+    state_id: "",
+    city_id: "",
+    total_score: 3,
+    reviews_count: 1,
+    primary_category_id: "",
+    secondary_categories: [],
     features: [],
     openWeekdays: false,
     openWeekends: false,

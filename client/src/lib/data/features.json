@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Appointments Recommended",
+    "key": "appointments_recommended"
+  },
+  {
+    "name": "Credit Cards",
+    "key": "credit_cards"
+  },
+  {
+    "name": "Debit Cards",
+    "key": "debit_cards"
+  },
+  {
+    "name": "Mechanic",
+    "key": "mechanic"
+  },
+  {
+    "name": "NFC Mobile Payments",
+    "key": "nfc_mobile_payments"
+  },
+  {
+    "name": "Oil Change",
+    "key": "oil_change"
+  },
+  {
+    "name": "Onsite Services",
+    "key": "onsite_services"
+  },
+  {
+    "name": "Restroom",
+    "key": "restroom"
+  },
+  {
+    "name": "Wheelchair Accessible",
+    "key": "wheelchair_accessible"
+  }
+]

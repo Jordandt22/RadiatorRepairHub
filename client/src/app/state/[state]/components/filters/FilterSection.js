@@ -7,89 +7,33 @@ import { useFilters } from "@/contexts/FilterProvider";
 
 // Components
 import MobileFilterSection from "./MobileFilterSection";
-import FilterDropdown from "./FilterDropdown";
 import FilterNumInput from "./FilterNumInput";
-import FilterCheckboxes from "./FilterCheckboxes";
+import CitiesDropdown from "./dropdowns/CitiesDropdown";
+import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
+import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
+import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
 
-function FilterSection() {
+function FilterSection({ stateData }) {
   const { showFilters, filters, clearAllFilters, updateFilter } = useFilters();
-
-  // Placeholder data
-  const cities = [
-    "Los Angeles",
-    "San Francisco",
-    "San Diego",
-    "Sacramento",
-    "Fresno",
-    "Houston",
-    "Dallas",
-    "Austin",
-    "San Antonio",
-    "Fort Worth",
-    "Miami",
-    "Tampa",
-    "Orlando",
-    "Jacksonville",
-    "Tallahassee",
-    "New York City",
-    "Buffalo",
-    "Rochester",
-    "Syracuse",
-    "Albany",
-  ];
-
-  const primaryCategories = [
-    "Auto Repair",
-    "Radiator Repair",
-    "Engine Repair",
-    "Transmission Repair",
-    "Brake Service",
-    "Oil Change",
-    "Tire Service",
-    "AC Repair",
-  ];
-
-  const secondaryCategories = [
-    "Emergency Service",
-    "Mobile Service",
-    "Towing",
-    "Diagnostics",
-    "Maintenance",
-    "Warranty Service",
-    "Fleet Service",
-    "Commercial",
-  ];
-
-  const features = [
-    "Appointments Recommended",
-    "Credit Cards",
-    "Debit Cards",
-    "Mechanic",
-    "Oil Change",
-    "NFC Mobile Payments",
-    "Onsite Services",
-    "Restroom",
-    "Wheelchair Accessible",
-  ];
 
   return (
     <>
       {/* Desktop Filter Section */}
       <div
         className={`hidden md:block overflow-hidden transition-all duration-300 ${
-          showFilters ? "mt-8 max-h-screen opacity-100" : "max-h-0 opacity-0"
+          showFilters ? "mt-8 max-h-fit opacity-100" : "max-h-0 opacity-0"
         }`}
       >
         <div className="w-full">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {/* City Filter */}
-              <FilterDropdown options={cities} label="City" name="city" />
+              <CitiesDropdown stateData={stateData} />
 
               {/* Min Total Score */}
               <FilterNumInput
                 label="Min Total Score"
-                name="minTotalScore"
+                name="total_score"
                 min={3.0}
                 max={5.0}
                 step={0.1}
@@ -98,32 +42,20 @@ function FilterSection() {
               {/* Min Reviews */}
               <FilterNumInput
                 label="Min Reviews"
-                name="minReviews"
+                name="reviews_count"
                 min={1}
                 max={500}
                 step={1}
               />
 
               {/* Primary Category */}
-              <FilterDropdown
-                options={primaryCategories}
-                label="Primary Category"
-                name="primaryCategory"
-              />
+              <PrimaryCategoriesDropdown />
 
               {/* Secondary Categories */}
-              <FilterCheckboxes
-                options={secondaryCategories}
-                label="Secondary Categories"
-                name="secondaryCategories"
-              />
+              <SecondaryCategoriesCheckboxes />
 
               {/* Features */}
-              <FilterCheckboxes
-                options={features}
-                label="Features"
-                name="features"
-              />
+              <FeaturesCheckboxes />
 
               {/* Open Hours */}
               <div className="md:col-span-2 lg:col-span-3 xl:col-span-4 bg-slate-100 p-4 rounded-md">
@@ -171,14 +103,14 @@ function FilterSection() {
       </div>
 
       {/* Mobile Filter Popup */}
-      {showFilters && (
+      {/* {showFilters && (
         <MobileFilterSection
           cities={cities}
           primaryCategories={primaryCategories}
           secondaryCategories={secondaryCategories}
           features={features}
         />
-      )}
+      )} */}
     </>
   );
 }

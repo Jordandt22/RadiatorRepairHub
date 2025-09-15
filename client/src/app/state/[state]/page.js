@@ -54,7 +54,7 @@ async function Page({ params, searchParams }) {
             </div>
 
             {/* Filter Section */}
-            <FilterSection />
+            <FilterSection stateData={stateData} />
           </div>
         </div>
 
