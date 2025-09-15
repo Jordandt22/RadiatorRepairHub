@@ -6,6 +6,7 @@ import useSWR from "swr";
 // Components
 import Listings from "./Listings";
 import Pagination from "./Pagination";
+import { useFilters } from "./FilterProvider";
 
 // Fetcher function
 const fetcher = (args) => {
@@ -22,6 +23,15 @@ const fetcher = (args) => {
 };
 
 export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
+  // Get filter state from context
+  const {
+    showFilters,
+    setShowFilters,
+    filters,
+    clearAllFilters,
+    updateFilter,
+  } = useFilters();
+
   const { data, error } = useSWR(
     [
       `${process.env.NEXT_PUBLIC_API_URI}/businesses/search?page=${page}&limit=${limit}`,

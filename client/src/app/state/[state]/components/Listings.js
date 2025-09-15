@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+// Contexts
+import { useFilters } from "./FilterProvider";
+
 // Components
 import MobileBusinessCard from "./cards/MobileBusinessCard";
 import BusinessCard from "./cards/BusinessCard";
@@ -10,6 +13,14 @@ import BusinessHours from "./cards/BusinessHours";
 import BusinessInfo from "./cards/BusinessInfo";
 
 function Listings({ businesses, dataPage, page, stateData }) {
+  // Get filter state from context
+  const {
+    showFilters,
+    setShowFilters,
+    filters,
+    clearAllFilters,
+    updateFilter,
+  } = useFilters();
   const router = useRouter();
   const [activeCard, setActiveCard] = useState(null);
   const [activeBackCard, setActiveBackCard] = useState(1);

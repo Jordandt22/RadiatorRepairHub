@@ -4,11 +4,15 @@ import { notFound } from "next/navigation";
 // Data
 import states from "@/lib/data/states";
 
+// Contexts
+import { FilterProvider } from "./components/FilterProvider";
+
 // Components
 import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
-import Filters from "./components/Filters";
+import Filters from "./components/filters/Filters";
 import ListingsWrapper from "./components/ListingsWrapper";
+import FilterSection from "./components/filters/FilterSection";
 
 export async function generateStaticParams() {
   const topStates = ["CA", "TX", "FL", "NY", "PA", "IL"];
@@ -38,20 +42,25 @@ async function Page({ params, searchParams }) {
       <Header stateName={stateData.name} />
 
       {/* Search and Filter Section */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Bar */}
-            <SearchBar />
+      <FilterProvider>
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search Bar */}
+              <SearchBar />
 
-            {/* Sorting Dropdowns */}
-            <Filters />
+              {/* Sorting Dropdowns */}
+              <Filters />
+            </div>
+
+            {/* Filter Section */}
+            <FilterSection />
           </div>
         </div>
-      </div>
 
-      {/* Business Listings */}
-      <ListingsWrapper stateData={stateData} page={page} limit={limit} />
+        {/* Business Listings */}
+        <ListingsWrapper stateData={stateData} page={page} limit={limit} />
+      </FilterProvider>
     </div>
   );
 }
