@@ -8,22 +8,22 @@ import {
   getFeaturedBusinessesKey,
   getCacheData,
   getBusinessByIdKey,
-  getBusinessesByStateKey,
-  getCountBusinessesByStateKey,
-  getCountBusinessesByCityKey,
-  getBusinessesByCityKey,
-  getCityBySlugKey,
+  // getBusinessesByStateKey,
+  // getCountBusinessesByStateKey,
+  // getCountBusinessesByCityKey,
+  // getBusinessesByCityKey,
+  // getCityBySlugKey,
   getSearchedBusinessesKey,
   getCountBusinessesBySearchKey,
 } from "../redis/redis.js";
 import {
   getTopRatedBusinesses,
   getBusinessById,
-  getBusinessesByState,
-  countBusinessesByState,
-  countBusinessesByCity,
-  getBusinessesByCity,
-  getCityBySlug,
+  // getBusinessesByState,
+  // countBusinessesByState,
+  // countBusinessesByCity,
+  // getBusinessesByCity,
+  // getCityBySlug,
   searchBusinesses,
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
@@ -86,252 +86,201 @@ export const getBusiness = async (req, res) => {
   res.status(200).json(successHandler(data));
 };
 
-export const getStateBusinesses = async (req, res) => {
-  const { state_id } = req.params;
-  const { page, limit } = req.query;
-  let formattedPage = Number(page);
-  const formattedLimit = Number(limit);
-  let count = 0;
+// ! DEPRECATED
+// export const getStateBusinesses = async (req, res) => {
+//   const { state_id } = req.params;
+//   const { page, limit } = req.query;
+//   let formattedPage = Number(page);
+//   const formattedLimit = Number(limit);
+//   let count = 0;
 
-  // Get Cached Count of Businesses by State Data
-  const { key: countKey, interval: countInterval } =
-    getCountBusinessesByStateKey(state_id);
-  const cachedCountData = await getCacheData(countKey);
-  if (cachedCountData) {
-    count = cachedCountData.data;
-  } else {
-    // Get Count of Businesses by State
-    const { count: countData, error: countError } =
-      await countBusinessesByState(state_id);
-    if (countError) {
-      return res
-        .status(500)
-        .json(
-          customErrorHandler(
-            SUPABASE_ERROR,
-            `There was an error fetching count of businesses by state (${state_id}).`,
-            countError
-          )
-        );
-    }
+//   // Get Cached Count of Businesses by State Data
+//   const { key: countKey, interval: countInterval } =
+//     getCountBusinessesByStateKey(state_id);
+//   const cachedCountData = await getCacheData(countKey);
+//   if (cachedCountData) {
+//     count = cachedCountData.data;
+//   } else {
+//     // Get Count of Businesses by State
+//     const { count: countData, error: countError } =
+//       await countBusinessesByState(state_id);
+//     if (countError) {
+//       return res
+//         .status(500)
+//         .json(
+//           customErrorHandler(
+//             SUPABASE_ERROR,
+//             `There was an error fetching count of businesses by state (${state_id}).`,
+//             countError
+//           )
+//         );
+//     }
 
-    count = countData;
-    await cacheData(countKey, countInterval, count);
-  }
+//     count = countData;
+//     await cacheData(countKey, countInterval, count);
+//   }
 
-  // Check Page
-  const totalPages = Math.ceil(count / formattedLimit);
-  if (formattedPage > totalPages) {
-    formattedPage = totalPages;
-  }
+//   // Check Page
+//   const totalPages = Math.ceil(count / formattedLimit);
+//   if (formattedPage > totalPages) {
+//     formattedPage = totalPages;
+//   }
 
-  // Get Cached Businesses by State Data
-  const { key, interval } = getBusinessesByStateKey(
-    state_id,
-    formattedPage,
-    formattedLimit
-  );
-  const cachedData = await getCacheData(key);
-  if (cachedData) {
-    return res.status(200).json(successHandler(cachedData.data));
-  }
+// };
 
-  // Get Businesses by State
-  const { data, error } = await getBusinessesByState(
-    state_id,
-    formattedPage,
-    formattedLimit
-  );
-  if (error) {
-    return res
-      .status(500)
-      .json(
-        customErrorHandler(
-          SUPABASE_ERROR,
-          `There was an error fetching businesses by state (${state_id}).`,
-          error
-        )
-      );
-  }
+// ! DEPRECATED
+// export const getCityBusinesses = async (req, res) => {
+//   const { city_slug, state_id } = req.params;
+//   const { page, limit } = req.query;
+//   let formattedPage = Number(page);
+//   const formattedLimit = Number(limit);
+//   let count = 0;
+//   let city_id = null;
+//   let cityData = null;
 
-  if (data.length === 0) {
-    return res.status(200).json(
-      successHandler({
-        businesses: [],
-        requestTotal: 0,
-        totalBusinesses: 0,
-        totalPages: 0,
-        page: formattedPage,
-        limit: formattedLimit,
-      })
-    );
-  }
+//   // Get Cached City Data
+//   const { key: cityKey, interval: cityInterval } = getCityBySlugKey(
+//     city_slug,
+//     state_id
+//   );
+//   const cachedCityData = await getCacheData(cityKey);
+//   if (cachedCityData) {
+//     city_id = cachedCityData.data.id;
+//     cityData = cachedCityData.data;
+//   } else {
+//     // Get City ID
+//     const { data: cityDBData, error: cityError } = await getCityBySlug(
+//       city_slug,
+//       state_id
+//     );
+//     if (cityError) {
+//       if (cityError.code === "PGRST116") {
+//         return res
+//           .status(404)
+//           .json(
+//             customErrorHandler(
+//               SUPABASE_ERROR,
+//               `City by slug (${city_slug}) in state (${state_id}) not found.`,
+//               cityError
+//             )
+//           );
+//       }
 
-  // Cache Data
-  const compiledData = {
-    businesses: data,
-    requestTotal: data.length,
-    totalBusinesses: count,
-    totalPages,
-    page: formattedPage,
-    limit: formattedLimit,
-  };
-  await cacheData(key, interval, compiledData);
-  res.status(200).json(successHandler(compiledData));
-};
+//       return res
+//         .status(500)
+//         .json(
+//           customErrorHandler(
+//             SUPABASE_ERROR,
+//             `There was an error fetching city by slug (${city_slug}) in state (${state_id}).`,
+//             cityError
+//           )
+//         );
+//     }
 
-export const getCityBusinesses = async (req, res) => {
-  const { city_slug, state_id } = req.params;
-  const { page, limit } = req.query;
-  let formattedPage = Number(page);
-  const formattedLimit = Number(limit);
-  let count = 0;
-  let city_id = null;
-  let cityData = null;
+//     city_id = cityDBData.id;
+//     cityData = cityDBData;
+//     await cacheData(cityKey, cityInterval, cityDBData);
+//   }
 
-  // Get Cached City Data
-  const { key: cityKey, interval: cityInterval } = getCityBySlugKey(
-    city_slug,
-    state_id
-  );
-  const cachedCityData = await getCacheData(cityKey);
-  if (cachedCityData) {
-    city_id = cachedCityData.data.id;
-    cityData = cachedCityData.data;
-  } else {
-    // Get City ID
-    const { data: cityDBData, error: cityError } = await getCityBySlug(
-      city_slug,
-      state_id
-    );
-    if (cityError) {
-      if (cityError.code === "PGRST116") {
-        return res
-          .status(404)
-          .json(
-            customErrorHandler(
-              SUPABASE_ERROR,
-              `City by slug (${city_slug}) in state (${state_id}) not found.`,
-              cityError
-            )
-          );
-      }
+//   // Get Cached Count of Businesses by City Data
+//   const { key: countKey, interval: countInterval } =
+//     getCountBusinessesByCityKey(city_id, state_id);
+//   const cachedCountData = await getCacheData(countKey);
+//   if (cachedCountData) {
+//     count = cachedCountData.data;
+//   } else {
+//     // Get Count of Businesses by City
+//     const { count: countData, error: countError } = await countBusinessesByCity(
+//       city_id,
+//       state_id
+//     );
+//     if (countError) {
+//       return res
+//         .status(500)
+//         .json(
+//           customErrorHandler(
+//             SUPABASE_ERROR,
+//             `There was an error fetching count of businesses by city (${city_id}).`,
+//             countError
+//           )
+//         );
+//     }
 
-      return res
-        .status(500)
-        .json(
-          customErrorHandler(
-            SUPABASE_ERROR,
-            `There was an error fetching city by slug (${city_slug}) in state (${state_id}).`,
-            cityError
-          )
-        );
-    }
+//     count = countData;
+//     await cacheData(countKey, countInterval, count);
+//   }
 
-    city_id = cityDBData.id;
-    cityData = cityDBData;
-    await cacheData(cityKey, cityInterval, cityDBData);
-  }
+//   // Check Page
+//   const totalPages = Math.ceil(count / formattedLimit);
+//   if (formattedPage > totalPages) {
+//     formattedPage = totalPages;
+//   }
 
-  // Get Cached Count of Businesses by City Data
-  const { key: countKey, interval: countInterval } =
-    getCountBusinessesByCityKey(city_id, state_id);
-  const cachedCountData = await getCacheData(countKey);
-  if (cachedCountData) {
-    count = cachedCountData.data;
-  } else {
-    // Get Count of Businesses by City
-    const { count: countData, error: countError } = await countBusinessesByCity(
-      city_id,
-      state_id
-    );
-    if (countError) {
-      return res
-        .status(500)
-        .json(
-          customErrorHandler(
-            SUPABASE_ERROR,
-            `There was an error fetching count of businesses by city (${city_id}).`,
-            countError
-          )
-        );
-    }
+//   // Get Cached Businesses by City Data
+//   const { key, interval } = getBusinessesByCityKey(
+//     city_id,
+//     state_id,
+//     formattedPage,
+//     formattedLimit
+//   );
+//   const cachedData = await getCacheData(key);
+//   if (cachedData) {
+//     return res.status(200).json(successHandler(cachedData.data));
+//   }
 
-    count = countData;
-    await cacheData(countKey, countInterval, count);
-  }
+//   // Get Businesses by City
+//   const { data, error } = await getBusinessesByCity(
+//     city_id,
+//     state_id,
+//     formattedPage,
+//     formattedLimit
+//   );
+//   if (error) {
+//     return res
+//       .status(500)
+//       .json(
+//         customErrorHandler(
+//           SUPABASE_ERROR,
+//           `There was an error fetching businesses by city (${city_id}).`,
+//           error
+//         )
+//       );
+//   }
 
-  // Check Page
-  const totalPages = Math.ceil(count / formattedLimit);
-  if (formattedPage > totalPages) {
-    formattedPage = totalPages;
-  }
+//   if (data.length === 0) {
+//     return res.status(200).json(
+//       successHandler({
+//         businesses: [],
+//         requestTotal: 0,
+//         totalBusinesses: 0,
+//         totalPages: 0,
+//         page: formattedPage,
+//         limit: formattedLimit,
+//       })
+//     );
+//   }
 
-  // Get Cached Businesses by City Data
-  const { key, interval } = getBusinessesByCityKey(
-    city_id,
-    state_id,
-    formattedPage,
-    formattedLimit
-  );
-  const cachedData = await getCacheData(key);
-  if (cachedData) {
-    return res.status(200).json(successHandler(cachedData.data));
-  }
+//   // Cache Data
+//   const compiledData = {
+//     businesses: data,
+//     requestTotal: data.length,
+//     totalBusinesses: count,
+//     totalPages,
+//     page: formattedPage,
+//     limit: formattedLimit,
+//     city: {
+//       id: city_id,
+//       name: cityData.name,
+//       slug: cityData.slug,
+//       state_id: cityData.state_id,
+//     },
+//     state: cityData.state,
+//   };
 
-  // Get Businesses by City
-  const { data, error } = await getBusinessesByCity(
-    city_id,
-    state_id,
-    formattedPage,
-    formattedLimit
-  );
-  if (error) {
-    return res
-      .status(500)
-      .json(
-        customErrorHandler(
-          SUPABASE_ERROR,
-          `There was an error fetching businesses by city (${city_id}).`,
-          error
-        )
-      );
-  }
-
-  if (data.length === 0) {
-    return res.status(200).json(
-      successHandler({
-        businesses: [],
-        requestTotal: 0,
-        totalBusinesses: 0,
-        totalPages: 0,
-        page: formattedPage,
-        limit: formattedLimit,
-      })
-    );
-  }
-
-  // Cache Data
-  const compiledData = {
-    businesses: data,
-    requestTotal: data.length,
-    totalBusinesses: count,
-    totalPages,
-    page: formattedPage,
-    limit: formattedLimit,
-    city: {
-      id: city_id,
-      name: cityData.name,
-      slug: cityData.slug,
-      state_id: cityData.state_id,
-    },
-    state: cityData.state,
-  };
-
-  // Cache Data
-  await cacheData(key, interval, compiledData);
-  res.status(200).json(successHandler(compiledData));
-};
+//   // Cache Data
+//   await cacheData(key, interval, compiledData);
+//   res.status(200).json(successHandler(compiledData));
+// };
 
 export const getSearchedBusinesses = async (req, res) => {
   const { page, limit } = req.query;
@@ -491,9 +440,9 @@ export const getSearchedBusinesses = async (req, res) => {
   };
 
   // Cache Count
-  // await cacheData(countKey, countInterval, countData);
+  await cacheData(countKey, countInterval, countData);
 
   // Cache Data
-  // await cacheData(key, interval, compiledData);
+  await cacheData(key, interval, compiledData);
   res.status(200).json(successHandler(compiledData));
 };

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 // Components
 import MobileBusinessCard from "./cards/MobileBusinessCard";
@@ -8,9 +9,16 @@ import BusinessCard from "./cards/BusinessCard";
 import BusinessHours from "./cards/BusinessHours";
 import BusinessInfo from "./cards/BusinessInfo";
 
-function Listings({ businesses }) {
+function Listings({ businesses, dataPage, page, stateData }) {
+  const router = useRouter();
   const [activeCard, setActiveCard] = useState(null);
   const [activeBackCard, setActiveBackCard] = useState(1);
+
+  useEffect(() => {
+    if (dataPage !== page) {
+      router.push(`/state/${stateData.code}?page=${dataPage}`);
+    }
+  }, [dataPage, page, stateData.code, router]);
 
   return (
     <div>

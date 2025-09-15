@@ -64,7 +64,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
 
           <Link
             key={"business-card-category-" + business.id}
-            href={`/category/${business.primary_category.name}`}
+            href={`/category/${business.primary_category.slug}`}
             className="absolute bottom-3 left-3 text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-md hover:bg-blue-500 hover:text-white duration-200 capitalize"
           >
             {business.primary_category.name}
