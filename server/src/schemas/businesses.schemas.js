@@ -31,4 +31,9 @@ export const SearchBusinessesSchema = Yup.object({
     total_score: Yup.boolean().required(),
     reviews_count: Yup.boolean().required(),
   }).required(),
+  open: Yup.object({
+    now: Yup.boolean(),
+    weekdays: Yup.boolean(),
+    weekends: Yup.boolean(),
+  }),
 });

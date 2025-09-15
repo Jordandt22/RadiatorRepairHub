@@ -381,6 +381,33 @@ export const getSearchedBusinesses = async (req, res) => {
     });
   }
 
+  // Adding Open Filter
+  // if (req.body.open) {
+  //   // if(req.body.open.now) {
+  //   //   searchParamKeys.push({ key: "open", filter: "eq" });
+  //   // }
+  //   if (req.body.open.weekdays) {
+  //     const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  //     weekdays.forEach((weekday) => {
+  //       searchParamValues.push({
+  //         key: "hours.day_of_week",
+  //         filter: "eq",
+  //         value: weekday,
+  //       });
+  //     });
+  //   }
+  //   if (req.body.open.weekends) {
+  //     const weekends = ["Saturday", "Sunday"];
+  //     weekends.forEach((weekend) => {
+  //       searchParamValues.push({
+  //         key: "hours.day_of_week",
+  //         filter: "eq",
+  //         value: weekend,
+  //       });
+  //     });
+  //   }
+  // }
+
   // Get Cached Count of Searched Businesses
   const { key: countKey, interval: countInterval } =
     getCountBusinessesBySearchKey(searchParamValues, sort_ascending);
@@ -462,9 +489,9 @@ export const getSearchedBusinesses = async (req, res) => {
   };
 
   // Cache Count
-  await cacheData(countKey, countInterval, countData);
+  // await cacheData(countKey, countInterval, countData);
 
   // Cache Data
-  await cacheData(key, interval, compiledData);
+  // await cacheData(key, interval, compiledData);
   res.status(200).json(successHandler(compiledData));
 };

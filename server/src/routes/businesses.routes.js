@@ -55,7 +55,17 @@ businessesRouter.get(
 
 /*
   Search Businesses - Query Params: 
-    - Search Params: Title, State ID, City ID, Total Score, Reviews Count, Primary Category, Secondary Categories, Features, Sort Ascending
+    - Search Params: 
+      - Title
+      - State ID
+      - City ID
+      - Total Score
+      - Reviews Count
+      - Primary Category
+      - Secondary Categories
+      - Features
+      - Sort Ascending
+      - Open: Now, Weekdays, Weekends
     - Pagination Params: Page, Limit
 */
 businessesRouter.post(

@@ -108,7 +108,7 @@ export const countBusinessesByCity = async (city_id, state_id) => {
 export const getBusinessesByCity = async (city_id, state_id, page, limit) => {
   const { data, error } = await supabase
     .from("businesses")
-    .select(listingBusinessSelect)
+    .select(listingBusinessSelect + ", hours:business_hours(*)")
     .eq("city_id", city_id)
     .eq("state_id", state_id)
     .order("reviews_count", { ascending: false })
