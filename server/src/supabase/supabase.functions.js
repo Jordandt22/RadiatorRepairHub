@@ -1,7 +1,7 @@
 import { supabase } from "./supabase.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
-const fullBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories!inner(secondary_categories(*)), features:business_features(*)`;
+const fullBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories!inner(secondary_categories(*)), features:business_features(*), hours:business_hours!inner(*)`;
 
 const formatBusinessListings = (data) => {
   data.map((business) => delete business.additional_info);
@@ -16,20 +16,32 @@ const formatBusinessListings = (data) => {
   return data;
 };
 
-const formatFullBusiness = (data) => {
-  if (data?.secondary_categories) {
-    data.secondary_categories = data.secondary_categories.map((item) => ({
-      ...item.secondary_categories,
-    }));
+const formatFullBusiness = (business) => {
+  if (business?.secondary_categories) {
+    business.secondary_categories = business.secondary_categories.map(
+      (item) => ({
+        ...item.secondary_categories,
+      })
+    );
   }
 
-  if (data?.features) {
-    data.features = { ...data.features[0] };
-    delete data.features.id;
-    delete data.features.business_id;
+  if (business?.features) {
+    business.features = { ...business.features[0] };
+    delete business.features.id;
+    delete business.features.business_id;
   }
 
-  return data;
+  if (business?.hours) {
+    business.hours = business.hours.map((item) => {
+      delete item.id;
+      delete item.business_id;
+      return {
+        ...item,
+      };
+    });
+  }
+
+  return business;
 };
 // ---- Database ----
 
@@ -108,7 +120,7 @@ export const countBusinessesByCity = async (city_id, state_id) => {
 export const getBusinessesByCity = async (city_id, state_id, page, limit) => {
   const { data, error } = await supabase
     .from("businesses")
-    .select(listingBusinessSelect + ", hours:business_hours(*)")
+    .select(listingBusinessSelect)
     .eq("city_id", city_id)
     .eq("state_id", state_id)
     .order("reviews_count", { ascending: false })

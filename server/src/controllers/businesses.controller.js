@@ -382,31 +382,33 @@ export const getSearchedBusinesses = async (req, res) => {
   }
 
   // Adding Open Filter
-  // if (req.body.open) {
-  //   // if(req.body.open.now) {
-  //   //   searchParamKeys.push({ key: "open", filter: "eq" });
-  //   // }
-  //   if (req.body.open.weekdays) {
-  //     const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-  //     weekdays.forEach((weekday) => {
-  //       searchParamValues.push({
-  //         key: "hours.day_of_week",
-  //         filter: "eq",
-  //         value: weekday,
-  //       });
-  //     });
-  //   }
-  //   if (req.body.open.weekends) {
-  //     const weekends = ["Saturday", "Sunday"];
-  //     weekends.forEach((weekend) => {
-  //       searchParamValues.push({
-  //         key: "hours.day_of_week",
-  //         filter: "eq",
-  //         value: weekend,
-  //       });
-  //     });
-  //   }
-  // }
+  if (req.body.open) {
+    const openFilter = req.body.open;
+
+    // Filter Weekdays and Weekends
+    const openDays = [];
+    const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    const weekends = ["Saturday", "Sunday"];
+    if (openFilter.weekdays) {
+      openDays.push(...weekdays);
+    }
+    if (openFilter.weekends) {
+      openDays.push(...weekends);
+    }
+
+    if (openDays.length > 0) {
+      searchParamValues.push({
+        key: "hours.day_of_week",
+        filter: "in",
+        value: openDays,
+      });
+      searchParamValues.push({
+        key: "hours.is_closed",
+        filter: "eq",
+        value: false,
+      });
+    }
+  }
 
   // Get Cached Count of Searched Businesses
   const { key: countKey, interval: countInterval } =
