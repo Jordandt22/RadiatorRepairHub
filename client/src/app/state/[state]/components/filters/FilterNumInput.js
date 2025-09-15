@@ -1,7 +1,7 @@
 import React from "react";
 
 // Contexts
-import { useFilters } from "../FilterProvider";
+import { useFilters } from "@/contexts/FilterProvider";
 
 function FilterNumInput({ label, name, min, max, step }) {
   const { filters, updateFilter } = useFilters();
@@ -16,8 +16,9 @@ function FilterNumInput({ label, name, min, max, step }) {
         min={min}
         max={max}
         step={step}
-        value={filters[name]}
-        onChange={(e) => updateFilter(name, parseFloat(e.target.value))}
+        value={Number(filters[name])}
+        onChange={(e) => updateFilter(name, Number(e.target.value))}
+        contentEditable={false}
         className="w-full px-3 py-2 border border-gray-300 rounded-md cursor-pointer"
       />
     </div>

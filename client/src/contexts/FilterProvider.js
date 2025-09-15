@@ -4,12 +4,14 @@ import React, { createContext, useContext, useState } from "react";
 
 const FilterContext = createContext();
 
+export const useFilters = () => useContext(FilterContext);
+
 export function FilterProvider({ children }) {
   // Filter visibility state
   const [showFilters, setShowFilters] = useState(false);
 
   // Filter state management
-  const [filters, setFilters] = useState({
+  const defaultFilters = {
     city: "",
     minTotalScore: 3,
     minReviews: 1,
@@ -18,21 +20,11 @@ export function FilterProvider({ children }) {
     features: [],
     openWeekdays: false,
     openWeekends: false,
-  });
+  };
+  const [filters, setFilters] = useState(defaultFilters);
 
   // Clear all filters function
-  const clearAllFilters = () => {
-    setFilters({
-      city: "",
-      minTotalScore: 3,
-      minReviews: 1,
-      primaryCategory: "",
-      secondaryCategories: [],
-      features: [],
-      openWeekdays: false,
-      openWeekends: false,
-    });
-  };
+  const clearAllFilters = () => setFilters(defaultFilters);
 
   // Update filter function
   const updateFilter = (filterKey, value) => {
@@ -68,12 +60,4 @@ export function FilterProvider({ children }) {
       {children}
     </FilterContext.Provider>
   );
-}
-
-export function useFilters() {
-  const context = useContext(FilterContext);
-  if (context === undefined) {
-    throw new Error("useFilters must be used within a FilterProvider");
-  }
-  return context;
 }

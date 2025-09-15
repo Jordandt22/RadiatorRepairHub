@@ -3,7 +3,7 @@
 import React from "react";
 
 // Contexts
-import { useFilters } from "../FilterProvider";
+import { useFilters } from "@/contexts/FilterProvider";
 
 // Components
 import MobileFilterSection from "./MobileFilterSection";

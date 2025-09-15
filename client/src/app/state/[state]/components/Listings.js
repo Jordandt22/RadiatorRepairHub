@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 // Contexts
-import { useFilters } from "./FilterProvider";
+import { useFilters } from "@/contexts/FilterProvider";
 
 // Components
 import MobileBusinessCard from "./cards/MobileBusinessCard";

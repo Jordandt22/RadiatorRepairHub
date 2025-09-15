@@ -3,10 +3,12 @@
 import React from "react";
 import useSWR from "swr";
 
+// Contexts
+import { useFilters } from "@/contexts/FilterProvider";
+
 // Components
 import Listings from "./Listings";
 import Pagination from "./Pagination";
-import { useFilters } from "./FilterProvider";
 
 // Fetcher function
 const fetcher = (args) => {

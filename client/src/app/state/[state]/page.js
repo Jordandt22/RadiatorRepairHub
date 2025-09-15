@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import states from "@/lib/data/states";
 
 // Contexts
-import { FilterProvider } from "./components/FilterProvider";
+import { FilterProvider } from "@/contexts/FilterProvider";
 
 // Components
 import Header from "./components/Header";

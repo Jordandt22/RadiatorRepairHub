@@ -1,7 +1,7 @@
 import React from "react";
 
 // Contexts
-import { useFilters } from "../FilterProvider";
+import { useFilters } from "@/contexts/FilterProvider";
 
 function FilterDropdown({ options, label, name }) {
   const { filters, updateFilter } = useFilters();

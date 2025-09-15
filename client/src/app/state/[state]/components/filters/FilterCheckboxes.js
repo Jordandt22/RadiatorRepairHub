@@ -1,7 +1,7 @@
 import React from "react";
 
 // Contexts
-import { useFilters } from "../FilterProvider";
+import { useFilters } from "@/contexts/FilterProvider";
 
 function FilterCheckboxes({ label, options, name }) {
   const { filters, handleArrayFilter } = useFilters();
