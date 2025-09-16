@@ -13,19 +13,8 @@ export const checkKey = (key) =>
 export const checkInterval = (interval) =>
   process.env.NODE_ENV === "development" ? 60 * 30 : interval;
 
-export const createSearchBusinessKey = (
-  mainKey,
-  searchParamValues,
-  sort_ascending
-) => {
+export const createSearchBusinessKey = (mainKey, searchParamValues) => {
   let udpatedKey = mainKey;
-
-  // Add Sort Ascending to Key
-  Object.keys(sort_ascending).forEach((key) => {
-    udpatedKey += `&SORT-ASCENDING-${key.toUpperCase().replace("_", "-")}:${
-      sort_ascending[key]
-    }`;
-  });
 
   // Add Search Parameters to Key
   searchParamValues.forEach(({ key, value }) => {
@@ -123,12 +112,11 @@ export const getCountBusinessesByCityKey = (city_id, state_id) => ({
 // Search Businesses
 export const getCountBusinessesBySearchKey = (
   searchParamValues,
-  sort_ascending
+  sort_option
 ) => ({
   key: createSearchBusinessKey(
-    `SEARCHED_BUSINESSES_COUNT`,
-    searchParamValues,
-    sort_ascending
+    `SEARCHED_BUSINESSES_COUNT?SORT-OPTION:${sort_option}`,
+    searchParamValues
   ),
   interval: 60 * 30,
 });
@@ -137,12 +125,11 @@ export const getSearchedBusinessesKey = (
   searchParamValues,
   page,
   limit,
-  sort_ascending
+  sort_option
 ) => ({
   key: createSearchBusinessKey(
-    `SEARCHED_BUSINESSES?PAGE:${page}&LIMIT:${limit}`,
-    searchParamValues,
-    sort_ascending
+    `SEARCHED_BUSINESSES?PAGE:${page}&LIMIT:${limit}&SORT-OPTION:${sort_option}`,
+    searchParamValues
   ),
   interval: 60 * 30,
 });

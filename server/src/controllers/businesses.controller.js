@@ -284,7 +284,7 @@ export const getBusiness = async (req, res) => {
 
 export const getSearchedBusinesses = async (req, res) => {
   const { page, limit } = req.query;
-  const { sort_ascending } = req.body;
+  const { sort_option } = req.body;
   let formattedPage = Number(page);
   const formattedLimit = Number(limit);
   let count = 0;
@@ -361,7 +361,7 @@ export const getSearchedBusinesses = async (req, res) => {
 
   // Get Cached Count of Searched Businesses
   const { key: countKey, interval: countInterval } =
-    getCountBusinessesBySearchKey(searchParamValues, sort_ascending);
+    getCountBusinessesBySearchKey(searchParamValues, sort_option);
   const cachedCountData = await getCacheData(countKey);
   if (cachedCountData) {
     count = cachedCountData.data;
@@ -381,7 +381,7 @@ export const getSearchedBusinesses = async (req, res) => {
     searchParamValues,
     formattedPage,
     formattedLimit,
-    sort_ascending
+    sort_option
   );
   const cachedData = await getCacheData(key);
   if (cachedData) {
@@ -397,7 +397,7 @@ export const getSearchedBusinesses = async (req, res) => {
     searchParamValues,
     formattedPage,
     formattedLimit,
-    sort_ascending
+    sort_option
   );
   if (error) {
     return res
@@ -420,7 +420,7 @@ export const getSearchedBusinesses = async (req, res) => {
         totalPages: 0,
         page: formattedPage,
         limit: formattedLimit,
-        sort_ascending,
+        sort_option,
       })
     );
   }
@@ -436,7 +436,7 @@ export const getSearchedBusinesses = async (req, res) => {
     totalPages,
     page: formattedPage,
     limit: formattedLimit,
-    sort_ascending,
+    sort_option,
   };
 
   // Cache Count

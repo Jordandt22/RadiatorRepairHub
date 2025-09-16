@@ -1,6 +1,11 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { MoveLeft, MoveRight } from "lucide-react";
+
+// Contexts
+import { useFilters } from "@/contexts/FilterProvider";
 
 function Pagination({
   totalPages,
@@ -10,6 +15,8 @@ function Pagination({
   state,
   limit,
 }) {
+  const { appliedFilters, getSortOption } = useFilters();
+
   // Page Tab Styles
   const pageTabStyle =
     "px-3 py-2 text-sm font-medium border border-gray-300 rounded-md duration-300";
@@ -37,10 +44,16 @@ function Pagination({
     isFirstPage ? currentPage + 2 : isLastPage ? currentPage : currentPage + 1
   );
 
+  const getHref = (page) => {
+    return `/state/${state.code}?page=${page}&sort=${getSortOption(
+      appliedFilters.sort_option
+    )}`;
+  };
+
   const lowerLimit = limit * (currentPage - 1) + 1;
   const upperLimit = lowerLimit + requestTotal - 1;
   return (
-    <div className="flex md:flex-row flex-col items-center justify-between mt-12">
+    <div className="flex md:flex-row flex-col items-center justify-between mt-12 mb-8">
       <div className="text-sm text-gray-700 mb-4 md:mb-0">
         Showing <span className="font-medium">{lowerLimit}</span>-
         <span className="font-medium">{upperLimit}</span> of{" "}
@@ -50,7 +63,7 @@ function Pagination({
       <div className="flex items-center space-x-2">
         {currentPage > 1 ? (
           <Link
-            href={`/state/${state.code}?page=${currentPage - 1}`}
+            href={getHref(currentPage - 1)}
             prefetch={false}
             className={pageLinkActiveStyle}
           >
@@ -74,7 +87,7 @@ function Pagination({
                     : pageTabStyle +
                       " text-gray-700 hover:bg-gray-300 bg-gray-50"
                 }
-                href={`/state/${state.code}?page=${page}`}
+                href={getHref(page)}
                 prefetch={false}
               >
                 {page}
@@ -96,7 +109,7 @@ function Pagination({
                     : pageTabStyle +
                       " text-gray-700 hover:bg-gray-300 bg-gray-50"
                 }
-                href={`/state/${state.code}?page=${page}`}
+                href={getHref(page)}
                 prefetch={false}
               >
                 {page}
@@ -107,7 +120,7 @@ function Pagination({
 
         {currentPage < totalPages ? (
           <Link
-            href={`/state/${state.code}?page=${currentPage + 1}`}
+            href={getHref(currentPage + 1)}
             prefetch={false}
             className={pageLinkActiveStyle}
           >

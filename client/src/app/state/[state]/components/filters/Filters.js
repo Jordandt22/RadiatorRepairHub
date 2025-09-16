@@ -1,24 +1,43 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
 
-function Filters() {
-  const { showFilters, setShowFilters } = useFilters();
+function Filters({ stateData, sort }) {
+  const router = useRouter();
+  const {
+    showFilters,
+    setShowFilters,
+    updateSortOption,
+    appliedFilters,
+    getSortOption,
+  } = useFilters();
+
+  useEffect(() => {
+    updateSortOption(sort);
+  }, [sort]);
+
   return (
     <div className="flex flex-col sm:flex-row gap-3">
-      <select className="px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900">
-        <option value="">Sort by Rating</option>
-        <option value="rating-high">Highest Rating</option>
-        <option value="rating-low">Lowest Rating</option>
-      </select>
-
-      <select className="px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900">
-        <option value="">Sort by Reviews</option>
-        <option value="reviews-high">Most Reviews</option>
-        <option value="reviews-low">Least Reviews</option>
+      <select
+        value={appliedFilters.sort_option}
+        onChange={(e) => {
+          router.push(
+            `/state/${stateData.code}?page=1&sort=${getSortOption(
+              e.target.value
+            )}`
+          );
+          updateSortOption(e.target.value);
+        }}
+        className="px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 cursor-pointer"
+      >
+        <option value={1}>Most Reviews</option>
+        <option value={2}>Least Reviews</option>
+        <option value={3}>Highest Rating</option>
+        <option value={4}>Lowest Rating</option>
       </select>
 
       {/* Filter Button */}

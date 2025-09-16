@@ -21,13 +21,25 @@ export async function generateStaticParams() {
 
 async function Page({ params, searchParams }) {
   const { state } = await params;
-  const { page: pageParam } = await searchParams;
+  const { page: pageParam, sort: sortParam } = await searchParams;
   const limit = 12;
   let page = 1;
+  let sort = 1;
 
   // Validate Page Param
   if (!isNaN(pageParam) && pageParam >= 1) {
     page = Number(pageParam);
+  }
+
+  // Validate Sort Param
+  const sortOptions = {
+    most_reviews: 1,
+    least_reviews: 2,
+    highest_rating: 3,
+    lowest_rating: 4,
+  };
+  if (sortOptions[sortParam]) {
+    sort = sortOptions[sortParam];
   }
 
   // Get State Data
@@ -49,8 +61,8 @@ async function Page({ params, searchParams }) {
               {/* Search Bar */}
               <SearchBar />
 
-              {/* Sorting Dropdowns */}
-              <Filters />
+              {/* Filter Buttons */}
+              <Filters stateData={stateData} sort={sort} />
             </div>
 
             {/* Filter Section */}

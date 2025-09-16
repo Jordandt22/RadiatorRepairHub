@@ -138,7 +138,7 @@ export const searchBusinesses = async (
   searchParams,
   page,
   limit,
-  sort_ascending
+  sort_option
 ) => {
   let businessesQuery = supabase.from("businesses").select(fullBusinessSelect, {
     count: "exact",
@@ -157,10 +157,61 @@ export const searchBusinesses = async (
     }
   });
 
+  // Sorting by Total Score and Reviews Count
+  switch (sort_option) {
+    // Most Reviews
+    case 1:
+      businessesQuery = businessesQuery.order("reviews_count", {
+        ascending: false,
+      });
+      businessesQuery = businessesQuery.order("total_score", {
+        ascending: false,
+      });
+      break;
+
+    // Least Reviews
+    case 2:
+      businessesQuery = businessesQuery.order("reviews_count", {
+        ascending: true,
+      });
+      businessesQuery = businessesQuery.order("total_score", {
+        ascending: false,
+      });
+      break;
+
+    // Highest Score
+    case 3:
+      businessesQuery = businessesQuery.order("total_score", {
+        ascending: false,
+      });
+      businessesQuery = businessesQuery.order("reviews_count", {
+        ascending: false,
+      });
+      break;
+
+    // Lowest Score
+    case 4:
+      businessesQuery = businessesQuery.order("total_score", {
+        ascending: true,
+      });
+      businessesQuery = businessesQuery.order("reviews_count", {
+        ascending: false,
+      });
+      break;
+
+    // Default
+    default:
+      businessesQuery = businessesQuery.order("reviews_count", {
+        ascending: false,
+      });
+      businessesQuery = businessesQuery.order("total_score", {
+        ascending: false,
+      });
+      break;
+  }
+
   // Get Final Data
   const { data, count, error } = await businessesQuery
-    .order("reviews_count", { ascending: sort_ascending.reviews_count })
-    .order("total_score", { ascending: sort_ascending.total_score })
     .range((page - 1) * limit, page * limit - 1)
     .limit(limit);
 

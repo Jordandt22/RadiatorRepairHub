@@ -24,10 +24,6 @@ export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
       {
         ...appliedFilters,
         state_id: stateData.id,
-        sort_ascending: {
-          total_score: false,
-          reviews_count: false,
-        },
       },
     ],
     postFetcher,

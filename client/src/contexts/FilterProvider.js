@@ -20,13 +20,16 @@ export function FilterProvider({ children }) {
     openWeekdays: false,
     openWeekends: false,
   };
+  const defaultAppliedFilters = {
+    sort_option: 1,
+  };
   const [filters, setFilters] = useState(defaultFilters);
-  const [appliedFilters, setAppliedFilters] = useState({});
+  const [appliedFilters, setAppliedFilters] = useState(defaultAppliedFilters);
 
   // Clear all filters function
   const clearAllFilters = () => {
     setFilters(defaultFilters);
-    setAppliedFilters({});
+    setAppliedFilters(defaultAppliedFilters);
   };
 
   // Update filter function
@@ -37,6 +40,7 @@ export function FilterProvider({ children }) {
     }));
   };
 
+  // Handle array filter function
   const handleArrayFilter = (filterKey, value, checked) => {
     const currentArray = filters[filterKey] || [];
     if (checked) {
@@ -49,6 +53,26 @@ export function FilterProvider({ children }) {
     }
   };
 
+  // Update sort ascending function
+  const updateSortOption = (value) => {
+    setAppliedFilters((prev) => ({
+      ...prev,
+      sort_option: Number(value),
+    }));
+  };
+
+  const getSortOption = (sortNum) => {
+    const sortOptions = [
+      "most_reviews",
+      "least_reviews",
+      "highest_rating",
+      "lowest_rating",
+    ];
+
+    return sortOptions[sortNum - 1];
+  };
+
+  // Format filters function
   const formatFilters = (filters) => {
     const formattedFilters = {};
 
@@ -85,7 +109,7 @@ export function FilterProvider({ children }) {
       if (ArrayFilters[key]) {
         const val = filters[key];
         if (val.length > 0) {
-          formattedFilters[key] = val.map((item) => item.id);
+          formattedFilters[key] = val;
         }
       }
 
@@ -105,7 +129,11 @@ export function FilterProvider({ children }) {
       }
     });
 
-    setAppliedFilters(formattedFilters);
+    console.log(formattedFilters);
+    setAppliedFilters((prev) => ({
+      ...prev,
+      ...formattedFilters,
+    }));
   };
 
   return (
@@ -119,6 +147,8 @@ export function FilterProvider({ children }) {
         handleArrayFilter,
         formatFilters,
         appliedFilters,
+        updateSortOption,
+        getSortOption,
       }}
     >
       {children}

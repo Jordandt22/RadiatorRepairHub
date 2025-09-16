@@ -108,7 +108,10 @@ function FilterSection({ stateData }) {
                 Apply Filters
               </button>
               <button
-                onClick={clearAllFilters}
+                onClick={() => {
+                  setShowFilters(false);
+                  clearAllFilters();
+                }}
                 className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-200 cursor-pointer transition-all duration-300"
               >
                 Clear All Filters

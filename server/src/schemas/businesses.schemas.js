@@ -27,10 +27,7 @@ export const SearchBusinessesSchema = Yup.object({
     restroom: Yup.boolean(),
     wheelchair_accessible: Yup.boolean(),
   }),
-  sort_ascending: Yup.object({
-    total_score: Yup.boolean().required(),
-    reviews_count: Yup.boolean().required(),
-  }).required(),
+  sort_option: Yup.number().min(1).max(4).required(), // 1: Most Reviews, 2: Least Reviews, 3: Highest Score, 4: Lowest Score
   open: Yup.object({
     weekdays: Yup.boolean(),
     weekends: Yup.boolean(),
