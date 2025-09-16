@@ -12,8 +12,8 @@ export const SearchBusinessesSchema = Yup.object({
   title: Yup.string().trim().max(150),
   state_id: Yup.string().trim().max(150),
   city_id: Yup.string().trim().max(150),
-  total_score: Yup.number().min(0).max(5),
-  reviews_count: Yup.number().min(0),
+  total_score: Yup.number().min(1).max(5),
+  reviews_count: Yup.number().min(1).max(500),
   primary_category_id: Yup.string().trim().max(150),
   secondary_categories: Yup.array().of(Yup.string().trim().max(150)).max(5),
   features: Yup.object({

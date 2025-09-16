@@ -2,6 +2,8 @@
 
 import React from "react";
 import useSWR from "swr";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Utils
 import { postFetcher } from "@/lib/utils/utils";
@@ -58,6 +60,8 @@ export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
         requestTotal={stateBusinessesData?.requestTotal}
         limit={limit}
       />
+
+      <ToastContainer />
     </div>
   );
 }

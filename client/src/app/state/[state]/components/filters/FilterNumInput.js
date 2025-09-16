@@ -9,16 +9,29 @@ function FilterNumInput({ label, name, min, max, step }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
+        {label} ({min} - {max})
       </label>
       <input
         type="number"
         min={min}
         max={max}
         step={step}
-        value={Number(filters[name])}
-        onChange={(e) => updateFilter(name, Number(e.target.value))}
-        contentEditable={false}
+        value={filters[name]}
+        onChange={(e) => {
+          if (e.target.value === "") {
+            updateFilter(name, e.target.value);
+            return;
+          }
+
+          const val = Math.floor(Number(e.target.value));
+          if (val < min) {
+            updateFilter(name, min);
+          } else if (val > max) {
+            updateFilter(name, max);
+          } else {
+            updateFilter(name, String(val));
+          }
+        }}
         className="w-full px-3 py-2 border border-gray-300 rounded-md cursor-pointer"
       />
     </div>

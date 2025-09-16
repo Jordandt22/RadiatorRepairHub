@@ -8,6 +8,7 @@ import { useFilters } from "@/contexts/FilterProvider";
 // Components
 import MobileFilterSection from "./MobileFilterSection";
 import FilterNumInput from "./FilterNumInput";
+import FilterSliderInput from "./FilterSliderInput";
 import CitiesDropdown from "./dropdowns/CitiesDropdown";
 import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
@@ -38,17 +39,17 @@ function FilterSection({ stateData }) {
               <CitiesDropdown stateData={stateData} />
 
               {/* Min Total Score */}
-              <FilterNumInput
-                label="Min Total Score"
+              <FilterSliderInput
+                label="Min. Total Score"
                 name="total_score"
-                min={3.0}
+                min={1.0}
                 max={5.0}
                 step={0.1}
               />
 
               {/* Min Reviews */}
               <FilterNumInput
-                label="Min Reviews"
+                label="Min. Reviews"
                 name="reviews_count"
                 min={1}
                 max={500}

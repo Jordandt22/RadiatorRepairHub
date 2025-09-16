@@ -77,6 +77,11 @@ export function FilterProvider({ children }) {
     const formattedFilters = {};
 
     Object.keys(filters).map((key) => {
+      // Title Filter
+      if (key === "title") {
+        formattedFilters.title = filters[key];
+      }
+
       // ID Filters
       const IDFilters = {
         state_id: true,
