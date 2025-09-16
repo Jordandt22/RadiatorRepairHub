@@ -14,7 +14,14 @@ import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
 
 function FilterSection({ stateData }) {
-  const { showFilters, filters, clearAllFilters, updateFilter } = useFilters();
+  const {
+    setShowFilters,
+    showFilters,
+    filters,
+    clearAllFilters,
+    updateFilter,
+    formatFilters,
+  } = useFilters();
 
   return (
     <>
@@ -90,10 +97,19 @@ function FilterSection({ stateData }) {
             </div>
 
             {/* Clear All Filters Button */}
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setShowFilters(false);
+                  formatFilters(filters);
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-gray-300 rounded-md hover:bg-blue-800 cursor-pointer transition-all duration-300"
+              >
+                Apply Filters
+              </button>
               <button
                 onClick={clearAllFilters}
-                className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer"
+                className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-200 cursor-pointer transition-all duration-300"
               >
                 Clear All Filters
               </button>

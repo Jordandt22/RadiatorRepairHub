@@ -15,18 +15,14 @@ import Pagination from "./Pagination";
 
 export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
   // Get filter state from context
-  const {
-    showFilters,
-    setShowFilters,
-    filters,
-    clearAllFilters,
-    updateFilter,
-  } = useFilters();
+  const { appliedFilters } = useFilters();
 
+  // Get Businesses
   const { data, error } = useSWR(
     [
       `${process.env.NEXT_PUBLIC_API_URI}/businesses/search?page=${page}&limit=${limit}`,
       {
+        ...appliedFilters,
         state_id: stateData.id,
         sort_ascending: {
           total_score: false,
@@ -38,7 +34,6 @@ export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
     {
       revalidateOnFocus: false,
       revalidateIfStale: false,
-      keepPreviousData: true,
     }
   );
 
@@ -48,13 +43,12 @@ export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
 
   const stateBusinessesData = data.data;
   const totalPages = stateBusinessesData?.totalPages;
-  const dataPage = stateBusinessesData?.page;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Listings
         businesses={stateBusinessesData?.businesses}
-        dataPage={dataPage}
+        data={stateBusinessesData}
         page={page}
         stateData={stateData}
       />

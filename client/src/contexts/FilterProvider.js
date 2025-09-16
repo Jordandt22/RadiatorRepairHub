@@ -21,9 +21,13 @@ export function FilterProvider({ children }) {
     openWeekends: false,
   };
   const [filters, setFilters] = useState(defaultFilters);
+  const [appliedFilters, setAppliedFilters] = useState({});
 
   // Clear all filters function
-  const clearAllFilters = () => setFilters(defaultFilters);
+  const clearAllFilters = () => {
+    setFilters(defaultFilters);
+    setAppliedFilters({});
+  };
 
   // Update filter function
   const updateFilter = (filterKey, value) => {
@@ -45,6 +49,65 @@ export function FilterProvider({ children }) {
     }
   };
 
+  const formatFilters = (filters) => {
+    const formattedFilters = {};
+
+    Object.keys(filters).map((key) => {
+      // ID Filters
+      const IDFilters = {
+        state_id: true,
+        city_id: true,
+        primary_category_id: true,
+      };
+      if (IDFilters[key]) {
+        const val = filters[key];
+        if (val) {
+          formattedFilters[key] = val;
+        }
+      }
+
+      // Number Filters
+      const NumberFilters = {
+        total_score: true,
+        reviews_count: true,
+      };
+      if (NumberFilters[key]) {
+        const val = filters[key];
+        if (val !== defaultFilters[key]) {
+          formattedFilters[key] = val;
+        }
+      }
+
+      // Array Filters
+      const ArrayFilters = {
+        secondary_categories: true,
+      };
+      if (ArrayFilters[key]) {
+        const val = filters[key];
+        if (val.length > 0) {
+          formattedFilters[key] = val.map((item) => item.id);
+        }
+      }
+
+      // Features Filter
+      if (filters.features.length > 0) {
+        formattedFilters.features = {};
+        filters.features.map(
+          (item) => (formattedFilters.features[item] = true)
+        );
+      }
+
+      // Open Hours Filter
+      if (filters.openWeekdays || filters.openWeekends) {
+        formattedFilters.open = {};
+        formattedFilters.open.weekdays = filters.openWeekdays;
+        formattedFilters.open.weekends = filters.openWeekends;
+      }
+    });
+
+    setAppliedFilters(formattedFilters);
+  };
+
   return (
     <FilterContext.Provider
       value={{
@@ -54,6 +117,8 @@ export function FilterProvider({ children }) {
         clearAllFilters,
         updateFilter,
         handleArrayFilter,
+        formatFilters,
+        appliedFilters,
       }}
     >
       {children}

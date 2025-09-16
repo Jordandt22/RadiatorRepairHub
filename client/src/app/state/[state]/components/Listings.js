@@ -3,33 +3,22 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-// Contexts
-import { useFilters } from "@/contexts/FilterProvider";
-
 // Components
 import MobileBusinessCard from "./cards/MobileBusinessCard";
 import BusinessCard from "./cards/BusinessCard";
 import BusinessHours from "./cards/BusinessHours";
 import BusinessInfo from "./cards/BusinessInfo";
 
-function Listings({ businesses, dataPage, page, stateData }) {
-  // Get filter state from context
-  const {
-    showFilters,
-    setShowFilters,
-    filters,
-    clearAllFilters,
-    updateFilter,
-  } = useFilters();
+function Listings({ businesses, data, page, stateData }) {
   const router = useRouter();
   const [activeCard, setActiveCard] = useState(null);
   const [activeBackCard, setActiveBackCard] = useState(1);
 
   useEffect(() => {
-    if (dataPage !== page) {
-      router.push(`/state/${stateData.code}?page=${dataPage}`);
+    if (data && data.page !== page) {
+      router.replace(`/state/${stateData.code}?page=${data.page}`);
     }
-  }, [dataPage, page, stateData.code, router]);
+  }, [data, page, stateData.code, router]);
 
   return (
     <div>
