@@ -8,6 +8,7 @@ import { getFetcher } from "@/lib/utils/utils";
 
 // Components
 import FilterCheckboxes from "../FilterCheckboxes";
+import CheckboxesErrorMessage from "@/components/Errors/CheckboxesErrorMessage";
 
 function SecondaryCategoriesCheckboxes() {
   const { data, error } = useSWR(
@@ -22,9 +23,9 @@ function SecondaryCategoriesCheckboxes() {
 
   if (error)
     return (
-      <div className="py-8 text-center">
-        Failed to load secondary categories.
-      </div>
+      <CheckboxesErrorMessage
+        message={error.message || "Failed to load secondary categories."}
+      />
     );
   if (!data) return <div className="py-8 text-center">Loading...</div>;
 

@@ -13,6 +13,7 @@ import { useFilters } from "@/contexts/FilterProvider";
 // Components
 import Listings from "./Listings";
 import Pagination from "./Pagination";
+import PageErrorMessage from "@/components/Errors/PageErrorMessage";
 
 export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
   // Get filter state from context
@@ -34,8 +35,7 @@ export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
     }
   );
 
-  if (error)
-    return <div className="py-8 text-center">Failed to load businesses.</div>;
+  if (error) return <PageErrorMessage message={error.message} />;
   if (!data) return <div className="py-8 text-center">Loading...</div>;
 
   const stateBusinessesData = data.data;

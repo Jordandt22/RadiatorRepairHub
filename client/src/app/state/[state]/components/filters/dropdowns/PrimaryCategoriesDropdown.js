@@ -8,6 +8,7 @@ import { getFetcher } from "@/lib/utils/utils";
 
 // Components
 import FilterDropdown from "../FilterDropdown";
+import DropdownErrorMessage from "@/components/Errors/DropdownErrorMessage";
 
 function PrimaryCategoriesDropdown() {
   const { data, error } = useSWR(
@@ -22,7 +23,9 @@ function PrimaryCategoriesDropdown() {
 
   if (error)
     return (
-      <div className="py-8 text-center">Failed to load primary categories.</div>
+      <DropdownErrorMessage
+        message={error.message || "Failed to load primary categories."}
+      />
     );
   if (!data) return <div className="py-8 text-center">Loading...</div>;
 
