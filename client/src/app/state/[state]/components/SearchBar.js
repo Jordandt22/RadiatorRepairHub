@@ -6,35 +6,35 @@ import React from "react";
 import { useFilters } from "@/contexts/FilterProvider";
 
 // Custom Toast
-import {
-  showCustomError,
-  showCustomInfo,
-  showCustomSuccess,
-} from "@/components/CustomToast";
+import { showCustomError, showCustomSuccess } from "@/components/CustomToast";
 
 function SearchBar() {
   const { updateFilter, formatFilters, filters, setShowFilters } = useFilters();
 
   const handleSearch = () => {
-    return showCustomError(
-      "Please keep your business name under 150 characters..",
-      "Search Input Too Long"
-    );
-
-    if (filters.title.length > 10) {
-      showCustomError(
+    // Check Max Length
+    if (filters.title.length > 150) {
+      return showCustomError(
         "Please keep your business name under 150 characters..",
         "Search Input Too Long"
       );
-      return;
+    }
+
+    // Check for Special Characters (Allowed: ', -, &, _)
+    const specialCharacters = new RegExp(
+      /[!@#$%^*()+\=\[\]{};:"\\|,.<>\/?]/,
+      "gi"
+    );
+    if (specialCharacters.test(filters.title)) {
+      return showCustomError(
+        "Allowed: ', -, &, _",
+        "Invalid Special Characters"
+      );
     }
 
     formatFilters(filters);
     setShowFilters(false);
-    showCustomSuccess(
-      `Searching for "${filters.title}" in radiator repair services...`,
-      "Search Initiated"
-    );
+    showCustomSuccess(`Searching for "${filters.title}"...`, "Success!");
   };
 
   const handleKeyPress = (e) => {

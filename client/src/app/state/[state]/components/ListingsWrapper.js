@@ -2,8 +2,7 @@
 
 import React from "react";
 import useSWR from "swr";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Toaster } from "sonner";
 
 // Utils
 import { postFetcher } from "@/lib/utils/utils";
@@ -61,7 +60,7 @@ export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
         limit={limit}
       />
 
-      <ToastContainer />
+      <Toaster />
     </div>
   );
 }
