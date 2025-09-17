@@ -6,6 +6,7 @@ import states from "@/lib/data/states";
 
 // Contexts
 import { FilterProvider } from "@/contexts/FilterProvider";
+import { ToastProvider } from "@/contexts/ToastProvider";
 
 // Components
 import Header from "./components/Header";
@@ -54,25 +55,27 @@ async function Page({ params, searchParams }) {
       <Header stateName={stateData.name} />
 
       {/* Search and Filter Section */}
-      <FilterProvider>
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              {/* Search Bar */}
-              <SearchBar />
+      <ToastProvider>
+        <FilterProvider>
+          <div className="bg-white border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Search Bar */}
+                <SearchBar />
 
-              {/* Filter Buttons */}
-              <Filters stateData={stateData} sort={sort} />
+                {/* Filter Buttons */}
+                <Filters stateData={stateData} sort={sort} />
+              </div>
+
+              {/* Filter Section */}
+              <FilterSection stateData={stateData} />
             </div>
-
-            {/* Filter Section */}
-            <FilterSection stateData={stateData} />
           </div>
-        </div>
 
-        {/* Business Listings */}
-        <ListingsWrapper stateData={stateData} page={page} limit={limit} />
-      </FilterProvider>
+          {/* Business Listings */}
+          <ListingsWrapper stateData={stateData} page={page} limit={limit} />
+        </FilterProvider>
+      </ToastProvider>
     </div>
   );
 }

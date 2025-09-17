@@ -134,7 +134,6 @@ export function FilterProvider({ children }) {
       }
     });
 
-    console.log(formattedFilters);
     setAppliedFilters((prev) => ({
       ...prev,
       ...formattedFilters,

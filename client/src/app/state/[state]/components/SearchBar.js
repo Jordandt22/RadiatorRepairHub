@@ -4,12 +4,11 @@ import React from "react";
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
-
-// Custom Toast
-import { showCustomError, showCustomSuccess } from "@/components/CustomToast";
+import { useToast } from "@/contexts/ToastProvider";
 
 function SearchBar() {
   const { updateFilter, formatFilters, filters, setShowFilters } = useFilters();
+  const { showCustomError } = useToast();
 
   const handleSearch = () => {
     // Check Max Length
@@ -34,7 +33,6 @@ function SearchBar() {
 
     formatFilters(filters);
     setShowFilters(false);
-    showCustomSuccess(`Searching for "${filters.title}"...`, "Success!");
   };
 
   const handleKeyPress = (e) => {

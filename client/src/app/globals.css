@@ -164,79 +164,13 @@ html {
 
 /* Custom Toast Styles */
 .custom-toast {
+  width: fit-content !important;
   background: transparent !important;
   border-radius: 16px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
   backdrop-filter: blur(10px) !important;
   border: none !important;
   padding: 0 !important;
   margin: 0 !important;
-  overflow: hidden !important;
-}
-
-.custom-toast .Toastify__toast-body {
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
-}
-
-/* Progress bar colors for different toast types */
-.custom-toast-error .Toastify__progress-bar {
-  background: linear-gradient(90deg, #ef4444, #dc2626) !important;
-}
-
-.custom-toast-success .Toastify__progress-bar {
-  background: linear-gradient(90deg, #22c55e, #16a34a) !important;
-}
-
-.custom-toast-info .Toastify__progress-bar {
-  background: linear-gradient(90deg, #3b82f6, #1d4ed8) !important;
-}
-
-/* Hide the default close button since we're using custom ones */
-.custom-toast .Toastify__close-button {
-  display: none !important;
-}
-
-/* Override default toast backgrounds */
-.Toastify__toast--error.custom-toast {
-  background: transparent !important;
-}
-
-.Toastify__toast--success.custom-toast {
-  background: transparent !important;
-}
-
-.Toastify__toast--info.custom-toast {
-  background: transparent !important;
-}
-
-/* Additional overrides to ensure clean appearance */
-.custom-toast .Toastify__toast-icon {
-  display: none !important;
-}
-
-.custom-toast .Toastify__toast-content {
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-/* Ensure no default styling interferes */
-.Toastify__toast.custom-toast {
-  background: transparent !important;
-  color: inherit !important;
-  font-family: inherit !important;
-  pointer-events: auto !important;
-}
-
-/* Ensure toast content doesn't block click events */
-.custom-toast .Toastify__toast-body {
-  pointer-events: none !important;
-}
-
-/* Make sure the toast itself is clickable for closeOnClick */
-.custom-toast {
-  pointer-events: auto !important;
 }
 
 /* Toast Animation Enhancements */
