@@ -9,6 +9,7 @@ import { getFetcher } from "@/lib/utils/utils";
 // Components
 import FilterDropdown from "../FilterDropdown";
 import DropdownErrorMessage from "@/components/Errors/DropdownErrorMessage";
+import DropdownLoading from "@/components/Loading/DropdownLoading";
 
 function CitiesDropdown({ stateData }) {
   const { data, error } = useSWR(
@@ -29,7 +30,7 @@ function CitiesDropdown({ stateData }) {
         message={error.message || "Failed to load cities."}
       />
     );
-  if (!data) return <div className="py-8 text-center">Loading...</div>;
+  if (!data) return <DropdownLoading label="City" />;
 
   const cities = data.data;
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import useSWR from "swr";
 import { Toaster } from "sonner";
 
@@ -14,10 +14,11 @@ import { useFilters } from "@/contexts/FilterProvider";
 import Listings from "./Listings";
 import Pagination from "./Pagination";
 import PageErrorMessage from "@/components/Errors/PageErrorMessage";
+import ListingsSkeleton from "@/components/Skeletons/ListingsSkeleton";
 
 export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
   // Get filter state from context
-  const { appliedFilters } = useFilters();
+  const { appliedFilters, setShowFilters } = useFilters();
 
   // Get Businesses
   const { data, error } = useSWR(
@@ -35,8 +36,12 @@ export default function ListingsWrapper({ stateData, page = 1, limit = 10 }) {
     }
   );
 
+  useEffect(() => {
+    setShowFilters(false);
+  }, [page]);
+
   if (error) return <PageErrorMessage message={error.message} />;
-  if (!data) return <div className="py-8 text-center">Loading...</div>;
+  if (!data) return <ListingsSkeleton />;
 
   const stateBusinessesData = data.data;
   const totalPages = stateBusinessesData?.totalPages;
