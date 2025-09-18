@@ -4,7 +4,7 @@ import React from "react";
 import features from "@/lib/data/features.json";
 
 // Components
-import FilterCheckboxes from "../FilterCheckboxes";
+import FilterCheckboxes from "../inputs/FilterCheckboxes";
 
 function FeaturesCheckboxes() {
   return (

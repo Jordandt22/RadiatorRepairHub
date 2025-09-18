@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
 
-function Filters({ stateData, sort }) {
+function Filters({ stateData, cityData, sort }) {
   const router = useRouter();
   const {
     showFilters,
@@ -26,9 +26,9 @@ function Filters({ stateData, sort }) {
         value={appliedFilters.sort_option}
         onChange={(e) => {
           router.push(
-            `/state/${stateData.code}?page=1&sort=${getSortOption(
-              e.target.value
-            )}`
+            `/state/${stateData.code}${
+              cityData ? `/city/${cityData.slug}` : ""
+            }?page=1&sort=${getSortOption(e.target.value)}`
           );
           updateSortOption(e.target.value);
         }}

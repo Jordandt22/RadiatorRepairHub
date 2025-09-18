@@ -7,9 +7,9 @@ import useSWR from "swr";
 import { getFetcher } from "@/lib/utils/utils";
 
 // Components
-import FilterCheckboxes from "../FilterCheckboxes";
-import CheckboxesErrorMessage from "@/components/Errors/CheckboxesErrorMessage";
-import CheckboxesLoading from "@/components/Loading/CheckboxesLoading";
+import FilterCheckboxes from "../inputs/FilterCheckboxes";
+import CheckboxesErrorMessage from "@/components/status/Errors/CheckboxesErrorMessage";
+import CheckboxesLoading from "@/components/status/Loading/CheckboxesLoading";
 
 function SecondaryCategoriesCheckboxes() {
   const { data, error } = useSWR(

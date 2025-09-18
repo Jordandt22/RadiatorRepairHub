@@ -310,8 +310,10 @@ export const getSearchedBusinesses = async (req, res) => {
   // Get Search Parameters that were sent
   const searchParamValues = [];
   searchParamKeys.forEach((param) => {
-    const key = param.key;
-    const value = param.value ? param.value : getNestedValue(req.body, key);
+    let key = param.key;
+    const value = getNestedValue(req.body, key);
+
+    // Add to Search Parameters
     if (value) {
       searchParamValues.push({
         key,

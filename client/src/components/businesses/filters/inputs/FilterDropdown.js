@@ -3,7 +3,14 @@ import React from "react";
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
 
-function FilterDropdown({ options, label, name, valueKey, labelKey }) {
+function FilterDropdown({
+  options,
+  label,
+  name,
+  valueKey,
+  labelKey,
+  inputLabel,
+}) {
   const { filters, updateFilter } = useFilters();
 
   return (
@@ -16,7 +23,7 @@ function FilterDropdown({ options, label, name, valueKey, labelKey }) {
         onChange={(e) => updateFilter(name, e.target.value)}
         className="w-full px-3 py-2 border border-gray-300 rounded-md cursor-pointer"
       >
-        <option value="">All {label}</option>
+        <option value="">All {inputLabel}</option>
         {options.map((option) => {
           return (
             <option

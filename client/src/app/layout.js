@@ -2,8 +2,8 @@ import { Inter, Oswald } from "next/font/google";
 import "./globals.css";
 
 // Components
-import Navbar from "@/components/Navbar/Navbar";
-import Footer from "@/components/Footer/Footer";
+import Navbar from "@/components/layout/Navbar/Navbar";
+import Footer from "@/components/layout/Footer/Footer";
 
 const inter = Inter({
   subsets: ["latin"],

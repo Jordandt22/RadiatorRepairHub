@@ -4,17 +4,25 @@ import React from "react";
 import BusinessesContainer from "@/components/businesses/BusinessesContainer";
 
 export async function generateStaticParams() {
-  const topStates = ["CA", "TX", "FL", "NY", "PA", "IL"];
-  return topStates.map((state) => ({ state }));
+  const topCities = [
+    { state: "CA", city: "los-angeles" },
+    { state: "TX", city: "houston" },
+    { state: "FL", city: "miami" },
+    { state: "NY", city: "new-york-city" },
+    { state: "PA", city: "philadelphia" },
+    { state: "IL", city: "chicago" },
+  ];
+  return topCities.map((item) => ({ ...item }));
 }
 
 async function Page({ params, searchParams }) {
-  const { state } = await params;
+  const { state, city } = await params;
   const { page: pageParam, sort: sortParam } = await searchParams;
 
   return (
     <BusinessesContainer
       state={state}
+      city={city}
       sortParam={sortParam}
       pageParam={pageParam}
     />

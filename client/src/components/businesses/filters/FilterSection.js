@@ -7,14 +7,14 @@ import { useFilters } from "@/contexts/FilterProvider";
 
 // Components
 import MobileFilterSection from "./MobileFilterSection";
-import FilterNumInput from "./FilterNumInput";
-import FilterSliderInput from "./FilterSliderInput";
+import FilterNumInput from "./inputs/FilterNumInput";
+import FilterSliderInput from "./inputs/FilterSliderInput";
 import CitiesDropdown from "./dropdowns/CitiesDropdown";
 import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
 
-function FilterSection({ stateData }) {
+function FilterSection({ stateData, cityData }) {
   const {
     setShowFilters,
     showFilters,
@@ -36,7 +36,7 @@ function FilterSection({ stateData }) {
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {/* City Filter */}
-              <CitiesDropdown stateData={stateData} />
+              {!cityData && <CitiesDropdown stateData={stateData} />}
 
               {/* Min Total Score */}
               <FilterSliderInput

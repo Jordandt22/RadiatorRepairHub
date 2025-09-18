@@ -7,9 +7,9 @@ import useSWR from "swr";
 import { getFetcher } from "@/lib/utils/utils";
 
 // Components
-import FilterDropdown from "../FilterDropdown";
-import DropdownErrorMessage from "@/components/Errors/DropdownErrorMessage";
-import DropdownLoading from "@/components/Loading/DropdownLoading";
+import FilterDropdown from "../inputs/FilterDropdown";
+import DropdownErrorMessage from "@/components/status/Errors/DropdownErrorMessage";
+import DropdownLoading from "@/components/status/Loading/DropdownLoading";
 
 function PrimaryCategoriesDropdown() {
   const { data, error } = useSWR(
@@ -35,6 +35,7 @@ function PrimaryCategoriesDropdown() {
     <FilterDropdown
       options={primaryCategories}
       label="Primary Category"
+      inputLabel="Primary Categories"
       name="primary_category_id"
       valueKey="id"
       labelKey="name"

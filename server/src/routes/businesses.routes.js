@@ -42,7 +42,7 @@ businessesRouter.get(
     - Search Params: 
       - Title
       - State ID
-      - City ID
+      - City Slug
       - Total Score
       - Reviews Count
       - Primary Category

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 
 // Components
-import CustomToast from "@/components/Toasts/CustomToast";
+import CustomToast from "@/components/layout/Toasts/CustomToast";
 
 const ToastContext = createContext();
 export const useToast = () => useContext(ToastContext);

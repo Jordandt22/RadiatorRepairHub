@@ -12,7 +12,8 @@ function Pagination({
   currentPage,
   totalBusinesses,
   requestTotal,
-  state,
+  stateData,
+  cityData,
   limit,
 }) {
   const { appliedFilters, getSortOption } = useFilters();
@@ -45,9 +46,9 @@ function Pagination({
   );
 
   const getHref = (page) => {
-    return `/state/${state.code}?page=${page}&sort=${getSortOption(
-      appliedFilters.sort_option
-    )}`;
+    return `/state/${stateData.code}${
+      cityData ? `/city/${cityData.slug}` : ""
+    }?page=${page}&sort=${getSortOption(appliedFilters.sort_option)}`;
   };
 
   const lowerLimit = limit * (currentPage - 1) + 1;
