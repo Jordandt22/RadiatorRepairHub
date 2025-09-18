@@ -58,15 +58,19 @@ export default function ListingsWrapper({ stateData, cityData, page = 1 }) {
       />
 
       {/* Pagination */}
-      <Pagination
-        totalPages={totalPages}
-        currentPage={page}
-        stateData={stateData}
-        cityData={cityData}
-        totalBusinesses={businessesData?.totalBusinesses}
-        requestTotal={businessesData?.requestTotal}
-        limit={limit}
-      />
+      {totalPages > 0 && (
+        <>
+          <Pagination
+            totalPages={totalPages}
+            currentPage={page}
+            stateData={stateData}
+            cityData={cityData}
+            totalBusinesses={businessesData?.totalBusinesses}
+            requestTotal={businessesData?.requestTotal}
+            limit={limit}
+          />
+        </>
+      )}
 
       <Toaster
         toastOptions={{

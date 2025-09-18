@@ -10,7 +10,7 @@ function FilterCheckboxes({ label, options, name, valueKey, labelKey }) {
 
   return (
     <div className="md:col-span-2 lg:col-span-3 xl:col-span-4 bg-slate-100 p-4 rounded-md">
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex justify-between items-center mb-4">
         <label className="block text-sm font-medium text-gray-700">
           {label}
         </label>

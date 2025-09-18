@@ -43,7 +43,7 @@ function SearchBar() {
 
   return (
     <div className="flex-1">
-      <div className="flex gap-2">
+      <div className="flex flex-col md:flex-row gap-2">
         <div className="relative flex-1">
           <input
             type="text"
@@ -51,7 +51,7 @@ function SearchBar() {
             value={filters.title}
             onChange={(e) => updateFilter("title", e.target.value)}
             onKeyDown={handleKeyPress}
-            className="w-full px-4 py-3 pl-10 text-gray-900 bg-gray-50 border-2 border-gray-100 rounded-lg focus:border-blue-500 outline-none duration-200 transition-all"
+            className="w-full px-4 py-3 pl-10 text-gray-900 bg-gray-50 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none duration-200 transition-all"
           />
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg
@@ -71,7 +71,7 @@ function SearchBar() {
         </div>
         <button
           onClick={handleSearch}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
+          className="justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
         >
           <svg
             className="w-5 h-5"

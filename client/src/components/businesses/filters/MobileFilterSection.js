@@ -3,18 +3,21 @@ import React from "react";
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
 
-function MobileFilterSection({
-  cities,
-  primaryCategories,
-  secondaryCategories,
-  features,
-}) {
+// Components
+import FilterNumInput from "./inputs/FilterNumInput";
+import FilterSliderInput from "./inputs/FilterSliderInput";
+import CitiesDropdown from "./dropdowns/CitiesDropdown";
+import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
+import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
+import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
+
+function MobileFilterSection({ stateData, cityData }) {
   const {
     filters,
     updateFilter,
-    handleArrayFilter,
     clearAllFilters,
     setShowFilters,
+    formatFilters,
   } = useFilters();
 
   return (
@@ -53,132 +56,41 @@ function MobileFilterSection({
         {/* Filter Content */}
         <div className="p-4 space-y-6">
           {/* City Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              City
-            </label>
-            <select
-              value={filters.city}
-              onChange={(e) => updateFilter("city", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Cities</option>
-              {cities.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
-          </div>
+          {!cityData && <CitiesDropdown stateData={stateData} />}
 
           {/* Min Total Score */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Min Total Score
-            </label>
-            <input
-              type="number"
-              min="3"
-              max="5"
-              step="0.1"
-              value={filters.minTotalScore}
-              onChange={(e) =>
-                updateFilter("minTotalScore", parseFloat(e.target.value))
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
+          <FilterSliderInput
+            label="Min. Total Score"
+            name="total_score"
+            min={1.0}
+            max={5.0}
+            step={0.1}
+          />
 
           {/* Min Reviews */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Min Reviews
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="500"
-              value={filters.minReviews}
-              onChange={(e) =>
-                updateFilter("minReviews", parseInt(e.target.value))
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
+          <FilterNumInput
+            label="Min. Reviews"
+            name="reviews_count"
+            min={1}
+            max={500}
+            step={1}
+          />
 
           {/* Primary Category */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Primary Category
-            </label>
-            <select
-              value={filters.primaryCategory}
-              onChange={(e) => updateFilter("primaryCategory", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Categories</option>
-              {primaryCategories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
+          <PrimaryCategoriesDropdown />
 
           {/* Secondary Categories */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Secondary Categories
-            </label>
-            <div className="space-y-2">
-              {secondaryCategories.map((category) => (
-                <label key={category} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={filters.secondaryCategories.includes(category)}
-                    onChange={(e) =>
-                      handleArrayFilter(
-                        "secondaryCategories",
-                        category,
-                        e.target.checked
-                      )
-                    }
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">{category}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+          <SecondaryCategoriesCheckboxes />
 
           {/* Features */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Features
-            </label>
-            <div className="space-y-2">
-              {features.map((feature) => (
-                <label key={feature} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={filters.features.includes(feature)}
-                    onChange={(e) =>
-                      handleArrayFilter("features", feature, e.target.checked)
-                    }
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">{feature}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+          <FeaturesCheckboxes />
 
           {/* Open Hours */}
-          <div>
+          <div className="bg-slate-100 p-4 rounded-md">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Open Hours
             </label>
-            <div className="space-y-2">
+            <div className="flex gap-6">
               <label className="flex items-center">
                 <input
                   type="checkbox"
@@ -205,14 +117,28 @@ function MobileFilterSection({
           </div>
         </div>
 
-        {/* Footer with Clear Button */}
+        {/* Footer with Apply and Clear Buttons */}
         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4">
-          <button
-            onClick={clearAllFilters}
-            className="w-full px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer"
-          >
-            Clear All Filters
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setShowFilters(false);
+                formatFilters(filters);
+              }}
+              className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-gray-300 rounded-md hover:bg-blue-800 cursor-pointer transition-all duration-300"
+            >
+              Apply Filters
+            </button>
+            <button
+              onClick={() => {
+                setShowFilters(false);
+                clearAllFilters();
+              }}
+              className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-200 cursor-pointer transition-all duration-300"
+            >
+              Clear All Filters
+            </button>
+          </div>
         </div>
       </div>
     </div>

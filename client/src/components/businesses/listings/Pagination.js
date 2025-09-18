@@ -35,15 +35,21 @@ function Pagination({
   const mobilePaginationPages = [];
   const isFirstPage = currentPage === 1;
   const isLastPage = currentPage === totalPages;
-  mobilePaginationPages.push(
-    isFirstPage ? currentPage : isLastPage ? currentPage - 2 : currentPage - 1
-  );
-  mobilePaginationPages.push(
-    isFirstPage ? currentPage + 1 : isLastPage ? currentPage - 1 : currentPage
-  );
-  mobilePaginationPages.push(
-    isFirstPage ? currentPage + 2 : isLastPage ? currentPage : currentPage + 1
-  );
+  if (totalPages <= 3) {
+    for (let i = 1; i <= totalPages; i++) {
+      mobilePaginationPages.push(i);
+    }
+  } else {
+    mobilePaginationPages.push(
+      isFirstPage ? currentPage : isLastPage ? currentPage - 2 : currentPage - 1
+    );
+    mobilePaginationPages.push(
+      isFirstPage ? currentPage + 1 : isLastPage ? currentPage - 1 : currentPage
+    );
+    mobilePaginationPages.push(
+      isFirstPage ? currentPage + 2 : isLastPage ? currentPage : currentPage + 1
+    );
+  }
 
   const getHref = (page) => {
     return `/state/${stateData.code}${

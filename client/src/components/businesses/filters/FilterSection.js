@@ -123,14 +123,9 @@ function FilterSection({ stateData, cityData }) {
       </div>
 
       {/* Mobile Filter Popup */}
-      {/* {showFilters && (
-        <MobileFilterSection
-          cities={cities}
-          primaryCategories={primaryCategories}
-          secondaryCategories={secondaryCategories}
-          features={features}
-        />
-      )} */}
+      {showFilters && (
+        <MobileFilterSection stateData={stateData} cityData={cityData} />
+      )}
     </>
   );
 }

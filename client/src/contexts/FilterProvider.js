@@ -131,8 +131,8 @@ export function FilterProvider({ children }) {
     });
 
     setAppliedFilters((prev) => ({
-      ...prev,
       ...formattedFilters,
+      sort_option: prev.sort_option,
     }));
   };
 
