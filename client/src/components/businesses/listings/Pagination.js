@@ -4,6 +4,9 @@ import React from "react";
 import Link from "next/link";
 import { MoveLeft, MoveRight } from "lucide-react";
 
+// Utils
+import { getPaginationLink } from "@/lib/utils/utils";
+
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
 
@@ -51,11 +54,11 @@ function Pagination({
     );
   }
 
-  const getHref = (page) => {
-    return `/state/${stateData.code}${
-      cityData ? `/city/${cityData.slug}` : ""
-    }?page=${page}&sort=${getSortOption(appliedFilters.sort_option)}`;
-  };
+  const getHref = (page) =>
+    getPaginationLink(stateData, cityData, page, {
+      ...appliedFilters,
+      sort_option: getSortOption(appliedFilters.sort_option),
+    });
 
   const lowerLimit = limit * (currentPage - 1) + 1;
   const upperLimit = lowerLimit + requestTotal - 1;

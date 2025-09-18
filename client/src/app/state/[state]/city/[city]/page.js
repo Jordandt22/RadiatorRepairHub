@@ -17,14 +17,13 @@ export async function generateStaticParams() {
 
 async function Page({ params, searchParams }) {
   const { state, city } = await params;
-  const { page: pageParam, sort: sortParam } = await searchParams;
+  const searchParamsData = await searchParams;
 
   return (
     <BusinessesContainer
       state={state}
       city={city}
-      sortParam={sortParam}
-      pageParam={pageParam}
+      searchParams={searchParamsData}
     />
   );
 }

@@ -3,22 +3,35 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+// Utils
+import { getPaginationLink } from "@/lib/utils/utils";
+
+// Contexts
+import { useFilters } from "@/contexts/FilterProvider";
+
 // Components
 import MobileBusinessCard from "../cards/MobileBusinessCard";
 import BusinessCard from "../cards/BusinessCard";
 import BusinessHours from "../cards/BusinessHours";
 import BusinessInfo from "../cards/BusinessInfo";
 
-function Listings({ businesses, data, page, stateData }) {
+function Listings({ businesses, data, page, stateData, cityData }) {
   const router = useRouter();
+  const { appliedFilters, getSortOption } = useFilters();
   const [activeCard, setActiveCard] = useState(null);
   const [activeBackCard, setActiveBackCard] = useState(1);
 
   useEffect(() => {
     if (data && data.page !== page) {
-      router.replace(`/state/${stateData.code}?page=${data.page}`);
+      const url = getPaginationLink(
+        stateData,
+        cityData,
+        data.page,
+        getSortOption(appliedFilters.sort_option)
+      );
+      router.replace(url);
     }
-  }, [data, page, stateData.code, router]);
+  }, [data, page, stateData, cityData, router, appliedFilters]);
 
   return (
     <div>

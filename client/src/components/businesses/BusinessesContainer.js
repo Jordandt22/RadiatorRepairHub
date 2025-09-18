@@ -10,34 +10,18 @@ import { ToastProvider } from "@/contexts/ToastProvider";
 import { FilterProvider } from "@/contexts/FilterProvider";
 
 // Components
-import FiltersWrapper from "./FiltersWrapper";
-import ListingsWrapper from "./listings/ListingsWrapper";
 import Header from "./Header";
+import SearchHeader from "./SearchHeader";
+import ContentWrapper from "./ContentWrapper";
 
-function BusinessContainer({ pageParam, sortParam, state, city }) {
-  let page = 1;
-  let sort = 1;
-
-  // Validate Page Param
-  if (!isNaN(pageParam) && pageParam >= 1) {
-    page = Number(pageParam);
-  }
-
-  // Validate Sort Param
-  const sortOptions = {
-    most_reviews: 1,
-    least_reviews: 2,
-    highest_rating: 3,
-    lowest_rating: 4,
-  };
-  if (sortOptions[sortParam]) {
-    sort = sortOptions[sortParam];
-  }
-
+function BusinessesContainer({ state, city, searchParams }) {
   // Get State Data
-  const stateData = states.find((s) => s.code === state);
-  if (!stateData) {
-    return notFound();
+  let stateData = null;
+  if (state) {
+    stateData = states.find((s) => s.code === state);
+    if (!stateData) {
+      return notFound();
+    }
   }
 
   // Get City Data
@@ -54,22 +38,18 @@ function BusinessContainer({ pageParam, sortParam, state, city }) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <Header stateData={stateData} cityData={cityData} />
+      {stateData ? (
+        <Header stateData={stateData} cityData={cityData} />
+      ) : (
+        <SearchHeader query={"PLACEHOLDER"} />
+      )}
 
       <ToastProvider>
         <FilterProvider>
-          {/* Filters */}
-          <FiltersWrapper
+          <ContentWrapper
             stateData={stateData}
             cityData={cityData}
-            sort={sort}
-          />
-
-          {/* Business Listings */}
-          <ListingsWrapper
-            stateData={stateData}
-            cityData={cityData}
-            page={page}
+            searchParams={searchParams}
           />
         </FilterProvider>
       </ToastProvider>
@@ -77,4 +57,4 @@ function BusinessContainer({ pageParam, sortParam, state, city }) {
   );
 }
 
-export default BusinessContainer;
+export default BusinessesContainer;

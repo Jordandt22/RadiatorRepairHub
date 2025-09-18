@@ -6,8 +6,8 @@ import React from "react";
 import { useFilters } from "@/contexts/FilterProvider";
 import { useToast } from "@/contexts/ToastProvider";
 
-function SearchBar() {
-  const { updateFilter, formatFilters, filters, setShowFilters } = useFilters();
+function SearchBar({ stateData, cityData, page }) {
+  const { updateFilter, formatFilters, filters } = useFilters();
   const { showCustomError } = useToast();
 
   const handleSearch = () => {
@@ -31,8 +31,7 @@ function SearchBar() {
       );
     }
 
-    formatFilters(filters);
-    setShowFilters(false);
+    formatFilters(filters, stateData, cityData, page);
   };
 
   const handleKeyPress = (e) => {

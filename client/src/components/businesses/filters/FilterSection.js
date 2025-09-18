@@ -14,15 +14,9 @@ import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
 
-function FilterSection({ stateData, cityData }) {
-  const {
-    setShowFilters,
-    showFilters,
-    filters,
-    clearAllFilters,
-    updateFilter,
-    formatFilters,
-  } = useFilters();
+function FilterSection({ stateData, cityData, page }) {
+  const { showFilters, filters, clearAllFilters, updateFilter, formatFilters } =
+    useFilters();
 
   return (
     <>
@@ -36,7 +30,7 @@ function FilterSection({ stateData, cityData }) {
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {/* City Filter */}
-              {!cityData && <CitiesDropdown stateData={stateData} />}
+              {/* {!cityData && <CitiesDropdown stateData={stateData} />} */}
 
               {/* Min Total Score */}
               <FilterSliderInput
@@ -101,18 +95,14 @@ function FilterSection({ stateData, cityData }) {
             <div className="mt-6 flex justify-end gap-2">
               <button
                 onClick={() => {
-                  setShowFilters(false);
-                  formatFilters(filters);
+                  formatFilters(filters, stateData, cityData, page);
                 }}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-gray-300 rounded-md hover:bg-blue-800 cursor-pointer transition-all duration-300"
               >
                 Apply Filters
               </button>
               <button
-                onClick={() => {
-                  setShowFilters(false);
-                  clearAllFilters();
-                }}
+                onClick={() => clearAllFilters(stateData, cityData)}
                 className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-200 cursor-pointer transition-all duration-300"
               >
                 Clear All Filters
@@ -124,7 +114,11 @@ function FilterSection({ stateData, cityData }) {
 
       {/* Mobile Filter Popup */}
       {showFilters && (
-        <MobileFilterSection stateData={stateData} cityData={cityData} />
+        <MobileFilterSection
+          stateData={stateData}
+          cityData={cityData}
+          page={page}
+        />
       )}
     </>
   );

@@ -1,10 +1,13 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const FilterContext = createContext();
 export const useFilters = () => useContext(FilterContext);
 export function FilterProvider({ children }) {
+  const router = useRouter();
+
   // Filter visibility state
   const [showFilters, setShowFilters] = useState(false);
 
@@ -26,13 +29,7 @@ export function FilterProvider({ children }) {
   const [filters, setFilters] = useState(defaultFilters);
   const [appliedFilters, setAppliedFilters] = useState(defaultAppliedFilters);
 
-  // Clear all filters function
-  const clearAllFilters = () => {
-    setFilters(defaultFilters);
-    setAppliedFilters(defaultAppliedFilters);
-  };
-
-  // Update filter function
+  // Update filter
   const updateFilter = (filterKey, value) => {
     setFilters((prev) => ({
       ...prev,
@@ -40,7 +37,7 @@ export function FilterProvider({ children }) {
     }));
   };
 
-  // Handle array filter function
+  // Handle array filter
   const handleArrayFilter = (filterKey, value, checked) => {
     const currentArray = filters[filterKey] || [];
     if (checked) {
@@ -53,14 +50,24 @@ export function FilterProvider({ children }) {
     }
   };
 
-  // Update sort ascending function
-  const updateSortOption = (value) => {
-    setAppliedFilters((prev) => ({
-      ...prev,
-      sort_option: Number(value),
-    }));
+  // Update URL
+  const updateURL = (stateData, cityData, page, readyFilters) => {
+    const url = getPaginationLink(stateData, cityData, page, {
+      ...readyFilters,
+      sort_option: getSortOption(readyFilters.sort_option),
+    });
+    router.push(url);
   };
 
+  // Clear all filters
+  const clearAllFilters = (stateData, cityData) => {
+    setFilters(defaultFilters);
+    setAppliedFilters(defaultAppliedFilters);
+    setShowFilters(false);
+    updateURL(stateData, cityData, 1, defaultAppliedFilters);
+  };
+
+  // Get sort option
   const getSortOption = (sortNum) => {
     const sortOptions = [
       "most_reviews",
@@ -72,8 +79,22 @@ export function FilterProvider({ children }) {
     return sortOptions[sortNum - 1];
   };
 
-  // Format filters function
-  const formatFilters = (filters) => {
+  // Update sort ascending
+  const updateSortOption = (value, stateData, cityData) => {
+    setAppliedFilters((prev) => {
+      const updatedFilters = {
+        ...prev,
+        sort_option: Number(value),
+      };
+      updateURL(stateData, cityData, 1, updatedFilters);
+
+      return updatedFilters;
+    });
+    setShowFilters(false);
+  };
+
+  // Format filters
+  const formatFilters = (filters, stateData, cityData, page) => {
     const formattedFilters = {};
 
     Object.keys(filters).map((key) => {
@@ -130,10 +151,17 @@ export function FilterProvider({ children }) {
       }
     });
 
-    setAppliedFilters((prev) => ({
-      ...formattedFilters,
-      sort_option: prev.sort_option,
-    }));
+    setAppliedFilters((prev) => {
+      const updatedFilters = {
+        ...prev,
+        ...formattedFilters,
+      };
+      updateURL(stateData, cityData, page, updatedFilters);
+
+      return updatedFilters;
+    });
+
+    setShowFilters(false);
   };
 
   return (
@@ -149,6 +177,7 @@ export function FilterProvider({ children }) {
         appliedFilters,
         updateSortOption,
         getSortOption,
+        updateURL,
       }}
     >
       {children}

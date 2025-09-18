@@ -10,15 +10,9 @@ export async function generateStaticParams() {
 
 async function Page({ params, searchParams }) {
   const { state } = await params;
-  const { page: pageParam, sort: sortParam } = await searchParams;
+  const searchParamsData = await searchParams;
 
-  return (
-    <BusinessesContainer
-      state={state}
-      sortParam={sortParam}
-      pageParam={pageParam}
-    />
-  );
+  return <BusinessesContainer state={state} searchParams={searchParamsData} />;
 }
 
 export default Page;

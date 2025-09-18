@@ -11,14 +11,9 @@ import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
 
-function MobileFilterSection({ stateData, cityData }) {
-  const {
-    filters,
-    updateFilter,
-    clearAllFilters,
-    setShowFilters,
-    formatFilters,
-  } = useFilters();
+function MobileFilterSection({ stateData, cityData, page }) {
+  const { filters, updateFilter, clearAllFilters, formatFilters } =
+    useFilters();
 
   return (
     <div className="md:hidden fixed inset-0 z-50 overflow-y-auto">
@@ -31,7 +26,7 @@ function MobileFilterSection({ stateData, cityData }) {
       {/* Popup */}
       <div className="relative bg-white min-h-screen">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between z-60">
           <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
           <button
             onClick={() => setShowFilters(false)}
@@ -56,7 +51,7 @@ function MobileFilterSection({ stateData, cityData }) {
         {/* Filter Content */}
         <div className="p-4 space-y-6">
           {/* City Filter */}
-          {!cityData && <CitiesDropdown stateData={stateData} />}
+          {/* {!cityData && <CitiesDropdown stateData={stateData} />} */}
 
           {/* Min Total Score */}
           <FilterSliderInput
@@ -122,18 +117,14 @@ function MobileFilterSection({ stateData, cityData }) {
           <div className="flex gap-2">
             <button
               onClick={() => {
-                setShowFilters(false);
-                formatFilters(filters);
+                formatFilters(filters, stateData, cityData, page);
               }}
               className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-gray-300 rounded-md hover:bg-blue-800 cursor-pointer transition-all duration-300"
             >
               Apply Filters
             </button>
             <button
-              onClick={() => {
-                setShowFilters(false);
-                clearAllFilters();
-              }}
+              onClick={() => clearAllFilters(stateData, cityData)}
               className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-200 cursor-pointer transition-all duration-300"
             >
               Clear All Filters

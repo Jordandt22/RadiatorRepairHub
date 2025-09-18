@@ -55,6 +55,7 @@ export default function ListingsWrapper({ stateData, cityData, page = 1 }) {
         data={businessesData}
         page={page}
         stateData={stateData}
+        cityData={cityData}
       />
 
       {/* Pagination */}

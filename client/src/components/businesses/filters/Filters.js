@@ -1,36 +1,20 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React from "react";
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
 
-function Filters({ stateData, cityData, sort }) {
-  const router = useRouter();
-  const {
-    showFilters,
-    setShowFilters,
-    updateSortOption,
-    appliedFilters,
-    getSortOption,
-  } = useFilters();
-
-  useEffect(() => {
-    updateSortOption(sort);
-  }, [sort]);
+function Filters({ stateData, cityData }) {
+  const { showFilters, setShowFilters, updateSortOption, appliedFilters } =
+    useFilters();
 
   return (
     <div className="flex flex-col sm:flex-row gap-3">
       <select
         value={appliedFilters.sort_option}
         onChange={(e) => {
-          router.push(
-            `/state/${stateData.code}${
-              cityData ? `/city/${cityData.slug}` : ""
-            }?page=1&sort=${getSortOption(e.target.value)}`
-          );
-          updateSortOption(e.target.value);
+          updateSortOption(stateData, cityData, page);
         }}
         className="px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 cursor-pointer"
       >

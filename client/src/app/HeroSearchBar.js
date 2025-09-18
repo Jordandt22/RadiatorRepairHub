@@ -12,7 +12,13 @@ function HeroSearchBar() {
   };
 
   const submitSearch = () => {
-    router.push(`/search/${search}`);
+    router.push(`/search?title=${search}&page=1&sort=most_reviews`);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      submitSearch();
+    }
   };
 
   return (
@@ -24,6 +30,7 @@ function HeroSearchBar() {
           className="w-full px-6 py-4 text-lg rounded-lg border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-gray-900"
           onChange={handleSearch}
           value={search}
+          onKeyDown={handleKeyPress}
         />
         <button
           type="button"
