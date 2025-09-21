@@ -4,7 +4,11 @@ import Image from "next/image";
 
 function MobileBusinessCard({ business }) {
   return (
-    <Link href={`/business/${business.id}`} className="md:hidden block h-full">
+    <Link
+      href={`/business/${business.id}`}
+      className="md:hidden block h-full"
+      prefetch={false}
+    >
       <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full">
         <div className="relative w-full h-56 bg-gray-200">
           {business.image_url ? (

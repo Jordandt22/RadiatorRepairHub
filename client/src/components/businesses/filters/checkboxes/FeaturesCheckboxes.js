@@ -1,7 +1,7 @@
 import React from "react";
 
 // Data
-import features from "@/lib/data/features.json";
+import FEATURES from "@/lib/data/features.json";
 
 // Components
 import FilterCheckboxes from "../inputs/FilterCheckboxes";
@@ -9,7 +9,7 @@ import FilterCheckboxes from "../inputs/FilterCheckboxes";
 function FeaturesCheckboxes() {
   return (
     <FilterCheckboxes
-      options={features}
+      options={FEATURES}
       label="Features"
       name="features"
       valueKey="key"

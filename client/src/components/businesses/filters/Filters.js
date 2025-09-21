@@ -6,15 +6,19 @@ import React from "react";
 import { useFilters } from "@/contexts/FilterProvider";
 
 function Filters({ stateData, cityData }) {
-  const { showFilters, setShowFilters, updateSortOption, appliedFilters } =
+  const { showFilters, setShowFilters, updateURL, appliedFilters } =
     useFilters();
 
   return (
     <div className="flex flex-col sm:flex-row gap-3">
       <select
-        value={appliedFilters.sort_option}
+        value={appliedFilters?.sort_option}
         onChange={(e) => {
-          updateSortOption(stateData, cityData, page);
+          setShowFilters(false);
+          updateURL(stateData, cityData, 1, {
+            ...appliedFilters,
+            sort_option: Number(e.target.value),
+          });
         }}
         className="px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 cursor-pointer"
       >

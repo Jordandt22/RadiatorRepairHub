@@ -1,10 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-
-// Utils
-import { getPaginationLink } from "@/lib/utils/utils";
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
@@ -16,22 +12,15 @@ import BusinessHours from "../cards/BusinessHours";
 import BusinessInfo from "../cards/BusinessInfo";
 
 function Listings({ businesses, data, page, stateData, cityData }) {
-  const router = useRouter();
-  const { appliedFilters, getSortOption } = useFilters();
+  const { filters, updateURL } = useFilters();
   const [activeCard, setActiveCard] = useState(null);
   const [activeBackCard, setActiveBackCard] = useState(1);
 
   useEffect(() => {
     if (data && data.page !== page) {
-      const url = getPaginationLink(
-        stateData,
-        cityData,
-        data.page,
-        getSortOption(appliedFilters.sort_option)
-      );
-      router.replace(url);
+      updateURL(stateData, cityData, data.page, filters);
     }
-  }, [data, page, stateData, cityData, router, appliedFilters]);
+  }, [data, page, stateData, cityData, filters]);
 
   return (
     <div>

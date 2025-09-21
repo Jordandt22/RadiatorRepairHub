@@ -57,6 +57,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
               href={`/business/${business.id}`}
               className={buttonStyle}
               aria-label="View business details"
+              prefetch={false}
             >
               <ExternalLink className={iconStyle} />
             </Link>
@@ -66,6 +67,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
             key={"business-card-category-" + business.id}
             href={`/category/${business.primary_category.slug}`}
             className="absolute bottom-3 left-3 text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-md hover:bg-blue-500 hover:text-white duration-200 capitalize"
+            prefetch={false}
           >
             {business.primary_category.name}
           </Link>
@@ -104,6 +106,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
         <Link
           href={`/state/${business.state.code}/city/${business.city.slug}`}
           className="text-sm text-gray-600 hover:text-blue-500"
+          prefetch={false}
         >
           {business.address}
         </Link>

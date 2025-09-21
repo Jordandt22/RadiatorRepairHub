@@ -15,8 +15,13 @@ import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
 
 function FilterSection({ stateData, cityData, page }) {
-  const { showFilters, filters, clearAllFilters, updateFilter, formatFilters } =
-    useFilters();
+  const {
+    showFilters,
+    filters,
+    clearAllFilters,
+    updateOpenFilter,
+    applyFilters,
+  } = useFilters();
 
   return (
     <>
@@ -30,7 +35,7 @@ function FilterSection({ stateData, cityData, page }) {
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {/* City Filter */}
-              {/* {!cityData && <CitiesDropdown stateData={stateData} />} */}
+              {!cityData && <CitiesDropdown stateData={stateData} />}
 
               {/* Min Total Score */}
               <FilterSliderInput
@@ -68,9 +73,9 @@ function FilterSection({ stateData, cityData, page }) {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={filters.openWeekdays}
+                      checked={filters.open.weekdays}
                       onChange={(e) =>
-                        updateFilter("openWeekdays", e.target.checked)
+                        updateOpenFilter("weekdays", e.target.checked)
                       }
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
@@ -79,9 +84,9 @@ function FilterSection({ stateData, cityData, page }) {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={filters.openWeekends}
+                      checked={filters.open.weekends}
                       onChange={(e) =>
-                        updateFilter("openWeekends", e.target.checked)
+                        updateOpenFilter("weekends", e.target.checked)
                       }
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
@@ -94,9 +99,7 @@ function FilterSection({ stateData, cityData, page }) {
             {/* Clear All Filters Button */}
             <div className="mt-6 flex justify-end gap-2">
               <button
-                onClick={() => {
-                  formatFilters(filters, stateData, cityData, page);
-                }}
+                onClick={() => applyFilters(filters, stateData, cityData, page)}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-gray-300 rounded-md hover:bg-blue-800 cursor-pointer transition-all duration-300"
               >
                 Apply Filters

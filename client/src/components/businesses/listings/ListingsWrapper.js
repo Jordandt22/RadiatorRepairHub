@@ -24,11 +24,13 @@ export default function ListingsWrapper({ stateData, cityData, page = 1 }) {
   const limit = 12;
   const { data, error } = useSWR(
     [
-      `${process.env.NEXT_PUBLIC_API_URI}/businesses/search?page=${page}&limit=${limit}`,
+      appliedFilters
+        ? `${process.env.NEXT_PUBLIC_API_URI}/businesses/search?page=${page}&limit=${limit}`
+        : null,
       {
         ...appliedFilters,
-        state_id: stateData ? stateData.id : appliedFilters.state_id,
-        city_id: cityData ? cityData.id : appliedFilters.city_id,
+        state_id: stateData ? stateData.id : appliedFilters?.state_id,
+        city_id: cityData ? cityData.id : appliedFilters?.city_id,
       },
     ],
     postFetcher,

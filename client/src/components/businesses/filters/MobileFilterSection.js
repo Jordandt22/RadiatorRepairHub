@@ -12,8 +12,7 @@ import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
 
 function MobileFilterSection({ stateData, cityData, page }) {
-  const { filters, updateFilter, clearAllFilters, formatFilters } =
-    useFilters();
+  const { filters, updateFilter, clearAllFilters, applyFilters } = useFilters();
 
   return (
     <div className="md:hidden fixed inset-0 z-50 overflow-y-auto">
@@ -51,7 +50,7 @@ function MobileFilterSection({ stateData, cityData, page }) {
         {/* Filter Content */}
         <div className="p-4 space-y-6">
           {/* City Filter */}
-          {/* {!cityData && <CitiesDropdown stateData={stateData} />} */}
+          {!cityData && <CitiesDropdown stateData={stateData} />}
 
           {/* Min Total Score */}
           <FilterSliderInput
@@ -117,7 +116,7 @@ function MobileFilterSection({ stateData, cityData, page }) {
           <div className="flex gap-2">
             <button
               onClick={() => {
-                formatFilters(filters, stateData, cityData, page);
+                applyFilters(filters, stateData, cityData, page);
               }}
               className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-gray-300 rounded-md hover:bg-blue-800 cursor-pointer transition-all duration-300"
             >

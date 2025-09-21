@@ -4,9 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { MoveLeft, MoveRight } from "lucide-react";
 
-// Utils
-import { getPaginationLink } from "@/lib/utils/utils";
-
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
 
@@ -19,7 +16,7 @@ function Pagination({
   cityData,
   limit,
 }) {
-  const { appliedFilters, getSortOption } = useFilters();
+  const { appliedFilters, getFilterURL } = useFilters();
 
   // Page Tab Styles
   const pageTabStyle =
@@ -55,10 +52,7 @@ function Pagination({
   }
 
   const getHref = (page) =>
-    getPaginationLink(stateData, cityData, page, {
-      ...appliedFilters,
-      sort_option: getSortOption(appliedFilters.sort_option),
-    });
+    getFilterURL(stateData, cityData, page, appliedFilters);
 
   const lowerLimit = limit * (currentPage - 1) + 1;
   const upperLimit = lowerLimit + requestTotal - 1;

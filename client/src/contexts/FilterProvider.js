@@ -11,6 +11,7 @@ export function FilterProvider({ children }) {
   // Filter visibility state
   const [showFilters, setShowFilters] = useState(false);
 
+  // Default filters
   const defaultFilters = {
     title: "",
     state_id: "",
@@ -20,20 +21,34 @@ export function FilterProvider({ children }) {
     primary_category_id: "",
     secondary_categories: [],
     features: [],
-    openWeekdays: false,
-    openWeekends: false,
+    open: {
+      weekdays: false,
+      weekends: false,
+    },
   };
-  const defaultAppliedFilters = {
-    sort_option: 1,
-  };
+
+  // Used to store filters for the client to edit
   const [filters, setFilters] = useState(defaultFilters);
-  const [appliedFilters, setAppliedFilters] = useState(defaultAppliedFilters);
+
+  // Used to store filters from query params
+  const [appliedFilters, setAppliedFilters] = useState(null);
 
   // Update filter
   const updateFilter = (filterKey, value) => {
     setFilters((prev) => ({
       ...prev,
       [filterKey]: value,
+    }));
+  };
+
+  // Update Open Filter
+  const updateOpenFilter = (filterKey, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      open: {
+        ...prev.open,
+        [filterKey]: value,
+      },
     }));
   };
 
@@ -50,21 +65,64 @@ export function FilterProvider({ children }) {
     }
   };
 
-  // Update URL
-  const updateURL = (stateData, cityData, page, readyFilters) => {
-    const url = getPaginationLink(stateData, cityData, page, {
-      ...readyFilters,
-      sort_option: getSortOption(readyFilters.sort_option),
+  // Filter URL
+  const getFilterURL = (stateData, cityData, page, filters) => {
+    const paginationAndSortQueryParams = `page=${page}&sort=${getSortOption(
+      filters.sort_option
+    )}`;
+    delete filters.sort_option;
+    if (stateData) delete filters.state_id;
+    if (cityData) delete filters.city_id;
+
+    let filterQueryParams = "";
+    Object.keys(filters).map((key) => {
+      const val = filters[key];
+      const defaultVal = defaultFilters[key];
+
+      if (typeof val === "string" && val !== defaultVal) {
+        filterQueryParams += `&${key}=${val}`;
+      }
+
+      if (Array.isArray(val) && val.length > 0) {
+        filterQueryParams += `&${key}=${val.join(",")}`;
+      }
+
+      if (typeof val === "number" && val !== defaultVal) {
+        filterQueryParams += `&${key}=${val}`;
+      }
+
+      if (key === "open") {
+        if (val.weekdays) {
+          filterQueryParams += "&weekdays=true";
+        }
+        if (val.weekends) {
+          filterQueryParams += "&weekends=true";
+        }
+      }
     });
-    router.push(url);
+
+    if (stateData)
+      return `/state/${stateData.code}${
+        cityData ? `/city/${cityData.slug}` : ""
+      }?${paginationAndSortQueryParams}${filterQueryParams}`;
+
+    return `/search?${paginationAndSortQueryParams}${filterQueryParams}`;
   };
+
+  // Update URL
+  const updateURL = (stateData, cityData, page, filters) =>
+    router.push(getFilterURL(stateData, cityData, page, filters));
 
   // Clear all filters
   const clearAllFilters = (stateData, cityData) => {
-    setFilters(defaultFilters);
-    setAppliedFilters(defaultAppliedFilters);
+    console.log("clearAllFilters");
     setShowFilters(false);
-    updateURL(stateData, cityData, 1, defaultAppliedFilters);
+    setFilters(defaultFilters);
+    setAppliedFilters(null);
+    updateURL(stateData, cityData, 1, {
+      ...defaultFilters,
+      sort_option: appliedFilters?.sort_option,
+    });
   };
 
   // Get sort option
@@ -79,24 +137,9 @@ export function FilterProvider({ children }) {
     return sortOptions[sortNum - 1];
   };
 
-  // Update sort ascending
-  const updateSortOption = (value, stateData, cityData) => {
-    setAppliedFilters((prev) => {
-      const updatedFilters = {
-        ...prev,
-        sort_option: Number(value),
-      };
-      updateURL(stateData, cityData, 1, updatedFilters);
-
-      return updatedFilters;
-    });
-    setShowFilters(false);
-  };
-
   // Format filters
-  const formatFilters = (filters, stateData, cityData, page) => {
-    const formattedFilters = {};
-
+  const formatFilters = (filters) => {
+    let formattedFilters = {};
     Object.keys(filters).map((key) => {
       // Text Filters
       const textFilters = {
@@ -118,15 +161,13 @@ export function FilterProvider({ children }) {
         reviews_count: true,
       };
       if (NumberFilters[key]) {
-        const val = filters[key];
-        if (val !== defaultFilters[key]) {
-          formattedFilters[key] = val;
-        }
+        formattedFilters[key] = Number(filters[key]);
       }
 
       // Array Filters
       const ArrayFilters = {
         secondary_categories: true,
+        features: true,
       };
       if (ArrayFilters[key]) {
         const val = filters[key];
@@ -135,33 +176,24 @@ export function FilterProvider({ children }) {
         }
       }
 
-      // Features Filter
-      if (filters.features.length > 0) {
-        formattedFilters.features = {};
-        filters.features.map(
-          (item) => (formattedFilters.features[item] = true)
-        );
-      }
-
       // Open Hours Filter
-      if (filters.openWeekdays || filters.openWeekends) {
-        formattedFilters.open = {};
-        formattedFilters.open.weekdays = filters.openWeekdays;
-        formattedFilters.open.weekends = filters.openWeekends;
+      if (filters.open.weekdays || filters.open.weekends) {
+        formattedFilters.open = { ...filters.open };
       }
     });
 
-    setAppliedFilters((prev) => {
-      const updatedFilters = {
-        ...prev,
-        ...formattedFilters,
-      };
-      updateURL(stateData, cityData, page, updatedFilters);
+    return formattedFilters;
+  };
 
-      return updatedFilters;
-    });
-
+  // Apply filters
+  const applyFilters = (filters, stateData, cityData, page) => {
+    const formattedFilters = formatFilters(filters);
+    console.log(formattedFilters);
     setShowFilters(false);
+    updateURL(stateData, cityData, page, {
+      ...formattedFilters,
+      sort_option: appliedFilters?.sort_option,
+    });
   };
 
   return (
@@ -172,12 +204,14 @@ export function FilterProvider({ children }) {
         filters,
         clearAllFilters,
         updateFilter,
+        updateOpenFilter,
         handleArrayFilter,
-        formatFilters,
-        appliedFilters,
-        updateSortOption,
+        applyFilters,
         getSortOption,
         updateURL,
+        appliedFilters,
+        setAppliedFilters,
+        setFilters,
       }}
     >
       {children}

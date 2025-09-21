@@ -2,8 +2,8 @@ import React from "react";
 import { notFound } from "next/navigation";
 
 // Data
-import states from "@/lib/data/states";
-import cities from "@/lib/data/cities";
+import STATES from "@/lib/data/states";
+import CITIES from "@/lib/data/cities";
 
 // Contexts
 import { ToastProvider } from "@/contexts/ToastProvider";
@@ -18,7 +18,7 @@ function BusinessesContainer({ state, city, searchParams }) {
   // Get State Data
   let stateData = null;
   if (state) {
-    stateData = states.find((s) => s.code === state);
+    stateData = STATES.find((s) => s.code === state);
     if (!stateData) {
       return notFound();
     }
@@ -27,7 +27,7 @@ function BusinessesContainer({ state, city, searchParams }) {
   // Get City Data
   let cityData = null;
   if (city) {
-    cityData = cities.find(
+    cityData = CITIES.find(
       (c) => c.slug === city && c.state_id === stateData.id
     );
     if (!cityData) {

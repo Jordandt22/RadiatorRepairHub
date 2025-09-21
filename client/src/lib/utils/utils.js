@@ -14,14 +14,49 @@ export const postFetcher = (args) => {
 
 export const getFetcher = (...args) => fetch(...args).then((res) => res.json());
 
-// Get Pagination Link
-export const getPaginationLink = (stateData, cityData, page, filters) => {
-  const paginationAndSortQueryParams = `page=${page}&sort=${filters.sort_option}`;
-  const filterQueryParams = "";
-  if (stateData)
-    return `/state/${stateData.code}${
-      cityData ? `/city/${cityData.slug}` : ""
-    }?${paginationAndSortQueryParams}`;
+// Validation
+export const validateArray = (
+  DATA,
+  dataKey,
+  formattedFilters,
+  filterKey,
+  filterParamVal
+) => {
+  const filterArr = filterParamVal.split(",");
+  const parsedArr = [...formattedFilters[filterKey]];
+  filterArr.map((val) => {
+    const exist = DATA.some(
+      (data) => data[dataKey].toLowerCase() === val.toLowerCase()
+    );
+    const alreadyAdded = parsedArr.some(
+      (filterVal) => filterVal.toLowerCase() === val.toLowerCase()
+    );
+    if (exist && !alreadyAdded) {
+      parsedArr.push(val);
+    }
+  });
 
-  return `/search?${paginationAndSortQueryParams}`;
+  return parsedArr;
+};
+
+export const validateNumber = (value, min, max) => {
+  const formattedVal = Number(value);
+  if (isNaN(value) || formattedVal < min || formattedVal > max) {
+    return min;
+  }
+  return formattedVal;
+};
+
+export const validateID = (value, DATA, dataKey) => {
+  const exist = DATA.some((data) => data[dataKey] === value);
+  if (!exist) return "";
+
+  return value;
+};
+
+export const validateBoolean = (value) => {
+  const parsedValue = JSON.parse(value);
+  if (typeof parsedValue !== "boolean") return false;
+
+  return parsedValue;
 };
