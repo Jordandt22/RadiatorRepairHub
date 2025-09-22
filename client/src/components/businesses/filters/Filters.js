@@ -21,7 +21,7 @@ function Filters({ stateData, cityData }) {
               sort_option: Number(e.target.value),
             });
           }}
-          className="px-4 py-3 pr-10 bg-white border border-gray-300 rounded-lg text-gray-900 cursor-pointer appearance-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="px-4 py-3 pr-10 bg-white border-2 border-gray-200 rounded-lg text-gray-900 cursor-pointer appearance-none focus:border-blue-500 outline-none duration-200"
         >
           <option value={1}>Most Reviews</option>
           <option value={2}>Least Reviews</option>

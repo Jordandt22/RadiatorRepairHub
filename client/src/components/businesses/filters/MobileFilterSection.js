@@ -7,10 +7,10 @@ import { useFilters } from "@/contexts/FilterProvider";
 import FilterNumInput from "./inputs/FilterNumInput";
 import FilterSliderInput from "./inputs/FilterSliderInput";
 import CitySearch from "./comboboxes/CitySearch";
+import StateSearch from "./comboboxes/StateSearch";
 import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
-import StatesDropdown from "./dropdowns/StatesDropdown";
 
 function MobileFilterSection({ stateData, cityData, page }) {
   const {
@@ -56,7 +56,7 @@ function MobileFilterSection({ stateData, cityData, page }) {
 
         {/* Filter Content */}
         <div className="p-4 space-y-6">
-          {!stateData && !cityData && <StatesDropdown />}
+          {!stateData && !cityData && <StateSearch />}
 
           {/* City Filter */}
           {!cityData && <CitySearch stateData={stateData} />}

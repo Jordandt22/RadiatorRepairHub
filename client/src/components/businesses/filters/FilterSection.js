@@ -10,10 +10,10 @@ import MobileFilterSection from "./MobileFilterSection";
 import FilterNumInput from "./inputs/FilterNumInput";
 import FilterSliderInput from "./inputs/FilterSliderInput";
 import CitySearch from "./comboboxes/CitySearch";
+import StateSearch from "./comboboxes/StateSearch";
 import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
-import StatesDropdown from "./dropdowns/StatesDropdown";
 
 function FilterSection({ stateData, cityData, page }) {
   const {
@@ -35,7 +35,7 @@ function FilterSection({ stateData, cityData, page }) {
         <div className="w-full">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {!stateData && !cityData && <StatesDropdown />}
+              {!stateData && !cityData && <StateSearch />}
 
               {/* City Filter */}
               {!cityData && <CitySearch stateData={stateData} />}
