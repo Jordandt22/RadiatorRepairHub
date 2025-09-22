@@ -16,7 +16,8 @@ export const customErrorHandler = (code, message, error) => {
     console.error(error);
   }
 
-  console.error(`${code}: ${message}`);
+  console.error(`${code}:`);
+  console.log(message);
 
   return {
     data: null,

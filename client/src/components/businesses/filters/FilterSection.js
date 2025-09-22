@@ -19,6 +19,7 @@ function FilterSection({ stateData, cityData, page }) {
   const {
     showFilters,
     filters,
+    appliedFilters,
     clearAllFilters,
     updateOpenFilter,
     applyFilters,
@@ -108,13 +109,23 @@ function FilterSection({ stateData, cityData, page }) {
             {/* Clear All Filters Button */}
             <div className="mt-6 flex justify-end gap-2">
               <button
-                onClick={() => applyFilters(filters, stateData, cityData, page)}
+                onClick={() =>
+                  applyFilters(
+                    filters,
+                    appliedFilters,
+                    stateData,
+                    cityData,
+                    page
+                  )
+                }
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-gray-300 rounded-md hover:bg-blue-800 cursor-pointer transition-all duration-300"
               >
                 Apply Filters
               </button>
               <button
-                onClick={() => clearAllFilters(stateData, cityData)}
+                onClick={() =>
+                  clearAllFilters(stateData, cityData, appliedFilters)
+                }
                 className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-200 cursor-pointer transition-all duration-300"
               >
                 Clear All Filters

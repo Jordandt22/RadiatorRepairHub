@@ -31,6 +31,7 @@ export default function ListingsWrapper({ stateData, cityData, page = 1 }) {
         ...appliedFilters,
         state_id: stateData ? stateData.id : appliedFilters?.state_id,
         city_id: cityData ? cityData.id : appliedFilters?.city_id,
+        sort_option: appliedFilters?.sort_option || 1,
       },
     ],
     postFetcher,

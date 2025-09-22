@@ -3,6 +3,9 @@
 import React, { createContext, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
 
+// Utils
+import { formatFeatures } from "@/lib/utils/utils";
+
 const FilterContext = createContext();
 export const useFilters = () => useContext(FilterContext);
 export function FilterProvider({ children }) {
@@ -65,10 +68,20 @@ export function FilterProvider({ children }) {
     }
   };
 
+  // Update Applied Filters
+  const updateAppliedFilters = (filters, sortNum) => {
+    setAppliedFilters((prev) => ({
+      ...prev,
+      ...filters,
+      features: formatFeatures(filters.features),
+      sort_option: sortNum || 1,
+    }));
+  };
+
   // Filter URL
   const getFilterURL = (stateData, cityData, page, filters) => {
     const paginationAndSortQueryParams = `page=${page}&sort=${getSortOption(
-      filters.sort_option
+      filters.sort_option || 1
     )}`;
     delete filters.sort_option;
     if (stateData) delete filters.state_id;
@@ -115,13 +128,13 @@ export function FilterProvider({ children }) {
     router.push(getFilterURL(stateData, cityData, page, filters));
 
   // Clear all filters
-  const clearAllFilters = (stateData, cityData) => {
+  const clearAllFilters = (stateData, cityData, appliedFilters) => {
     setShowFilters(false);
     setFilters(defaultFilters);
     setAppliedFilters(null);
     updateURL(stateData, cityData, 1, {
       ...defaultFilters,
-      sort_option: appliedFilters?.sort_option,
+      sort_option: appliedFilters?.sort_option || 1,
     });
   };
 
@@ -135,6 +148,15 @@ export function FilterProvider({ children }) {
     ];
 
     return sortOptions[sortNum - 1];
+  };
+
+  // Update Sort Option
+  const updateSortOption = (stateData, cityData, filters, sortNum) => {
+    updateAppliedFilters(filters, sortNum);
+    updateURL(stateData, cityData, 1, {
+      ...filters,
+      sort_option: sortNum,
+    });
   };
 
   // Format filters
@@ -186,13 +208,19 @@ export function FilterProvider({ children }) {
   };
 
   // Apply filters
-  const applyFilters = (filters, stateData, cityData, page) => {
+  const applyFilters = (filters, appliedFilters, stateData, cityData, page) => {
     const formattedFilters = formatFilters(filters);
-    console.log(formattedFilters);
     setShowFilters(false);
+    setFilters((prev) => ({
+      ...prev,
+      ...formattedFilters,
+    }));
+
+    const sort_option = appliedFilters?.sort_option || 1;
+    updateAppliedFilters(formattedFilters, sort_option);
     updateURL(stateData, cityData, page, {
       ...formattedFilters,
-      sort_option: appliedFilters?.sort_option,
+      sort_option,
     });
   };
 
@@ -209,9 +237,11 @@ export function FilterProvider({ children }) {
         applyFilters,
         getSortOption,
         updateURL,
+        getFilterURL,
         appliedFilters,
         setAppliedFilters,
         setFilters,
+        updateSortOption,
       }}
     >
       {children}

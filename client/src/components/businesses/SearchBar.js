@@ -7,7 +7,7 @@ import { useFilters } from "@/contexts/FilterProvider";
 import { useToast } from "@/contexts/ToastProvider";
 
 function SearchBar({ stateData, cityData, page }) {
-  const { updateFilter, applyFilters, filters } = useFilters();
+  const { updateFilter, applyFilters, filters, appliedFilters } = useFilters();
   const { showCustomError } = useToast();
 
   const handleSearch = () => {
@@ -31,7 +31,7 @@ function SearchBar({ stateData, cityData, page }) {
       );
     }
 
-    applyFilters(filters, stateData, cityData, page);
+    applyFilters(filters, appliedFilters, stateData, cityData, page);
   };
 
   const handleKeyPress = (e) => {

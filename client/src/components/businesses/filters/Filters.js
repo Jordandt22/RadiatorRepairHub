@@ -6,22 +6,29 @@ import React from "react";
 import { useFilters } from "@/contexts/FilterProvider";
 
 function Filters({ stateData, cityData }) {
-  const { showFilters, setShowFilters, updateURL, filters, appliedFilters } =
-    useFilters();
+  const {
+    showFilters,
+    setShowFilters,
+    updateSortOption,
+    filters,
+    appliedFilters,
+  } = useFilters();
 
   return (
     <div className="flex flex-col sm:flex-row gap-3">
-      <div className="relative bg-white border-2 border-gray-200 rounded-lg">
+      <div className="relative bg-white border-2 border-gray-200 rounded-lg cursor-pointer">
         <select
           value={appliedFilters?.sort_option}
           onChange={(e) => {
             setShowFilters(false);
-            updateURL(stateData, cityData, 1, {
-              ...filters,
-              sort_option: Number(e.target.value),
-            });
+            updateSortOption(
+              stateData,
+              cityData,
+              filters,
+              Number(e.target.value)
+            );
           }}
-          className="px-4 py-3 pr-10  text-gray-900 cursor-pointer appearance-none focus:border-blue-500 outline-none duration-200"
+          className="px-4 py-3 pr-10 w-full text-gray-900 cursor-pointer appearance-none focus:border-blue-500 outline-none duration-200"
         >
           <option value={1}>Most Reviews</option>
           <option value={2}>Least Reviews</option>

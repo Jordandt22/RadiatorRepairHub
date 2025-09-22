@@ -301,7 +301,7 @@ export const getSearchedBusinesses = async (req, res) => {
   ];
 
   // Adding features
-  if (req.body.features) {
+  if (req.body.features && Object.keys(req.body.features).length > 0) {
     Object.keys(req.body.features).forEach((featureKey) => {
       searchParamKeys.push({ key: `features.${featureKey}`, filter: "eq" });
     });
@@ -324,7 +324,10 @@ export const getSearchedBusinesses = async (req, res) => {
   });
 
   // Adding Secondary Categories
-  if (req.body.secondary_categories) {
+  if (
+    req.body.secondary_categories &&
+    req.body.secondary_categories.length > 0
+  ) {
     searchParamValues.push({
       key: `secondary_categories.secondary_category_id`,
       value: req.body.secondary_categories,

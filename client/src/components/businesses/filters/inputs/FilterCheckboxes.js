@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 
 // Contexts
@@ -43,7 +45,7 @@ function FilterCheckboxes({ label, options, name, valueKey, labelKey }) {
           >
             <input
               type="checkbox"
-              checked={filters[name].includes(option[valueKey])}
+              checked={filters[name]?.includes(option[valueKey])}
               onChange={(e) =>
                 handleArrayFilter(name, option[valueKey], e.target.checked)
               }

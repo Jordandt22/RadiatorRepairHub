@@ -16,7 +16,7 @@ function Pagination({
   cityData,
   limit,
 }) {
-  const { appliedFilters, getFilterURL } = useFilters();
+  const { appliedFilters, filters, getFilterURL } = useFilters();
 
   // Page Tab Styles
   const pageTabStyle =
@@ -52,7 +52,48 @@ function Pagination({
   }
 
   const getHref = (page) =>
-    getFilterURL(stateData, cityData, page, appliedFilters);
+    getFilterURL(stateData, cityData, page, {
+      ...filters,
+      sort_option: appliedFilters.sort_option,
+    });
+
+  // Generate windowed pagination for desktop
+  const generateWindowedPages = () => {
+    const pages = [];
+    const windowSize = 2; // Show 2 pages on each side of current page
+
+    // Always show first page
+    pages.push(1);
+
+    // Calculate the range around current page
+    const startPage = Math.max(2, currentPage - windowSize);
+    const endPage = Math.min(totalPages - 1, currentPage + windowSize);
+
+    // Add ellipsis after first page if needed
+    if (startPage > 2) {
+      pages.push("...");
+    }
+
+    // Add pages in the window
+    for (let i = startPage; i <= endPage; i++) {
+      if (i !== 1 && i !== totalPages) {
+        // Don't duplicate first/last pages
+        pages.push(i);
+      }
+    }
+
+    // Add ellipsis before last page if needed
+    if (endPage < totalPages - 1) {
+      pages.push("...");
+    }
+
+    // Always show last page (if more than 1 page)
+    if (totalPages > 1) {
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
 
   const lowerLimit = limit * (currentPage - 1) + 1;
   const upperLimit = lowerLimit + requestTotal - 1;
@@ -100,13 +141,23 @@ function Pagination({
           })}
         </div>
 
-        {/* Desktop */}
+        {/* Desktop - Windowed Pagination */}
         <div className="hidden md:flex items-center space-x-2">
-          {new Array(totalPages).fill(0).map((_, index) => {
-            const page = index + 1;
+          {generateWindowedPages().map((page, index) => {
+            if (page === "...") {
+              return (
+                <span
+                  key={`desktop-pagination-ellipsis-${index}`}
+                  className="px-3 py-2 text-sm font-medium text-gray-500"
+                >
+                  ...
+                </span>
+              );
+            }
+
             return (
               <Link
-                key={"desktop-pagination-" + page}
+                key={`desktop-pagination-${page}`}
                 className={
                   currentPage === page
                     ? pageTabStyle + " text-white bg-blue-500 hover:bg-blue-700"

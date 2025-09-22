@@ -15,6 +15,7 @@ import {
   validateID,
   validateNumber,
   validateBoolean,
+  formatFeatures,
 } from "@/lib/utils/utils";
 
 // Contexts
@@ -26,7 +27,8 @@ import ListingsWrapper from "./listings/ListingsWrapper";
 
 function ContentWrapper({ stateData, cityData, searchParams }) {
   const { page: pageParam, sort: sortParam } = searchParams;
-  const { filters, setAppliedFilters, setFilters } = useFilters();
+  const { filters, setAppliedFilters, setFilters, appliedFilters } =
+    useFilters();
   let page = 1;
 
   // Validate Page Parma
@@ -147,11 +149,12 @@ function ContentWrapper({ stateData, cityData, searchParams }) {
       ...formattedFilters,
     }));
 
-    // Update Applied Filters
-    setAppliedFilters({
+    setAppliedFilters((prev) => ({
+      ...prev,
       ...formattedFilters,
-      sort_option: sort,
-    });
+      features: formatFeatures(formattedFilters.features),
+      sort_option: sort || 1,
+    }));
   }, [searchParams]);
 
   return (
@@ -160,7 +163,7 @@ function ContentWrapper({ stateData, cityData, searchParams }) {
       <FiltersWrapper stateData={stateData} cityData={cityData} page={page} />
 
       {/* Business Listings */}
-      {/* <ListingsWrapper stateData={stateData} cityData={cityData} page={page} /> */}
+      <ListingsWrapper stateData={stateData} cityData={cityData} page={page} />
     </>
   );
 }

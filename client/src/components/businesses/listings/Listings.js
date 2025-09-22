@@ -25,7 +25,7 @@ function Listings({ businesses, data, page, stateData, cityData }) {
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {businesses.length > 0 ? (
+        {businesses && businesses?.length > 0 ? (
           <>
             {businesses.map((business) => (
               <div key={business.id} className="group relative h-[400px]">

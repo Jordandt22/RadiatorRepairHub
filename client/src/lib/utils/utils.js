@@ -3,13 +3,17 @@ export const postFetcher = (args) => {
   const url = args[0];
   const body = args[1];
 
-  return fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  }).then((res) => res.json());
+  if (url) {
+    return fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }).then((res) => res.json());
+  }
+
+  return null;
 };
 
 export const getFetcher = (...args) => fetch(...args).then((res) => res.json());
@@ -59,4 +63,15 @@ export const validateBoolean = (value) => {
   if (typeof parsedValue !== "boolean") return false;
 
   return parsedValue;
+};
+
+// Format
+export const formatFeatures = (features) => {
+  if (!features || features.length === 0) return {};
+
+  const featuresObj = {};
+  features.forEach((feature) => {
+    featuresObj[feature] = true;
+  });
+  return featuresObj;
 };

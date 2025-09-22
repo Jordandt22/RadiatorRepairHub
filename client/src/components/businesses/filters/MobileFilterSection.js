@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 // Contexts
@@ -19,6 +21,7 @@ function MobileFilterSection({ stateData, cityData, page }) {
     clearAllFilters,
     applyFilters,
     setShowFilters,
+    appliedFilters,
   } = useFilters();
 
   return (
@@ -125,14 +128,22 @@ function MobileFilterSection({ stateData, cityData, page }) {
           <div className="flex gap-2">
             <button
               onClick={() => {
-                applyFilters(filters, stateData, cityData, page);
+                applyFilters(
+                  filters,
+                  appliedFilters,
+                  stateData,
+                  cityData,
+                  page
+                );
               }}
               className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-gray-300 rounded-md hover:bg-blue-800 cursor-pointer transition-all duration-300"
             >
               Apply Filters
             </button>
             <button
-              onClick={() => clearAllFilters(stateData, cityData)}
+              onClick={() =>
+                clearAllFilters(stateData, cityData, appliedFilters)
+              }
               className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-200 cursor-pointer transition-all duration-300"
             >
               Clear All Filters
