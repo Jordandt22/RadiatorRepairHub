@@ -41,7 +41,7 @@ function BusinessesContainer({ state, city, searchParams }) {
       {stateData ? (
         <Header stateData={stateData} cityData={cityData} />
       ) : (
-        <SearchHeader query={"PLACEHOLDER"} />
+        <SearchHeader title={searchParams?.title} />
       )}
 
       <ToastProvider>

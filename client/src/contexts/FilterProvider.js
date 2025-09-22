@@ -128,10 +128,15 @@ export function FilterProvider({ children }) {
     router.push(getFilterURL(stateData, cityData, page, filters));
 
   // Clear all filters
-  const clearAllFilters = (stateData, cityData, appliedFilters) => {
+  const clearAllFiltersHelper = () => {
     setShowFilters(false);
     setFilters(defaultFilters);
     setAppliedFilters(null);
+  };
+
+  // Clear all filters
+  const clearAllFilters = (stateData, cityData, appliedFilters) => {
+    clearAllFiltersHelper();
     updateURL(stateData, cityData, 1, {
       ...defaultFilters,
       sort_option: appliedFilters?.sort_option || 1,
@@ -242,6 +247,7 @@ export function FilterProvider({ children }) {
         setAppliedFilters,
         setFilters,
         updateSortOption,
+        clearAllFiltersHelper,
       }}
     >
       {children}

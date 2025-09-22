@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 // Data
 import FEATURES from "@/lib/data/features";
@@ -26,8 +27,9 @@ import FiltersWrapper from "./FiltersWrapper";
 import ListingsWrapper from "./listings/ListingsWrapper";
 
 function ContentWrapper({ stateData, cityData, searchParams }) {
+  const pathname = usePathname();
   const { page: pageParam, sort: sortParam } = searchParams;
-  const { filters, setAppliedFilters, setFilters, appliedFilters } =
+  const { filters, setAppliedFilters, setFilters, clearAllFiltersHelper } =
     useFilters();
   let page = 1;
 
@@ -37,6 +39,15 @@ function ContentWrapper({ stateData, cityData, searchParams }) {
   }
 
   useEffect(() => {
+    const whitelist = {
+      search: true,
+      state: true,
+    };
+    if (!whitelist[pathname.split("/")[1]]) {
+      clearAllFiltersHelper();
+      return;
+    }
+
     const filterParams = { ...searchParams };
     delete filterParams.page;
     delete filterParams.sort;
@@ -155,7 +166,7 @@ function ContentWrapper({ stateData, cityData, searchParams }) {
       features: formatFeatures(formattedFilters.features),
       sort_option: sort || 1,
     }));
-  }, [searchParams]);
+  }, [searchParams, stateData, cityData, sortParam, pathname]);
 
   return (
     <>

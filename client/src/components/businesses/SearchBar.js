@@ -40,6 +40,10 @@ function SearchBar({ stateData, cityData, page }) {
     }
   };
 
+  const handleClearInput = () => {
+    updateFilter("title", "");
+  };
+
   return (
     <div className="flex-1">
       <div className="flex flex-col md:flex-row gap-2">
@@ -50,7 +54,7 @@ function SearchBar({ stateData, cityData, page }) {
             value={filters.title}
             onChange={(e) => updateFilter("title", e.target.value)}
             onKeyDown={handleKeyPress}
-            className="w-full px-4 py-3 pl-10 text-gray-900 bg-gray-50 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none duration-200 transition-all"
+            className="w-full px-4 py-3 pl-10 pr-10 text-gray-900 bg-gray-50 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none duration-200 transition-all"
           />
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg
@@ -67,6 +71,26 @@ function SearchBar({ stateData, cityData, page }) {
               />
             </svg>
           </div>
+
+          {/* Clear Icon */}
+          {filters.title && (
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+              <button
+                type="button"
+                onClick={handleClearInput}
+                className="w-5 h-5 text-gray-400 hover:scale-125 hover:text-red-400 duration-200 cursor-pointer"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
         <button
           onClick={handleSearch}

@@ -185,11 +185,11 @@ function FilterComboBox({
 
         {/* Clear Icon */}
         {searchTerm && (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer">
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
             <button
               type="button"
               onClick={handleClearInput}
-              className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              className="w-4 h-4 text-gray-400 hover:scale-125 hover:text-red-400 duration-200 cursor-pointer"
             >
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
