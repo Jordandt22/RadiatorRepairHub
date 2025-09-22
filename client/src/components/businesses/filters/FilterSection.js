@@ -13,6 +13,7 @@ import CitiesDropdown from "./dropdowns/CitiesDropdown";
 import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
+import StatesDropdown from "./dropdowns/StatesDropdown";
 
 function FilterSection({ stateData, cityData, page }) {
   const {
@@ -34,29 +35,37 @@ function FilterSection({ stateData, cityData, page }) {
         <div className="w-full">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {!stateData && !cityData && <StatesDropdown />}
+
               {/* City Filter */}
               {!cityData && <CitiesDropdown stateData={stateData} />}
 
-              {/* Min Total Score */}
-              <FilterSliderInput
-                label="Min. Total Score"
-                name="total_score"
-                min={1.0}
-                max={5.0}
-                step={0.1}
-              />
-
-              {/* Min Reviews */}
-              <FilterNumInput
-                label="Min. Reviews"
-                name="reviews_count"
-                min={1}
-                max={500}
-                step={1}
-              />
-
               {/* Primary Category */}
               <PrimaryCategoriesDropdown />
+
+              {/* Min Total Score */}
+              <div className="flex gap-12 items-center md:col-span-2 lg:col-span-3 xl:col-span-4 bg-slate-100 p-4 rounded-md">
+                <div className="w-1/3">
+                  <FilterSliderInput
+                    label="Min. Total Score"
+                    name="total_score"
+                    min={1.0}
+                    max={5.0}
+                    step={0.1}
+                  />
+                </div>
+
+                {/* Min Reviews */}
+                <div className="w-1/3">
+                  <FilterNumInput
+                    label="Min. Reviews"
+                    name="reviews_count"
+                    min={1}
+                    max={500}
+                    step={1}
+                  />
+                </div>
+              </div>
 
               {/* Secondary Categories */}
               <SecondaryCategoriesCheckboxes />

@@ -32,7 +32,7 @@ function FilterNumInput({ label, name, min, max, step }) {
             updateFilter(name, String(val));
           }
         }}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md cursor-pointer"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md cursor-pointer bg-white"
       />
     </div>
   );

@@ -7,7 +7,9 @@ import CITIES from "@/lib/data/cities";
 import FilterDropdown from "../inputs/FilterDropdown";
 
 function CitiesDropdown({ stateData }) {
-  const citiesData = CITIES.filter((city) => city.state_id === stateData.id);
+  const citiesData = stateData
+    ? CITIES.filter((city) => city.state_id === stateData?.id)
+    : CITIES;
 
   return (
     <FilterDropdown

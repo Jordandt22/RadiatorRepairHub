@@ -10,6 +10,7 @@ import CitiesDropdown from "./dropdowns/CitiesDropdown";
 import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
+import StatesDropdown from "./dropdowns/StatesDropdown";
 
 function MobileFilterSection({ stateData, cityData, page }) {
   const { filters, updateFilter, clearAllFilters, applyFilters } = useFilters();
@@ -50,7 +51,9 @@ function MobileFilterSection({ stateData, cityData, page }) {
         {/* Filter Content */}
         <div className="p-4 space-y-6">
           {/* City Filter */}
-          {!cityData && <CitiesDropdown stateData={stateData} />}
+          {/* {!cityData && <CitiesDropdown stateData={stateData} />} */}
+
+          {!stateData && !cityData && <StatesDropdown />}
 
           {/* Min Total Score */}
           <FilterSliderInput

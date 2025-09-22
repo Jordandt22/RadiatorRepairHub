@@ -76,7 +76,7 @@ export function FilterProvider({ children }) {
 
     let filterQueryParams = "";
     Object.keys(filters).map((key) => {
-      const val = filters[key];
+      let val = filters[key];
       const defaultVal = defaultFilters[key];
 
       if (typeof val === "string" && val !== defaultVal) {
@@ -88,6 +88,7 @@ export function FilterProvider({ children }) {
       }
 
       if (typeof val === "number" && val !== defaultVal) {
+        if (val <= 0) val = 1;
         filterQueryParams += `&${key}=${val}`;
       }
 
@@ -115,7 +116,6 @@ export function FilterProvider({ children }) {
 
   // Clear all filters
   const clearAllFilters = (stateData, cityData) => {
-    console.log("clearAllFilters");
     setShowFilters(false);
     setFilters(defaultFilters);
     setAppliedFilters(null);
