@@ -6,14 +6,20 @@ import { useFilters } from "@/contexts/FilterProvider";
 // Components
 import FilterNumInput from "./inputs/FilterNumInput";
 import FilterSliderInput from "./inputs/FilterSliderInput";
-import CitiesDropdown from "./dropdowns/CitiesDropdown";
+import CitySearch from "./comboboxes/CitySearch";
 import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
 import StatesDropdown from "./dropdowns/StatesDropdown";
 
 function MobileFilterSection({ stateData, cityData, page }) {
-  const { filters, updateFilter, clearAllFilters, applyFilters } = useFilters();
+  const {
+    filters,
+    updateOpenFilter,
+    clearAllFilters,
+    applyFilters,
+    setShowFilters,
+  } = useFilters();
 
   return (
     <div className="md:hidden fixed inset-0 z-50 overflow-y-auto">
@@ -50,10 +56,10 @@ function MobileFilterSection({ stateData, cityData, page }) {
 
         {/* Filter Content */}
         <div className="p-4 space-y-6">
-          {/* City Filter */}
-          {/* {!cityData && <CitiesDropdown stateData={stateData} />} */}
-
           {!stateData && !cityData && <StatesDropdown />}
+
+          {/* City Filter */}
+          {!cityData && <CitySearch stateData={stateData} />}
 
           {/* Min Total Score */}
           <FilterSliderInput
@@ -91,9 +97,9 @@ function MobileFilterSection({ stateData, cityData, page }) {
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={filters.openWeekdays}
+                  checked={filters.open.weekdays}
                   onChange={(e) =>
-                    updateFilter("openWeekdays", e.target.checked)
+                    updateOpenFilter("weekdays", e.target.checked)
                   }
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
@@ -102,9 +108,9 @@ function MobileFilterSection({ stateData, cityData, page }) {
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={filters.openWeekends}
+                  checked={filters.open.weekends}
                   onChange={(e) =>
-                    updateFilter("openWeekends", e.target.checked)
+                    updateOpenFilter("weekends", e.target.checked)
                   }
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />

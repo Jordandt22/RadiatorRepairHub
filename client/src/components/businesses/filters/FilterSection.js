@@ -9,7 +9,7 @@ import { useFilters } from "@/contexts/FilterProvider";
 import MobileFilterSection from "./MobileFilterSection";
 import FilterNumInput from "./inputs/FilterNumInput";
 import FilterSliderInput from "./inputs/FilterSliderInput";
-import CitiesDropdown from "./dropdowns/CitiesDropdown";
+import CitySearch from "./comboboxes/CitySearch";
 import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
@@ -38,7 +38,7 @@ function FilterSection({ stateData, cityData, page }) {
               {!stateData && !cityData && <StatesDropdown />}
 
               {/* City Filter */}
-              {!cityData && <CitiesDropdown stateData={stateData} />}
+              {!cityData && <CitySearch stateData={stateData} />}
 
               {/* Primary Category */}
               <PrimaryCategoriesDropdown />
