@@ -12,6 +12,10 @@ function Navbar() {
       path: "/search",
     },
     {
+      label: "States",
+      path: "/states",
+    },
+    {
       label: "About",
       path: "/about",
     },
@@ -31,12 +35,12 @@ function Navbar() {
             </h1>
           </div>
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
+            <div className="ml-10 flex items-baseline space-x-4">
               {links.map((link) => (
                 <Link
                   key={link.label}
                   href={link.path}
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm
+                  className="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm
                   font-medium transition-colors"
                 >
                   {link.label}

@@ -6,7 +6,9 @@ function SearchHeader({ title }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 font-heading">
-          Radiator Repair Services{title && ` for "${title}"`}
+          {!title
+            ? "Search for Radiator Repair Services"
+            : `Radiator Repair Services for "${title}"`}
         </h1>
         <p className="text-lg text-gray-300 font-body">
           Find trusted radiator repair specialists{title && ` for "${title}"`}.
