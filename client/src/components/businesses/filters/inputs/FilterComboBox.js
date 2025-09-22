@@ -76,6 +76,14 @@ function FilterComboBox({
 
   // Handle option selection
   const handleOptionSelect = (option) => {
+    if (name === "state_id") {
+      // Reset City Filter
+      updateFilter("city_id", "");
+    } else if (name === "city_id") {
+      // Set State Filter
+      updateFilter("state_id", option.state_id);
+    }
+
     updateFilter(name, option[valueKey]);
     setSearchTerm(option[labelKey]);
     setIsOpen(false);

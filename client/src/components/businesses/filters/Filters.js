@@ -6,22 +6,22 @@ import React from "react";
 import { useFilters } from "@/contexts/FilterProvider";
 
 function Filters({ stateData, cityData }) {
-  const { showFilters, setShowFilters, updateURL, appliedFilters } =
+  const { showFilters, setShowFilters, updateURL, filters, appliedFilters } =
     useFilters();
 
   return (
     <div className="flex flex-col sm:flex-row gap-3">
-      <div className="relative">
+      <div className="relative bg-white border-2 border-gray-200 rounded-lg">
         <select
           value={appliedFilters?.sort_option}
           onChange={(e) => {
             setShowFilters(false);
             updateURL(stateData, cityData, 1, {
-              ...appliedFilters,
+              ...filters,
               sort_option: Number(e.target.value),
             });
           }}
-          className="px-4 py-3 pr-10 bg-white border-2 border-gray-200 rounded-lg text-gray-900 cursor-pointer appearance-none focus:border-blue-500 outline-none duration-200"
+          className="px-4 py-3 pr-10  text-gray-900 cursor-pointer appearance-none focus:border-blue-500 outline-none duration-200"
         >
           <option value={1}>Most Reviews</option>
           <option value={2}>Least Reviews</option>
@@ -49,10 +49,10 @@ function Filters({ stateData, cityData }) {
       {/* Filter Button */}
       <button
         onClick={() => setShowFilters(!showFilters)}
-        className={`px-4 py-3 border rounded-lg font-medium transition-colors duration-200 flex justify-between items-center gap-2 ${
+        className={`px-4 py-3 border-2 rounded-lg font-medium transition-colors duration-200 flex justify-between items-center gap-2 ${
           showFilters
             ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700 cursor-pointer"
-            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 cursor-pointer"
+            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 cursor-pointer"
         }`}
       >
         <span className="flex items-center gap-2">
@@ -74,7 +74,7 @@ function Filters({ stateData, cityData }) {
 
         {showFilters && (
           <svg
-            className="w-4 h-4 transition-transform duration-200 rotate-180"
+            className="w-4 h-4 transition-transform duration-200 rotate-180 text-gray-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -89,7 +89,7 @@ function Filters({ stateData, cityData }) {
         )}
         {!showFilters && (
           <svg
-            className="w-4 h-4 transition-transform duration-200"
+            className="w-4 h-4 transition-transform duration-200 text-gray-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
