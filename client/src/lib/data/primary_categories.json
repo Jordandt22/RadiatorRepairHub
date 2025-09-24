@@ -5,6 +5,21 @@
     "slug": "auto-repair-shop"
   },
   {
+    "id": "e8ee0fde-3bad-4bf5-8d03-c4cd127757cc",
+    "name": "Radiator repair service",
+    "slug": "radiator-repair-service"
+  },
+  {
+    "id": "2fcfeb02-e175-40d4-a2e1-92fdb8a73fdc",
+    "name": "Radiator shop",
+    "slug": "radiator-shop"
+  },
+  {
+    "id": "e001a483-5d97-4684-b815-8ff6a3ddd123",
+    "name": "Auto body shop",
+    "slug": "auto-body-shop"
+  },
+  {
     "id": "9c65119c-0f87-485f-8405-b9948d35cdc6",
     "name": "Tire repair shop",
     "slug": "tire-repair-shop"
@@ -20,11 +35,6 @@
     "slug": "tire-shop"
   },
   {
-    "id": "2fcfeb02-e175-40d4-a2e1-92fdb8a73fdc",
-    "name": "Radiator shop",
-    "slug": "radiator-shop"
-  },
-  {
     "id": "f6ee5003-c3a9-4299-8315-4cc8af54c85e",
     "name": "Gas station",
     "slug": "gas-station"
@@ -34,20 +44,11 @@
     "name": "Truck parts supplier",
     "slug": "truck-parts-supplier"
   },
-  {
-    "id": "e001a483-5d97-4684-b815-8ff6a3ddd123",
-    "name": "Auto body shop",
-    "slug": "auto-body-shop"
-  },
+
   {
     "id": "032c9a8a-9d1f-4f1a-bdd8-5ef6ad4a7058",
     "name": "Transmission shop",
     "slug": "transmission-shop"
-  },
-  {
-    "id": "e8ee0fde-3bad-4bf5-8d03-c4cd127757cc",
-    "name": "Radiator repair service",
-    "slug": "radiator-repair-service"
   },
   {
     "id": "c6ff9f5f-c305-452b-b868-9887c5bbb89b",

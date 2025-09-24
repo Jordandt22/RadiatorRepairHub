@@ -203,3 +203,20 @@ html {
 .custom-toast.Toastify__toast--exiting {
   animation: slideOutRight 0.3s ease-in !important;
 }
+
+/* Fade in up animation for server components */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+}

@@ -2,8 +2,10 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { Search } from "lucide-react";
 
-function HeroSearchBar() {
+function HeroSearchBar({ heroInView }) {
   const [search, setSearch] = useState("");
   const router = useRouter();
 
@@ -22,7 +24,12 @@ function HeroSearchBar() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <motion.div
+      className="max-w-2xl mx-auto"
+      initial={{ opacity: 0, y: 20 }}
+      animate={heroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+      transition={{ duration: 0.8, delay: 0.3 }}
+    >
       <div className="relative">
         <input
           type="text"
@@ -31,29 +38,20 @@ function HeroSearchBar() {
           onChange={handleSearch}
           value={search}
           onKeyDown={handleKeyPress}
+          aria-label="Search for radiator repair shops"
         />
-        <button
+        <motion.button
           type="button"
-          className="absolute right-2 top-2 bottom-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium flex items-center justify-center cursor-pointer"
+          className="absolute right-2 top-2 bottom-2 px-6 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium flex items-center justify-center cursor-pointer"
           onClick={submitSearch}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-        </button>
+          <Search className="w-5 h-5 mr-2" />
+          Search Now
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
