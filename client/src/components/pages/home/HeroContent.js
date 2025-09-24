@@ -16,6 +16,9 @@ import {
   Cog,
 } from "lucide-react";
 
+// Contexts
+import { ToastProvider } from "@/contexts/ToastProvider";
+
 // Components
 import HeroSearchBar from "./HeroSearchBar";
 
@@ -162,7 +165,9 @@ function HeroContent() {
           </p>
 
           {/* Search Bar */}
-          <HeroSearchBar heroInView={heroInView} />
+          <ToastProvider>
+            <HeroSearchBar heroInView={heroInView} />
+          </ToastProvider>
         </motion.div>
       </div>
     </section>

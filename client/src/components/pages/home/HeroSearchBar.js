@@ -5,8 +5,12 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 
+// Contexts
+import { useToast } from "@/contexts/ToastProvider";
+
 function HeroSearchBar({ heroInView }) {
   const [search, setSearch] = useState("");
+  const { showCustomError } = useToast();
   const router = useRouter();
 
   const handleSearch = (e) => {
@@ -14,6 +18,30 @@ function HeroSearchBar({ heroInView }) {
   };
 
   const submitSearch = () => {
+    if (search === "") {
+      router.push(`/search?page=1&sort=most_reviews`);
+    }
+
+    // Check Max Length
+    if (search.length > 50) {
+      return showCustomError(
+        "Please keep your search under 50 characters..",
+        "Search Input Too Long"
+      );
+    }
+
+    // Check for Special Characters (Allowed: ', -, &, _)
+    const specialCharacters = new RegExp(
+      /[!@#$%^*()+\=\[\]{};:"\\|,.<>\/?]/,
+      "gi"
+    );
+    if (specialCharacters.test(search)) {
+      return showCustomError(
+        "Allowed: ', -, &, _",
+        "Invalid Special Characters"
+      );
+    }
+
     router.push(`/search?title=${search}&page=1&sort=most_reviews`);
   };
 

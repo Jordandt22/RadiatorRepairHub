@@ -12,9 +12,9 @@ function SearchBar({ stateData, cityData, page }) {
 
   const handleSearch = () => {
     // Check Max Length
-    if (filters.title.length > 150) {
+    if (filters.title.length > 50) {
       return showCustomError(
-        "Please keep your business name under 150 characters..",
+        "Please keep your business name under 50 characters..",
         "Search Input Too Long"
       );
     }

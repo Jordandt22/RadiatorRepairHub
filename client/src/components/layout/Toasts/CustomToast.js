@@ -4,18 +4,67 @@ import React from "react";
 import { toast } from "sonner";
 
 export default function CustomToast({ message, title, id, color }) {
-  const containerStyle = `relative flex items-start gap-4 p-4 bg-${color}-50 rounded-xl shadow-lg w-fit`;
-  const iconStyle = `w-10 h-10 bg-${color}-100 rounded-full flex items-center justify-center`;
-  const iconColorStyle = `w-8 h-8 bg-${color}-500 rounded-full flex items-center justify-center`;
-  const textStyle = `text-sm font-semibold text-${color}-800 mb-1`;
-  const messageStyle = `text-sm text-${color}-700`;
-  const closeButtonStyle = `absolute top-3 right-3 text-${color}-400 hover:text-${color}-600 transition-colors duration-200 cursor-pointer hover:scale-120`;
+  // Define styles based on color type
+  const getStyles = (color) => {
+    switch (color) {
+      case "red":
+        return {
+          container:
+            "relative flex items-start gap-4 p-4 bg-red-50 rounded-xl shadow-lg w-fit",
+          icon: "w-10 h-10 bg-red-100 rounded-full flex items-center justify-center",
+          iconColor:
+            "w-8 h-8 bg-red-500 rounded-full flex items-center justify-center",
+          text: "text-sm font-semibold text-red-800 mb-1",
+          message: "text-sm text-red-700",
+          closeButton:
+            "absolute top-3 right-3 text-red-400 hover:text-red-600 transition-colors duration-200 cursor-pointer hover:scale-120",
+        };
+      case "green":
+        return {
+          container:
+            "relative flex items-start gap-4 p-4 bg-green-50 rounded-xl shadow-lg w-fit",
+          icon: "w-10 h-10 bg-green-100 rounded-full flex items-center justify-center",
+          iconColor:
+            "w-8 h-8 bg-green-500 rounded-full flex items-center justify-center",
+          text: "text-sm font-semibold text-green-800 mb-1",
+          message: "text-sm text-green-700",
+          closeButton:
+            "absolute top-3 right-3 text-green-400 hover:text-green-600 transition-colors duration-200 cursor-pointer hover:scale-120",
+        };
+      case "blue":
+        return {
+          container:
+            "relative flex items-start gap-4 p-4 bg-blue-50 rounded-xl shadow-lg w-fit",
+          icon: "w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center",
+          iconColor:
+            "w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center",
+          text: "text-sm font-semibold text-blue-800 mb-1",
+          message: "text-sm text-blue-700",
+          closeButton:
+            "absolute top-3 right-3 text-blue-400 hover:text-blue-600 transition-colors duration-200 cursor-pointer hover:scale-120",
+        };
+      default:
+        return {
+          container:
+            "relative flex items-start gap-4 p-4 bg-gray-50 rounded-xl shadow-lg w-fit",
+          icon: "w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center",
+          iconColor:
+            "w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center",
+          text: "text-sm font-semibold text-gray-800 mb-1",
+          message: "text-sm text-gray-700",
+          closeButton:
+            "absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer hover:scale-120",
+        };
+    }
+  };
+
+  const styles = getStyles(color);
 
   return (
-    <div className={containerStyle}>
+    <div className={styles.container}>
       <div className="flex-shrink-0">
-        <div className={iconStyle}>
-          <div className={iconColorStyle}>
+        <div className={styles.icon}>
+          <div className={styles.iconColor}>
             {color === "red" ? (
               <svg
                 className="w-5 h-5 text-white"
@@ -63,10 +112,10 @@ export default function CustomToast({ message, title, id, color }) {
         </div>
       </div>
       <div className="flex-1 pr-20">
-        <h4 className={textStyle}>{title}</h4>
-        <p className={messageStyle}>{message}</p>
+        <h4 className={styles.text}>{title}</h4>
+        <p className={styles.message}>{message}</p>
       </div>
-      <button onClick={() => toast.dismiss(id)} className={closeButtonStyle}>
+      <button onClick={() => toast.dismiss(id)} className={styles.closeButton}>
         <svg
           className="w-5 h-5"
           fill="none"

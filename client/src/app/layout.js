@@ -1,4 +1,5 @@
 import { Inter, Oswald } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 // Components
@@ -58,7 +59,17 @@ export default function RootLayout({ children }) {
       >
         <Navbar />
         {children}
+
         <Footer />
+
+        <Toaster
+          toastOptions={{
+            style: {
+              background: "transparent",
+              boxShadow: "none",
+            },
+          }}
+        />
       </body>
     </html>
   );

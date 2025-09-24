@@ -2,7 +2,6 @@
 
 import React, { useEffect } from "react";
 import useSWR from "swr";
-import { Toaster } from "sonner";
 
 // Utils
 import { postFetcher } from "@/lib/utils/utils";
@@ -75,15 +74,6 @@ export default function ListingsWrapper({ stateData, cityData, page = 1 }) {
           />
         </>
       )}
-
-      <Toaster
-        toastOptions={{
-          style: {
-            background: "transparent",
-            boxShadow: "none",
-          },
-        }}
-      />
     </div>
   );
 }
