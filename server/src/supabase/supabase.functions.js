@@ -10,6 +10,15 @@ const formatBusinessListings = (data) => {
     business.features = { ...business.features[0] };
     delete business.features.id;
     delete business.features.business_id;
+
+    if (business?.secondary_categories) {
+      business.secondary_categories = business.secondary_categories.map(
+        (item) => ({
+          ...item.secondary_categories,
+        })
+      );
+    }
+
     return business;
   });
 
@@ -49,7 +58,10 @@ const formatFullBusiness = (business) => {
 export const getTopRatedBusinesses = async () => {
   const { data, error } = await supabase
     .from("businesses")
-    .select(listingBusinessSelect)
+    .select(
+      listingBusinessSelect +
+        ", secondary_categories:business_secondary_categories!inner(secondary_categories(*))"
+    )
     .gte("reviews_count", 400)
     .order("total_score", { ascending: false })
     .limit(10);

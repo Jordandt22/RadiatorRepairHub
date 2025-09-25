@@ -7,6 +7,7 @@ import FeaturedCategories from "@/components/pages/home/FeaturedCategories";
 import PopularLocations from "@/components/pages/home/PopularLocations";
 import HowItWorks from "@/components/pages/home/HowItWorks";
 import WhyChoose from "@/components/pages/home/WhyChoose";
+import ContactSection from "@/components/pages/home/ContactSection";
 
 export default function Home() {
   return (
@@ -18,11 +19,11 @@ export default function Home() {
       <FeaturedBusinesses />
 
       {/* SEO Content Section */}
-      <section className="py-12 bg-white">
+      <section className="pt-8 pb-28 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-lg text-gray-700 leading-relaxed">
             When your car&apos;s radiator needs repair, finding a trusted{" "}
-            <strong>radiator repair near me</strong> is crucial. Our
+            <strong>radiator repair near you</strong> is crucial. Our
             comprehensive <strong>radiator repair directory</strong> connects
             you with certified specialists who can diagnose, repair, and
             maintain your vehicle&apos;s cooling system. From radiator
@@ -43,6 +44,9 @@ export default function Home() {
 
       {/* Why Choose RadiatorRepairHub */}
       <WhyChoose />
+
+      {/* Contact Section */}
+      <ContactSection />
     </div>
   );
 }
