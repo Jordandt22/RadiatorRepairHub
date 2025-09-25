@@ -16,6 +16,10 @@ function Navbar() {
       path: "/",
     },
     {
+      label: "Featured",
+      path: "/featured",
+    },
+    {
       label: "States",
       path: "/states",
     },

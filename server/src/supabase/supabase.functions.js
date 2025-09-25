@@ -64,7 +64,7 @@ export const getTopRatedBusinesses = async () => {
     )
     .gte("reviews_count", 400)
     .order("total_score", { ascending: false })
-    .limit(10);
+    .limit(12);
 
   if (data) {
     return { data: formatBusinessListings(data), error };

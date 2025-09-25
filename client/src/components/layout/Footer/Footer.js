@@ -4,6 +4,7 @@ import Link from "next/link";
 function Footer() {
   const discoverLinks = [
     { label: "Home", path: "/" },
+    { label: "Featured", path: "/featured" },
     { label: "Find a Shop", path: "/search" },
     { label: "States", path: "/states" },
   ];
