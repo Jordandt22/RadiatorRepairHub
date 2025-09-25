@@ -20,6 +20,10 @@ function Navbar() {
       path: "/featured",
     },
     {
+      label: "Categories",
+      path: "/categories",
+    },
+    {
       label: "States",
       path: "/states",
     },

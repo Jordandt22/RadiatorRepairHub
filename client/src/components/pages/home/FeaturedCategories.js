@@ -2,23 +2,34 @@ import React from "react";
 import { Wrench, Car, Shield } from "lucide-react";
 import Link from "next/link";
 
-// Data
-import PRIMARY_CATEGORIES from "@/lib/data/primary_categories";
-
 function FeaturedCategories() {
   // Featured primary categories
-  const icons = [
-    <Wrench key="wrench" className="w-8 h-8 text-blue-600" />,
-    <Car key="car" className="w-8 h-8 text-blue-600" />,
-    <Car key="car" className="w-8 h-8 text-blue-600" />,
-    <Shield key="shield" className="w-8 h-8 text-blue-600" />,
+  const featuredPrimaryCategories = [
+    {
+      id: "126c620b-bb78-4ae0-b4f6-4e68ae835f96",
+      name: "Auto repair shop",
+      slug: "auto-repair-shop",
+      icon: Wrench,
+    },
+    {
+      id: "e8ee0fde-3bad-4bf5-8d03-c4cd127757cc",
+      name: "Radiator repair service",
+      slug: "radiator-repair-service",
+      icon: Car,
+    },
+    {
+      id: "2fcfeb02-e175-40d4-a2e1-92fdb8a73fdc",
+      name: "Radiator shop",
+      slug: "radiator-shop",
+      icon: Car,
+    },
+    {
+      id: "e001a483-5d97-4684-b815-8ff6a3ddd123",
+      name: "Auto body shop",
+      slug: "auto-body-shop",
+      icon: Shield,
+    },
   ];
-  const featuredPrimaryCategories = PRIMARY_CATEGORIES.slice(0, 4).map(
-    (category, i) => ({
-      ...category,
-      icon: icons[i],
-    })
-  );
 
   return (
     <section className="py-20 bg-gray-50">
@@ -39,10 +50,10 @@ function FeaturedCategories() {
               key={category.id}
               className="bg-white rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105 hover:-translate-y-1 animate-fade-in-up hover:bg-blue-50 hover:border-blue-500 border-2 border-transparent"
               style={{ animationDelay: `${index * 100}ms` }}
-              href={`/search?page=1&sort=most_reviews&primary_category_id=${category.id}`}
+              href={`/category/${category.slug}`}
             >
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                {category.icon}
+                <category.icon className="w-8 h-8 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3 font-heading">
                 {category.name}
