@@ -50,17 +50,13 @@ function BusinessInfo({ business, setActiveCard }) {
           <p className="text-sm text-gray-600">{business.phone}</p>
         </div>
         {availableFeatures.map((item) => (
-          <Link
-            className="flex items-center gap-2 group/feature"
+          <p
+            className="flex items-center gap-2"
             key={business.id + " " + item.value}
-            href={`/feature/${item.path}`}
-            prefetch={false}
           >
-            <item.icon className="w-5 h-5 text-gray-600 group-hover/feature:text-blue-500" />
-            <p className="text-sm text-gray-600 capitalize group-hover/feature:text-blue-500">
-              {item.value}
-            </p>
-          </Link>
+            <item.icon className="w-5 h-5 text-gray-600" />
+            <p className="text-sm text-gray-600 capitalize ">{item.value}</p>
+          </p>
         ))}
       </div>
     </BackOfCard>
