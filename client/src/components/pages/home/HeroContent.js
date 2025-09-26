@@ -40,7 +40,7 @@ function HeroContent() {
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
         {/* Top row - mixed positioning */}
-        <div className="absolute top-12 left-8 w-16 h-16 opacity-20 animate-float">
+        <div className="hidden md:block absolute top-12 left-8 w-16 h-16 opacity-20 animate-float">
           <Car className="w-full h-full text-blue-300" />
         </div>
         <div
@@ -50,7 +50,7 @@ function HeroContent() {
           <Wrench className="w-full h-full text-blue-400" />
         </div>
         <div
-          className="absolute top-16 right-1/3 w-14 h-14 opacity-12 animate-pulse"
+          className="hidden md:block absolute top-16 right-1/3 w-14 h-14 opacity-12 animate-pulse"
           style={{ animationDelay: "2s" }}
         >
           <Settings className="w-full h-full text-blue-300" />
@@ -64,13 +64,13 @@ function HeroContent() {
 
         {/* Middle left column - some moved to edges */}
         <div
-          className="absolute top-1/3 left-50 w-14 h-14 opacity-12 animate-bounce"
+          className="hidden md:block absolute top-1/3 left-50 w-14 h-14 opacity-12 animate-bounce"
           style={{ animationDelay: "1.5s" }}
         >
           <Zap className="w-full h-full text-blue-400" />
         </div>
         <div
-          className="absolute top-1/2 left-1/3 w-11 h-11 opacity-14 animate-float"
+          className="hidden md:block absolute top-1/2 left-1/3 w-11 h-11 opacity-14 animate-float"
           style={{ animationDelay: "3s" }}
         >
           <Clock className="w-full h-full text-blue-300" />
@@ -96,7 +96,7 @@ function HeroContent() {
           <Cog className="w-full h-full text-blue-300" />
         </div>
         <div
-          className="absolute top-2/3 right-40 w-10 h-10 opacity-15 animate-pulse"
+          className="hidden md:block absolute top-2/3 right-40 w-10 h-10 opacity-15 animate-pulse"
           style={{ animationDelay: "2.8s" }}
         >
           <Thermometer className="w-full h-full text-blue-200" />
@@ -104,19 +104,19 @@ function HeroContent() {
 
         {/* Bottom row - mixed positioning */}
         <div
-          className="absolute bottom-24 left-1/5 w-9 h-9 opacity-13 animate-pulse-slow"
+          className="hidden md:block absolute bottom-24 left-1/5 w-9 h-9 opacity-13 animate-pulse-slow"
           style={{ animationDelay: "1.2s" }}
         >
           <Star className="w-full h-full text-blue-200" />
         </div>
         <div
-          className="absolute bottom-20 left-2/5 w-20 h-20 opacity-10 animate-pulse-slow"
+          className="absolute bottom-20 left-1/5 md:left-2/5 w-20 h-20 opacity-10 animate-pulse-slow"
           style={{ animationDelay: "0.3s" }}
         >
           <Car className="w-full h-full text-blue-200" />
         </div>
         <div
-          className="absolute bottom-28 right-1/5 w-12 h-12 opacity-17 animate-bounce"
+          className="hidden md:block  absolute bottom-28 right-1/5 w-12 h-12 opacity-17 animate-bounce"
           style={{ animationDelay: "2.2s" }}
         >
           <Gauge className="w-full h-full text-blue-400" />
