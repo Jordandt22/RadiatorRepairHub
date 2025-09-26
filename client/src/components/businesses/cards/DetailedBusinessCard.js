@@ -87,7 +87,7 @@ function DetailedBusinessCard({ business }) {
             <span className="text-sm">{business.phone}</span>
           </div>
           <Link
-            href={`/businesses/${business.id}`}
+            href={`/business/${business.id}`}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 duration-300 hover:scale-105"
           >
             View Details
