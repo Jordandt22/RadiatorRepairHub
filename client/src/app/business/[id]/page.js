@@ -6,7 +6,6 @@ import {
   Star,
   Phone,
   Globe,
-  Clock,
   ExternalLink,
   CalendarDays,
   CreditCard,
@@ -20,6 +19,7 @@ import {
 
 // Components
 import NotFoundDisplay from "@/components/pages/not-found/NotFoundDisplay";
+import OpenStatus from "@/components/businesses/status/OpenStatus";
 
 // Feature icons mapping
 const featureIcons = {
@@ -93,7 +93,7 @@ async function Page({ params }) {
     }
   });
 
-  // Format business hours
+  // Format business hours for display (using opening_hours format)
   const formatBusinessHours = (openingHours) => {
     if (!openingHours || !Array.isArray(openingHours)) {
       return <p className="text-sm text-gray-500">Hours not available</p>;
@@ -104,9 +104,19 @@ async function Page({ params }) {
         {openingHours.map((day, index) => (
           <div key={index} className="flex justify-between text-sm">
             <span className="font-medium text-gray-700">{day.day}</span>
-            <span className="text-gray-600">
-              {day.is_closed ? "Closed" : day.hours}
-            </span>
+            <div className="text-gray-600 text-right">
+              {day.is_closed ? (
+                <span>Closed</span>
+              ) : (
+                <div className="space-y-1">
+                  {day.hours.split(",").map((timePeriod, timeIndex) => (
+                    <div key={timeIndex} className="text-sm">
+                      {timePeriod.trim()}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -140,19 +150,20 @@ async function Page({ params }) {
         {/* Overlay with business title */}
         <div className="absolute inset-0 bg-black/75 flex items-end">
           <div className="w-full p-6 text-white max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-2">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-4">
               {business.title}
             </h1>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center">
                 <Star className="w-5 h-5 text-yellow-400 fill-current" />
                 <span className="ml-1 font-semibold text-lg">
                   {business.total_score}
                 </span>
               </div>
-              <span className="text-lg">
+              <span className="text-lg mr-2">
                 ({business.reviews_count.toLocaleString()} reviews)
               </span>
+              <OpenStatus hours={business.hours} />
             </div>
           </div>
         </div>
@@ -312,11 +323,22 @@ async function Page({ params }) {
                 Rating
               </h2>
               <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Star className="w-8 h-8 text-yellow-400 fill-current" />
-                  <span className="text-3xl font-bold text-gray-900">
+                <div className="flex flex-col items-center justify-center gap-4 mb-2">
+                  <span className="text-3xl font-bold text-gray-900 bg-gray-100 px-4 py-2 rounded-md">
                     {business.total_score}
                   </span>
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-6 h-6 ${
+                          i < Math.floor(business.total_score)
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
                 </div>
                 <p className="text-gray-600">
                   Based on {business.reviews_count.toLocaleString()} reviews
@@ -327,7 +349,7 @@ async function Page({ params }) {
                     href={business.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-4 text-white bg-blue-600 rounded-full px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95 flex items-center gap-1 justify-center"
+                    className="mt-6 text-white bg-blue-600 rounded-full px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95 flex items-center gap-1 justify-center"
                   >
                     View All Reviews
                   </Link>
@@ -384,10 +406,13 @@ async function Page({ params }) {
 
             {/* Business Hours */}
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4 font-heading flex items-center gap-2">
-                Business Hours
-              </h2>
-              {!business.opening_hours ? (
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-900 font-heading">
+                  Business Hours
+                </h2>
+                <OpenStatus hours={business.hours} />
+              </div>
+              {business.opening_hours ? (
                 formatBusinessHours(business.opening_hours)
               ) : (
                 <p className="text-gray-600">No Business Hours Available</p>

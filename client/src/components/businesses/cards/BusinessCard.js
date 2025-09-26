@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Info, Clock, ExternalLink } from "lucide-react";
+import OpenStatus from "@/components/businesses/status/OpenStatus";
 
 function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
   const buttonStyle =
@@ -9,7 +10,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
   const iconStyle = "w-5 h-5 text-gray-600 group-hover/hours:text-white";
 
   return (
-    <div className="hidden md:block bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full">
+    <div className="hidden md:block bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full hover:shadow-lg hover:-translate-y-1 hover:scale-102 transition-all duration-300">
       <div className="group/image relative w-full h-56 bg-gray-200">
         {business.image_url ? (
           <Image
@@ -71,6 +72,9 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
           >
             {business.primary_category.name}
           </Link>
+          <div className="absolute top-3 left-3">
+            <OpenStatus hours={business.hours} />
+          </div>
         </div>
       </div>
 
@@ -78,7 +82,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
         <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 font-heading text-lg">
           {business.title}
         </h3>
-        <div className="flex items-center mb-1">
+        <div className="flex items-center mb-1 flex-wrap gap-2">
           <div className="flex items-center">
             {[...Array(5)].map((_, i) => (
               <svg
@@ -95,10 +99,10 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
               </svg>
             ))}
           </div>
-          <span className="ml-2 text-sm text-gray-600 font-bold">
+          <span className="text-sm text-gray-600 font-bold">
             {business.total_score}
           </span>
-          <span className="ml-1 text-sm text-gray-500">
+          <span className="text-sm text-gray-500">
             ({business.reviews_count.toLocaleString()})
           </span>
         </div>

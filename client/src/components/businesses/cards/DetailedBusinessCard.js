@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Star, Phone } from "lucide-react";
+import OpenStatus from "@/components/businesses/status/OpenStatus";
 
 function DetailedBusinessCard({ business }) {
   return (
@@ -43,7 +44,7 @@ function DetailedBusinessCard({ business }) {
               <span className="text-sm">{business.address}</span>
             </Link>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center flex-wrap">
             <div className="flex items-center">
               <Star className="w-4 h-4 text-yellow-400 fill-current" />
               <span className="ml-1 font-semibold text-gray-900">
@@ -53,6 +54,7 @@ function DetailedBusinessCard({ business }) {
             <span className="text-sm text-gray-600">
               ({business.reviews_count} reviews)
             </span>
+            <OpenStatus hours={business.hours} />
           </div>
         </div>
 

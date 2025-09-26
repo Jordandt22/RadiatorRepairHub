@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import OpenStatus from "@/components/businesses/status/OpenStatus";
 
 function MobileBusinessCard({ business }) {
   return (
@@ -34,7 +35,7 @@ function MobileBusinessCard({ business }) {
             {business.title}
           </h3>
 
-          <div className="flex items-center mb-1">
+          <div className="flex items-center mb-1 flex-wrap gap-2">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <svg
@@ -51,12 +52,13 @@ function MobileBusinessCard({ business }) {
                 </svg>
               ))}
             </div>
-            <span className="ml-2 text-sm text-gray-600 font-bold">
+            <span className="text-sm text-gray-600 font-bold">
               {business.total_score}
             </span>
-            <span className="ml-1 text-sm text-gray-500">
+            <span className="text-sm text-gray-500">
               ({business.reviews_count.toLocaleString()})
             </span>
+            <OpenStatus hours={business.hours} />
           </div>
           <p className="text-sm text-gray-600 mb-4">{business.address}</p>
 

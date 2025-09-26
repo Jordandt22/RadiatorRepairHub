@@ -60,7 +60,7 @@ export const getTopRatedBusinesses = async () => {
     .from("businesses")
     .select(
       listingBusinessSelect +
-        ", secondary_categories:business_secondary_categories!inner(secondary_categories(*))"
+        ", secondary_categories:business_secondary_categories!inner(secondary_categories(*)) , hours:business_hours!inner(*)"
     )
     .gte("reviews_count", 400)
     .order("total_score", { ascending: false })
