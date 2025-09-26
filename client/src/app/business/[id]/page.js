@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import {
   MapPin,
   Star,
@@ -18,7 +19,6 @@ import {
 } from "lucide-react";
 
 // Components
-import NotFoundDisplay from "@/components/pages/not-found/NotFoundDisplay";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 
 // Feature icons mapping
@@ -39,13 +39,10 @@ async function Page({ params }) {
   const res = await fetch(`${process.env.API_URI}/businesses/${id}`);
   const data = await res.json();
 
-  if (!data.data) {
-    return (
-      <NotFoundDisplay
-        link={{ path: "/search", text: "Go back to the Search Page" }}
-        message="The business you are looking for does not exist."
-      />
-    );
+  if (!data?.data) {
+    return notFound();
+  } else if (data.error) {
+    return <div>Sorry, an error occurred while getting the business data.</div>;
   }
 
   const business = data.data;
