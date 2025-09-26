@@ -85,7 +85,7 @@ function Navbar() {
                   href={link.path}
                   className={`${
                     isHomePage
-                      ? "text-white hover:text-blue-200"
+                      ? "text-white hover:bg-blue-500 hover:text-white rounded-md px-3 py-2"
                       : "text-gray-600 hover:text-blue-600"
                   } px-3 py-2 text-sm font-medium transition-colors duration-300`}
                 >
@@ -95,7 +95,7 @@ function Navbar() {
 
               <Link
                 href="/search?page=1&sort=most_reviews"
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white"
+                className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white hover:scale-105"
               >
                 <Search className="w-4 h-4" />
                 <span>Search</span>
