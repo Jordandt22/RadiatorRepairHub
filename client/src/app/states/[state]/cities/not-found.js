@@ -1,11 +1,13 @@
 import React from "react";
+
+// Components
 import NotFoundDisplay from "@/components/pages/not-found/NotFoundDisplay";
 
 function NotFound() {
   return (
     <NotFoundDisplay
-      link={{ path: "/", text: "Go back to the home page" }}
-      message="The page you are looking for does not exist."
+      link={{ path: "/states", text: "Go back to the States Page" }}
+      message="The Cities Page you are looking for does not exist."
     />
   );
 }
