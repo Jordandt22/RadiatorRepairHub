@@ -1,12 +1,30 @@
 import React from "react";
 import Link from "next/link";
+
+// Components
 import DetailedBusinessCard from "@/components/businesses/cards/DetailedBusinessCard";
+import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 
 async function FeaturedBusinesses() {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URI}/businesses/featured`
   );
   const data = await res.json();
+
+  if (!res.ok || data.error) {
+    return (
+      <ErrorDisplay
+        status={res.status}
+        code={data?.error?.code}
+        message={data?.error?.message}
+        link={{
+          path: "/featured",
+          text: "Go to featured businesses page",
+        }}
+      />
+    );
+  }
+
   const businesses = data.data;
 
   return (

@@ -44,7 +44,10 @@ export default function ListingsWrapper({ stateData, cityData, page = 1 }) {
     setShowFilters(false);
   }, [page]);
 
-  if (error) return <PageErrorMessage message={error.message} />;
+  if (error || data?.error)
+    return (
+      <PageErrorMessage message={error?.message || data?.error?.message} />
+    );
   if (!data) return <ListingsSkeleton />;
 
   const businessesData = data.data;

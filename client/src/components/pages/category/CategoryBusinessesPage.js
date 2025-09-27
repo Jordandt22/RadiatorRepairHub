@@ -1,7 +1,10 @@
 import React from "react";
+
+// Components
 import Header from "./Header";
 import BusinessesGrid from "./BusinessesGrid";
 import Pagination from "./Pagination";
+import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 
 async function CategoryBusinessesPage({ primaryCategory, page }) {
   // Get Businesses
@@ -20,6 +23,17 @@ async function CategoryBusinessesPage({ primaryCategory, page }) {
     }
   );
   const data = await res.json();
+
+  if (!res.ok || data.error) {
+    return (
+      <ErrorDisplay
+        status={res.status}
+        code={data?.error?.code}
+        message={data?.error?.message}
+      />
+    );
+  }
+
   const businessesData = data.data;
   const totalPages = businessesData?.totalPages;
 

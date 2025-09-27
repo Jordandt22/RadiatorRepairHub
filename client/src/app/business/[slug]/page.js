@@ -20,6 +20,7 @@ import {
 
 // Components
 import OpenStatus from "@/components/businesses/status/OpenStatus";
+import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 
 // Feature icons mapping
 const featureIcons = {
@@ -39,10 +40,18 @@ async function Page({ params }) {
   const res = await fetch(`${process.env.API_URI}/businesses/${slug}`);
   const data = await res.json();
 
+  if (!res.ok || data.error) {
+    return (
+      <ErrorDisplay
+        status={res.status}
+        code={data?.error?.code}
+        message={data?.error?.message}
+      />
+    );
+  }
+
   if (!data?.data) {
     return notFound();
-  } else if (data.error) {
-    return <div>Sorry, an error occurred while getting the business data.</div>;
   }
 
   const business = data.data;
