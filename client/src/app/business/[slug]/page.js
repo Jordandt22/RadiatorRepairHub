@@ -35,8 +35,8 @@ const featureIcons = {
 };
 
 async function Page({ params }) {
-  const { id } = await params;
-  const res = await fetch(`${process.env.API_URI}/businesses/${id}`);
+  const { slug } = await params;
+  const res = await fetch(`${process.env.API_URI}/businesses/${slug}`);
   const data = await res.json();
 
   if (!data?.data) {

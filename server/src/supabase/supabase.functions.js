@@ -83,6 +83,16 @@ export const getBusinessById = async (business_id) => {
   return { data: formatFullBusiness(data), error };
 };
 
+export const getBusinessBySlug = async (business_slug) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .select(fullBusinessSelect)
+    .eq("slug", business_slug)
+    .single();
+
+  return { data: formatFullBusiness(data), error };
+};
+
 export const countBusinessesByState = async (state_id) => {
   const { count, error } = await supabase
     .from("businesses")

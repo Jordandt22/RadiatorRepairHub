@@ -2,20 +2,14 @@ import { Router } from "express";
 import {
   getFeaturedBusinesses,
   getBusiness,
-  // getStateBusinesses,
-  // getCityBusinesses,
   getSearchedBusinesses,
 } from "../controllers/businesses.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
-  BusinessIDSchema,
+  BusinessSlugSchema,
   SearchBusinessesSchema,
 } from "../schemas/businesses.schemas.js";
 import { paginationSchema } from "../schemas/query.schemas.js";
-// import {
-//   StateIDSchema,
-//   StateIDandCitySlugSchema,
-// } from "../schemas/location.schemas.js";
 import {
   paramsValidator,
   queryValidator,
@@ -32,8 +26,8 @@ businessesRouter.get(
 
 // Get Business by ID
 businessesRouter.get(
-  "/:business_id",
-  paramsValidator(BusinessIDSchema),
+  "/:business_slug",
+  paramsValidator(BusinessSlugSchema),
   serverErrorCatcherWrapper(getBusiness)
 );
 

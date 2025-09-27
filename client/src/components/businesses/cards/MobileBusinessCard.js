@@ -6,7 +6,7 @@ import OpenStatus from "@/components/businesses/status/OpenStatus";
 function MobileBusinessCard({ business }) {
   return (
     <Link
-      href={`/business/${business.id}`}
+      href={`/business/${business.slug}`}
       className="md:hidden block h-full"
       prefetch={false}
     >

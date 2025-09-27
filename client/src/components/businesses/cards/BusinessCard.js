@@ -55,7 +55,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
 
             {/* Link to business */}
             <Link
-              href={`/business/${business.id}`}
+              href={`/business/${business.slug}`}
               className={buttonStyle}
               aria-label="View business details"
               prefetch={false}

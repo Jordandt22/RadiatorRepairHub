@@ -7,7 +7,7 @@ import {
   cacheData,
   getFeaturedBusinessesKey,
   getCacheData,
-  getBusinessByIdKey,
+  getBusinessBySlugKey,
   // getBusinessesByStateKey,
   // getCountBusinessesByStateKey,
   // getCountBusinessesByCityKey,
@@ -18,13 +18,13 @@ import {
 } from "../redis/redis.js";
 import {
   getTopRatedBusinesses,
-  getBusinessById,
   // getBusinessesByState,
   // countBusinessesByState,
   // countBusinessesByCity,
   // getBusinessesByCity,
   // getCityBySlug,
   searchBusinesses,
+  getBusinessBySlug,
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
 
@@ -58,24 +58,24 @@ export const getFeaturedBusinesses = async (req, res) => {
 };
 
 export const getBusiness = async (req, res) => {
-  const { business_id } = req.params;
+  const { business_slug } = req.params;
 
   // Get Cache Data
-  const { key, interval } = getBusinessByIdKey(business_id);
+  const { key, interval } = getBusinessBySlugKey(business_slug);
   const cachedData = await getCacheData(key);
   if (cachedData) {
     return res.status(200).json(successHandler(cachedData.data));
   }
 
-  // Get Business by ID
-  const { data, error } = await getBusinessById(business_id);
+  // Get Business by Slug
+  const { data, error } = await getBusinessBySlug(business_slug);
   if (error) {
     return res
       .status(500)
       .json(
         customErrorHandler(
           SUPABASE_ERROR,
-          `There was an error fetching business by ID (${business_id}).`,
+          `There was an error fetching business by Slug (${business_slug}).`,
           error
         )
       );

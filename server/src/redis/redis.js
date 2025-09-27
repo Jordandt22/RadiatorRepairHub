@@ -82,6 +82,11 @@ export const getBusinessByIdKey = (business_id) => ({
   interval: 60 * 60 * 24 * 7,
 });
 
+export const getBusinessBySlugKey = (business_slug) => ({
+  key: `BUSINESS?BUSINESS-SLUG:${business_slug}`,
+  interval: 60 * 60 * 24 * 7,
+});
+
 // State Businesses
 export const getBusinessesByStateKey = (state_id, page, limit) => ({
   key: `STATE_BUSINESSES?STATE-ID:${state_id}&PAGE:${page}&LIMIT:${limit}`,
