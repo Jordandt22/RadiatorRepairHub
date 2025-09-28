@@ -5,55 +5,53 @@ import { toast } from "sonner";
 
 export default function CustomToast({ message, title, id, color }) {
   // Define styles based on color type
+  const containerStyles =
+    "relative flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl shadow-lg w-fit max-w-xs sm:max-w-sm md:max-w-md";
+  const iconStyles =
+    "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0";
+  const iconColorStyles =
+    "w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center";
+  const textStyles = "text-xs sm:text-sm font-semibold mb-1";
+  const messageStyles = "text-xs sm:text-sm leading-relaxed";
+  const closeButtonStyles =
+    "absolute top-2 right-2 sm:top-3 sm:right-3 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer hover:scale-110 sm:hover:scale-120";
   const getStyles = (color) => {
     switch (color) {
       case "red":
         return {
-          container:
-            "relative flex items-start gap-4 p-4 bg-red-50 rounded-xl shadow-lg w-fit",
-          icon: "w-10 h-10 bg-red-100 rounded-full flex items-center justify-center",
-          iconColor:
-            "w-8 h-8 bg-red-500 rounded-full flex items-center justify-center",
-          text: "text-sm font-semibold text-red-800 mb-1",
-          message: "text-sm text-red-700",
-          closeButton:
-            "absolute top-3 right-3 text-red-400 hover:text-red-600 transition-colors duration-200 cursor-pointer hover:scale-120",
+          container: `bg-red-50 ${containerStyles}`,
+          icon: `${iconStyles} bg-red-100`,
+          iconColor: `${iconColorStyles} bg-red-500`,
+          text: `${textStyles} text-red-800`,
+          message: `${messageStyles} text-red-700`,
+          closeButton: `${closeButtonStyles} text-red-400 hover:text-red-600`,
         };
       case "green":
         return {
-          container:
-            "relative flex items-start gap-4 p-4 bg-green-50 rounded-xl shadow-lg w-fit",
-          icon: "w-10 h-10 bg-green-100 rounded-full flex items-center justify-center",
-          iconColor:
-            "w-8 h-8 bg-green-500 rounded-full flex items-center justify-center",
-          text: "text-sm font-semibold text-green-800 mb-1",
-          message: "text-sm text-green-700",
-          closeButton:
-            "absolute top-3 right-3 text-green-400 hover:text-green-600 transition-colors duration-200 cursor-pointer hover:scale-120",
+          container: `bg-green-50 ${containerStyles}`,
+          icon: `${iconStyles} bg-green-100`,
+          iconColor: `${iconColorStyles} bg-green-500`,
+          text: `${textStyles} text-green-800`,
+          message: `${messageStyles} text-green-700`,
+          closeButton: `${closeButtonStyles} text-green-400 hover:text-green-600`,
         };
       case "blue":
         return {
-          container:
-            "relative flex items-start gap-4 p-4 bg-blue-50 rounded-xl shadow-lg w-fit",
-          icon: "w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center",
-          iconColor:
-            "w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center",
-          text: "text-sm font-semibold text-blue-800 mb-1",
-          message: "text-sm text-blue-700",
-          closeButton:
-            "absolute top-3 right-3 text-blue-400 hover:text-blue-600 transition-colors duration-200 cursor-pointer hover:scale-120",
+          container: `bg-blue-50 ${containerStyles}`,
+          icon: `${iconStyles} bg-blue-100`,
+          iconColor: `${iconColorStyles} bg-blue-500`,
+          text: `${textStyles} text-blue-800`,
+          message: `${messageStyles} text-blue-700`,
+          closeButton: `${closeButtonStyles} text-blue-400 hover:text-blue-600`,
         };
       default:
         return {
-          container:
-            "relative flex items-start gap-4 p-4 bg-gray-50 rounded-xl shadow-lg w-fit",
-          icon: "w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center",
-          iconColor:
-            "w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center",
-          text: "text-sm font-semibold text-gray-800 mb-1",
-          message: "text-sm text-gray-700",
-          closeButton:
-            "absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer hover:scale-120",
+          container: `bg-gray-50 ${containerStyles}`,
+          icon: `${iconStyles} bg-gray-100`,
+          iconColor: `${iconColorStyles} bg-gray-500`,
+          text: `${textStyles} text-gray-800`,
+          message: `${messageStyles} text-gray-700`,
+          closeButton: `${closeButtonStyles} text-gray-400 hover:text-gray-600`,
         };
     }
   };
@@ -111,13 +109,13 @@ export default function CustomToast({ message, title, id, color }) {
           </div>
         </div>
       </div>
-      <div className="flex-1 pr-20">
+      <div className="flex-1 pr-8 sm:pr-12 md:pr-16 lg:pr-20">
         <h4 className={styles.text}>{title}</h4>
         <p className={styles.message}>{message}</p>
       </div>
       <button onClick={() => toast.dismiss(id)} className={styles.closeButton}>
         <svg
-          className="w-5 h-5"
+          className="w-4 h-4 sm:w-5 sm:h-5"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
