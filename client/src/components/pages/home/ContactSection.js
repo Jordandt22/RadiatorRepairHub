@@ -69,13 +69,22 @@ function ContactSection() {
                 <strong>business listed</strong>? We&apos;re here to help you
                 find the perfect repair solution for your vehicle.
               </p>
-              <Link
-                href="/contact"
-                className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
-              >
-                <span>Contact Us</span>
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Link>
+              <div className="flex items-center justify-center gap-8">
+                <Link
+                  href="/get-listed"
+                  className="inline-flex items-center px-8 py-2 border-2 rounded-full bg-none border-blue-500 text-blue-500 font-semibold hover:bg-blue-500 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                >
+                  <span>Get Listed</span>
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Link>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center px-8 py-2 border-2 rounded-full border-blue-600 bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                >
+                  <span>Contact Us</span>
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>

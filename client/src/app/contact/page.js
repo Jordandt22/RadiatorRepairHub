@@ -1,5 +1,6 @@
 import React from "react";
-import { Mail, MapPin, Clock, CheckCircle } from "lucide-react";
+import Link from "next/link";
+import { Mail, MapPin, Clock, CheckCircle, List } from "lucide-react";
 
 // Contexts
 import { ToastProvider } from "@/contexts/ToastProvider";
@@ -89,6 +90,31 @@ const Page = () => {
                     </p>
                   </div>
                 </div>
+
+                {/* Get Listed */}
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                      <List className="w-6 h-6 text-yellow-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      Own a Business?
+                    </h3>
+                    <p className="text-gray-600">
+                      Want to get your business listed? We can help grow your
+                      business and reach more customers.
+                    </p>
+                  </div>
+                </div>
+
+                <Link
+                  href="/get-listed"
+                  className="block mt-4 font-medium rounded-full border-2 border-blue-500 text-blue-500 px-4 py-2 text-center hover:bg-blue-500 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                >
+                  Get Listed
+                </Link>
               </div>
 
               {/* Additional Info */}

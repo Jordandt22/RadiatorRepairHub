@@ -38,6 +38,37 @@ function Navbar() {
     },
   ];
 
+  const mobileLinks = [
+    {
+      label: "Home",
+      path: "/",
+    },
+    {
+      label: "Featured",
+      path: "/featured",
+    },
+    {
+      label: "Categories",
+      path: "/categories",
+    },
+    {
+      label: "States",
+      path: "/states",
+    },
+    {
+      label: "About",
+      path: "/about",
+    },
+    {
+      label: "Contact",
+      path: "/contact",
+    },
+    {
+      label: "Get Listed",
+      path: "/get-listed",
+    },
+  ];
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -167,7 +198,7 @@ function Navbar() {
           {/* Mobile Sidebar Navigation */}
           <div className="flex-1 px-6 py-6">
             <nav className="space-y-4">
-              {links.map((link) => (
+              {mobileLinks.map((link) => (
                 <Link
                   key={link.label}
                   href={link.path}

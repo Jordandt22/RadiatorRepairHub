@@ -7,7 +7,7 @@ function NotFound() {
   return (
     <NotFoundDisplay
       link={{ path: "/states", text: "Go back to the States Page" }}
-      message="The State Page you are looking for does not exist."
+      message="The State Page you are looking for does not exist or the state is not available yet."
     />
   );
 }

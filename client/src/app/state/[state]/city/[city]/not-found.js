@@ -10,7 +10,7 @@ function NotFound() {
         path: `/states`,
         text: `Go back to the States Page`,
       }}
-      message="The City Page you are looking for does not exist."
+      message="The City Page you are looking for does not exist or the city is not available yet."
     />
   );
 }

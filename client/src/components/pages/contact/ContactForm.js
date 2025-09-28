@@ -7,14 +7,22 @@ import { Send } from "lucide-react";
 // Contexts
 import { useToast } from "@/contexts/ToastProvider";
 
-const ContactForm = () => {
+const ContactForm = ({
+  prefilledSubject = "",
+  lockSubject = false,
+  formTitle = "Send Us a Message",
+  messagePlaceholder = "Tell us how we can help you...",
+  namePlaceholder = "Enter your full name",
+  nameLabel = "Full Name",
+  showSubjectInput = true,
+}) => {
   const { showCustomSuccess, showCustomError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    subject: "",
+    subject: prefilledSubject,
     message: "",
   });
   const [errors, setErrors] = useState({});
@@ -169,7 +177,7 @@ const ContactForm = () => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300 hover:border-blue-500 transition-all duration-300">
       <h2 className="text-2xl font-bold text-gray-900 mb-6 font-heading">
-        Send Us a Message
+        {formTitle}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -179,7 +187,7 @@ const ContactForm = () => {
             htmlFor="name"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Full Name *
+            {nameLabel || "Full Name"} *
           </label>
           <input
             type="text"
@@ -194,7 +202,7 @@ const ContactForm = () => {
                 ? "border-green-500"
                 : "border-gray-300"
             }`}
-            placeholder="Enter your full name"
+            placeholder={namePlaceholder || "Enter your full name"}
           />
           {errors.name && (
             <p className="mt-1 text-sm text-red-600">{errors.name}</p>
@@ -258,37 +266,42 @@ const ContactForm = () => {
         </div>
 
         {/* Subject Dropdown */}
-        <div>
-          <label
-            htmlFor="subject"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Inquiry Type *
-          </label>
-          <select
-            id="subject"
-            name="subject"
-            value={formData.subject}
-            onChange={handleInputChange}
-            className={`w-full px-4 py-3 border-2 rounded-lg focus:border-blue-500 hover:border-blue-500 outline-none transition-colors ${
-              errors.subject
-                ? "border-red-500"
-                : isFieldValid("subject")
-                ? "border-green-500"
-                : "border-gray-300"
-            }`}
-          >
-            <option value="">Select an inquiry type</option>
-            {subjectOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-          {errors.subject && (
-            <p className="mt-1 text-sm text-red-600">{errors.subject}</p>
-          )}
-        </div>
+        {showSubjectInput && (
+          <div>
+            <label
+              htmlFor="subject"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Inquiry Type *
+            </label>
+            <select
+              id="subject"
+              name="subject"
+              value={formData.subject}
+              onChange={handleInputChange}
+              disabled={lockSubject}
+              className={`w-full px-4 py-3 border-2 rounded-lg focus:border-blue-500 hover:border-blue-500 outline-none transition-colors ${
+                lockSubject ? "bg-gray-100 cursor-not-allowed" : ""
+              } ${
+                errors.subject
+                  ? "border-red-500"
+                  : isFieldValid("subject")
+                  ? "border-green-500"
+                  : "border-gray-300"
+              }`}
+            >
+              <option value="">Select an inquiry type</option>
+              {subjectOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            {errors.subject && (
+              <p className="mt-1 text-sm text-red-600">{errors.subject}</p>
+            )}
+          </div>
+        )}
 
         {/* Message Field */}
         <div>
@@ -311,7 +324,7 @@ const ContactForm = () => {
                 ? "border-green-500"
                 : "border-gray-300"
             }`}
-            placeholder="Tell us how we can help you..."
+            placeholder={messagePlaceholder || "Tell us how we can help you..."}
           />
           {errors.message && (
             <p className="mt-1 text-sm text-red-600">{errors.message}</p>

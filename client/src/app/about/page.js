@@ -82,7 +82,7 @@ function AboutPage() {
       {/* Hero Section */}
       <div className="bg-slate-900 border-b border-gray-200">
         <div className="max-w-3xl mx-auto px-6 py-16">
-          <div className="text-center">
+          <div className="text-left md:text-center">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-white mb-4 md:mb-6">
               About RadiatorRepairHub
             </h1>
