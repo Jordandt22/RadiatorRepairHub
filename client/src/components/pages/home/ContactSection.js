@@ -6,7 +6,7 @@ function ContactSection() {
   return (
     <section className="py-20 mb-32 bg-white text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12 md:mb-16">
           <h2 className="text-4xl text-gray-900 font-bold mb-4 font-heading">
             Get In Touch
           </h2>
@@ -18,7 +18,7 @@ function ContactSection() {
 
         <div className="max-w-4xl mx-auto">
           {/* Contact Information */}
-          <div className="flex align-centers justify-center gap-48 mb-16">
+          <div className="flex flex-col md:flex-row align-centers justify-center gap-4 md:gap-8 lg:gap-48 mb-12 md:mb-16">
             <div className="flex items-start space-x-4">
               <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
                 <Mail className="w-6 h-6 text-white" />
@@ -69,17 +69,17 @@ function ContactSection() {
                 <strong>business listed</strong>? We&apos;re here to help you
                 find the perfect repair solution for your vehicle.
               </p>
-              <div className="flex items-center justify-center gap-8">
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
                 <Link
                   href="/get-listed"
-                  className="inline-flex items-center px-8 py-2 border-2 rounded-full bg-none border-blue-500 text-blue-500 font-semibold hover:bg-blue-500 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="w-full flex justify-center align-center md:w-auto items-center px-8 py-2 border-2 rounded-full bg-none border-blue-500 text-blue-500 font-semibold hover:bg-blue-500 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
                 >
                   <span>Get Listed</span>
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Link>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center px-8 py-2 border-2 rounded-full border-blue-600 bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="w-full flex justify-center align-center md:w-auto items-center px-8 py-2 border-2 rounded-full border-blue-600 bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
                 >
                   <span>Contact Us</span>
                   <ArrowRight className="w-5 h-5 ml-2" />

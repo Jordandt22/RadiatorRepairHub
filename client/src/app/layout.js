@@ -5,6 +5,7 @@ import "./globals.css";
 // Components
 import Navbar from "@/components/layout/Navbar/Navbar";
 import Footer from "@/components/layout/Footer/Footer";
+import BackToTop from "@/components/layout/BackToTop/BackToTop";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -61,6 +62,8 @@ export default function RootLayout({ children }) {
         {children}
 
         <Footer />
+
+        <BackToTop />
 
         <Toaster
           toastOptions={{

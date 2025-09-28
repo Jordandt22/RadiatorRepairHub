@@ -10,8 +10,8 @@ function FeaturedGrid({ businesses }) {
             No Featured Businesses Found
           </h2>
           <p className="text-gray-600">
-            We're currently updating our featured businesses list. Please check
-            back soon.
+            We&apos;re currently updating our featured businesses list. Please
+            check back soon.
           </p>
         </div>
       </div>
