@@ -1,5 +1,6 @@
 import React from "react";
-import { Mail, Phone, MapPin, Clock, MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { Mail, Clock, MessageCircle, ArrowRight } from "lucide-react";
 
 function ContactSection() {
   return (
@@ -15,167 +16,67 @@ function ContactSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="max-w-4xl mx-auto">
           {/* Contact Information */}
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-2xl font-semibold mb-8 font-heading text-gray-900">
-                Contact Information
-              </h3>
-              <div className="space-y-8">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <Mail className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg mb-1 text-gray-900">
-                      Email Us
-                    </h4>
-                    <p className="text-gray-600 mb-2">
-                      Send us an email anytime
-                    </p>
-                    <a
-                      href="mailto:support@radiatorrepairhub.com"
-                      className="text-blue-600 hover:text-blue-700 transition-colors duration-300"
-                    >
-                      support@radiatorrepairhub.com
-                    </a>
-                  </div>
-                </div>
+          <div className="flex align-centers justify-center gap-48 mb-16">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Mail className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-1 text-gray-900">
+                  Email Us
+                </h3>
+                <p className="text-gray-600 mb-2">Send us an email anytime</p>
+                <a
+                  href="mailto:contact@radiatorrepairhub.com"
+                  className="text-blue-600 hover:text-blue-700 transition-colors duration-300"
+                >
+                  contact@radiatorrepairhub.com
+                </a>
+              </div>
+            </div>
 
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg mb-1 text-gray-900">
-                      Quick Response
-                    </h4>
-                    <div className="text-gray-600 space-y-1">
-                      <p>We typically respond within 24 hours</p>
-                    </div>
-                  </div>
-                </div>
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Clock className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-1 text-gray-900">
+                  Quick Response
+                </h3>
+                <p className="text-gray-600">
+                  We typically respond within 24 hours
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Contact Form */}
-          <div>
-            <h3 className="text-2xl font-semibold mb-6 font-heading text-gray-900">
-              Send Us a Message
-            </h3>
-            <form className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="firstName"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-300"
-                    placeholder="John"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="lastName"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-300"
-                    placeholder="Doe"
-                  />
+          {/* Contact Page Link */}
+          <div className="text-center">
+            <div className="bg-blue-50 rounded-xl p-8 border border-blue-200">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+                  <MessageCircle className="w-8 h-8 text-white" />
                 </div>
               </div>
-
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-300"
-                  placeholder="john@example.com"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="phone"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Phone Number (Optional)
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-300"
-                  placeholder="(555) 123-4567"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="subject"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Subject
-                </label>
-                <select
-                  id="subject"
-                  name="subject"
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-300"
-                >
-                  <option value="">Select a subject</option>
-                  <option value="general">General Inquiry</option>
-                  <option value="business-listing">Business Listing</option>
-                  <option value="technical-support">Technical Support</option>
-                  <option value="feedback">Feedback</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={5}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-300 resize-none"
-                  placeholder="Tell us how we can help you..."
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-300 hover:scale-105 flex items-center justify-center space-x-2"
+              <h3 className="text-2xl font-semibold mb-4 font-heading text-gray-900">
+                Have a Question?
+              </h3>
+              <p className="text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
+                <strong>Need help</strong> finding a radiator repair shop? Have{" "}
+                <strong>questions</strong> about our services? Want to get your{" "}
+                <strong>business listed</strong>? We&apos;re here to help you
+                find the perfect repair solution for your vehicle.
+              </p>
+              <Link
+                href="/contact"
+                className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
               >
-                <MessageCircle className="w-5 h-5" />
-                <span>Send Message</span>
-              </button>
-            </form>
+                <span>Contact Us</span>
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
