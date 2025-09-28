@@ -627,10 +627,10 @@ function PrivacyPage() {
           <p className="mt-2 text-gray-700">
             To exercise these rights, contact us at{" "}
             <a
-              href={`mailto:privacy@${process.env.BUSINESS_EMAIL}`}
+              href={`mailto:${process.env.BUSINESS_EMAIL}`}
               className="text-blue-600 hover:text-blue-800 underline"
             >
-              privacy@{process.env.BUSINESS_EMAIL}
+              {process.env.BUSINESS_EMAIL}
             </a>
             . We will respond to your request within 30 days.
           </p>
@@ -669,10 +669,10 @@ function PrivacyPage() {
           <p className="mt-2 text-gray-700">
             To exercise these rights, contact us at{" "}
             <a
-              href={`mailto:privacy@${process.env.BUSINESS_EMAIL}`}
+              href={`mailto:${process.env.BUSINESS_EMAIL}`}
               className="text-blue-600 hover:text-blue-800 underline"
             >
-              privacy@{process.env.BUSINESS_EMAIL}
+              {process.env.BUSINESS_EMAIL}
             </a>
             . We will respond to your request within 30 days.
           </p>
@@ -738,19 +738,10 @@ function PrivacyPage() {
           <p className="mt-4 text-gray-700">
             <strong>Email:</strong>{" "}
             <a
-              href={`mailto:privacy@${process.env.DOMAIN}`}
+              href={`mailto:${process.env.BUSINESS_EMAIL}`}
               className="text-blue-600 hover:text-blue-800 underline"
             >
-              privacy@{process.env.DOMAIN}
-            </a>
-          </p>
-          <p className="mt-2 text-gray-700">
-            <strong>General inquiries:</strong>{" "}
-            <a
-              href={`mailto:contact@${process.env.DOMAIN}`}
-              className="text-blue-600 hover:text-blue-800 underline"
-            >
-              contact@{process.env.DOMAIN}
+              {process.env.BUSINESS_EMAIL}
             </a>
           </p>
           <p className="mt-6 text-gray-700">

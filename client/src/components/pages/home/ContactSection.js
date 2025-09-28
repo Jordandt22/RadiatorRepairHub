@@ -29,10 +29,10 @@ function ContactSection() {
                 </h3>
                 <p className="text-gray-600 mb-2">Send us an email anytime</p>
                 <a
-                  href="mailto:contact@radiatorrepairhub.com"
+                  href={`mailto:${process.env.BUSINESS_EMAIL}`}
                   className="text-blue-600 hover:text-blue-700 transition-colors duration-300"
                 >
-                  contact@radiatorrepairhub.com
+                  {process.env.BUSINESS_EMAIL}
                 </a>
               </div>
             </div>
