@@ -1,5 +1,41 @@
 import React from "react";
 
+export const metadata = {
+  title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
+  description:
+    "Learn how RadiatorRepairHub protects your privacy and handles your personal information. Our comprehensive privacy policy covers data collection, usage, and your rights.",
+  keywords:
+    "privacy policy, data protection, personal information, GDPR, CCPA, privacy rights, data security",
+  openGraph: {
+    title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
+    description:
+      "Learn how RadiatorRepairHub protects your privacy and handles your personal information. Our comprehensive privacy policy covers data collection, usage, and your rights.",
+    type: "website",
+    locale: "en_US",
+    siteName: "RadiatorRepairHub",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
+    description:
+      "Learn how RadiatorRepairHub protects your privacy and handles your personal information. Our comprehensive privacy policy covers data collection, usage, and your rights.",
+  },
+  alternates: {
+    canonical: "https://radiatorrepairhub.com/privacy",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+
 function PrivacyPage() {
   const effectiveDate = new Date("2025-09-22").toLocaleDateString("en-US", {
     month: "long",

@@ -1,5 +1,43 @@
 import React from "react";
 
+export const metadata = {
+  title: "Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
+  description:
+    "Read RadiatorRepairHub's terms of service and user agreement. Understand your rights and responsibilities when using our radiator repair directory service.",
+  keywords:
+    "terms of service, user agreement, legal terms, terms and conditions, service agreement, user rights",
+  openGraph: {
+    title:
+      "Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
+    description:
+      "Read RadiatorRepairHub's terms of service and user agreement. Understand your rights and responsibilities when using our radiator repair directory service.",
+    type: "website",
+    locale: "en_US",
+    siteName: "RadiatorRepairHub",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title:
+      "Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
+    description:
+      "Read RadiatorRepairHub's terms of service and user agreement. Understand your rights and responsibilities when using our radiator repair directory service.",
+  },
+  alternates: {
+    canonical: "https://radiatorrepairhub.com/terms",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+
 function TermsPage() {
   const effectiveDate = new Date("2025-09-22").toLocaleDateString("en-US", {
     month: "long",

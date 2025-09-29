@@ -38,11 +38,12 @@ export async function generateMetadata({ params }) {
     }
 
     const business = data.data;
-    const title = `${business.title} - ${business.city.name}, ${business.state.name} | RadiatorRepairHub`;
-    const description = `${business.description?.substring(
-      0,
-      155
-    )}... Located in ${business.city.name}, ${business.state.name}. ${
+    const title = `${business.title_tag} - ${business.city.name}, ${business.state.name} | RadiatorRepairHub`;
+    const description = `${business.title} - ${
+      business.meta_description ||
+      business.local_note ||
+      "Trusted radiator repair services."
+    } Located in ${business.city.name}, ${business.state.name}. ${
       business.phone ? `Call ${business.phone}` : ""
     } for radiator repair services.`;
 
@@ -212,8 +213,8 @@ async function Page({ params }) {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "@id": `https://radiatorrepairhub.com/business/${slug}`,
-    name: business.title,
-    description: business.description,
+    name: business.title_tag,
+    description: business.meta_description,
     url: business.website || `https://radiatorrepairhub.com/business/${slug}`,
     telephone: business.phone,
     address: {
@@ -276,6 +277,13 @@ async function Page({ params }) {
         },
       ],
     },
+    ...(business.local_note && {
+      additionalProperty: {
+        "@type": "PropertyValue",
+        name: "Local Note",
+        value: business.local_note,
+      },
+    }),
   };
 
   return (
@@ -317,6 +325,11 @@ async function Page({ params }) {
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-4">
                 {business.title}
               </h1>
+              {business.local_note && (
+                <p className="text-base italic text-gray-300 mb-4">
+                  📍 {business.local_note}
+                </p>
+              )}
               <div className="flex items-center gap-2 flex-wrap">
                 <div className="flex items-center">
                   <Star className="w-5 h-5 text-yellow-400 fill-current" />
