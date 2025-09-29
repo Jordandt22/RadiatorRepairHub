@@ -8,6 +8,42 @@ import { ToastProvider } from "@/contexts/ToastProvider";
 import ContactForm from "@/components/pages/contact/ContactForm";
 import GetListedHeader from "@/components/pages/get-listed/GetListedHeader";
 
+export const metadata = {
+  title: "Get Listed | Add Your Radiator Repair Business - RadiatorRepairHub",
+  description:
+    "List your radiator repair business on RadiatorRepairHub for free. Get discovered by customers searching for cooling system repair services. Boost your online visibility and attract more customers.",
+  keywords:
+    "get listed, radiator repair business listing, auto repair directory, business listing, radiator repair marketing, cooling system business",
+  openGraph: {
+    title: "Get Listed | Add Your Radiator Repair Business - RadiatorRepairHub",
+    description:
+      "List your radiator repair business on RadiatorRepairHub for free. Get discovered by customers searching for cooling system repair services. Boost your online visibility and attract more customers.",
+    type: "website",
+    locale: "en_US",
+    siteName: "RadiatorRepairHub",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Get Listed | Add Your Radiator Repair Business - RadiatorRepairHub",
+    description:
+      "List your radiator repair business on RadiatorRepairHub for free. Get discovered by customers searching for cooling system repair services. Boost your online visibility and attract more customers.",
+  },
+  alternates: {
+    canonical: "https://radiatorrepairhub.com/get-listed",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+
 const Page = () => {
   const benefits = [
     {

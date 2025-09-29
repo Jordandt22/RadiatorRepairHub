@@ -14,6 +14,7 @@ function Footer() {
     { label: "Privacy Policy", path: "/privacy" },
     { label: "Terms of Service", path: "/terms" },
     { label: "About", path: "/about" },
+    { label: "FAQ", path: "/faq" },
     { label: "Contact", path: "/contact" },
     { label: "Get Listed", path: "/get-listed" },
   ];

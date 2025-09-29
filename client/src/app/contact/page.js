@@ -9,6 +9,45 @@ import { ToastProvider } from "@/contexts/ToastProvider";
 import ContactForm from "@/components/pages/contact/ContactForm";
 import ContactHeader from "@/components/pages/contact/ContactHeader";
 
+export const metadata = {
+  title:
+    "Contact RadiatorRepairHub | Get Help Finding Radiator Repair Services",
+  description:
+    "Contact RadiatorRepairHub for help finding radiator repair services. Get support, ask questions, or provide feedback about our directory of trusted cooling system experts.",
+  keywords:
+    "contact radiator repair hub, radiator repair help, cooling system support, auto repair directory contact",
+  openGraph: {
+    title:
+      "Contact RadiatorRepairHub | Get Help Finding Radiator Repair Services",
+    description:
+      "Contact RadiatorRepairHub for help finding radiator repair services. Get support, ask questions, or provide feedback about our directory of trusted cooling system experts.",
+    type: "website",
+    locale: "en_US",
+    siteName: "RadiatorRepairHub",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title:
+      "Contact RadiatorRepairHub | Get Help Finding Radiator Repair Services",
+    description:
+      "Contact RadiatorRepairHub for help finding radiator repair services. Get support, ask questions, or provide feedback about our directory of trusted cooling system experts.",
+  },
+  alternates: {
+    canonical: "https://radiatorrepairhub.com/contact",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+
 const Page = () => {
   return (
     <div className="min-h-screen bg-gray-5 pb-32">

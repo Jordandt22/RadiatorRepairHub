@@ -1,6 +1,42 @@
 import React from "react";
 import Link from "next/link";
 
+export const metadata = {
+  title: "About RadiatorRepairHub | Your Trusted Radiator Repair Directory",
+  description:
+    "Learn about RadiatorRepairHub, your trusted directory for finding reliable radiator repair shops across the U.S. We connect drivers with verified cooling system experts.",
+  keywords:
+    "about radiator repair hub, radiator repair directory, cooling system experts, auto repair directory, radiator specialists",
+  openGraph: {
+    title: "About RadiatorRepairHub | Your Trusted Radiator Repair Directory",
+    description:
+      "Learn about RadiatorRepairHub, your trusted directory for finding reliable radiator repair shops across the U.S. We connect drivers with verified cooling system experts.",
+    type: "website",
+    locale: "en_US",
+    siteName: "RadiatorRepairHub",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About RadiatorRepairHub | Your Trusted Radiator Repair Directory",
+    description:
+      "Learn about RadiatorRepairHub, your trusted directory for finding reliable radiator repair shops across the U.S. We connect drivers with verified cooling system experts.",
+  },
+  alternates: {
+    canonical: "https://radiatorrepairhub.com/about",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+
 function AboutPage() {
   const bulletPointContent = [
     {

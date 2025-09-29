@@ -28,9 +28,14 @@ function Navbar() {
       label: "States",
       path: "/states",
     },
+
     {
       label: "About",
       path: "/about",
+    },
+    {
+      label: "FAQ",
+      path: "/faq",
     },
     {
       label: "Contact",
@@ -55,6 +60,7 @@ function Navbar() {
       label: "States",
       path: "/states",
     },
+
     {
       label: "About",
       path: "/about",
@@ -66,6 +72,10 @@ function Navbar() {
     {
       label: "Get Listed",
       path: "/get-listed",
+    },
+    {
+      label: "FAQ",
+      path: "/faq",
     },
   ];
 
