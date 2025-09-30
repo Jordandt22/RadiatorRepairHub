@@ -30,6 +30,16 @@ export const metadata = {
   creator: "RadiatorRepairHub",
   publisher: "RadiatorRepairHub",
   applicationName: "RadiatorRepairHub",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   formatDetection: {
     email: false,
     address: false,
@@ -182,6 +192,12 @@ export default function RootLayout({ children }) {
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         <link rel="dns-prefetch" href="//lh3.googleusercontent.com" />
         <link rel="dns-prefetch" href="//streetviewpixels-pa.googleapis.com" />
+
+        {/* Favicon and Icons */}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
 
         {/* Service Worker Registration */}
         <script
