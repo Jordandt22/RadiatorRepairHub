@@ -1,4 +1,4 @@
-Contact: mailto:security@radiatorrepairhub.com
+Contact: mailto:radiatorrepairhub@gmail.com
 Contact: https://radiatorrepairhub.com/contact
 Expires: 2025-12-31T23:59:59.000Z
 Encryption: https://radiatorrepairhub.com/pgp-key.txt
@@ -13,7 +13,7 @@ Policy: https://radiatorrepairhub.com/security-policy
 
 # Reporting Security Issues
 # Please do not report security vulnerabilities through public GitHub issues.
-# Instead, please report them via email to security@radiatorrepairhub.com
+# Instead, please report them via email to radiatorrepairhub@gmail.com
 # or through our contact form at https://radiatorrepairhub.com/contact
 
 # What to Expect

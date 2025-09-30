@@ -16,13 +16,6 @@ export const metadata = {
     locale: "en_US",
     siteName: "RadiatorRepairHub",
   },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
-    description:
-      "Read RadiatorRepairHub's terms of service and user agreement. Understand your rights and responsibilities when using our radiator repair directory service.",
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/terms",
   },

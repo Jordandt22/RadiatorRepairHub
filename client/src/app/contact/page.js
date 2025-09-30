@@ -25,13 +25,6 @@ export const metadata = {
     locale: "en_US",
     siteName: "RadiatorRepairHub",
   },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Contact RadiatorRepairHub | Get Help Finding Radiator Repair Services",
-    description:
-      "Contact RadiatorRepairHub for help finding radiator repair services. Get support, ask questions, or provide feedback about our directory of trusted cooling system experts.",
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/contact",
   },

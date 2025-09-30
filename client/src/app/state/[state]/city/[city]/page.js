@@ -21,9 +21,9 @@ export async function generateMetadata({ params }) {
 
   // Convert slug to readable format
   const cityName = city
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 
   const stateName = state.toUpperCase();
 
@@ -40,11 +40,6 @@ export async function generateMetadata({ params }) {
       type: "website",
       locale: "en_US",
       siteName: "RadiatorRepairHub",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
     },
     alternates: {
       canonical: `https://radiatorrepairhub.com/state/${state}/city/${city}`,

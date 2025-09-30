@@ -22,12 +22,6 @@ export const metadata = {
     locale: "en_US",
     siteName: "RadiatorRepairHub",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Get Listed | Add Your Radiator Repair Business - RadiatorRepairHub",
-    description:
-      "List your radiator repair business on RadiatorRepairHub for free. Get discovered by customers searching for cooling system repair services. Boost your online visibility and attract more customers.",
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/get-listed",
   },

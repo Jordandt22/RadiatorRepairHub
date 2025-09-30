@@ -17,13 +17,6 @@ export const metadata = {
     locale: "en_US",
     siteName: "RadiatorRepairHub",
   },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Featured Radiator Repair Shops | Top-Rated Auto Repair Services - RadiatorRepairHub",
-    description:
-      "Discover featured radiator repair shops with top ratings and reviews. Find the best auto repair services in your area with verified customer feedback and quality guarantees.",
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/featured",
   },

@@ -19,13 +19,6 @@ export const metadata = {
     locale: "en_US",
     siteName: "RadiatorRepairHub",
   },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Frequently Asked Questions | Radiator Repair Help & Support - RadiatorRepairHub",
-    description:
-      "Get answers to common questions about radiator repair services. Learn about costs, finding repair shops, what to look for, and more.",
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/faq",
   },

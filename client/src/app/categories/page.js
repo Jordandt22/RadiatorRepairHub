@@ -17,13 +17,6 @@ export const metadata = {
     locale: "en_US",
     siteName: "RadiatorRepairHub",
   },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Auto Repair Categories | Find Specialized Services - RadiatorRepairHub",
-    description:
-      "Browse our comprehensive directory of auto repair categories. Find specialized services including radiator repair, brake service, transmission repair, and more.",
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/categories",
   },

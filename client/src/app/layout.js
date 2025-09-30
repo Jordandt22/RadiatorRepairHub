@@ -66,14 +66,6 @@ export const metadata = {
       },
     ],
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
-    description:
-      "Connect with certified radiator repair specialists in your area. Compare services, read reviews, and keep your vehicle running cool.",
-    creator: "@radiatorrepairhub",
-    images: ["https://radiatorrepairhub.com/assets/logos/logo.png"],
-  },
   robots: {
     index: true,
     follow: true,
@@ -126,13 +118,9 @@ export default function RootLayout({ children }) {
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer service",
-      email: process.env.BUSINESS_EMAIL || "support@radiatorrepairhub.com",
+      email: process.env.BUSINESS_EMAIL,
       availableLanguage: "English",
     },
-    sameAs: [
-      "https://twitter.com/radiatorrepairhub",
-      "https://facebook.com/radiatorrepairhub",
-    ],
     address: {
       "@type": "PostalAddress",
       addressCountry: "US",

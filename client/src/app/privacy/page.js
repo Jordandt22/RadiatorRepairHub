@@ -15,12 +15,6 @@ export const metadata = {
     locale: "en_US",
     siteName: "RadiatorRepairHub",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
-    description:
-      "Learn how RadiatorRepairHub protects your privacy and handles your personal information. Our comprehensive privacy policy covers data collection, usage, and your rights.",
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/privacy",
   },

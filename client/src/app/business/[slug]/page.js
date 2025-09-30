@@ -73,12 +73,6 @@ export async function generateMetadata({ params }) {
           : [],
         siteName: "RadiatorRepairHub",
       },
-      twitter: {
-        card: "summary_large_image",
-        title,
-        description,
-        images: business.image_url ? [business.image_url] : [],
-      },
       alternates: {
         canonical: `https://radiatorrepairhub.com/business/${slug}`,
       },

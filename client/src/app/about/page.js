@@ -16,12 +16,6 @@ export const metadata = {
     locale: "en_US",
     siteName: "RadiatorRepairHub",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "About RadiatorRepairHub | Your Trusted Radiator Repair Directory",
-    description:
-      "Learn about RadiatorRepairHub, your trusted directory for finding reliable radiator repair shops across the U.S. We connect drivers with verified cooling system experts.",
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/about",
   },
