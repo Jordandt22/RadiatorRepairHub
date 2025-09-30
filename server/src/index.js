@@ -33,7 +33,7 @@ if (notProduction) {
 
 // Landing Page Route
 app.get("/", (req, res) => {
-  res.send("BranchBound API Server is Up and Running !");
+  res.send("RadiatorRepairHub API Server is Up and Running !");
 });
 
 // Arcjet Middleware
