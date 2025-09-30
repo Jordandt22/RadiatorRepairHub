@@ -10,12 +10,14 @@ function BackOfCard({ title, setActiveCard, children }) {
         <button
           className="group/close transition-all duration-200 cursor-pointer"
           onClick={() => setActiveCard(null)}
+          aria-label="Close card details"
         >
           <svg
             className="w-6.5 h-6.5 text-gray-600 group-hover/close:text-blue-500 group-hover/close:scale-115 transition-all duration-200"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"

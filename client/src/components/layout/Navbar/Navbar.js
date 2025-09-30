@@ -9,14 +9,12 @@ import { Search, X, Menu } from "lucide-react";
 function Navbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [isHomePage, setIsHomePage] = useState(false);
 
-  // Only use pathname after component mounts to avoid hydration mismatch
-  const isHomePage = mounted && pathname === "/";
-
+  // Check if on homepage after component mounts to avoid hydration mismatch
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setIsHomePage(pathname === "/");
+  }, [pathname]);
 
   const links = [
     {
@@ -130,7 +128,7 @@ function Navbar() {
             </Link>
           </div>
           <div className="hidden md:block">
-            <div className="ml-10 flex items-center space-x-4" role="menubar">
+            <div className="ml-10 flex items-center space-x-4">
               {links.map((link) => (
                 <Link
                   key={link.label}
@@ -140,7 +138,6 @@ function Navbar() {
                       ? "text-white hover:bg-blue-500 hover:text-white rounded-md px-3 py-2"
                       : "text-gray-600 hover:text-blue-600"
                   } px-3 py-2 text-sm font-medium transition-colors duration-300`}
-                  role="menuitem"
                 >
                   {link.label}
                 </Link>
@@ -241,7 +238,7 @@ function Navbar() {
                   href={link.path}
                   onClick={closeMobileMenu}
                   className={`block px-4 py-3 text-lg font-medium rounded-lg transition-colors duration-200 ${
-                    mounted && pathname === link.path
+                    pathname === link.path
                       ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
                       : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
                   }`}

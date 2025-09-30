@@ -6,62 +6,88 @@ import DetailedBusinessCard from "@/components/businesses/cards/DetailedBusiness
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 
 async function FeaturedBusinesses() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URI}/businesses/featured`
-  );
-  const data = await res.json();
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URI}/businesses/featured`,
+      {
+        next: { revalidate: 300 }, // Revalidate every 5 minutes
+      }
+    );
+    const data = await res.json();
 
-  if (!res.ok || data.error) {
+    if (!res.ok || data.error) {
+      return (
+        <ErrorDisplay
+          status={res.status}
+          code={data?.error?.code}
+          message={data?.error?.message}
+          link={{
+            path: "/featured",
+            text: "Go to featured businesses page",
+          }}
+        />
+      );
+    }
+
+    const businesses = data?.data || [];
+
     return (
-      <ErrorDisplay
-        status={res.status}
-        code={data?.error?.code}
-        message={data?.error?.message}
-        link={{
-          path: "/featured",
-          text: "Go to featured businesses page",
-        }}
-      />
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4 font-heading">
+              Featured Businesses
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Top-rated radiator repair shops recommended by our community
+            </p>
+          </div>
+
+          {Array.isArray(businesses) && businesses.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {businesses.slice(0, 3).map((business) => (
+                <DetailedBusinessCard key={business.id} business={business} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center mt-12">
+              <p className="text-gray-600">No Featured Businesses Found</p>
+            </div>
+          )}
+
+          <div className="text-center mt-12">
+            <Link
+              href="/featured"
+              className="bg-gray-100 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-300 duration-300 hover:scale-105 block w-fit mx-auto"
+            >
+              View All Featured Businesses
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  } catch (error) {
+    // Return empty section if API fails
+    return (
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4 font-heading">
+              Featured Businesses
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Top-rated radiator repair shops recommended by our community
+            </p>
+          </div>
+          <div className="text-center mt-12">
+            <p className="text-gray-600">
+              Unable to load featured businesses at this time
+            </p>
+          </div>
+        </div>
+      </section>
     );
   }
-
-  const businesses = data?.data || [];
-
-  return (
-    <section className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4 font-heading">
-            Featured Businesses
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Top-rated radiator repair shops recommended by our community
-          </p>
-        </div>
-
-        {Array.isArray(businesses) && businesses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {businesses.slice(0, 3).map((business) => (
-              <DetailedBusinessCard key={business.id} business={business} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center mt-12">
-            <p className="text-gray-600">No Featured Businesses Found</p>
-          </div>
-        )}
-
-        <div className="text-center mt-12">
-          <Link
-            href="/featured"
-            className="bg-gray-100 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-300 duration-300 hover:scale-105 block w-fit mx-auto"
-          >
-            View All Featured Businesses
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
 }
 
 export default FeaturedBusinesses;
