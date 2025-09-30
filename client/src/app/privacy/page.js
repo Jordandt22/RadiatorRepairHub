@@ -108,22 +108,9 @@ function PrivacyPage() {
       title: "Cookies and Tracking Technologies",
       bulletPoints: [
         {
-          label: "Essential Cookies:",
-          description: "Necessary for basic website functionality.",
-        },
-        {
           label: "Analytics Cookies:",
           description:
-            "Help us understand how visitors use our site (Google Analytics, etc.).",
-        },
-        {
-          label: "Functional Cookies:",
-          description: "To remember your preferences and settings.",
-        },
-        {
-          label: "Performance Cookies:",
-          description:
-            "Collect information about website performance and user interactions.",
+            "Help us understand how visitors use our site (Google Analytics).",
         },
       ],
     },
