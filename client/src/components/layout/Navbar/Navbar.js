@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -8,8 +8,15 @@ import { Search, X, Menu } from "lucide-react";
 
 function Navbar() {
   const pathname = usePathname();
-  const isHomePage = pathname === "/";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Only use pathname after component mounts to avoid hydration mismatch
+  const isHomePage = mounted && pathname === "/";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const links = [
     {
@@ -104,6 +111,7 @@ function Navbar() {
               href="/"
               className="flex items-center space-x-3 transition-colors duration-300"
               aria-label="RadiatorRepairHub - Go to homepage"
+              prefetch={false}
             >
               <Image
                 src="/assets/logos/logo.png"
@@ -233,7 +241,7 @@ function Navbar() {
                   href={link.path}
                   onClick={closeMobileMenu}
                   className={`block px-4 py-3 text-lg font-medium rounded-lg transition-colors duration-200 ${
-                    pathname === link.path
+                    mounted && pathname === link.path
                       ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
                       : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
                   }`}
