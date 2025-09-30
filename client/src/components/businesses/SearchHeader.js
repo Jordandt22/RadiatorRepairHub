@@ -1,21 +1,26 @@
 import React from "react";
+import PageHeader from "@/components/layout/Header/PageHeader";
 
 function SearchHeader({ title }) {
+  const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: "Search", url: "/search" },
+  ];
+
+  const pageTitle = !title
+    ? "Search for Radiator Repair Services"
+    : `Radiator Repair Services for "${title}"`;
+
+  const pageDescription = `Find trusted radiator repair specialists${
+    title ? ` for "${title}"` : ""
+  }. Compare services, read reviews, and get your vehicle running smoothly.`;
+
   return (
-    <div className="bg-slate-900 border-b border-gray-200 pt-6 pb-2">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Title */}
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 font-heading">
-          {!title
-            ? "Search for Radiator Repair Services"
-            : `Radiator Repair Services for "${title}"`}
-        </h1>
-        <p className="text-lg text-gray-300 font-body">
-          Find trusted radiator repair specialists{title && ` for "${title}"`}.
-          Compare services, read reviews, and get your vehicle running smoothly.
-        </p>
-      </div>
-    </div>
+    <PageHeader
+      breadcrumbItems={breadcrumbItems}
+      pageTitle={pageTitle}
+      pageDescription={pageDescription}
+    />
   );
 }
 

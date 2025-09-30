@@ -21,6 +21,7 @@ import {
 // Components
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
+import BreadcrumbList from "@/components/seo/BreadcrumbList";
 
 // Generate metadata for business pages
 export async function generateMetadata({ params }) {
@@ -286,6 +287,25 @@ async function Page({ params }) {
     }),
   };
 
+  // Generate breadcrumb items
+  const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: "Categories", url: "/categories" },
+    ...(business.primary_category
+      ? [
+          {
+            name: business.primary_category.name,
+            url: `/category/${business.primary_category.slug}`,
+          },
+        ]
+      : []),
+    {
+      name: business.city.name,
+      url: `/state/${business.state.code}/city/${business.city.slug}`,
+    },
+    { name: business.title, url: `/business/${slug}` },
+  ];
+
   return (
     <>
       {/* Structured Data */}
@@ -320,7 +340,16 @@ async function Page({ params }) {
           )}
 
           {/* Overlay with business title */}
-          <div className="absolute inset-0 bg-black/75 flex items-end">
+          <div className="absolute inset-0 bg-black/75 flex flex-col items-start justify-between">
+            <div className="w-full p-6 text-white max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              {/* Breadcrumb Navigation */}
+              <BreadcrumbList
+                items={breadcrumbItems}
+                textColor="text-gray-300"
+                activeColor="text-white"
+              />
+            </div>
+
             <div className="w-full p-6 text-white max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-4">
                 {business.title}

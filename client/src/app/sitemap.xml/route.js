@@ -21,6 +21,12 @@ export async function GET() {
       priority: 0.9,
     },
     {
+      url: "/search",
+      lastModified: currentDate,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
       url: "/about",
       lastModified: currentDate,
       changeFrequency: "monthly",
@@ -80,8 +86,36 @@ export async function GET() {
     priority: 0.7,
   }));
 
+  // City pages for major cities
+  const majorCities = [
+    { state: "CA", city: "los-angeles" },
+    { state: "TX", city: "houston" },
+    { state: "FL", city: "miami" },
+    { state: "NY", city: "new-york-city" },
+    { state: "PA", city: "philadelphia" },
+    { state: "IL", city: "chicago" },
+    { state: "CA", city: "san-francisco" },
+    { state: "TX", city: "dallas" },
+    { state: "FL", city: "orlando" },
+    { state: "NY", city: "buffalo" },
+    { state: "PA", city: "pittsburgh" },
+    { state: "IL", city: "springfield" },
+  ];
+
+  const cityPages = majorCities.map(({ state, city }) => ({
+    url: `/state/${state}/city/${city}`,
+    lastModified: currentDate,
+    changeFrequency: "weekly",
+    priority: 0.6,
+  }));
+
   // Combine all pages
-  const allPages = [...staticPages, ...categoryPages, ...statePages];
+  const allPages = [
+    ...staticPages,
+    ...categoryPages,
+    ...statePages,
+    ...cityPages,
+  ];
 
   // Generate XML sitemap
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

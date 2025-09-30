@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import PageHeader from "@/components/layout/Header/PageHeader";
 
 export const metadata = {
   title: "About RadiatorRepairHub | Your Trusted Radiator Repair Directory",
@@ -113,22 +114,23 @@ function AboutPage() {
     },
   ];
 
+  const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: "About", url: "/about" },
+  ];
+
+  const pageTitle = "About RadiatorRepairHub";
+  const pageDescription =
+    "Your trusted directory for finding reliable radiator repair shops across the U.S.";
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-slate-900 border-b border-gray-200">
-        <div className="max-w-3xl mx-auto px-6 py-16">
-          <div className="text-left md:text-center">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-white mb-4 md:mb-6">
-              About RadiatorRepairHub
-            </h1>
-            <p className="text-xl text-gray-300 leading-relaxed">
-              Your trusted directory for finding reliable radiator repair shops
-              across the U.S.
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Header */}
+      <PageHeader
+        breadcrumbItems={breadcrumbItems}
+        pageTitle={pageTitle}
+        pageDescription={pageDescription}
+      />
 
       {/* Content Sections */}
       <div className="max-w-3xl mx-auto px-6 py-12">

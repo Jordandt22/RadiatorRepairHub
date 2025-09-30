@@ -1,0 +1,77 @@
+{
+  "name": "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
+  "short_name": "RadiatorRepairHub",
+  "description": "Find trusted auto radiator repair shops near you. Browse by city, compare services, read reviews, and keep your car running cool.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": ["automotive", "business", "utilities"],
+  "icons": [
+    {
+      "src": "/assets/logos/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/logos/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/logos/logo.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "RadiatorRepairHub Homepage"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Search Radiator Repair",
+      "short_name": "Search",
+      "description": "Search for radiator repair services near you",
+      "url": "/search",
+      "icons": [
+        {
+          "src": "/assets/logos/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Browse Categories",
+      "short_name": "Categories",
+      "description": "Browse radiator repair service categories",
+      "url": "/categories",
+      "icons": [
+        {
+          "src": "/assets/logos/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Get Listed",
+      "short_name": "List Business",
+      "description": "List your radiator repair business",
+      "url": "/get-listed",
+      "icons": [
+        {
+          "src": "/assets/logos/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

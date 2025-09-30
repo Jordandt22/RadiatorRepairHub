@@ -1,4 +1,5 @@
 import React from "react";
+import PageHeader from "@/components/layout/Header/PageHeader";
 
 export const metadata = {
   title: "Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
@@ -191,22 +192,22 @@ function TermsPage() {
     "Small claims court actions under applicable limits",
   ];
 
+  const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: "Terms", url: "/terms" },
+  ];
+
+  const pageTitle = "Terms of Service";
+  const pageDescription = `Effective Date: ${effectiveDate} | Last Updated: ${lastUpdated}`;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-slate-900 border-b border-gray-200">
-        <div className="max-w-3xl mx-auto px-6 py-16">
-          <div className="text-center">
-            <h1 className="text-5xl font-heading font-bold text-white mb-6">
-              Terms of Service
-            </h1>
-            <p className="text-lg text-gray-300">
-              Effective Date: {effectiveDate}
-            </p>
-            <p className="text-lg text-gray-300">Last Updated: {lastUpdated}</p>
-          </div>
-        </div>
-      </div>
+      {/* Header */}
+      <PageHeader
+        breadcrumbItems={breadcrumbItems}
+        pageTitle={pageTitle}
+        pageDescription={pageDescription}
+      />
 
       {/* Content */}
       <div className="max-w-3xl mx-auto p-6">

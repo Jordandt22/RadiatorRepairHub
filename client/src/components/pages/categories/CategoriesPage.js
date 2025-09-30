@@ -1,9 +1,13 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import Header from "./Header";
-import CategoriesGrid from "./CategoriesGrid";
+
+// Data
 import PRIMARY_CATEGORIES from "@/lib/data/primary_categories";
+
+// Components
+import CategoriesGrid from "./CategoriesGrid";
+import PageHeader from "@/components/layout/Header/PageHeader";
 
 function CategoriesPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,7 +24,14 @@ function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <PageHeader
+        breadcrumbItems={[
+          { name: "Home", url: "/" },
+          { name: "Categories", url: "/categories" },
+        ]}
+        pageTitle="Service Categories"
+        pageDescription="Explore all the automotive service categories available. Find specialized repair shops and services for your specific vehicle needs."
+      />
       <CategoriesGrid
         categories={filteredCategories}
         searchTerm={searchTerm}

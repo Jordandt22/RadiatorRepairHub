@@ -1,0 +1,34 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# TEAM
+
+    Developer: RadiatorRepairHub Team
+    Contact: support [at] radiatorrepairhub.com
+    From: United States
+
+# THANKS
+
+    Fonts: Google Fonts (Inter, Oswald)
+    Icons: Lucide React
+    Framework: Next.js
+    Styling: Tailwind CSS
+
+# SITE
+
+    Last update: 2024/12/19
+    Language: English
+    Doctype: HTML5
+    IDE: Cursor
+
+# TECHNOLOGY COLOPHON
+
+    Frontend: React 19, Next.js 15
+    Styling: Tailwind CSS 4
+    Icons: Lucide React
+    Fonts: Google Fonts
+    Deployment: Vercel
+    Analytics: Google Analytics
+    Search: Custom search implementation
+    Database: Supabase
+    Caching: Redis

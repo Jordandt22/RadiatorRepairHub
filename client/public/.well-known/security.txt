@@ -1,0 +1,36 @@
+Contact: mailto:security@radiatorrepairhub.com
+Contact: https://radiatorrepairhub.com/contact
+Expires: 2025-12-31T23:59:59.000Z
+Encryption: https://radiatorrepairhub.com/pgp-key.txt
+Acknowledgments: https://radiatorrepairhub.com/security-acknowledgments
+Preferred-Languages: en
+Canonical: https://radiatorrepairhub.com/.well-known/security.txt
+Policy: https://radiatorrepairhub.com/security-policy
+
+# Security Policy
+# We take security seriously. If you discover a security vulnerability,
+# please report it to us as described below.
+
+# Reporting Security Issues
+# Please do not report security vulnerabilities through public GitHub issues.
+# Instead, please report them via email to security@radiatorrepairhub.com
+# or through our contact form at https://radiatorrepairhub.com/contact
+
+# What to Expect
+# After you submit a report, we will:
+# 1. Confirm receipt of your vulnerability report within 48 hours
+# 2. Provide regular updates on our progress
+# 3. Credit you in our security acknowledgments (unless you prefer to remain anonymous)
+
+# Scope
+# This policy applies to:
+# - radiatorrepairhub.com and all subdomains
+# - Our mobile applications
+# - Our API endpoints
+# - Any third-party services we use
+
+# Out of Scope
+# - Social engineering attacks
+# - Physical attacks
+# - Denial of service attacks
+# - Issues in third-party applications or services

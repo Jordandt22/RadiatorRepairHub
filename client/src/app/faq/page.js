@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import FAQSection from "@/components/seo/FAQSection";
+import PageHeader from "@/components/layout/Header/PageHeader";
 
 export const metadata = {
   title:
@@ -106,22 +107,23 @@ export default function FAQPage() {
     },
   ];
 
+  const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: "FAQ", url: "/faq" },
+  ];
+
+  const pageTitle = "Frequently Asked Questions";
+  const pageDescription =
+    "Get answers to common questions about radiator repair services and find the help you need";
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-slate-900 border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-6 py-16">
-          <div className="text-left md:text-center">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-white mb-4 md:mb-6">
-              Frequently Asked Questions
-            </h1>
-            <p className="text-xl text-gray-300 leading-relaxed">
-              Get answers to common questions about radiator repair services and
-              find the help you need
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Header */}
+      <PageHeader
+        breadcrumbItems={breadcrumbItems}
+        pageTitle={pageTitle}
+        pageDescription={pageDescription}
+      />
 
       {/* FAQ Section */}
       <FAQSection faqs={faqs} title="Radiator Repair Questions & Answers" />

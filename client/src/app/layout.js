@@ -29,12 +29,13 @@ export const metadata = {
   authors: [{ name: "RadiatorRepairHub" }],
   creator: "RadiatorRepairHub",
   publisher: "RadiatorRepairHub",
+  applicationName: "RadiatorRepairHub",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://radiatorrepairhub.com'),
+  metadataBase: new URL("https://radiatorrepairhub.com"),
   alternates: {
     canonical: "https://radiatorrepairhub.com",
   },
@@ -46,6 +47,14 @@ export const metadata = {
     locale: "en_US",
     url: "https://radiatorrepairhub.com",
     siteName: "RadiatorRepairHub",
+    images: [
+      {
+        url: "https://radiatorrepairhub.com/assets/logos/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -53,6 +62,7 @@ export const metadata = {
     description:
       "Connect with certified radiator repair specialists in your area. Compare services, read reviews, and keep your vehicle running cool.",
     creator: "@radiatorrepairhub",
+    images: ["https://radiatorrepairhub.com/assets/logos/logo.png"],
   },
   robots: {
     index: true,
@@ -70,20 +80,133 @@ export const metadata = {
     yandex: process.env.YANDEX_VERIFICATION_ID,
     yahoo: process.env.YAHOO_VERIFICATION_ID,
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
+  other: {
+    "apple-mobile-web-app-title": "RadiatorRepairHub",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+    "mobile-web-app-capable": "yes",
+    "theme-color": "#2563eb",
+    "msapplication-TileColor": "#2563eb",
+    "msapplication-config": "/browserconfig.xml",
   },
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({ children }) {
+  // Organization Schema
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://radiatorrepairhub.com/#organization",
+    name: "RadiatorRepairHub",
+    url: "https://radiatorrepairhub.com",
+    logo: {
+      "@type": "ImageObject",
+      url: "https://radiatorrepairhub.com/assets/logos/logo.png",
+      width: 200,
+      height: 200,
+    },
+    description:
+      "Find trusted auto radiator repair services near you. Connect with certified radiator repair specialists across the United States.",
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer service",
+      email: process.env.BUSINESS_EMAIL || "support@radiatorrepairhub.com",
+      availableLanguage: "English",
+    },
+    sameAs: [
+      "https://twitter.com/radiatorrepairhub",
+      "https://facebook.com/radiatorrepairhub",
+    ],
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "US",
+    },
+    foundingDate: "2024",
+    knowsAbout: [
+      "Radiator Repair",
+      "Auto Repair",
+      "Cooling System Repair",
+      "Automotive Services",
+    ],
+  };
+
+  // WebSite Schema with SearchAction
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://radiatorrepairhub.com/#website",
+    url: "https://radiatorrepairhub.com",
+    name: "RadiatorRepairHub",
+    description: "Find trusted auto radiator repair services near you",
+    publisher: {
+      "@id": "https://radiatorrepairhub.com/#organization",
+    },
+    potentialAction: [
+      {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate:
+            "https://radiatorrepairhub.com/search?q={search_term_string}",
+        },
+        "query-input": "required name=search_term_string",
+      },
+    ],
+    inLanguage: "en-US",
+  };
+
   return (
     <html lang="en">
+      <head>
+        {/* Organization Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationSchema),
+          }}
+        />
+        {/* WebSite Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteSchema),
+          }}
+        />
+        {/* Preload critical resources */}
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="//lh3.googleusercontent.com" />
+        <link rel="dns-prefetch" href="//streetviewpixels-pa.googleapis.com" />
+
+        {/* Service Worker Registration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                      console.log('SW registered: ', registration);
+                    })
+                    .catch(function(registrationError) {
+                      console.log('SW registration failed: ', registrationError);
+                    });
+                });
+              }
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${inter.variable} ${oswald.variable} font-sans antialiased`}
       >
         <Navbar />
+
         {children}
 
         <Footer />
