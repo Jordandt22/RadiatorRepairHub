@@ -71,15 +71,16 @@ function DetailedBusinessCard({ business }) {
               {business.primary_category.name}
             </Link>
 
-            {business.secondary_categories.slice(0, 2).map((category) => (
-              <Link
-                href={`/search?secondary_categories=${category.id}`}
-                key={business.id + "-" + category.id}
-                className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full capitalize hover:bg-blue-500 hover:text-white duration-300"
-              >
-                {category.name}
-              </Link>
-            ))}
+            {Array.isArray(business.secondary_categories) &&
+              business.secondary_categories.slice(0, 2).map((category) => (
+                <Link
+                  href={`/search?secondary_categories=${category.id}`}
+                  key={business.id + "-" + category.id}
+                  className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full capitalize hover:bg-blue-500 hover:text-white duration-300"
+                >
+                  {category.name}
+                </Link>
+              ))}
           </div>
         </div>
 

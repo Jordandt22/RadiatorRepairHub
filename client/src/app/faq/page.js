@@ -129,8 +129,8 @@ export default function FAQPage() {
               Still Need Help?
             </h2>
             <p className="text-lg text-gray-600">
-              Can't find the answer you're looking for? We're here to help you
-              find the right radiator repair service.
+              Can&apos;t find the answer you&apos;re looking for? We&apos;re
+              here to help you find the right radiator repair service.
             </p>
           </div>
 

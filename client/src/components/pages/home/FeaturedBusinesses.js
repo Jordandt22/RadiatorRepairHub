@@ -25,7 +25,7 @@ async function FeaturedBusinesses() {
     );
   }
 
-  const businesses = data.data;
+  const businesses = data?.data || [];
 
   return (
     <section className="py-20 bg-white">
@@ -39,7 +39,7 @@ async function FeaturedBusinesses() {
           </p>
         </div>
 
-        {data?.data && businesses.length > 0 ? (
+        {Array.isArray(businesses) && businesses.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {businesses.slice(0, 3).map((business) => (
               <DetailedBusinessCard key={business.id} business={business} />
