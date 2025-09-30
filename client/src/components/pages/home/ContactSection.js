@@ -72,7 +72,7 @@ function ContactSection() {
               <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
                 <Link
                   href="/get-listed"
-                  className="w-full flex justify-center align-center md:w-auto items-center px-8 py-2 border-2 rounded-full bg-none border-blue-500 text-blue-500 font-semibold hover:bg-blue-500 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="w-full flex justify-center align-center md:w-auto items-center px-8 py-2 border-2 rounded-full bg-white border-blue-600 text-blue-600 font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
                 >
                   <span>Get Listed</span>
                   <ArrowRight className="w-5 h-5 ml-2" />

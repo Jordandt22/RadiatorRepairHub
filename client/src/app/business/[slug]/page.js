@@ -176,7 +176,7 @@ async function Page({ params }) {
   // Format business hours for display (using opening_hours format)
   const formatBusinessHours = (openingHours) => {
     if (!openingHours || !Array.isArray(openingHours)) {
-      return <p className="text-sm text-gray-500">Hours not available</p>;
+      return <p className="text-sm text-gray-600">Hours not available</p>;
     }
 
     return (
@@ -326,9 +326,9 @@ async function Page({ params }) {
             <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
               <div className="text-center">
                 <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-4">
-                  <Star className="w-8 h-8 md:w-10 md:h-10 text-gray-500" />
+                  <Star className="w-8 h-8 md:w-10 md:h-10 text-gray-600" />
                 </div>
-                <p className="text-gray-500 text-sm md:text-lg">
+                <p className="text-gray-600 text-sm md:text-lg">
                   No image available
                 </p>
               </div>
@@ -350,7 +350,7 @@ async function Page({ params }) {
                 {business.title}
               </h1>
               {business.local_note && (
-                <p className="text-sm md:text-base italic text-gray-300 mb-2 md:mb-4">
+                <p className="text-sm md:text-base italic text-gray-200 mb-2 md:mb-4">
                   📍 {business.local_note}
                 </p>
               )}
@@ -399,9 +399,9 @@ async function Page({ params }) {
                       <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
                         <div className="text-center">
                           <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <Star className="w-6 h-6 text-gray-500" />
+                            <Star className="w-6 h-6 text-gray-600" />
                           </div>
-                          <p className="text-gray-500 text-sm">
+                          <p className="text-gray-600 text-sm">
                             No image available
                           </p>
                         </div>
