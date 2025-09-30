@@ -48,13 +48,18 @@ function SearchBar({ stateData, cityData, page }) {
     <div className="flex-1">
       <div className="flex flex-col md:flex-row gap-2">
         <div className="relative flex-1">
+          <label htmlFor="business-search" className="sr-only">
+            Search for business name
+          </label>
           <input
+            id="business-search"
             type="text"
             placeholder="Enter business name…"
             value={filters.title}
             onChange={(e) => updateFilter("title", e.target.value)}
             onKeyDown={handleKeyPress}
             className="w-full px-4 py-3 pl-10 pr-10 text-gray-900 bg-gray-50 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none duration-200 transition-all"
+            aria-describedby="search-help"
           />
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg
@@ -62,6 +67,7 @@ function SearchBar({ stateData, cityData, page }) {
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -79,8 +85,14 @@ function SearchBar({ stateData, cityData, page }) {
                 type="button"
                 onClick={handleClearInput}
                 className="w-5 h-5 text-gray-400 hover:scale-125 hover:text-red-400 duration-200 cursor-pointer"
+                aria-label="Clear search input"
               >
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -95,12 +107,14 @@ function SearchBar({ stateData, cityData, page }) {
         <button
           onClick={handleSearch}
           className="justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
+          aria-label="Search for businesses"
         >
           <svg
             className="w-5 h-5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"

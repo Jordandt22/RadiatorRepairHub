@@ -10,7 +10,7 @@ function PageHeader({ breadcrumbItems, pageTitle, pageDescription }) {
         {breadcrumbItems && <BreadcrumbList items={breadcrumbItems} />}
 
         {/* Page Title */}
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 font-heading">
+        <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 font-heading capitalize">
           {pageTitle}
         </h1>
         <p className="text-lg text-gray-300 font-body">{pageDescription}</p>

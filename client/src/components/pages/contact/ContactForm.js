@@ -180,7 +180,12 @@ const ContactForm = ({
         {formTitle}
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6"
+        role="form"
+        aria-label="Contact form"
+      >
         {/* Name Field */}
         <div>
           <label
@@ -203,9 +208,19 @@ const ContactForm = ({
                 : "border-gray-300"
             }`}
             placeholder={namePlaceholder || "Enter your full name"}
+            aria-describedby={errors.name ? "name-error" : undefined}
+            aria-invalid={errors.name ? "true" : "false"}
+            required
           />
           {errors.name && (
-            <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+            <p
+              id="name-error"
+              className="mt-1 text-sm text-red-600"
+              role="alert"
+              aria-live="polite"
+            >
+              {errors.name}
+            </p>
           )}
         </div>
 
@@ -218,7 +233,7 @@ const ContactForm = ({
             Email Address *
           </label>
           <input
-            type="text"
+            type="email"
             id="email"
             name="email"
             value={formData.email}
@@ -231,9 +246,19 @@ const ContactForm = ({
                 : "border-gray-300"
             }`}
             placeholder="Enter your email address"
+            aria-describedby={errors.email ? "email-error" : undefined}
+            aria-invalid={errors.email ? "true" : "false"}
+            required
           />
           {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+            <p
+              id="email-error"
+              className="mt-1 text-sm text-red-600"
+              role="alert"
+              aria-live="polite"
+            >
+              {errors.email}
+            </p>
           )}
         </div>
 
@@ -246,7 +271,7 @@ const ContactForm = ({
             Phone Number
           </label>
           <input
-            type="text"
+            type="tel"
             id="phone"
             name="phone"
             value={formData.phone}
@@ -259,9 +284,18 @@ const ContactForm = ({
                 : "border-gray-300"
             }`}
             placeholder="Enter your phone number (optional)"
+            aria-describedby={errors.phone ? "phone-error" : undefined}
+            aria-invalid={errors.phone ? "true" : "false"}
           />
           {errors.phone && (
-            <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+            <p
+              id="phone-error"
+              className="mt-1 text-sm text-red-600"
+              role="alert"
+              aria-live="polite"
+            >
+              {errors.phone}
+            </p>
           )}
         </div>
 
@@ -289,6 +323,9 @@ const ContactForm = ({
                   ? "border-green-500"
                   : "border-gray-300"
               }`}
+              aria-describedby={errors.subject ? "subject-error" : undefined}
+              aria-invalid={errors.subject ? "true" : "false"}
+              required
             >
               <option value="">Select an inquiry type</option>
               {subjectOptions.map((option) => (
@@ -298,7 +335,14 @@ const ContactForm = ({
               ))}
             </select>
             {errors.subject && (
-              <p className="mt-1 text-sm text-red-600">{errors.subject}</p>
+              <p
+                id="subject-error"
+                className="mt-1 text-sm text-red-600"
+                role="alert"
+                aria-live="polite"
+              >
+                {errors.subject}
+              </p>
             )}
           </div>
         )}
@@ -325,17 +369,34 @@ const ContactForm = ({
                 : "border-gray-300"
             }`}
             placeholder={messagePlaceholder || "Tell us how we can help you..."}
+            aria-describedby={errors.message ? "message-error" : undefined}
+            aria-invalid={errors.message ? "true" : "false"}
+            required
           />
           {errors.message && (
-            <p className="mt-1 text-sm text-red-600">{errors.message}</p>
+            <p
+              id="message-error"
+              className="mt-1 text-sm text-red-600"
+              role="alert"
+              aria-live="polite"
+            >
+              {errors.message}
+            </p>
           )}
         </div>
 
         {/* Submit Button */}
         <div className="pt-4">
           {isSubmitting ? (
-            <div className="w-full flex items-center justify-center px-6 py-4 rounded-lg font-semibold bg-gray-200 text-blue-500 transition-all duration-300 cursor-not-allowed">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400 mr-4"></div>
+            <div
+              className="w-full flex items-center justify-center px-6 py-4 rounded-lg font-semibold bg-gray-200 text-blue-500 transition-all duration-300 cursor-not-allowed"
+              role="status"
+              aria-live="polite"
+            >
+              <div
+                className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400 mr-4"
+                aria-hidden="true"
+              ></div>
               Sending Message...
             </div>
           ) : (
@@ -345,8 +406,9 @@ const ContactForm = ({
               className={
                 "w-full flex items-center justify-center px-6 py-4 rounded-lg font-semibold text-white transition-all duration-300 cursor-pointer bg-blue-600 hover:bg-blue-700 hover:scale-95 shadow-lg hover:shadow-xl"
               }
+              aria-label="Send contact message"
             >
-              <Send className="w-5 h-5 mr-2" />
+              <Send className="w-5 h-5 mr-2" aria-hidden="true" />
               Send Message
             </button>
           )}

@@ -10,10 +10,14 @@ function FilterNumInput({ label, name, min, max, step }) {
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label
+        htmlFor={`filter-${name}`}
+        className="block text-sm font-medium text-gray-700 mb-2"
+      >
         {label} ({min} - {max})
       </label>
       <input
+        id={`filter-${name}`}
         type="number"
         min={min}
         max={max}
@@ -35,7 +39,12 @@ function FilterNumInput({ label, name, min, max, step }) {
           }
         }}
         className="w-full px-3 py-2 border-2 border-gray-200 rounded-md cursor-pointer bg-white focus:border-blue-500 outline-none duration-200"
+        aria-label={`${label} between ${min} and ${max}`}
+        aria-describedby={`${name}-range-description`}
       />
+      <div id={`${name}-range-description`} className="sr-only">
+        Enter a value between {min} and {max}
+      </div>
     </div>
   );
 }

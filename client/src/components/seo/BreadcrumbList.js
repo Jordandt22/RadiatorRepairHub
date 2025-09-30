@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import JsonLd from "./JsonLd";
 
-const BreadcrumbList = ({ items }) => {
+const BreadcrumbList = ({ items, navStyles }) => {
   // Helper function to convert relative URLs to absolute URLs
   const getAbsoluteUrl = (url) => {
     if (url.startsWith("http://") || url.startsWith("https://")) {
@@ -29,7 +29,7 @@ const BreadcrumbList = ({ items }) => {
       <JsonLd data={breadcrumbSchema} />
 
       {/* Visual Breadcrumb Navigation */}
-      <nav className="flex mb-6" aria-label="Breadcrumb">
+      <nav className={`flex mb-6 ${navStyles}`} aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-3">
           {items.map((item, index) => (
             <li key={index} className="inline-flex items-center">
@@ -55,7 +55,7 @@ const BreadcrumbList = ({ items }) => {
                 // Home icon for first item
                 <Link
                   href={item.url}
-                  className="inline-flex items-center text-sm font-medium text-gray-300 hover:text-blue-400"
+                  className="inline-flex items-center text-sm font-medium text-gray-300 hover:text-blue-400 capitalize"
                 >
                   <svg
                     className="w-3 h-3 mr-2.5"
@@ -70,7 +70,7 @@ const BreadcrumbList = ({ items }) => {
                 </Link>
               ) : index === items.length - 1 ? (
                 // Current page (last item)
-                <span className="ml-1 text-sm font-medium text-gray-400 md:ml-2">
+                <span className="ml-1 text-sm font-medium text-gray-400 md:ml-2 capitalize">
                   {item.name}
                 </span>
               ) : (
@@ -79,7 +79,7 @@ const BreadcrumbList = ({ items }) => {
                   href={item.url}
                   className="group/link inline-flex items-center text-sm font-medium hover:text-blue-400"
                 >
-                  <span className="ml-1 text-sm font-medium text-gray-300 md:ml-2 group-hover/link:text-blue-400">
+                  <span className="ml-1 text-sm font-medium text-gray-300 md:ml-2 group-hover/link:text-blue-400 capitalize">
                     {item.name}
                   </span>
                 </Link>

@@ -61,7 +61,11 @@ function HeroSearchBar({ heroInView }) {
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Search Input */}
         <div className="relative flex-1">
+          <label htmlFor="hero-search" className="sr-only">
+            Search for radiator repair shops
+          </label>
           <input
+            id="hero-search"
             type="text"
             placeholder="Enter a business name..."
             className="text-center md:text-left w-full px-6 py-4 text-lg rounded-lg border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-gray-900 md:pr-32"
@@ -69,6 +73,7 @@ function HeroSearchBar({ heroInView }) {
             value={search}
             onKeyDown={handleKeyPress}
             aria-label="Search for radiator repair shops"
+            aria-describedby="search-help"
           />
           {/* Desktop Search Button - Hidden on mobile */}
           <motion.button
@@ -77,8 +82,9 @@ function HeroSearchBar({ heroInView }) {
             onClick={submitSearch}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            aria-label="Search for radiator repair shops"
           >
-            <Search className="w-5 h-5 mr-2" />
+            <Search className="w-5 h-5 mr-2" aria-hidden="true" />
             Search Now
           </motion.button>
         </div>
@@ -90,8 +96,9 @@ function HeroSearchBar({ heroInView }) {
           onClick={submitSearch}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          aria-label="Search for radiator repair shops"
         >
-          <Search className="w-5 h-5 mr-2" />
+          <Search className="w-5 h-5 mr-2" aria-hidden="true" />
           Search Now
         </motion.button>
       </div>

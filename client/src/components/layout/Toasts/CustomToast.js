@@ -58,8 +58,35 @@ export default function CustomToast({ message, title, id, color }) {
 
   const styles = getStyles(color);
 
+  const getToastRole = (color) => {
+    switch (color) {
+      case "red":
+        return "alert";
+      case "green":
+        return "status";
+      default:
+        return "status";
+    }
+  };
+
+  const getToastAriaLabel = (color, title) => {
+    switch (color) {
+      case "red":
+        return `Error: ${title}`;
+      case "green":
+        return `Success: ${title}`;
+      default:
+        return `Notification: ${title}`;
+    }
+  };
+
   return (
-    <div className={styles.container}>
+    <div
+      className={styles.container}
+      role={getToastRole(color)}
+      aria-live="polite"
+      aria-label={getToastAriaLabel(color, title)}
+    >
       <div className="flex-shrink-0">
         <div className={styles.icon}>
           <div className={styles.iconColor}>
@@ -69,6 +96,7 @@ export default function CustomToast({ message, title, id, color }) {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -83,6 +111,7 @@ export default function CustomToast({ message, title, id, color }) {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -97,6 +126,7 @@ export default function CustomToast({ message, title, id, color }) {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -113,12 +143,17 @@ export default function CustomToast({ message, title, id, color }) {
         <h4 className={styles.text}>{title}</h4>
         <p className={styles.message}>{message}</p>
       </div>
-      <button onClick={() => toast.dismiss(id)} className={styles.closeButton}>
+      <button
+        onClick={() => toast.dismiss(id)}
+        className={styles.closeButton}
+        aria-label={`Dismiss ${title} notification`}
+      >
         <svg
           className="w-4 h-4 sm:w-5 sm:h-5"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"

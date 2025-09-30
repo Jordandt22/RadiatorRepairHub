@@ -15,11 +15,15 @@ function FilterSliderInput({ label, name, min, max, step }) {
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label
+        htmlFor={`filter-${name}`}
+        className="block text-sm font-medium text-gray-700 mb-2"
+      >
         {label}: {filters[name]}
       </label>
       <div className="space-y-2">
         <input
+          id={`filter-${name}`}
           type="range"
           min={min}
           max={max}
@@ -34,8 +38,16 @@ function FilterSliderInput({ label, name, min, max, step }) {
               ((filters[name] - min) / (max - min)) * 100
             }%, #e5e7eb 100%)`,
           }}
+          aria-label={`${label} slider`}
+          aria-valuemin={min}
+          aria-valuemax={max}
+          aria-valuenow={filters[name]}
+          aria-valuetext={`${filters[name]} out of ${max}`}
         />
-        <div className="flex justify-between text-xs text-gray-500">
+        <div
+          className="flex justify-between text-xs text-gray-500"
+          role="presentation"
+        >
           <span>{min}</span>
           <span>{max}</span>
         </div>

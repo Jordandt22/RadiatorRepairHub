@@ -17,14 +17,19 @@ function FilterDropdown({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label
+        htmlFor={`filter-${name}`}
+        className="block text-sm font-medium text-gray-700 mb-2"
+      >
         {label}
       </label>
       <div className="relative">
         <select
+          id={`filter-${name}`}
           value={filters[name]}
           onChange={(e) => updateFilter(name, e.target.value)}
           className="w-full px-3 py-2 pr-10 border-2 border-gray-200 rounded-md cursor-pointer appearance-none focus:border-blue-500 outline-none duration-200"
+          aria-label={`Filter by ${label.toLowerCase()}`}
         >
           <option value="">All {inputLabel}</option>
           {options.map((option) => {
@@ -46,6 +51,7 @@ function FilterDropdown({
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"

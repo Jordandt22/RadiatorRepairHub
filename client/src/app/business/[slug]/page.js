@@ -345,8 +345,7 @@ async function Page({ params }) {
               {/* Breadcrumb Navigation */}
               <BreadcrumbList
                 items={breadcrumbItems}
-                textColor="text-gray-300"
-                activeColor="text-white"
+                navStyles="text-gray-600 mb-6 bg-slate-900 rounded-lg p-2 pl-4 pr-8 w-fit"
               />
             </div>
 
