@@ -310,9 +310,9 @@ async function Page({ params }) {
         }}
       />
 
-      <div className="min-h-screen bg-gray-50 pb-32">
+      <div className="min-h-screen bg-gray-50 pb-16 md:pb-32">
         {/* Hero Section with Business Image */}
-        <div className="relative w-full h-64 md:h-80 lg:h-96 bg-gray-200">
+        <div className="relative w-full h-56 sm:h-64 md:h-80 lg:h-96 bg-gray-200">
           {business.image_url ? (
             <Image
               src={business.image_url}
@@ -325,41 +325,43 @@ async function Page({ params }) {
           ) : (
             <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
               <div className="text-center">
-                <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Star className="w-10 h-10 text-gray-500" />
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-4">
+                  <Star className="w-8 h-8 md:w-10 md:h-10 text-gray-500" />
                 </div>
-                <p className="text-gray-500 text-lg">No image available</p>
+                <p className="text-gray-500 text-sm md:text-lg">
+                  No image available
+                </p>
               </div>
             </div>
           )}
 
           {/* Overlay with business title */}
-          <div className="absolute inset-0 bg-black/75 flex flex-col items-start justify-between">
-            <div className="w-full p-6 text-white max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              {/* Breadcrumb Navigation */}
+          <div className="absolute inset-0 bg-black/75 flex flex-col items-start justify-end md:justify-between pb-4 md:pb-0">
+            <div className="w-full p-3 sm:p-4 md:p-6 text-white max-w-7xl mx-auto hidden md:block">
+              {/* Breadcrumb Navigation - Hidden on mobile */}
               <BreadcrumbList
                 items={breadcrumbItems}
-                navStyles="text-gray-600 mb-6 bg-slate-900 rounded-lg p-2 pl-4 pr-8 w-fit"
+                navStyles="text-gray-600 mb-4 md:mb-6 bg-slate-900 rounded-lg p-2 pl-4 pr-8 w-fit text-sm"
               />
             </div>
 
-            <div className="w-full p-6 text-white max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-4">
+            <div className="w-full p-3 sm:p-4 md:p-6 text-white max-w-7xl mx-auto">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-2 md:mb-4 leading-tight">
                 {business.title}
               </h1>
               {business.local_note && (
-                <p className="text-base italic text-gray-300 mb-4">
+                <p className="text-sm md:text-base italic text-gray-300 mb-2 md:mb-4">
                   📍 {business.local_note}
                 </p>
               )}
               <div className="flex items-center gap-2 flex-wrap">
                 <div className="flex items-center">
-                  <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                  <span className="ml-1 font-semibold text-lg">
+                  <Star className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 fill-current" />
+                  <span className="ml-1 font-semibold text-base md:text-lg">
                     {business.total_score}
                   </span>
                 </div>
-                <span className="text-lg mr-2">
+                <span className="text-sm md:text-lg mr-2">
                   ({business.reviews_count.toLocaleString()} reviews)
                 </span>
                 <OpenStatus hours={business.hours} />
@@ -368,18 +370,18 @@ async function Page({ params }) {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="lg:col-span-2 space-y-4 md:space-y-8">
               {/* Description */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 font-heading">
+              <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
                   About
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   <div className="md:col-span-2">
-                    <p className="text-gray-600 leading-relaxed">
+                    <p className="text-sm md:text-base text-gray-600 leading-relaxed">
                       {business.description}
                     </p>
                   </div>
@@ -410,29 +412,29 @@ async function Page({ params }) {
               </div>
 
               {/* Categories */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 font-heading">
+              <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
                   Categories
                 </h2>
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
                       Primary Category
                     </h3>
                     {business.primary_category ? (
                       <Link
                         href={`/category/${business.primary_category.slug}`}
-                        className="inline-block px-4 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-500 hover:text-white duration-300 font-medium transition-colors capitalize"
+                        className="inline-block px-3 py-1.5 md:px-4 md:py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-500 hover:text-white duration-300 font-medium transition-colors capitalize text-sm md:text-base"
                       >
                         {business.primary_category.name}
                       </Link>
                     ) : (
-                      <p className="text-gray-600">None</p>
+                      <p className="text-sm md:text-base text-gray-600">None</p>
                     )}
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
                       Secondary Categories
                     </h3>
                     {business.secondary_categories &&
@@ -456,33 +458,35 @@ async function Page({ params }) {
               </div>
 
               {/* Map Section */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 font-heading">
+              <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
                   Location
                 </h2>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <MapPin className="w-5 h-5 text-gray-600 mt-1" />
-                    <p className="text-gray-700">{business.address}</p>
+                <div className="space-y-3 md:space-y-4">
+                  <div className="flex items-start gap-2 md:gap-3">
+                    <MapPin className="w-4 h-4 md:w-5 md:h-5 text-gray-600 mt-1 flex-shrink-0" />
+                    <p className="text-sm md:text-base text-gray-700 break-words">
+                      {business.address}
+                    </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Link
                       href={`/state/${business.state.code}/city/${business.city.slug}`}
-                      className="text-white bg-blue-600 rounded-full px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95"
+                      className="text-white bg-blue-600 rounded-full px-4 md:px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95 text-sm md:text-base"
                     >
                       {business.city.name}
                     </Link>
                     <Link
                       href={`/state/${business.state.code}`}
-                      className="text-white bg-blue-600 rounded-full px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95"
+                      className="text-white bg-blue-600 rounded-full px-4 md:px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95 text-sm md:text-base"
                     >
                       {business.state.name}
                     </Link>
                   </div>
 
                   {/* Google Maps Embed */}
-                  <div className="w-full h-90 md:h-120 rounded-lg overflow-hidden">
+                  <div className="w-full h-64 md:h-96 rounded-lg overflow-hidden">
                     <iframe
                       src={`https://www.google.com/maps/embed/v1/place?key=${
                         process.env.GOOGLE_MAPS_API_KEY
@@ -515,10 +519,10 @@ async function Page({ params }) {
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* Rating Summary */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 font-heading">
+              <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
                   Rating
                 </h2>
                 <div className="text-center">
@@ -557,47 +561,47 @@ async function Page({ params }) {
               </div>
 
               {/* Contact Information */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 font-heading">
+              <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
                   Contact
                 </h2>
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {business.phone ? (
-                    <div className="flex items-center gap-3">
-                      <Phone className="w-5 h-5 text-gray-600" />
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <Phone className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
                       <a
                         href={`tel:${business.phone}`}
-                        className="text-gray-700 hover:text-blue-600 transition-colors"
+                        className="text-sm md:text-base text-gray-700 hover:text-blue-600 transition-colors"
                       >
                         {business.phone}
                       </a>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3">
-                      <Phone className="w-5 h-5 text-gray-600" />
-                      <span className="text-gray-700">
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <Phone className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
+                      <span className="text-sm md:text-base text-gray-700">
                         No Phone Number Available
                       </span>
                     </div>
                   )}
 
                   {business.website ? (
-                    <div className="flex items-center gap-3">
-                      <Globe className="w-5 h-5 text-gray-600" />
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <Globe className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
                       <Link
                         href={business.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+                        className="text-sm md:text-base text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1 break-all"
                       >
                         Visit Website
-                        <ExternalLink className="w-3 h-3" />
+                        <ExternalLink className="w-3 h-3 flex-shrink-0" />
                       </Link>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3">
-                      <Globe className="w-5 h-5 text-gray-600" />
-                      <span className="text-gray-700">
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <Globe className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
+                      <span className="text-sm md:text-base text-gray-700">
                         No Website Available
                       </span>
                     </div>
@@ -606,9 +610,9 @@ async function Page({ params }) {
               </div>
 
               {/* Business Hours */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold text-gray-900 font-heading">
+              <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 font-heading">
                     Business Hours
                   </h2>
                   <OpenStatus hours={business.hours} />
@@ -624,24 +628,24 @@ async function Page({ params }) {
               {(paymentFeatures.length > 0 ||
                 accessibilityFeatures.length > 0 ||
                 otherFeatures.length > 0) && (
-                <div className="bg-white rounded-xl shadow-lg p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4 font-heading">
+                <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
                     Features
                   </h2>
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     {paymentFeatures.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                        <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
                           Payment Methods
                         </h3>
                         <div className="flex flex-col gap-2">
                           {paymentFeatures.map((feature, index) => (
                             <div
                               key={index}
-                              className="flex items-center gap-3"
+                              className="flex items-center gap-2 md:gap-3"
                             >
-                              <feature.icon className="w-4 h-4 text-blue-600" />
-                              <span className="text-gray-700 capitalize text-sm">
+                              <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                              <span className="text-gray-700 capitalize text-xs md:text-sm">
                                 {feature.value}
                               </span>
                             </div>
@@ -652,17 +656,17 @@ async function Page({ params }) {
 
                     {accessibilityFeatures.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                        <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
                           Accessibility
                         </h3>
                         <div className="flex flex-col gap-2">
                           {accessibilityFeatures.map((feature, index) => (
                             <div
                               key={index}
-                              className="flex items-center gap-3"
+                              className="flex items-center gap-2 md:gap-3"
                             >
-                              <feature.icon className="w-4 h-4 text-blue-600" />
-                              <span className="text-gray-700 capitalize text-sm">
+                              <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                              <span className="text-gray-700 capitalize text-xs md:text-sm">
                                 {feature.value}
                               </span>
                             </div>
@@ -673,17 +677,17 @@ async function Page({ params }) {
 
                     {otherFeatures.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                        <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
                           Other
                         </h3>
                         <div className="flex flex-col gap-2">
                           {otherFeatures.map((feature, index) => (
                             <div
                               key={index}
-                              className="flex items-center gap-3"
+                              className="flex items-center gap-2 md:gap-3"
                             >
-                              <feature.icon className="w-4 h-4 text-blue-600" />
-                              <span className="text-gray-700 capitalize text-sm">
+                              <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                              <span className="text-gray-700 capitalize text-xs md:text-sm">
                                 {feature.value}
                               </span>
                             </div>

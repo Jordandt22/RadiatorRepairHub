@@ -74,14 +74,6 @@ function Navbar() {
       label: "Contact",
       path: "/contact",
     },
-    {
-      label: "Get Listed",
-      path: "/get-listed",
-    },
-    {
-      label: "FAQ",
-      path: "/faq",
-    },
   ];
 
   const toggleMobileMenu = () => {
@@ -225,6 +217,19 @@ function Navbar() {
             </button>
           </div>
 
+          {/* Mobile Search Button */}
+          <div className="p-6 border-b border-gray-200">
+            <Link
+              href="/search?page=1&sort=most_reviews"
+              onClick={closeMobileMenu}
+              className="flex items-center justify-center space-x-2 w-full px-4 py-3 rounded-lg font-medium transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white"
+              aria-label="Search for radiator repair businesses"
+            >
+              <Search className="w-5 h-5" aria-hidden="true" />
+              <span>Search Businesses</span>
+            </Link>
+          </div>
+
           {/* Mobile Sidebar Navigation */}
           <div className="flex-1 px-6 py-6">
             <nav
@@ -247,19 +252,6 @@ function Navbar() {
                 </Link>
               ))}
             </nav>
-          </div>
-
-          {/* Mobile Sidebar Footer */}
-          <div className="p-6 border-t border-gray-200">
-            <Link
-              href="/search?page=1&sort=most_reviews"
-              onClick={closeMobileMenu}
-              className="flex items-center justify-center space-x-2 w-full px-4 py-3 rounded-lg font-medium transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white"
-              aria-label="Search for radiator repair businesses"
-            >
-              <Search className="w-5 h-5" aria-hidden="true" />
-              <span>Search Businesses</span>
-            </Link>
           </div>
         </div>
       </div>
