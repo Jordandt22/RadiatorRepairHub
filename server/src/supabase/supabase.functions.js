@@ -35,7 +35,7 @@ const formatFullBusiness = (business) => {
   }
 
   if (business?.features) {
-    business.features = { ...business.features[0] };
+    business.features = { ...business.features };
     delete business.features.id;
     delete business.features.business_id;
   }
