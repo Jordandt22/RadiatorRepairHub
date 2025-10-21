@@ -10,6 +10,7 @@ import FilterNumInput from "./inputs/FilterNumInput";
 import FilterSliderInput from "./inputs/FilterSliderInput";
 import CitySearch from "./comboboxes/CitySearch";
 import StateSearch from "./comboboxes/StateSearch";
+import PostalCodeSearch from "./comboboxes/PostalCodeSearch";
 import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
@@ -63,6 +64,9 @@ function MobileFilterSection({ stateData, cityData, page }) {
 
           {/* City Filter */}
           {!cityData && <CitySearch stateData={stateData} />}
+
+          {/* Postal Code */}
+          <PostalCodeSearch stateData={stateData} />
 
           {/* Min Total Score */}
           <FilterSliderInput

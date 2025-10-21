@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { getStates, getCities, getPostalCodes } from "../controllers/location.controller.js";
+import {
+  getStates,
+  getCities,
+  getPostalCodes,
+} from "../controllers/location.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import { paramsValidator } from "../middleware/validators.js";
 import { StateIDSchema, CityIDSchema } from "../schemas/location.schemas.js";

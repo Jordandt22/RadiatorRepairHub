@@ -295,6 +295,7 @@ export const getSearchedBusinesses = async (req, res) => {
     { key: "title", filter: "ilike" },
     { key: "state_id", filter: "eq" },
     { key: "city_id", filter: "eq" },
+    { key: "postal_code_id", filter: "eq" },
     { key: "total_score", filter: "gte" },
     { key: "reviews_count", filter: "gte" },
     { key: "primary_category_id", filter: "eq" },
