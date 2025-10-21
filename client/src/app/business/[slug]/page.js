@@ -174,22 +174,22 @@ async function Page({ params }) {
   });
 
   // Format business hours for display (using opening_hours format)
-  const formatBusinessHours = (openingHours) => {
-    if (!openingHours || !Array.isArray(openingHours)) {
+  const formatBusinessHours = (hours) => {
+    if (!hours || !Array.isArray(hours)) {
       return <p className="text-sm text-gray-600">Hours not available</p>;
     }
 
     return (
       <div className="space-y-2">
-        {openingHours.map((day, index) => (
+        {hours.map((day, index) => (
           <div key={index} className="flex justify-between text-sm">
-            <span className="font-medium text-gray-700">{day.day}</span>
+            <span className="font-medium text-gray-700">{day.day_of_week}</span>
             <div className="text-gray-600 text-right">
               {day.is_closed ? (
                 <span>Closed</span>
               ) : (
                 <div className="space-y-1">
-                  {day.hours.split(",").map((timePeriod, timeIndex) => (
+                  {day.hours_text.split(",").map((timePeriod, timeIndex) => (
                     <div key={timeIndex} className="text-sm">
                       {timePeriod.trim()}
                     </div>
@@ -617,11 +617,14 @@ async function Page({ params }) {
                   </h2>
                   <OpenStatus hours={business.hours} />
                 </div>
-                {business.opening_hours ? (
-                  formatBusinessHours(business.opening_hours)
+                {business.hours ? (
+                  formatBusinessHours(business.hours)
                 ) : (
                   <p className="text-gray-600">No Business Hours Available</p>
                 )}
+                <div className="text-sm mt-4 text-center text-blue-600 font-medium">
+                  {business.opening_hours_confirmation}
+                </div>
               </div>
 
               {/* Features */}

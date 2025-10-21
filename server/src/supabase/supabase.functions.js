@@ -162,9 +162,9 @@ export const searchBusinesses = async (
   limit,
   sort_option
 ) => {
-  let businessesQuery = supabase.from("businesses").select(fullBusinessSelect, {
-    count: "exact",
-  });
+  let businessesQuery = supabase
+    .from("businesses")
+    .select(fullBusinessSelect, { count: "exact" });
 
   // Applying Filters
   searchParams.map(({ key, value, filter }) => {
@@ -237,10 +237,35 @@ export const searchBusinesses = async (
     .range((page - 1) * limit, page * limit - 1)
     .limit(limit);
 
-  // Format Data
-  if (data) {
-    const formattedData = data.map((business) => formatFullBusiness(business));
+  // Check If Open Days is in Search Params
+  let fullData;
+  if (searchParams.find((param) => param.key === "hours.day_of_week")) {
+    const { data: fullBusinessesData, error: fullBusinessesError } =
+      await supabase
+        .from("businesses")
+        .select(fullBusinessSelect)
+        .in(
+          "id",
+          data.map((business) => business.id)
+        );
+    if (fullBusinessesError) {
+      return { data: null, count, error: fullBusinessesError };
+    }
 
+    fullData = data.map((originalBusiness) => {
+      return fullBusinessesData.find(
+        (fullBusiness) => fullBusiness.id === originalBusiness.id
+      );
+    });
+  } else {
+    fullData = data;
+  }
+
+  // Format Data
+  if (fullData) {
+    const formattedData = fullData.map((business) =>
+      formatFullBusiness(business)
+    );
     return { data: formattedData, count, error };
   }
 

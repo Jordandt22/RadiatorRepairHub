@@ -307,33 +307,8 @@ export const getSearchedBusinesses = async (req, res) => {
     });
   }
 
-  // Get Search Parameters that were sent
+  // Search Parameters
   const searchParamValues = [];
-  searchParamKeys.forEach((param) => {
-    let key = param.key;
-    const value = getNestedValue(req.body, key);
-
-    // Add to Search Parameters
-    if (value) {
-      searchParamValues.push({
-        key,
-        value,
-        filter: param.filter,
-      });
-    }
-  });
-
-  // Adding Secondary Categories
-  if (
-    req.body.secondary_categories &&
-    req.body.secondary_categories.length > 0
-  ) {
-    searchParamValues.push({
-      key: `secondary_categories.secondary_category_id`,
-      value: req.body.secondary_categories,
-      filter: "in",
-    });
-  }
 
   // Adding Open Filter
   if (req.body.open) {
@@ -362,6 +337,33 @@ export const getSearchedBusinesses = async (req, res) => {
         value: false,
       });
     }
+  }
+
+  // Get Search Parameters that were sent
+  searchParamKeys.forEach((param) => {
+    let key = param.key;
+    const value = getNestedValue(req.body, key);
+
+    // Add to Search Parameters
+    if (value) {
+      searchParamValues.push({
+        key,
+        value,
+        filter: param.filter,
+      });
+    }
+  });
+
+  // Adding Secondary Categories
+  if (
+    req.body.secondary_categories &&
+    req.body.secondary_categories.length > 0
+  ) {
+    searchParamValues.push({
+      key: `secondary_categories.secondary_category_id`,
+      value: req.body.secondary_categories,
+      filter: "in",
+    });
   }
 
   // Get Cached Count of Searched Businesses

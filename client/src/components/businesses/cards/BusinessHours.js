@@ -4,18 +4,18 @@ import React from "react";
 import BackOfCard from "./BackOfCard";
 
 function BusinessHours({ business, setActiveCard }) {
-  const formatBusinessHours = (openingHours) => {
-    if (!openingHours || !Array.isArray(openingHours)) {
+  const formatBusinessHours = (hours) => {
+    if (!hours || !Array.isArray(hours)) {
       return <p className="text-sm text-gray-500">Hours not available</p>;
     }
 
     return (
       <div className="space-y-1">
-        {openingHours.map((day, index) => (
+        {hours.map((day, index) => (
           <div key={index} className="flex justify-between text-sm mb-2">
-            <span className="font-medium text-gray-700">{day.day}</span>
+            <span className="font-medium text-gray-700">{day.day_of_week}</span>
             <div className="flex-col flex items-end">
-              {day.hours.split(",").map((hour, index) => (
+              {day.hours_text.split(",").map((hour, index) => (
                 <span key={index} className="text-gray-600">
                   {hour}
                 </span>
@@ -29,7 +29,7 @@ function BusinessHours({ business, setActiveCard }) {
 
   return (
     <BackOfCard title="Business Hours" setActiveCard={setActiveCard}>
-      {formatBusinessHours(business.opening_hours)}
+      {formatBusinessHours(business.hours)}
     </BackOfCard>
   );
 }
