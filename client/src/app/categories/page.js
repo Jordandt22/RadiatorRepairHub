@@ -1,5 +1,6 @@
 import React from "react";
 import CategoriesPage from "@/components/pages/categories/CategoriesPage";
+import PRIMARY_CATEGORIES from "@/lib/data/primary_categories";
 
 export const metadata = {
   title:
