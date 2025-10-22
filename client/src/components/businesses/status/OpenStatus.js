@@ -10,8 +10,10 @@ function OpenStatus({ hours }) {
     const now = new Date();
     const currentDay = now.toLocaleDateString("en-US", { weekday: "long" });
 
+    // Find Current Day
     const todayHours = hours.find((day) => day.day_of_week === currentDay);
 
+    // If business is closed today, return closed
     if (!todayHours || todayHours.is_closed) {
       return { isOpen: false, status: "Closed", color: "red" };
     }
@@ -28,11 +30,12 @@ function OpenStatus({ hours }) {
 
       // Check if current time falls within any of the business hours periods
       const isOpen = todayHours.hours.some((period) => {
-        const openMinutes = parseTime(period.opening_time);
-        const closeMinutes = parseTime(period.closing_time);
+        const openMinutes = parseTime(period.open);
+        const closeMinutes = parseTime(period.close);
         return currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
       });
 
+      // If business is open, return open
       return {
         isOpen,
         status: isOpen ? "Open" : "Closed",

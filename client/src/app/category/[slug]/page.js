@@ -69,11 +69,39 @@ async function Page({ params, searchParams }) {
     formattedPage = parseInt(page);
   }
 
+  // CollectionPage Schema
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${primaryCategory.name} Services`,
+    description: `Browse ${primaryCategory.name.toLowerCase()} businesses and services`,
+    url: `https://radiatorrepairhub.com/category/${slug}`,
+    isPartOf: {
+      "@id": "https://radiatorrepairhub.com/#website",
+    },
+    about: {
+      "@type": "Service",
+      serviceType: primaryCategory.name,
+      provider: {
+        "@type": "Organization",
+        name: "RadiatorRepairHub",
+      },
+    },
+  };
+
   return (
-    <CategoryBusinessesPage
-      primaryCategory={primaryCategory}
-      page={formattedPage}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(collectionSchema),
+        }}
+      />
+      <CategoryBusinessesPage
+        primaryCategory={primaryCategory}
+        page={formattedPage}
+      />
+    </>
   );
 }
 

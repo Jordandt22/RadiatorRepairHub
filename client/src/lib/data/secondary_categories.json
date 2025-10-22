@@ -478,5 +478,600 @@
     "id": "90f2f23d-2755-4b58-9024-02f03899c421",
     "name": "Auto parts market",
     "slug": "auto-parts-market"
+  },
+  {
+    "id": "0ecbc37b-7635-425f-a9b6-961a2e348b7c",
+    "name": "Agricultural service",
+    "slug": "agricultural-service"
+  },
+  {
+    "id": "64193637-8e42-42b0-a50a-f14a29d3df03",
+    "name": "Used car dealer",
+    "slug": "used-car-dealer"
+  },
+  {
+    "id": "9c6fed6d-039b-4aba-b33d-6c55e32de320",
+    "name": "Car dealer",
+    "slug": "car-dealer"
+  },
+  {
+    "id": "2ce3c1a6-1faa-490f-89f1-d87765190d7d",
+    "name": "Heating equipment supplier",
+    "slug": "heating-equipment-supplier"
+  },
+  {
+    "id": "17b9a218-c80d-4a22-9c08-98f3581fa5fe",
+    "name": "RV repair shop",
+    "slug": "rv-repair-shop"
+  },
+  {
+    "id": "c39a7eed-29a1-4998-813f-c0031214cf2e",
+    "name": "Fiberglass repair service",
+    "slug": "fiberglass-repair-service"
+  },
+  {
+    "id": "27162ea2-6a6e-4b21-becb-9a43ef87112b",
+    "name": "School bus service",
+    "slug": "school-bus-service"
+  },
+  {
+    "id": "01715563-b836-4c7f-bda6-908f7539e23f",
+    "name": "Warehouse",
+    "slug": "warehouse"
+  },
+  {
+    "id": "c1f61067-c865-45cd-9c43-0917d8de1ce2",
+    "name": "Fabrication engineer",
+    "slug": "fabrication-engineer"
+  },
+  {
+    "id": "eb0e2ea8-0933-40f9-8b74-d95c96035a64",
+    "name": "Snow removal service",
+    "slug": "snow-removal-service"
+  },
+  {
+    "id": "fb0b2846-af34-448d-84e5-ec867a36add8",
+    "name": "Trailer repair shop",
+    "slug": "trailer-repair-shop"
+  },
+  {
+    "id": "d707afb5-70a7-475a-b19b-12637f251701",
+    "name": "ATV repair shop",
+    "slug": "atv-repair-shop"
+  },
+  {
+    "id": "c4b4a41a-7ddc-46aa-a3c4-3419c5c9b489",
+    "name": "Auto wrecker",
+    "slug": "auto-wrecker"
+  },
+  {
+    "id": "61983cf5-658a-40e6-a328-01073eaa4482",
+    "name": "Auto sunroof shop",
+    "slug": "auto-sunroof-shop"
+  },
+  {
+    "id": "ca04b10c-4145-41f5-8ba7-e7a81b5f9942",
+    "name": "Auto upholsterer",
+    "slug": "auto-upholsterer"
+  },
+  {
+    "id": "064ab130-0d9d-46c7-8702-9243d50f6359",
+    "name": "Alternator supplier",
+    "slug": "alternator-supplier"
+  },
+  {
+    "id": "d1e64ac1-b168-400e-bbb6-c3ea01c301eb",
+    "name": "Water pump supplier",
+    "slug": "water-pump-supplier"
+  },
+  {
+    "id": "f7b30c48-4571-4365-b449-98082224055f",
+    "name": "Car stereo store",
+    "slug": "car-stereo-store"
+  },
+  {
+    "id": "f278d9fc-3c03-4a96-abf6-d43a4ff74668",
+    "name": "Trailer supply store",
+    "slug": "trailer-supply-store"
+  },
+  {
+    "id": "5e911bac-de24-41e3-8ebe-02748c31b955",
+    "name": "Electric motor repair shop",
+    "slug": "electric-motor-repair-shop"
+  },
+  {
+    "id": "f3b8860d-a607-42ac-99c1-9c33c0e8516d",
+    "name": "Car detailing service",
+    "slug": "car-detailing-service"
+  },
+  {
+    "id": "ef78ea11-1a1f-42d0-a042-a2e1b1eca1cb",
+    "name": "Aluminum supplier",
+    "slug": "aluminum-supplier"
+  },
+  {
+    "id": "5b514e5d-a504-4bda-aa40-bbc258f25117",
+    "name": "Air compressor repair service",
+    "slug": "air-compressor-repair-service"
+  },
+  {
+    "id": "936e2a4e-da73-465f-9199-adda4b1fae8d",
+    "name": "Battery store",
+    "slug": "battery-store"
+  },
+  {
+    "id": "4d50f6f3-5d5f-4af2-a35e-6deef2b8ba34",
+    "name": "Mobile phone repair shop",
+    "slug": "mobile-phone-repair-shop"
+  },
+  {
+    "id": "e029b6a3-f158-4b55-9322-c0fc746de5ea",
+    "name": "Computer repair service",
+    "slug": "computer-repair-service"
+  },
+  {
+    "id": "8695d500-77cb-4829-aa18-3a21686839bd",
+    "name": "Truck rental agency",
+    "slug": "truck-rental-agency"
+  },
+  {
+    "id": "bd8a145f-fcc7-4661-8904-34f000f3cf4b",
+    "name": "Auto glass repair service",
+    "slug": "auto-glass-repair-service"
+  },
+  {
+    "id": "23f46525-8688-415e-bd04-1e43538f5310",
+    "name": "Glass repair service",
+    "slug": "glass-repair-service"
+  },
+  {
+    "id": "080b7289-f0d5-44d3-8d23-0cc15abfde2f",
+    "name": "Air conditioning contractor",
+    "slug": "air-conditioning-contractor"
+  },
+  {
+    "id": "db26a643-7f04-42d9-be2a-58319f7ee58d",
+    "name": "Water cooler supplier",
+    "slug": "water-cooler-supplier"
+  },
+  {
+    "id": "87442a1f-92bc-4057-a231-63b3b565f992",
+    "name": "Cooling plant",
+    "slug": "cooling-plant"
+  },
+  {
+    "id": "c57c66b5-a7af-4fbc-bb44-5cfcb788fe51",
+    "name": "Metal processing company",
+    "slug": "metal-processing-company"
+  },
+  {
+    "id": "b6fc4c9e-ebbc-4cce-b119-2351227ca96f",
+    "name": "Building materials supplier",
+    "slug": "building-materials-supplier"
+  },
+  {
+    "id": "e5b1d692-01e2-4ce2-a3f6-dd91f2dac5a5",
+    "name": "Contractor",
+    "slug": "contractor"
+  },
+  {
+    "id": "2f5ef89b-db55-4e42-a436-ec7f33eef7d8",
+    "name": "Handyman/Handywoman/Handyperson",
+    "slug": "handymanhandywomanhandyperson"
+  },
+  {
+    "id": "eff3a63a-28fa-47a2-9bee-761f79bca5d0",
+    "name": "Department of motor vehicles",
+    "slug": "department-of-motor-vehicles"
+  },
+  {
+    "id": "699b7f21-e533-46b0-96fe-b31711cad52b",
+    "name": "Fire damage restoration service",
+    "slug": "fire-damage-restoration-service"
+  },
+  {
+    "id": "35278d61-5df0-48af-b744-d53a8d8ada6d",
+    "name": "HVAC contractor",
+    "slug": "hvac-contractor"
+  },
+  {
+    "id": "09a2ceab-3cb5-48a4-9b23-20c67c752d5d",
+    "name": "Bathroom remodeler",
+    "slug": "bathroom-remodeler"
+  },
+  {
+    "id": "7dee9f92-8337-4652-804e-fde6db04a741",
+    "name": "BMW dealer",
+    "slug": "bmw-dealer"
+  },
+  {
+    "id": "8bf8b529-0679-48a9-9d63-1fa51a971298",
+    "name": "Porsche dealer",
+    "slug": "porsche-dealer"
+  },
+  {
+    "id": "0fb6746b-367c-40ab-9c3e-5e07f56f66bb",
+    "name": "Tune up supplier",
+    "slug": "tune-up-supplier"
+  },
+  {
+    "id": "03775240-bf3f-4602-9544-1acee8bbbab8",
+    "name": "Drainage service",
+    "slug": "drainage-service"
+  },
+  {
+    "id": "257124d8-23b4-437a-95db-b2bf27aee59a",
+    "name": "Plumber",
+    "slug": "plumber"
+  },
+  {
+    "id": "aa07559a-ddc2-42f1-a3de-636459adb32a",
+    "name": "Plumbing supply store",
+    "slug": "plumbing-supply-store"
+  },
+  {
+    "id": "2d24e4ea-720a-41a7-b21a-7d65893dd5ba",
+    "name": "Sanitation service",
+    "slug": "sanitation-service"
+  },
+  {
+    "id": "356c87b3-ce59-4b63-9302-a5cc450fc0d5",
+    "name": "Water damage restoration service",
+    "slug": "water-damage-restoration-service"
+  },
+  {
+    "id": "c0422818-907e-4d3b-baab-2dc03a09aa8b",
+    "name": "E-commerce service",
+    "slug": "e-commerce-service"
+  },
+  {
+    "id": "f27f4f85-0028-40af-8950-960ed6805bfc",
+    "name": "Electrical supply store",
+    "slug": "electrical-supply-store"
+  },
+  {
+    "id": "75c61408-713d-456a-b107-094eaadd3b19",
+    "name": "Electronics store",
+    "slug": "electronics-store"
+  },
+  {
+    "id": "5898ab3e-d208-4910-b214-f52143634136",
+    "name": "Gas installation service",
+    "slug": "gas-installation-service"
+  },
+  {
+    "id": "c6eecfda-d0f0-465d-a388-0113c291397b",
+    "name": "Sanitary inspection",
+    "slug": "sanitary-inspection"
+  },
+  {
+    "id": "2ab2f019-a3d2-4764-90c6-95f3b1db10d6",
+    "name": "Bathroom supply store",
+    "slug": "bathroom-supply-store"
+  },
+  {
+    "id": "90846f68-50b7-4e67-a47e-e41949901718",
+    "name": "Oilfield",
+    "slug": "oilfield"
+  },
+  {
+    "id": "318ecdf1-5cca-46b0-b68b-8a12c18de040",
+    "name": "Farm equipment repair service",
+    "slug": "farm-equipment-repair-service"
+  },
+  {
+    "id": "2a4aac61-58a7-4969-ab72-d87df2c4efc2",
+    "name": "Farm equipment supplier",
+    "slug": "farm-equipment-supplier"
+  },
+  {
+    "id": "463b4150-70c4-4e8a-8e6e-f75c7ee1f45f",
+    "name": "Steel fabricator",
+    "slug": "steel-fabricator"
+  },
+  {
+    "id": "7ed85f8d-0ce2-480e-9285-1b40c162c7af",
+    "name": "Metal finisher",
+    "slug": "metal-finisher"
+  },
+  {
+    "id": "ddaa4420-e19d-4783-bb5e-72cfcd139470",
+    "name": "Professional services",
+    "slug": "professional-services"
+  },
+  {
+    "id": "d7b8b845-ee71-48d6-b845-a9f348842764",
+    "name": "Cleaning service",
+    "slug": "cleaning-service"
+  },
+  {
+    "id": "09cb320d-5f20-4cfe-9105-fda516a843ab",
+    "name": "Audi dealer",
+    "slug": "audi-dealer"
+  },
+  {
+    "id": "5a7da6d4-4cdb-401f-b072-4672db67772c",
+    "name": "Cadillac dealer",
+    "slug": "cadillac-dealer"
+  },
+  {
+    "id": "87625976-95fb-455d-bc46-e457681a4343",
+    "name": "Dodge dealer",
+    "slug": "dodge-dealer"
+  },
+  {
+    "id": "00617673-c9bc-4759-b53c-95ef0197c285",
+    "name": "Lexus dealer",
+    "slug": "lexus-dealer"
+  },
+  {
+    "id": "a89531f6-a1ad-4a0c-abd4-d69c120338cb",
+    "name": "Lincoln dealer",
+    "slug": "lincoln-dealer"
+  },
+  {
+    "id": "3d45a983-710e-4667-ac13-33d211f995fa",
+    "name": "Machinery parts manufacturer",
+    "slug": "machinery-parts-manufacturer"
+  },
+  {
+    "id": "8fdc972d-9aba-4a8a-bc66-17ab34eacd80",
+    "name": "Motor vehicle dealer",
+    "slug": "motor-vehicle-dealer"
+  },
+  {
+    "id": "ab548708-b184-4d33-87c5-22935f9fc1ed",
+    "name": "Vehicle repair shop",
+    "slug": "vehicle-repair-shop"
+  },
+  {
+    "id": "4865df3b-f3dd-4b53-9396-d6757500a0b0",
+    "name": "GMC dealer",
+    "slug": "gmc-dealer"
+  },
+  {
+    "id": "9ac0c2eb-1700-48a9-b821-338d47b75fec",
+    "name": "Car Radiator Repair Service",
+    "slug": "car-radiator-repair-service"
+  },
+  {
+    "id": "1b69adce-be3e-4e16-a5bf-24e4c9228c3b",
+    "name": "Vehicle Tuning Service",
+    "slug": "vehicle-tuning-service"
+  },
+  {
+    "id": "343c3b15-0e71-418f-be86-eec55a91bd28",
+    "name": "Car Battery Shop",
+    "slug": "car-battery-shop"
+  },
+  {
+    "id": "ab473af8-01aa-40c2-802c-3d772a816c0d",
+    "name": "MOT Centre",
+    "slug": "mot-centre"
+  },
+  {
+    "id": "e48336d1-ff04-446e-8fc2-0034ceddf817",
+    "name": "Vehicle Repair",
+    "slug": "vehicle-repair"
+  },
+  {
+    "id": "0615abec-fa2a-4cde-9eaa-93e35b1237fd",
+    "name": "Glass & mirror shop",
+    "slug": "glass-and-mirror-shop"
+  },
+  {
+    "id": "d7214b3e-47aa-4ace-9646-c89cf3baba26",
+    "name": "Do-it-yourself shop",
+    "slug": "do-it-yourself-shop"
+  },
+  {
+    "id": "2aa42f60-a58e-412f-bf9a-208923983ff1",
+    "name": "Tyre Shop",
+    "slug": "tyre-shop"
+  },
+  {
+    "id": "eabe57ed-fafa-4487-b9c5-7caa789811a9",
+    "name": "Salvage yard",
+    "slug": "salvage-yard"
+  },
+  {
+    "id": "71262689-8503-40fd-9e82-8e183b4a9027",
+    "name": "Auto auction",
+    "slug": "auto-auction"
+  },
+  {
+    "id": "0a8ad264-44d1-4629-ad63-c85d2af96890",
+    "name": "Tool store",
+    "slug": "tool-store"
+  },
+  {
+    "id": "f9cb706f-b6a7-45cb-af07-8b852eda0cc8",
+    "name": "Exhaust Silencer Shop",
+    "slug": "exhaust-silencer-shop"
+  },
+  {
+    "id": "45fb8ed2-e052-4347-bb50-164ab491933e",
+    "name": "Volkswagen dealer",
+    "slug": "volkswagen-dealer"
+  },
+  {
+    "id": "1d3987f6-601f-40fa-86d3-83869fbfce91",
+    "name": "Car leasing service",
+    "slug": "car-leasing-service"
+  },
+  {
+    "id": "c1c14d10-b7e9-4d6b-974b-a86018ebeebf",
+    "name": "Used truck dealer",
+    "slug": "used-truck-dealer"
+  },
+  {
+    "id": "1f6717a0-6f60-443a-9740-067f27c78ee9",
+    "name": "Car finance and loan company",
+    "slug": "car-finance-and-loan-company"
+  },
+  {
+    "id": "b4e42b1b-8140-4746-91c6-8aa3539e6392",
+    "name": "Truck dealer",
+    "slug": "truck-dealer"
+  },
+  {
+    "id": "79883470-01b3-43ce-a27d-955f81381c43",
+    "name": "Kia dealer",
+    "slug": "kia-dealer"
+  },
+  {
+    "id": "82c33dad-7a95-48b3-a88a-032220a4391e",
+    "name": "Nissan dealer",
+    "slug": "nissan-dealer"
+  },
+  {
+    "id": "03adcee3-69d8-470a-9243-66ef80df0de0",
+    "name": "Car manufacturer",
+    "slug": "car-manufacturer"
+  },
+  {
+    "id": "2e9ce9c2-73b3-46e1-bca8-59dcedfac1a1",
+    "name": "Tractor dealer",
+    "slug": "tractor-dealer"
+  },
+  {
+    "id": "5d092eaf-daa9-48c2-ab05-fa979b63cd0e",
+    "name": "Construction machine dealer",
+    "slug": "construction-machine-dealer"
+  },
+  {
+    "id": "0edf3c8e-e862-4769-967d-d5957f1027c2",
+    "name": "Landscaping supply store",
+    "slug": "landscaping-supply-store"
+  },
+  {
+    "id": "18047029-e622-4a8d-877f-70b4d48178e8",
+    "name": "Lawn mower repair service",
+    "slug": "lawn-mower-repair-service"
+  },
+  {
+    "id": "bc438726-9a1b-4ff9-8769-9e439b2d0ca8",
+    "name": "Lawn mower store",
+    "slug": "lawn-mower-store"
+  },
+  {
+    "id": "4cad42a1-cd83-479d-993b-38a03030cd61",
+    "name": "Toy store",
+    "slug": "toy-store"
+  },
+  {
+    "id": "ce8434aa-5185-4704-9a99-9c5bdd7119be",
+    "name": "Chrysler dealer",
+    "slug": "chrysler-dealer"
+  },
+  {
+    "id": "78f97820-a52f-4ca4-a57d-ddbfd5e159a7",
+    "name": "Ram dealer",
+    "slug": "ram-dealer"
+  },
+  {
+    "id": "98778d47-74dc-405b-85f8-3ef0b2a780fb",
+    "name": "Dump truck dealer",
+    "slug": "dump-truck-dealer"
+  },
+  {
+    "id": "0577b6e4-dfb1-44f1-897a-a593595f493a",
+    "name": "Equipment rental agency",
+    "slug": "equipment-rental-agency"
+  },
+  {
+    "id": "ba90d116-6003-4b94-a575-01b08e9d06ea",
+    "name": "Buick dealer",
+    "slug": "buick-dealer"
+  },
+  {
+    "id": "2946ff2e-68e5-49ab-82b4-e72c5a5db325",
+    "name": "Powersports vehicle dealer",
+    "slug": "powersports-vehicle-dealer"
+  },
+  {
+    "id": "2cad9a4b-93dd-4011-af15-a4a7823ea3cf",
+    "name": "Kawasaki motorcycle dealer",
+    "slug": "kawasaki-motorcycle-dealer"
+  },
+  {
+    "id": "a40abf12-1d0d-4f7d-bfdf-87d11a15e5a6",
+    "name": "Motorcycle shop",
+    "slug": "motorcycle-shop"
+  },
+  {
+    "id": "c5f34337-ca4e-4ed4-ba5d-088785b3388a",
+    "name": "Suzuki motorcycle dealer",
+    "slug": "suzuki-motorcycle-dealer"
+  },
+  {
+    "id": "de71676f-2018-4a83-af0a-6f2ee7dfa928",
+    "name": "Used motorcycle dealer",
+    "slug": "used-motorcycle-dealer"
+  },
+  {
+    "id": "17a167a7-19e3-4d7a-a345-066d9a3e6f38",
+    "name": "Yamaha motorcycle dealer",
+    "slug": "yamaha-motorcycle-dealer"
+  },
+  {
+    "id": "cfcc5bd8-8ab2-4233-8d38-17dfbbeebdbf",
+    "name": "Truck topper supplier",
+    "slug": "truck-topper-supplier"
+  },
+  {
+    "id": "1d9fc89c-cf58-4ad3-8dbc-678c5e3b7cfa",
+    "name": "Car rental agency",
+    "slug": "car-rental-agency"
+  },
+  {
+    "id": "89950932-cdb1-4cd3-b54d-8a0b5370adfc",
+    "name": "Junkyard",
+    "slug": "junkyard"
+  },
+  {
+    "id": "f5b0637c-0dd9-40fa-85f9-dd59dbfc05df",
+    "name": "Scrap Yard",
+    "slug": "scrap-yard"
+  },
+  {
+    "id": "0a3561c8-64e9-4b03-94fc-b292c9ee914b",
+    "name": "Used Vehicle Parts Shop",
+    "slug": "used-vehicle-parts-shop"
+  },
+  {
+    "id": "25273927-bcff-45a8-a43c-29da2b69864b",
+    "name": "Used Tyre Shop",
+    "slug": "used-tyre-shop"
+  },
+  {
+    "id": "84a92e8d-57df-4347-b1ee-90fac5302f25",
+    "name": "Clothing store",
+    "slug": "clothing-store"
+  },
+  {
+    "id": "b38c8d9c-ad87-4c5f-ae4c-d85616583c80",
+    "name": "Motorsports store",
+    "slug": "motorsports-store"
+  },
+  {
+    "id": "dbafbc6c-6608-40c2-8f5e-8b7c83130a48",
+    "name": "Outdoor clothing and equipment shop",
+    "slug": "outdoor-clothing-and-equipment-shop"
+  },
+  {
+    "id": "6f2b2f78-2d64-42ee-bd8d-baaadade6225",
+    "name": "Outdoor sports store",
+    "slug": "outdoor-sports-store"
+  },
+  {
+    "id": "d9a2e880-4b03-42ed-a80c-20719292da7a",
+    "name": "Snowmobile dealer",
+    "slug": "snowmobile-dealer"
+  },
+  {
+    "id": "6fc974aa-ae39-4bd7-8fc0-5a78d306a736",
+    "name": "Utility trailer dealer",
+    "slug": "utility-trailer-dealer"
   }
 ]

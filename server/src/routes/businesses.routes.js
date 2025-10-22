@@ -24,7 +24,7 @@ businessesRouter.get(
   serverErrorCatcherWrapper(getFeaturedBusinesses)
 );
 
-// Get Business by ID
+// Get Business by Slug
 businessesRouter.get(
   "/:business_slug",
   paramsValidator(BusinessSlugSchema),

@@ -19,12 +19,12 @@ function Footer() {
     { label: "Get Listed", path: "/get-listed" },
   ];
 
-  const topCities = [
-    { label: "Los Angeles, CA", path: "/state/CA/city/los-angeles" },
-    { label: "Houston, TX", path: "/state/TX/city/houston" },
-    { label: "Chicago, IL", path: "/state/IL/city/chicago" },
-    { label: "Phoenix, AZ", path: "/state/AZ/city/phoenix" },
-    { label: "Philadelphia, PA", path: "/state/PA/city/philadelphia" },
+  const topStates = [
+    { label: "California", path: "/state/CA" },
+    { label: "Texas", path: "/state/TX" },
+    { label: "Florida", path: "/state/FL" },
+    { label: "New York", path: "/state/NY" },
+    { label: "Washington", path: "/state/WA" },
   ];
 
   return (
@@ -67,16 +67,16 @@ function Footer() {
           {/* Top Cities */}
           <div>
             <h4 className="text-lg font-semibold mb-4 font-heading">
-              Top Cities
+              Top States
             </h4>
             <ul className="space-y-2">
-              {topCities.map((city) => (
-                <li key={city.label}>
+              {topStates.map((state) => (
+                <li key={state.label}>
                   <Link
-                    href={city.path}
+                    href={state.path}
                     className="text-gray-400 hover:text-blue-500 transition-colors text-sm"
                   >
-                    {city.label}
+                    {state.label}
                   </Link>
                 </li>
               ))}

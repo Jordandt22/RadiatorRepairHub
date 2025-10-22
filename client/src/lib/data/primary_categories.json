@@ -1,93 +1,8 @@
 [
   {
-    "id": "0885f077-6fa0-4d18-bff4-054c8162c8e0",
-    "name": "Air conditioning repair service",
-    "slug": "air-conditioning-repair-service"
-  },
-  {
-    "id": "e17fb1ac-5ce7-431d-a7d9-6cf1f1a7b5ef",
-    "name": "ATV dealer",
-    "slug": "atv-dealer"
-  },
-  {
-    "id": "e5f6ef0b-baaa-44dd-9b3b-9fbf9a0c457f",
-    "name": "Auto air conditioning service",
-    "slug": "auto-air-conditioning-service"
-  },
-  {
-    "id": "e001a483-5d97-4684-b815-8ff6a3ddd123",
-    "name": "Auto body shop",
-    "slug": "auto-body-shop"
-  },
-  {
-    "id": "86bddf17-650d-41b8-bce3-ae3ca760c31a",
-    "name": "Auto glass shop",
-    "slug": "auto-glass-shop"
-  },
-  {
-    "id": "c4159a00-3bd5-41ce-9853-0262a3bc87f4",
-    "name": "Auto machine shop",
-    "slug": "auto-machine-shop"
-  },
-  {
-    "id": "cbe16001-dc5c-497a-8546-5b84b4007662",
-    "name": "Auto parts store",
-    "slug": "auto-parts-store"
-  },
-  {
-    "id": "525c5318-ad0c-4fec-9810-aaa7bdfb56b1",
-    "name": "Auto radiator repair service",
-    "slug": "auto-radiator-repair-service"
-  },
-  {
     "id": "126c620b-bb78-4ae0-b4f6-4e68ae835f96",
     "name": "Auto repair shop",
     "slug": "auto-repair-shop"
-  },
-  {
-    "id": "f5d98d88-45e6-4f59-8052-96c11a6acac2",
-    "name": "Brake shop",
-    "slug": "brake-shop"
-  },
-  {
-    "id": "e0e2b981-abd0-4d8c-aab8-e5adef1befe4",
-    "name": "Car repair and maintenance service",
-    "slug": "car-repair-and-maintenance-service"
-  },
-  {
-    "id": "d3a8239e-33cf-42be-8a50-a1530381f44f",
-    "name": "Diesel engine repair service",
-    "slug": "diesel-engine-repair-service"
-  },
-  {
-    "id": "f6ee5003-c3a9-4299-8315-4cc8af54c85e",
-    "name": "Gas station",
-    "slug": "gas-station"
-  },
-  {
-    "id": "7648e146-40f8-45c4-82ff-aed58dc15114",
-    "name": "Manufacturer",
-    "slug": "manufacturer"
-  },
-  {
-    "id": "834814c9-35fa-4a07-9394-87419830e230",
-    "name": "Mechanic",
-    "slug": "mechanic"
-  },
-  {
-    "id": "2e59546b-710a-4c32-8577-18a56618e2c4",
-    "name": "Muffler shop",
-    "slug": "muffler-shop"
-  },
-  {
-    "id": "e8ee0fde-3bad-4bf5-8d03-c4cd127757cc",
-    "name": "Radiator repair service",
-    "slug": "radiator-repair-service"
-  },
-  {
-    "id": "2fcfeb02-e175-40d4-a2e1-92fdb8a73fdc",
-    "name": "Radiator shop",
-    "slug": "radiator-shop"
   },
   {
     "id": "9c65119c-0f87-485f-8405-b9948d35cdc6",
@@ -95,19 +10,24 @@
     "slug": "tire-repair-shop"
   },
   {
+    "id": "d3a8239e-33cf-42be-8a50-a1530381f44f",
+    "name": "Diesel engine repair service",
+    "slug": "diesel-engine-repair-service"
+  },
+  {
     "id": "0d13ee29-e974-4ed4-8ecc-7f5902a8f291",
     "name": "Tire shop",
     "slug": "tire-shop"
   },
   {
-    "id": "032c9a8a-9d1f-4f1a-bdd8-5ef6ad4a7058",
-    "name": "Transmission shop",
-    "slug": "transmission-shop"
+    "id": "2fcfeb02-e175-40d4-a2e1-92fdb8a73fdc",
+    "name": "Radiator shop",
+    "slug": "radiator-shop"
   },
   {
-    "id": "735ea76e-7fd6-4bdf-abc4-eb8b8a5bbc34",
-    "name": "Truck repair shop",
-    "slug": "truck-repair-shop"
+    "id": "f6ee5003-c3a9-4299-8315-4cc8af54c85e",
+    "name": "Gas station",
+    "slug": "gas-station"
   },
   {
     "id": "dfbe05ae-d1fc-4854-8848-8873883b7427",
@@ -115,13 +35,273 @@
     "slug": "truck-parts-supplier"
   },
   {
-    "id": "3e23b147-1d3f-47da-a7fe-deaf60dbacd8",
-    "name": "Used auto parts store",
-    "slug": "used-auto-parts-store"
+    "id": "e001a483-5d97-4684-b815-8ff6a3ddd123",
+    "name": "Auto body shop",
+    "slug": "auto-body-shop"
+  },
+  {
+    "id": "032c9a8a-9d1f-4f1a-bdd8-5ef6ad4a7058",
+    "name": "Transmission shop",
+    "slug": "transmission-shop"
+  },
+  {
+    "id": "e8ee0fde-3bad-4bf5-8d03-c4cd127757cc",
+    "name": "Radiator repair service",
+    "slug": "radiator-repair-service"
   },
   {
     "id": "c6ff9f5f-c305-452b-b868-9887c5bbb89b",
     "name": "Welder",
     "slug": "welder"
+  },
+  {
+    "id": "3e23b147-1d3f-47da-a7fe-deaf60dbacd8",
+    "name": "Used auto parts store",
+    "slug": "used-auto-parts-store"
+  },
+  {
+    "id": "86bddf17-650d-41b8-bce3-ae3ca760c31a",
+    "name": "Auto glass shop",
+    "slug": "auto-glass-shop"
+  },
+  {
+    "id": "834814c9-35fa-4a07-9394-87419830e230",
+    "name": "Mechanic",
+    "slug": "mechanic"
+  },
+  {
+    "id": "0885f077-6fa0-4d18-bff4-054c8162c8e0",
+    "name": "Air conditioning repair service",
+    "slug": "air-conditioning-repair-service"
+  },
+  {
+    "id": "7648e146-40f8-45c4-82ff-aed58dc15114",
+    "name": "Manufacturer",
+    "slug": "manufacturer"
+  },
+  {
+    "id": "f5d98d88-45e6-4f59-8052-96c11a6acac2",
+    "name": "Brake shop",
+    "slug": "brake-shop"
+  },
+  {
+    "id": "e17fb1ac-5ce7-431d-a7d9-6cf1f1a7b5ef",
+    "name": "ATV dealer",
+    "slug": "atv-dealer"
+  },
+  {
+    "id": "e0e2b981-abd0-4d8c-aab8-e5adef1befe4",
+    "name": "Car repair and maintenance service",
+    "slug": "car-repair-and-maintenance-service"
+  },
+  {
+    "id": "c4159a00-3bd5-41ce-9853-0262a3bc87f4",
+    "name": "Auto machine shop",
+    "slug": "auto-machine-shop"
+  },
+  {
+    "id": "735ea76e-7fd6-4bdf-abc4-eb8b8a5bbc34",
+    "name": "Truck repair shop",
+    "slug": "truck-repair-shop"
+  },
+  {
+    "id": "2e59546b-710a-4c32-8577-18a56618e2c4",
+    "name": "Muffler shop",
+    "slug": "muffler-shop"
+  },
+  {
+    "id": "e5f6ef0b-baaa-44dd-9b3b-9fbf9a0c457f",
+    "name": "Auto air conditioning service",
+    "slug": "auto-air-conditioning-service"
+  },
+  {
+    "id": "525c5318-ad0c-4fec-9810-aaa7bdfb56b1",
+    "name": "Auto radiator repair service",
+    "slug": "auto-radiator-repair-service"
+  },
+  {
+    "id": "cbe16001-dc5c-497a-8546-5b84b4007662",
+    "name": "Auto parts store",
+    "slug": "auto-parts-store"
+  },
+  {
+    "id": "c4473940-878f-4b53-b716-b9a543083bf8",
+    "name": "Repair service",
+    "slug": "repair-service"
+  },
+  {
+    "id": "b48ce67a-01e2-4c27-910e-7a7807bbc10d",
+    "name": "Used car dealer",
+    "slug": "used-car-dealer"
+  },
+  {
+    "id": "8b74eb9b-72a4-4a49-960c-1e99062e7aa1",
+    "name": "Heating contractor",
+    "slug": "heating-contractor"
+  },
+  {
+    "id": "90e4fb8b-696a-4bc1-9db5-758db7013bf7",
+    "name": "Oil change service",
+    "slug": "oil-change-service"
+  },
+  {
+    "id": "31aa30e3-1b76-4027-b5e5-29316f4b887d",
+    "name": "Auto restoration service",
+    "slug": "auto-restoration-service"
+  },
+  {
+    "id": "c1064257-c68a-4761-aa81-0343e06bf87a",
+    "name": "Alternator supplier",
+    "slug": "alternator-supplier"
+  },
+  {
+    "id": "88e64caf-966f-4a6f-ab71-f4c606be1dfa",
+    "name": "HVAC contractor",
+    "slug": "hvac-contractor"
+  },
+  {
+    "id": "e5093f43-2ed6-4588-a171-39eab9ff0982",
+    "name": "Bathroom remodeler",
+    "slug": "bathroom-remodeler"
+  },
+  {
+    "id": "3cdefde0-8572-4221-a7d9-81417d8164f4",
+    "name": "Steel fabricator",
+    "slug": "steel-fabricator"
+  },
+  {
+    "id": "06cf19c8-1a0c-4700-b16a-3dac8a62b2fd",
+    "name": "Motor vehicle dealer",
+    "slug": "motor-vehicle-dealer"
+  },
+  {
+    "id": "564a84df-967e-4c37-9604-20913670aeac",
+    "name": "Auto electrical service",
+    "slug": "auto-electrical-service"
+  },
+  {
+    "id": "a6d75366-d859-4ccf-83da-820178ed5674",
+    "name": "Vehicle repair shop",
+    "slug": "vehicle-repair-shop"
+  },
+  {
+    "id": "4cab80b1-87e0-445e-b875-2031c34dfb6e",
+    "name": "Towing service",
+    "slug": "towing-service"
+  },
+  {
+    "id": "87164411-7ab2-4f74-95c9-e3723b9d55a6",
+    "name": "Air conditioning system supplier",
+    "slug": "air-conditioning-system-supplier"
+  },
+  {
+    "id": "c322d84e-f3e9-4a46-b4c1-3380699f297d",
+    "name": "Plumber",
+    "slug": "plumber"
+  },
+  {
+    "id": "106ba0d3-84bc-4552-8df1-db6f36cf7d83",
+    "name": "Salvage yard",
+    "slug": "salvage-yard"
+  },
+  {
+    "id": "6a1f046c-d55b-4870-ae8c-bfd96f60e733",
+    "name": "Auto spring shop",
+    "slug": "auto-spring-shop"
+  },
+  {
+    "id": "cd4876fd-f3a1-48e1-8f4b-9d6b66f0e670",
+    "name": "Truck accessories store",
+    "slug": "truck-accessories-store"
+  },
+  {
+    "id": "e3a3d084-0a0e-4f7b-a0fc-ba47d1a25a50",
+    "name": "Vehicle inspection service",
+    "slug": "vehicle-inspection-service"
+  },
+  {
+    "id": "6c06a700-a7d7-420e-a030-97911633aa47",
+    "name": "Heating equipment supplier",
+    "slug": "heating-equipment-supplier"
+  },
+  {
+    "id": "99576538-7e91-4a73-9881-f8bd0cf57a0b",
+    "name": "Volkswagen dealer",
+    "slug": "volkswagen-dealer"
+  },
+  {
+    "id": "161c3aa6-48a4-4942-bddf-b19ae86a7ab3",
+    "name": "Ford dealer",
+    "slug": "ford-dealer"
+  },
+  {
+    "id": "c03cca33-fb26-4f47-8828-313a5d62f650",
+    "name": "Kia dealer",
+    "slug": "kia-dealer"
+  },
+  {
+    "id": "0d1b88e3-bdce-4617-8757-3ad8afa66a76",
+    "name": "Nissan dealer",
+    "slug": "nissan-dealer"
+  },
+  {
+    "id": "9d1149fb-9c13-4360-b2ea-6135afe4290a",
+    "name": "Car dealer",
+    "slug": "car-dealer"
+  },
+  {
+    "id": "b09deaab-642f-4dbf-a0f0-ccd0cea8adf7",
+    "name": "Chevrolet dealer",
+    "slug": "chevrolet-dealer"
+  },
+  {
+    "id": "11eded81-aaef-45fb-a475-ea57ea2e164c",
+    "name": "Tractor dealer",
+    "slug": "tractor-dealer"
+  },
+  {
+    "id": "09768c6b-13b3-40fc-9e76-49a36227046d",
+    "name": "Jeep dealer",
+    "slug": "jeep-dealer"
+  },
+  {
+    "id": "517cb713-d423-4ce5-ae76-6e3aff3e66c9",
+    "name": "Toyota dealer",
+    "slug": "toyota-dealer"
+  },
+  {
+    "id": "055dbd03-6568-4674-818d-08ffc1181dae",
+    "name": "Truck dealer",
+    "slug": "truck-dealer"
+  },
+  {
+    "id": "d65a24a0-f351-48c0-b76e-d4cd8adf74f6",
+    "name": "GMC dealer",
+    "slug": "gmc-dealer"
+  },
+  {
+    "id": "57deceb8-5474-478f-8225-9cd4c642457b",
+    "name": "Powersports vehicle dealer",
+    "slug": "powersports-vehicle-dealer"
+  },
+  {
+    "id": "7c847b02-5860-45f6-9ef1-a09e3fe3a10f",
+    "name": "Honda dealer",
+    "slug": "honda-dealer"
+  },
+  {
+    "id": "b51617be-605c-4430-b7f7-46200ac63372",
+    "name": "Auto body parts supplier",
+    "slug": "auto-body-parts-supplier"
+  },
+  {
+    "id": "5a89961a-8615-41af-90f5-bba9023eb82c",
+    "name": "Car inspection station",
+    "slug": "car-inspection-station"
+  },
+  {
+    "id": "ad6bc02f-53e3-4f12-a2d5-6d72d53676d3",
+    "name": "Scrap Yard",
+    "slug": "scrap-yard"
   }
 ]

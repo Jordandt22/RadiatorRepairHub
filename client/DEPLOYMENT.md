@@ -23,7 +23,6 @@ WEB_URL=https://radiatorrepairhub.com
 
 # Search Engine Verification (Optional)
 GOOGLE_VERIFICATION_ID=your-google-verification-id
-YAHOO_VERIFICATION_ID=your-yahoo-verification-id
 
 # Google Maps API (Required for business pages)
 GOOGLE_MAPS_API_KEY=your-google-maps-api-key

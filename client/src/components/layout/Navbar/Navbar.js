@@ -105,7 +105,7 @@ function Navbar() {
             >
               <Image
                 src="/assets/logos/logo.png"
-                alt="RadiatorRepairHub Logo"
+                alt="RadiatorRepairHub - Find Trusted Radiator Repair Services"
                 width={40}
                 height={40}
                 className="w-10 h-10"
@@ -199,7 +199,7 @@ function Navbar() {
             >
               <Image
                 src="/assets/logos/logo.png"
-                alt="RadiatorRepairHub Logo"
+                alt="RadiatorRepairHub - Find Trusted Radiator Repair Services"
                 width={32}
                 height={32}
                 className="w-8 h-8"

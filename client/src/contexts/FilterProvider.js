@@ -19,6 +19,7 @@ export function FilterProvider({ children }) {
     title: "",
     state_id: "",
     city_id: "",
+    postal_code_id: "",
     total_score: 3,
     reviews_count: 1,
     primary_category_id: "",
@@ -173,6 +174,7 @@ export function FilterProvider({ children }) {
         title: true,
         state_id: true,
         city_id: true,
+        postal_code_id: true,
         primary_category_id: true,
       };
       if (textFilters[key]) {
