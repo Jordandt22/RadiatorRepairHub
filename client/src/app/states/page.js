@@ -34,7 +34,35 @@ export const metadata = {
 };
 
 async function Page() {
-  return <StatesPage />;
+  // ItemList Schema for States
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Radiator Repair Services by State",
+    description: "Browse radiator repair services in all 50 US states",
+    url: "https://radiatorrepairhub.com/states",
+    numberOfItems: 50,
+    itemListElement: ["CA", "TX", "NY", "FL", "WA", "IA"].map(
+      (stateCode, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: `Radiator Repair in ${stateCode}`,
+        url: `https://radiatorrepairhub.com/state/${stateCode}`,
+      })
+    ),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(itemListSchema),
+        }}
+      />
+      <StatesPage />
+    </>
+  );
 }
 
 export default Page;

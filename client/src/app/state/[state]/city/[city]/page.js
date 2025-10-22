@@ -62,12 +62,52 @@ async function Page({ params, searchParams }) {
   const { state, city } = await params;
   const searchParamsData = await searchParams;
 
+  // Convert slug to readable format for schema
+  const cityName = city
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  const stateName = state.toUpperCase();
+
+  // CollectionPage Schema for City
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `Radiator Repair Services in ${cityName}, ${stateName}`,
+    description: `Directory of radiator repair shops and auto repair services in ${cityName}, ${stateName}`,
+    url: `https://radiatorrepairhub.com/state/${state}/city/${city}`,
+    isPartOf: {
+      "@id": "https://radiatorrepairhub.com/#website",
+    },
+    about: {
+      "@type": "Service",
+      serviceType: "Radiator Repair",
+      areaServed: {
+        "@type": "City",
+        name: cityName,
+        containedInPlace: {
+          "@type": "State",
+          name: stateName,
+        },
+      },
+    },
+  };
+
   return (
-    <BusinessesContainer
-      state={state}
-      city={city}
-      searchParams={searchParamsData}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(collectionSchema),
+        }}
+      />
+      <BusinessesContainer
+        state={state}
+        city={city}
+        searchParams={searchParamsData}
+      />
+    </>
   );
 }
 

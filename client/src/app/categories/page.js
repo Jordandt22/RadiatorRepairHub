@@ -40,7 +40,33 @@ export const viewport = {
 };
 
 async function Page() {
-  return <CategoriesPage />;
+  // ItemList Schema for Categories
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Auto Repair Service Categories",
+    description: "Browse all auto repair and radiator service categories",
+    url: "https://radiatorrepairhub.com/categories",
+    numberOfItems: PRIMARY_CATEGORIES.length,
+    itemListElement: PRIMARY_CATEGORIES.slice(0, 10).map((category, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: category.name,
+      url: `https://radiatorrepairhub.com/category/${category.slug}`,
+    })),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(itemListSchema),
+        }}
+      />
+      <CategoriesPage />
+    </>
+  );
 }
 
 export default Page;

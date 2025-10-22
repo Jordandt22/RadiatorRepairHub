@@ -39,23 +39,32 @@ export async function generateMetadata({ params }) {
     }
 
     const business = data.data;
-    const title = `${business.title_tag} - ${business.city.name}, ${business.state.name} | RadiatorRepairHub`;
-    const description = `${business.title} - ${
+    const title = `Radiator Repair: ${business.title_tag} | ${business.city.name}, ${business.state.name} - RadiatorRepairHub`;
+    const description = `Expert radiator repair services at ${
+      business.title
+    } in ${business.city.name}, ${business.state.name}. ${
       business.meta_description ||
       business.local_note ||
-      "Trusted radiator repair services."
-    } Located in ${business.city.name}, ${business.state.name}. ${
-      business.phone ? `Call ${business.phone}` : ""
-    } for radiator repair services.`;
+      "Professional radiator repair and cooling system services for your vehicle."
+    } ${
+      business.cta_line ||
+      (business.phone
+        ? `Call ${business.phone} for radiator repair today!`
+        : "Contact us for quality radiator repair.")
+    }`;
 
     return {
       title,
       description,
-      keywords: `${business.title}, radiator repair, ${business.city.name}, ${
-        business.state.name
-      }, auto repair, cooling system repair, ${
-        business.primary_category?.name || "automotive services"
-      }`,
+      keywords: business.keywords
+        ? `${business.keywords.join(", ")}, radiator repair, ${
+            business.title
+          }, ${business.city.name}, ${business.state.name}`
+        : `${business.title}, radiator repair, ${business.city.name}, ${
+            business.state.name
+          }, auto repair, cooling system repair, ${
+            business.primary_category?.name || "automotive services"
+          }`,
       openGraph: {
         title,
         description,
@@ -212,6 +221,18 @@ async function Page({ params }) {
     description: business.meta_description,
     url: business.website || `https://radiatorrepairhub.com/business/${slug}`,
     telephone: business.phone,
+    ...(business.keywords &&
+      business.keywords.length > 0 && {
+        keywords: business.keywords.join(", "),
+      }),
+    ...(business.highlights &&
+      business.highlights.length > 0 && {
+        amenityFeature: business.highlights.map((highlight) => ({
+          "@type": "LocationFeatureSpecification",
+          name: highlight,
+          value: true,
+        })),
+      }),
     address: {
       "@type": "PostalAddress",
       streetAddress: business.address,
@@ -236,18 +257,22 @@ async function Page({ params }) {
       worstRating: 1,
     },
     priceRange: "$$",
-    openingHoursSpecification: business.opening_hours
-      ?.map((day) => ({
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: day.day,
-        opens: day.is_closed
-          ? undefined
-          : day.hours.split(",")[0]?.split("-")[0]?.trim(),
-        closes: day.is_closed
-          ? undefined
-          : day.hours.split(",")[0]?.split("-")[1]?.trim(),
-      }))
-      .filter((day) => day.opens && day.closes),
+    openingHoursSpecification: business.hours
+      ?.flatMap((day) => {
+        // If closed, skip this day
+        if (day.is_closed || !day.hours || day.hours.length === 0) {
+          return [];
+        }
+
+        // Map each time slot to an OpeningHoursSpecification
+        return day.hours.map((timeSlot) => ({
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: day.day_of_week,
+          opens: timeSlot.open,
+          closes: timeSlot.close,
+        }));
+      })
+      .filter(Boolean),
     serviceArea: {
       "@type": "GeoCircle",
       geoMidpoint: {
@@ -316,7 +341,7 @@ async function Page({ params }) {
           {business.image_url ? (
             <Image
               src={business.image_url}
-              alt={business.title}
+              alt={`${business.title} - Radiator Repair Services in ${business.city.name}, ${business.state.name}`}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 100vw, 100vw"
               className="object-cover object-center"
@@ -347,7 +372,7 @@ async function Page({ params }) {
 
             <div className="w-full p-3 sm:p-4 md:p-6 text-white max-w-7xl mx-auto">
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-2 md:mb-4 leading-tight">
-                {business.title}
+                {business.title} - Radiator Repair Services
               </h1>
               {business.local_note && (
                 <p className="text-sm md:text-base italic text-gray-200 mb-2 md:mb-4">
@@ -377,19 +402,24 @@ async function Page({ params }) {
               {/* Description */}
               <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
                 <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
-                  About
+                  About Our Radiator Repair Services
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                  <div className="md:col-span-2">
+                  <div className="md:col-span-2 space-y-4">
                     <p className="text-sm md:text-base text-gray-600 leading-relaxed">
                       {business.description}
                     </p>
                   </div>
+
                   <div className="relative w-full h-48 md:h-64 bg-gray-200 rounded-lg overflow-hidden">
                     {business.image_url ? (
                       <Image
                         src={business.image_url}
-                        alt={business.title}
+                        alt={`${business.title} - ${
+                          business.keywords && business.keywords.length > 0
+                            ? business.keywords[0]
+                            : "radiator repair services"
+                        } in ${business.city.name}, ${business.state.name}`}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         className="object-cover object-center"
@@ -414,7 +444,7 @@ async function Page({ params }) {
               {/* Categories */}
               <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
                 <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
-                  Categories
+                  Radiator Repair Service Categories
                 </h2>
                 <div className="space-y-3 md:space-y-4">
                   <div>
@@ -460,7 +490,7 @@ async function Page({ params }) {
               {/* Map Section */}
               <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
                 <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
-                  Location
+                  Radiator Repair Location
                 </h2>
                 <div className="space-y-3 md:space-y-4">
                   <div className="flex items-start gap-2 md:gap-3">
@@ -475,13 +505,13 @@ async function Page({ params }) {
                       href={`/state/${business.state.code}/city/${business.city.slug}`}
                       className="text-white bg-blue-600 rounded-full px-4 md:px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95 text-sm md:text-base"
                     >
-                      {business.city.name}
+                      Radiator Repair in {business.city.name}
                     </Link>
                     <Link
                       href={`/state/${business.state.code}`}
                       className="text-white bg-blue-600 rounded-full px-4 md:px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95 text-sm md:text-base"
                     >
-                      {business.state.name}
+                      {business.state.name} Services
                     </Link>
                   </div>
 
@@ -523,7 +553,7 @@ async function Page({ params }) {
               {/* Rating Summary */}
               <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
                 <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
-                  Rating
+                  Customer Reviews
                 </h2>
                 <div className="text-center">
                   <div className="flex flex-col items-center justify-center gap-4 mb-2">
@@ -544,7 +574,8 @@ async function Page({ params }) {
                     </div>
                   </div>
                   <p className="text-gray-600">
-                    Based on {business.reviews_count.toLocaleString()} reviews
+                    Based on {business.reviews_count.toLocaleString()} radiator
+                    repair reviews
                   </p>
 
                   {business.url && (
@@ -554,7 +585,7 @@ async function Page({ params }) {
                       rel="noopener noreferrer"
                       className="mt-6 text-white bg-blue-600 rounded-full px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95 flex items-center gap-1 justify-center"
                     >
-                      View All Reviews
+                      View All Radiator Repair Reviews
                     </Link>
                   )}
                 </div>
@@ -563,15 +594,24 @@ async function Page({ params }) {
               {/* Contact Information */}
               <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
                 <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
-                  Contact
+                  Contact for Radiator Repair
                 </h2>
+
+                {business.cta_line && business.phone && (
+                  <div className="mb-4 bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
+                    <p className="text-sm md:text-base text-blue-900 font-medium">
+                      {business.cta_line}
+                    </p>
+                  </div>
+                )}
+
                 <div className="space-y-3 md:space-y-4">
                   {business.phone ? (
                     <div className="flex items-center gap-2 md:gap-3">
                       <Phone className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
                       <a
                         href={`tel:${business.phone}`}
-                        className="text-sm md:text-base text-gray-700 hover:text-blue-600 transition-colors"
+                        className="text-sm md:text-base text-gray-700 hover:text-blue-600 transition-colors font-semibold"
                       >
                         {business.phone}
                       </a>
@@ -633,7 +673,7 @@ async function Page({ params }) {
                 otherFeatures.length > 0) && (
                 <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
-                    Features
+                    Service Features
                   </h2>
                   <div className="space-y-3 md:space-y-4">
                     {paymentFeatures.length > 0 && (

@@ -34,7 +34,30 @@ export const metadata = {
 };
 
 async function Page() {
-  return <FeaturedBusinessesPage />;
+  // ItemList Schema for Featured Businesses
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Featured Radiator Repair Shops",
+    description:
+      "Top-rated radiator repair businesses and auto repair services",
+    url: "https://radiatorrepairhub.com/featured",
+    numberOfItems: 12,
+    itemListOrder: "https://schema.org/ItemListOrderDescending",
+    itemListElement: "Featured businesses based on ratings and reviews",
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(itemListSchema),
+        }}
+      />
+      <FeaturedBusinessesPage />
+    </>
+  );
 }
 
 export default Page;

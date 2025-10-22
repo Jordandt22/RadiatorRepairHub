@@ -5,7 +5,7 @@ import STATES from "@/lib/data/states";
 import BusinessesContainer from "@/components/businesses/BusinessesContainer";
 
 export async function generateStaticParams() {
-  const topStates = ["CA", "TX", "FL", "NY", "PA", "IL"];
+  const topStates = ["CA", "TX", "FL", "NY", "WA"];
   return topStates.map((state) => ({ state }));
 }
 
@@ -57,7 +57,46 @@ async function Page({ params, searchParams }) {
   const { state } = await params;
   const searchParamsData = await searchParams;
 
-  return <BusinessesContainer state={state} searchParams={searchParamsData} />;
+  const stateData = STATES.find((s) => s.code === state.toUpperCase());
+
+  if (!stateData) {
+    return (
+      <BusinessesContainer state={state} searchParams={searchParamsData} />
+    );
+  }
+
+  // CollectionPage Schema for State
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `Radiator Repair Services in ${stateData.name}`,
+    description: `Directory of radiator repair shops and auto repair services in ${stateData.name}`,
+    url: `https://radiatorrepairhub.com/state/${state}`,
+    isPartOf: {
+      "@id": "https://radiatorrepairhub.com/#website",
+    },
+    about: {
+      "@type": "Service",
+      serviceType: "Radiator Repair",
+      areaServed: {
+        "@type": "State",
+        name: stateData.name,
+        "@id": `https://radiatorrepairhub.com/state/${state}`,
+      },
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(collectionSchema),
+        }}
+      />
+      <BusinessesContainer state={state} searchParams={searchParamsData} />
+    </>
+  );
 }
 
 export default Page;

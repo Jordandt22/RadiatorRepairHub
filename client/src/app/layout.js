@@ -80,7 +80,6 @@ export const metadata = {
   },
   verification: {
     google: process.env.GOOGLE_VERIFICATION_ID,
-    yahoo: process.env.YAHOO_VERIFICATION_ID,
   },
   other: {
     "apple-mobile-web-app-title": "RadiatorRepairHub",

@@ -38,7 +38,30 @@ export const metadata = {
 async function Page({ searchParams }) {
   const searchParamsData = await searchParams;
 
-  return <BusinessesContainer searchParams={searchParamsData} />;
+  // SearchResultsPage Schema
+  const searchResultsSchema = {
+    "@context": "https://schema.org",
+    "@type": "SearchResultsPage",
+    name: "Search Radiator Repair Services",
+    description:
+      "Search results for radiator repair services and auto repair shops",
+    url: "https://radiatorrepairhub.com/search",
+    isPartOf: {
+      "@id": "https://radiatorrepairhub.com/#website",
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(searchResultsSchema),
+        }}
+      />
+      <BusinessesContainer searchParams={searchParamsData} />
+    </>
+  );
 }
 
 export default Page;

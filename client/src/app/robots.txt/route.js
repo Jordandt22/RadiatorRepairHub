@@ -13,10 +13,13 @@ Disallow: /admin/
 Disallow: /_next/
 Disallow: /private/
 
-# Allow important pages
+# Allow important pages for crawling
 Allow: /search
 Allow: /categories
+Allow: /category/
 Allow: /states
+Allow: /state/
+Allow: /business/
 Allow: /featured
 Allow: /faq
 Allow: /about
@@ -32,10 +35,6 @@ Allow: /
 Crawl-delay: 1
 
 User-agent: Bingbot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Slurp
 Allow: /
 Crawl-delay: 1
 

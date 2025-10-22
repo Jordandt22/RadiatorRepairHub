@@ -86,35 +86,24 @@ export async function GET() {
     priority: 0.7,
   }));
 
-  // City pages for major cities
-  const majorCities = [
-    { state: "CA", city: "los-angeles" },
-    { state: "TX", city: "houston" },
-    { state: "FL", city: "miami" },
-    { state: "NY", city: "new-york-city" },
-    { state: "PA", city: "philadelphia" },
-    { state: "IL", city: "chicago" },
-    { state: "CA", city: "san-francisco" },
-    { state: "TX", city: "dallas" },
-    { state: "FL", city: "orlando" },
-    { state: "NY", city: "buffalo" },
-    { state: "PA", city: "pittsburgh" },
-    { state: "IL", city: "springfield" },
-  ];
+  // Major states from PopularLocation component - higher priority
+  const majorStates = ["CA", "TX", "NY", "FL", "WA", "IA"];
 
-  const cityPages = majorCities.map(({ state, city }) => ({
-    url: `/state/${state}/city/${city}`,
+  const majorStatePages = majorStates.map((stateCode) => ({
+    url: `/state/${stateCode}`,
     lastModified: currentDate,
-    changeFrequency: "weekly",
-    priority: 0.6,
+    changeFrequency: "daily",
+    priority: 0.9,
   }));
 
-  // Combine all pages
+  // Combine all pages (major states will override regular state pages due to higher priority)
   const allPages = [
     ...staticPages,
     ...categoryPages,
-    ...statePages,
-    ...cityPages,
+    ...statePages.filter(
+      (page) => !majorStates.includes(page.url.split("/").pop())
+    ),
+    ...majorStatePages,
   ];
 
   // Generate XML sitemap
