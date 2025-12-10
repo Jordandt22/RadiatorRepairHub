@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export function middleware(req) {
+export function proxy(req) {
   const maintenanceMode = process.env.MAINTENANCE_MODE === "true";
   const isMaintenancePage = req.nextUrl.pathname.startsWith("/maintenance");
   if (maintenanceMode && !isMaintenancePage) {
