@@ -12,10 +12,10 @@
     "@emailjs/browser": "^4.4.1",
     "framer-motion": "^12.23.18",
     "lucide-react": "^0.543.0",
-    "next": "15.5.2",
+    "next": "^16.0.8",
     "next-sitemap": "^4.2.3",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
     "sonner": "^2.0.7",
     "swr": "^2.3.6",
     "uuid": "^13.0.0"
