@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Yellowtail } from "next/font/google";
 
 const yellowtail = Yellowtail({
@@ -55,7 +56,7 @@ export default function BranchBoundBanner() {
 
   return (
     <section
-      className="relative overflow-hidden py-12 sm:pt-20 sm:pb-8 px-4 sm:px-6 lg:px-8 border-y-3 border-gray-900"
+      className="relative overflow-hidden py-12 sm:pt-8 sm:pb-8 px-4 sm:px-6 lg:px-8 border-y-3 border-gray-900"
       aria-label="BranchBound promotion"
     >
       {/* Background: two panels side by side, scroll left infinitely (seamless loop) */}
@@ -77,9 +78,22 @@ export default function BranchBoundBanner() {
         aria-hidden="true"
       />
 
-      <div className="relative z-10 max-w-3xl mx-auto text-center">
+      <div className="relative flex flex-col z-10 max-w-3xl mx-auto text-center">
+        <p
+          className={`flex items-center justify-center gap-2 text-2xl sm:text-3xl text-white drop-shadow font-normal ${yellowtail.className} text-2xl tracking-wide`}
+        >
+          <Image
+            src="/assets/images/branchbound-logo.webp"
+            alt=""
+            width={40}
+            height={40}
+            className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 object-contain"
+            aria-hidden
+          />
+          <span>BranchBound</span>
+        </p>
         <h2
-          className={`text-2xl sm:text-3xl md:text-4xl text-white font-normal leading-relaxed drop-shadow-md px-2 font-heading`}
+          className={`mt-6 text-2xl sm:text-3xl md:text-4xl text-white font-normal leading-10 sm:leading-12 drop-shadow-md px-2 font-heading`}
         >
           Embark on an Interactive Adventure, Where Your Choices Shape the Story
         </h2>
@@ -88,26 +102,22 @@ export default function BranchBoundBanner() {
           href="https://branchbound.app"
           target="_blank"
           rel="noopener noreferrer"
-          className={`mt-8 inline-flex items-center justify-center rounded-full bg-[#189c6a] px-10 py-2 text-base sm:text-lg font-normal text-white shadow-lg transition-all hover:bg-[#11724d] focus:outline-none hover:scale-95 font-heading tracking-wide`}
+          className={`w-fit mx-auto mt-8 inline-flex items-center justify-center rounded-full bg-[#189c6a] px-10 py-2 text-base sm:text-lg font-normal text-white shadow-lg transition-all hover:bg-[#11724d] focus:outline-none hover:scale-95 font-heading tracking-wide`}
         >
           Start Your Adventure
         </a>
 
-        <p
-          className={`mt-6 text-xl sm:text-3xl text-white drop-shadow font-normal ${yellowtail.className} text-2xl tracking-wide`}
-        >
-          BranchBound
-        </p>
-
         <button
           type="button"
           onClick={handleDismiss}
-          className="mt-8 text-sm sm:text-base rounded-full py-2 px-6 text-white hover:text-white bg-white/20 focus:outline-none hover:scale-95 transition-all duration-300 cursor-pointer"
+          className="w-fit mx-auto mt-8 text-sm sm:text-base rounded-full py-2 px-6 text-gray-200  hover:bg-white/20 focus:outline-none hover:scale-95 transition-all duration-300 cursor-pointer"
           aria-label="Dismiss banner"
         >
           Don&apos;t show again for 3 days
         </button>
+
+
       </div>
-    </section >
+    </section>
   );
 }

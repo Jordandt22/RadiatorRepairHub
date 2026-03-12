@@ -1,5 +1,6 @@
 import React from "react";
 import CategoryBusinessesPage from "@/components/pages/category/CategoryBusinessesPage";
+import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 import PRIMARY_CATEGORIES from "@/lib/data/primary_categories";
 import { notFound } from "next/navigation";
 
@@ -101,6 +102,7 @@ async function Page({ params, searchParams }) {
         primaryCategory={primaryCategory}
         page={formattedPage}
       />
+      <BranchBoundBanner />
     </>
   );
 }

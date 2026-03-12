@@ -25,6 +25,7 @@ import { useFilters } from "@/contexts/FilterProvider";
 // Components
 import FiltersWrapper from "./FiltersWrapper";
 import ListingsWrapper from "./listings/ListingsWrapper";
+import BranchBoundBanner from "../promo/BranchBoundBanner";
 
 function ContentWrapper({ stateData, cityData, searchParams }) {
   const pathname = usePathname();
@@ -175,6 +176,8 @@ function ContentWrapper({ stateData, cityData, searchParams }) {
 
       {/* Business Listings */}
       <ListingsWrapper stateData={stateData} cityData={cityData} page={page} />
+
+      <BranchBoundBanner />
     </>
   );
 }
