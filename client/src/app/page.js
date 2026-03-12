@@ -4,6 +4,7 @@ import Link from "next/link";
 // Components
 import HeroContent from "@/components/pages/home/HeroContent";
 import FeaturedBusinesses from "@/components/pages/home/FeaturedBusinesses";
+import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 import FeaturedCategories from "@/components/pages/home/FeaturedCategories";
 import PopularLocations from "@/components/pages/home/PopularLocations";
 import HowItWorks from "@/components/pages/home/HowItWorks";
@@ -47,6 +48,8 @@ export default function Home() {
       {/* Featured Businesses Section */}
       <FeaturedBusinesses />
 
+
+
       {/* SEO Content Section */}
       <section className="pt-8 pb-28 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -76,6 +79,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* BranchBound promo banner (dismissible, persisted via localStorage) */}
+      <BranchBoundBanner />
+
       {/* Featured Categories */}
       <FeaturedCategories />
 
@@ -90,7 +96,7 @@ export default function Home() {
 
       {/* FAQ Section */}
       <FAQSection faqs={faqs} />
-      
+
       {/* FAQ CTA */}
       <section className="py-8 bg-blue-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
