@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import FAQSection from "@/components/seo/FAQSection";
 import PageHeader from "@/components/layout/Header/PageHeader";
+import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 
 export const metadata = {
   title:
@@ -220,6 +221,8 @@ export default function FAQPage() {
           </div>
         </div>
       </section>
+
+      <BranchBoundBanner />
     </div>
   );
 }
