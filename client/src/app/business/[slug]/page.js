@@ -22,6 +22,7 @@ import {
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
+import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 
 // Generate metadata for business pages
 export async function generateMetadata({ params }) {
@@ -745,6 +746,8 @@ async function Page({ params }) {
           </div>
         </div>
       </div>
+
+      <BranchBoundBanner />
     </>
   );
 }

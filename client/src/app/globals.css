@@ -85,6 +85,28 @@
   animation: scale-pulse 2s ease-in-out infinite;
 }
 
+/* BranchBound banner: infinite horizontal scroll (two panels, -50% = one panel width) */
+@keyframes branchbound-bg-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-branchbound-bg-scroll {
+  animation: branchbound-bg-scroll 45s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-branchbound-bg-scroll {
+    animation: none;
+    transform: translateX(0);
+  }
+}
+
 /* Animated gradient background */
 @keyframes gradient-shift {
   0% {
