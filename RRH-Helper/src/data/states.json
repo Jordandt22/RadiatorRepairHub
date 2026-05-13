@@ -1,0 +1,302 @@
+[
+  {
+    "id": "445b2a33-0297-4203-ba37-6aaa0db79eef",
+    "name": "Alabama",
+    "code": "AL",
+    "country_code": "US"
+  },
+  {
+    "id": "7acf3100-f209-4942-9a5d-9d1d4648256e",
+    "name": "Alaska",
+    "code": "AK",
+    "country_code": "US"
+  },
+  {
+    "id": "16160b17-539a-478e-81ff-602f45c4693d",
+    "name": "Arizona",
+    "code": "AZ",
+    "country_code": "US"
+  },
+  {
+    "id": "0f74f032-9a9d-41d8-9785-9e7dd4e86564",
+    "name": "Arkansas",
+    "code": "AR",
+    "country_code": "US"
+  },
+  {
+    "id": "4e77c18e-ed75-440a-9613-29b9e2454582",
+    "name": "California",
+    "code": "CA",
+    "country_code": "US"
+  },
+  {
+    "id": "ff483af0-4e0d-43e3-8acd-a6d98150e039",
+    "name": "Colorado",
+    "code": "CO",
+    "country_code": "US"
+  },
+  {
+    "id": "7a4434ac-1250-40a3-a429-b096fb2d0449",
+    "name": "Connecticut",
+    "code": "CT",
+    "country_code": "US"
+  },
+  {
+    "id": "823cc7b7-241a-449e-9f2c-1aa00ce05579",
+    "name": "Delaware",
+    "code": "DE",
+    "country_code": "US"
+  },
+  {
+    "id": "1363f25f-dbf4-4dc2-80bb-6511c26e1315",
+    "name": "Florida",
+    "code": "FL",
+    "country_code": "US"
+  },
+  {
+    "id": "401f1ebb-a437-4cb0-b8e4-2974a31b5a03",
+    "name": "Georgia",
+    "code": "GA",
+    "country_code": "US"
+  },
+  {
+    "id": "f44be77c-17f5-4240-b094-71562bd378c0",
+    "name": "Hawaii",
+    "code": "HI",
+    "country_code": "US"
+  },
+  {
+    "id": "27ec124e-fd20-4a26-a6be-28fb8e3af52b",
+    "name": "Idaho",
+    "code": "ID",
+    "country_code": "US"
+  },
+  {
+    "id": "0916e42f-15f0-4ba4-9bff-5d70830257be",
+    "name": "Illinois",
+    "code": "IL",
+    "country_code": "US"
+  },
+  {
+    "id": "250f1467-2ef6-436f-a227-2f9dd2e0af85",
+    "name": "Indiana",
+    "code": "IN",
+    "country_code": "US"
+  },
+  {
+    "id": "285990d7-0e51-4451-989e-543f089c2a2a",
+    "name": "Iowa",
+    "code": "IA",
+    "country_code": "US"
+  },
+  {
+    "id": "8a0a66af-76ed-49b8-9a22-a5a52e97fb50",
+    "name": "Kansas",
+    "code": "KS",
+    "country_code": "US"
+  },
+  {
+    "id": "ac7b5db5-7366-4374-8831-1aac48f58f93",
+    "name": "Kentucky",
+    "code": "KY",
+    "country_code": "US"
+  },
+  {
+    "id": "371aac69-c2e3-41ae-b6cd-a7db454af6f7",
+    "name": "Louisiana",
+    "code": "LA",
+    "country_code": "US"
+  },
+  {
+    "id": "2a9fea00-1f8f-442d-8bc9-e900466be164",
+    "name": "Maine",
+    "code": "ME",
+    "country_code": "US"
+  },
+  {
+    "id": "b8b87cff-f9be-457c-9c43-fd38958d4892",
+    "name": "Maryland",
+    "code": "MD",
+    "country_code": "US"
+  },
+  {
+    "id": "a418a7ae-ad76-405b-b390-d5667f73cc5c",
+    "name": "Massachusetts",
+    "code": "MA",
+    "country_code": "US"
+  },
+  {
+    "id": "67e9409e-56c7-4b5b-874e-1c2e3b607c2f",
+    "name": "Michigan",
+    "code": "MI",
+    "country_code": "US"
+  },
+  {
+    "id": "9bd15c2d-a124-4d40-bcfe-a94356ac9a84",
+    "name": "Minnesota",
+    "code": "MN",
+    "country_code": "US"
+  },
+  {
+    "id": "a7d937da-c4de-4c3e-9b23-4c37406249bf",
+    "name": "Mississippi",
+    "code": "MS",
+    "country_code": "US"
+  },
+  {
+    "id": "7be1a440-9dc6-428f-9293-30acfc7d223d",
+    "name": "Missouri",
+    "code": "MO",
+    "country_code": "US"
+  },
+  {
+    "id": "aa0f023f-929c-4dc0-806e-39a9e024e78c",
+    "name": "Montana",
+    "code": "MT",
+    "country_code": "US"
+  },
+  {
+    "id": "cc503d13-18ab-4efb-b1fa-2a8fe345385e",
+    "name": "Nebraska",
+    "code": "NE",
+    "country_code": "US"
+  },
+  {
+    "id": "0489c292-85f6-41a4-837b-17d935dea664",
+    "name": "Nevada",
+    "code": "NV",
+    "country_code": "US"
+  },
+  {
+    "id": "b8fde015-e72b-4370-b32f-9ca5aea68be0",
+    "name": "New Hampshire",
+    "code": "NH",
+    "country_code": "US"
+  },
+  {
+    "id": "40a71570-4e62-45b1-9b17-39888a40b169",
+    "name": "New Jersey",
+    "code": "NJ",
+    "country_code": "US"
+  },
+  {
+    "id": "b52213b7-0922-4f1a-95fa-52973c79a9bb",
+    "name": "New Mexico",
+    "code": "NM",
+    "country_code": "US"
+  },
+  {
+    "id": "e7374ff0-e833-4d22-95b0-9ebe0a2178c4",
+    "name": "New York",
+    "code": "NY",
+    "country_code": "US"
+  },
+  {
+    "id": "5a7c5f0e-fa5a-4fd1-b799-8d3bbbbeb898",
+    "name": "North Carolina",
+    "code": "NC",
+    "country_code": "US"
+  },
+  {
+    "id": "dfa6225d-4ab2-45cb-9b2d-805be46c0b12",
+    "name": "North Dakota",
+    "code": "ND",
+    "country_code": "US"
+  },
+  {
+    "id": "026461b6-7c71-4ce6-8ab9-3032fc19a724",
+    "name": "Ohio",
+    "code": "OH",
+    "country_code": "US"
+  },
+  {
+    "id": "ff8fe13d-5eca-413d-981b-af42d37c1837",
+    "name": "Oklahoma",
+    "code": "OK",
+    "country_code": "US"
+  },
+  {
+    "id": "bd22da47-ab44-4c8f-b0f0-6807734fb49d",
+    "name": "Oregon",
+    "code": "OR",
+    "country_code": "US"
+  },
+  {
+    "id": "e4621a5f-1324-42a4-903d-0b7d141fedfe",
+    "name": "Pennsylvania",
+    "code": "PA",
+    "country_code": "US"
+  },
+  {
+    "id": "23380fc4-4ce0-4da1-b768-ae7864d2a2de",
+    "name": "Rhode Island",
+    "code": "RI",
+    "country_code": "US"
+  },
+  {
+    "id": "ddce10f7-3307-432e-9303-dda20bf0116d",
+    "name": "South Carolina",
+    "code": "SC",
+    "country_code": "US"
+  },
+  {
+    "id": "cecb5a48-42d9-41a5-b5d4-85518ba1ea45",
+    "name": "South Dakota",
+    "code": "SD",
+    "country_code": "US"
+  },
+  {
+    "id": "aaa9a9f7-f7e0-41ad-85be-6a17ba5927fe",
+    "name": "Tennessee",
+    "code": "TN",
+    "country_code": "US"
+  },
+  {
+    "id": "80cbce5b-3ce3-404c-965e-0bb21c026ee9",
+    "name": "Texas",
+    "code": "TX",
+    "country_code": "US"
+  },
+  {
+    "id": "5fdffe51-186c-4e9d-b22d-d325d0a1c182",
+    "name": "Utah",
+    "code": "UT",
+    "country_code": "US"
+  },
+  {
+    "id": "3c346663-eb9b-4c9b-acec-096b12441b8f",
+    "name": "Vermont",
+    "code": "VT",
+    "country_code": "US"
+  },
+  {
+    "id": "2028419f-b197-49f2-b180-5b5925538020",
+    "name": "Virginia",
+    "code": "VA",
+    "country_code": "US"
+  },
+  {
+    "id": "bdb0d772-9446-434b-aefa-5a427e31a949",
+    "name": "Washington",
+    "code": "WA",
+    "country_code": "US"
+  },
+  {
+    "id": "a52217f7-e809-4a11-ae5f-96eced5dc938",
+    "name": "West Virginia",
+    "code": "WV",
+    "country_code": "US"
+  },
+  {
+    "id": "67ccd038-5569-4611-b1d7-306d097ad3c7",
+    "name": "Wisconsin",
+    "code": "WI",
+    "country_code": "US"
+  },
+  {
+    "id": "37aef99b-e7d9-4b62-97df-644f9f722de3",
+    "name": "Wyoming",
+    "code": "WY",
+    "country_code": "US"
+  }
+]

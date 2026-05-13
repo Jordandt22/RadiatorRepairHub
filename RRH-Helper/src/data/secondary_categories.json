@@ -1,0 +1,386 @@
+[
+  {
+    "id": "7e1a70f8-b540-4a32-adb0-1d7967fc0649",
+    "name": "Tire repair shop"
+  },
+  {
+    "id": "83597259-5a1f-4762-95d4-1bf1180f2455",
+    "name": "Auto air conditioning service"
+  },
+  {
+    "id": "01416f12-7ad9-4020-803d-e3c8a4a1b8bb",
+    "name": "Auto radiator repair service"
+  },
+  {
+    "id": "d897f80a-b3fb-40c9-ac15-cf995b8baa57",
+    "name": "Auto repair shop"
+  },
+  {
+    "id": "d93089d3-367c-4109-abf7-ee1315f7aa6d",
+    "name": "Auto tune up service"
+  },
+  {
+    "id": "8bdae378-98bf-4f2f-b192-f39724b308f9",
+    "name": "Brake shop"
+  },
+  {
+    "id": "df17c899-a3fb-4f03-83fa-4d6d49b52a48",
+    "name": "Car inspection station"
+  },
+  {
+    "id": "a8b19bab-2208-4bf3-8c31-dacd7c58a820",
+    "name": "Mechanic"
+  },
+  {
+    "id": "01bc562a-d3b7-4b67-9273-22e05c5c6c8b",
+    "name": "Oil change service"
+  },
+  {
+    "id": "761330a5-532a-4f97-aa68-1318db927e50",
+    "name": "Transmission shop"
+  },
+  {
+    "id": "1e0ca357-f752-4ee2-927c-46333529dd70",
+    "name": "Auto electrical service"
+  },
+  {
+    "id": "c0d9541d-2a7c-4f49-9789-5e854169dfe9",
+    "name": "Car battery store"
+  },
+  {
+    "id": "e134e453-7036-49b7-a251-07afdb8d1796",
+    "name": "Car repair and maintenance service"
+  },
+  {
+    "id": "139d47d6-cdbd-4ff1-94d0-96351c40cf2d",
+    "name": "Wheel alignment service"
+  },
+  {
+    "id": "2b8a88fb-694c-4d6e-b855-4eb67a96fb5b",
+    "name": "Tire shop"
+  },
+  {
+    "id": "8ef2e8b0-dd9e-4329-8e4f-a4edd3ce59bd",
+    "name": "Small engine repair service"
+  },
+  {
+    "id": "7dd4e085-6ce4-4500-bcbb-1596d40a12ce",
+    "name": "Muffler shop"
+  },
+  {
+    "id": "15467414-d08c-4ee5-ab47-bb9e13d97b55",
+    "name": "Tire service"
+  },
+  {
+    "id": "63c1d3cf-4220-4252-90bf-31da909609ab",
+    "name": "Air conditioning repair service"
+  },
+  {
+    "id": "ec3550b7-5cc5-4bfd-9a29-7a5f2806bdb2",
+    "name": "Heating contractor"
+  },
+  {
+    "id": "2ab77234-a172-4aaf-9d0d-09b595edfe2d",
+    "name": "Auto parts store"
+  },
+  {
+    "id": "4767245f-3131-42de-8e1b-26367149603a",
+    "name": "Radiator shop"
+  },
+  {
+    "id": "8cdb8e2b-1e87-408f-a096-142a721cd8d9",
+    "name": "Truck parts supplier"
+  },
+  {
+    "id": "62a51c57-3c90-4b27-bee7-99a62c95da33",
+    "name": "Radiator repair service"
+  },
+  {
+    "id": "42ad1faa-aae3-4159-8ae1-388bb4644c17",
+    "name": "Auto parts manufacturer"
+  },
+  {
+    "id": "77d00d38-3976-4c7a-9099-7137fb04ce19",
+    "name": "Truck repair shop"
+  },
+  {
+    "id": "2d25ff99-6b31-4457-9c9a-66b30309006b",
+    "name": "Wheel store"
+  },
+  {
+    "id": "9f14655b-78ff-495d-a81c-88bcee391967",
+    "name": "Auto body shop"
+  },
+  {
+    "id": "0f52db81-c801-4245-890a-378f5541fd13",
+    "name": "Auto bodywork mechanic"
+  },
+  {
+    "id": "d99e13fb-20f8-4e56-815b-5b8dd54e8707",
+    "name": "Auto dent removal service"
+  },
+  {
+    "id": "abcea491-3d15-4c0c-bdc1-f85e2c96afa9",
+    "name": "Diesel engine repair service"
+  },
+  {
+    "id": "2b8a8d73-ed34-40c4-bc37-37a4bc0dbad5",
+    "name": "Engine rebuilding service"
+  },
+  {
+    "id": "c3742a2e-4852-4645-8abf-7d14c94d6593",
+    "name": "Mercedes-Benz dealer"
+  },
+  {
+    "id": "555469bd-cf6f-4cfc-b0e2-2846b95e9d20",
+    "name": "Auto spring shop"
+  },
+  {
+    "id": "f911ea73-8921-46da-9086-f82ba0d2ba51",
+    "name": "Driveshaft shop"
+  },
+  {
+    "id": "2ce2373b-aa83-4682-b803-13fd10d4fa1f",
+    "name": "Smog inspection station"
+  },
+  {
+    "id": "ab84b5bf-19f5-4fba-8c34-9aabbe9c8286",
+    "name": "Towing service"
+  },
+  {
+    "id": "8d0cc020-449a-49dd-9a4b-7a9468ac32e9",
+    "name": "Vehicle inspection service"
+  },
+  {
+    "id": "16d6a7d4-0b72-49b5-b0ba-3ff98053f765",
+    "name": "Gas station"
+  },
+  {
+    "id": "ae4c8d7b-1f35-436e-b848-179a0ab73cd3",
+    "name": "Used auto parts store"
+  },
+  {
+    "id": "2c1dc5ba-fbaa-4242-bcaa-8149e3c8fa16",
+    "name": "Diesel fuel supplier"
+  },
+  {
+    "id": "f90e1492-541e-4d0b-bc81-dc9def8058b8",
+    "name": "Metal fabricator"
+  },
+  {
+    "id": "c361baaa-263d-4bec-b8fb-6878fdb94e4e",
+    "name": "Repair service"
+  },
+  {
+    "id": "56c309e3-bf39-4fce-ab13-a8cd27f2e984",
+    "name": "Diagnostic center"
+  },
+  {
+    "id": "a797f990-1881-449a-85d4-ea497b9af969",
+    "name": "Chauffeur service"
+  },
+  {
+    "id": "77c5c59a-a6b8-4848-a3f1-6aabcb703676",
+    "name": "Automobile storage facility"
+  },
+  {
+    "id": "90f2f23d-2755-4b58-9024-02f03899c421",
+    "name": "Auto parts market"
+  },
+  {
+    "id": "c0d5546d-3f2e-43a7-9103-f48d38052e3d",
+    "name": "Mobile home supply store"
+  },
+  {
+    "id": "a2118fbc-f4b7-40e4-9a22-5bc6ed32f48a",
+    "name": "Electrical repair shop"
+  },
+  {
+    "id": "5b3aa6db-7014-4951-ab48-0d8a4956b08e",
+    "name": "Auto restoration service"
+  },
+  {
+    "id": "b1e5d737-4c25-49b5-b60c-42ce501ea4e7",
+    "name": "Manufacturer"
+  },
+  {
+    "id": "7953e7aa-3dfc-4ddc-911e-98972c431b40",
+    "name": "Used tire shop"
+  },
+  {
+    "id": "f7124756-6bc9-4f22-8fbb-2c9f86cb2e04",
+    "name": "Chevrolet dealer"
+  },
+  {
+    "id": "fa440740-da33-4ae5-93df-f36c5350fb97",
+    "name": "Ford dealer"
+  },
+  {
+    "id": "da1b4262-746d-42b9-844a-2e6e0559c667",
+    "name": "Honda dealer"
+  },
+  {
+    "id": "7d051057-2435-446a-aa46-7679feafcda2",
+    "name": "Jeep dealer"
+  },
+  {
+    "id": "ed8cbf76-a3d6-45cc-a39c-3708bbce70a7",
+    "name": "Toyota dealer"
+  },
+  {
+    "id": "b463651e-79eb-4c54-8f2c-58d209ef1095",
+    "name": "Car accessories store"
+  },
+  {
+    "id": "67d57b23-7028-4f58-a0d3-90098f9f040b",
+    "name": "Motorcycle parts store"
+  },
+  {
+    "id": "02e5fc15-a018-42e3-8a0b-4f8775129359",
+    "name": "Racing car parts store"
+  },
+  {
+    "id": "56425355-c562-41e3-878f-474f6cb84161",
+    "name": "Tool rental service"
+  },
+  {
+    "id": "a1364643-7965-4bd8-bd2b-ddb764863ff3",
+    "name": "Truck accessories store"
+  },
+  {
+    "id": "b60af084-e895-4aed-9e5b-1bc87fd465c8",
+    "name": "Car wash"
+  },
+  {
+    "id": "d429c281-5237-40d7-bac1-2594192b7e7a",
+    "name": "Car alarm supplier"
+  },
+  {
+    "id": "3372b761-70cb-41ba-83ac-8c401b966df0",
+    "name": "Oil field equipment supplier"
+  },
+  {
+    "id": "055c65b8-91e7-4feb-80bf-b8d4ec2a3b48",
+    "name": "Auto painting"
+  },
+  {
+    "id": "d6da7bdd-d1ba-44d0-b33b-1e7a330ade13",
+    "name": "Store"
+  },
+  {
+    "id": "0523654d-e825-4e84-bcf7-7cc4cf8b6cf4",
+    "name": "Auto machine shop"
+  },
+  {
+    "id": "2b0422e3-1b34-4eac-b251-58ad82751187",
+    "name": "Welder"
+  },
+  {
+    "id": "e399de17-00bd-45c3-bfcb-3ca4fce60590",
+    "name": "Auto market"
+  },
+  {
+    "id": "3ec03b50-82a4-4db1-bee9-9baac32f4b74",
+    "name": "Wholesaler"
+  },
+  {
+    "id": "5f8bf890-7fe2-411b-aeca-ededc740fac9",
+    "name": "Auto body parts supplier"
+  },
+  {
+    "id": "468f1949-d8d9-4b0e-be14-0fc030a78d10",
+    "name": "Industrial equipment supplier"
+  },
+  {
+    "id": "7e30b00b-cbb4-4fb4-9a13-81300a59009f",
+    "name": "Motorcycle repair shop"
+  },
+  {
+    "id": "c4113e44-05d6-43b1-aa51-dfca48f7fafa",
+    "name": "Window installation service"
+  },
+  {
+    "id": "bc25cc70-78e7-4cf2-810f-375df47f3394",
+    "name": "Window tinting service"
+  },
+  {
+    "id": "c5e956ee-7f7e-4102-b6f3-57e1561eb1c8",
+    "name": "Boat repair shop"
+  },
+  {
+    "id": "68af6c19-b00a-45ab-a57b-8be2dbe1b72d",
+    "name": "Marine supply store"
+  },
+  {
+    "id": "bca9037d-d58f-4d28-bc5e-1dd9c91fea12",
+    "name": "Power plant equipment supplier"
+  },
+  {
+    "id": "e6dbf831-f355-46e2-bdfb-44b06029f2e5",
+    "name": "Aluminum welder"
+  },
+  {
+    "id": "fd0d8915-3199-4020-87c9-39db0f360b9d",
+    "name": "Machine shop"
+  },
+  {
+    "id": "dde42600-aafa-476d-8588-3ad174640466",
+    "name": "Auto glass shop"
+  },
+  {
+    "id": "93533f8f-0cf8-454c-b000-6e623f1c58a7",
+    "name": "Glass industry"
+  },
+  {
+    "id": "5c8ff77a-6c19-440d-b54a-251c4d695ab1",
+    "name": "Tractor repair shop"
+  },
+  {
+    "id": "88f4b8b9-1e05-4add-934b-d52561b0816d",
+    "name": "Powder coating service"
+  },
+  {
+    "id": "7fe31337-fe2a-4a19-8e61-bcc602b9df42",
+    "name": "Welding supply store"
+  },
+  {
+    "id": "aa794e9b-6b86-4f93-abe9-5d29ead381ae",
+    "name": "Hydraulic repair service"
+  },
+  {
+    "id": "bbe5e71b-36ea-4ce0-ae4d-1012873431ec",
+    "name": "Sandblasting service"
+  },
+  {
+    "id": "1b0c3373-f21e-4f07-95bb-0c74b1d15ea6",
+    "name": "Air compressor supplier"
+  },
+  {
+    "id": "de190410-c7d7-4d3c-88ea-a38def7df509",
+    "name": "Air conditioning system supplier"
+  },
+  {
+    "id": "8665750d-a47b-41da-b0a0-006bf70f5fdd",
+    "name": "ATV dealer"
+  },
+  {
+    "id": "9545b279-1122-4a41-9c8b-e39e51be908d",
+    "name": "Motorcycle dealer"
+  },
+  {
+    "id": "df82c063-8276-44df-9b1d-a3133cd600f6",
+    "name": "Outboard motor store"
+  },
+  {
+    "id": "e6a56950-ab9b-4b40-b8ad-1238136b1dbe",
+    "name": "Hose supplier"
+  },
+  {
+    "id": "9be3dcd3-cc17-40e3-a204-6fd17bedb032",
+    "name": "Delivery service"
+  },
+  {
+    "id": "ea2715a2-894c-40e6-a31c-5c8b9d42a6b4",
+    "name": "Garbage collection service"
+  }
+]

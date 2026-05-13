@@ -95,11 +95,10 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
             {[...Array(5)].map((_, i) => (
               <svg
                 key={business.title + "-" + i}
-                className={`w-4 h-4 ${
-                  i < Math.floor(business.total_score)
+                className={`w-4 h-4 ${i < Math.floor(business.total_score)
                     ? "text-yellow-400"
                     : "text-gray-300"
-                }`}
+                  }`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 aria-hidden="true"
