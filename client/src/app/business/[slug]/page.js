@@ -41,31 +41,25 @@ export async function generateMetadata({ params }) {
 
     const business = data.data;
     const title = `Radiator Repair: ${business.title_tag} | ${business.city.name}, ${business.state.name} - RadiatorRepairHub`;
-    const description = `Expert radiator repair services at ${
-      business.title
-    } in ${business.city.name}, ${business.state.name}. ${
-      business.meta_description ||
+    const description = `Expert radiator repair services at ${business.title
+      } in ${business.city.name}, ${business.state.name}. ${business.meta_description ||
       business.local_note ||
       "Professional radiator repair and cooling system services for your vehicle."
-    } ${
-      business.cta_line ||
+      } ${business.cta_line ||
       (business.phone
         ? `Call ${business.phone} for radiator repair today!`
         : "Contact us for quality radiator repair.")
-    }`;
+      }`;
 
     return {
       title,
       description,
       keywords: business.keywords
-        ? `${business.keywords.join(", ")}, radiator repair, ${
-            business.title
-          }, ${business.city.name}, ${business.state.name}`
-        : `${business.title}, radiator repair, ${business.city.name}, ${
-            business.state.name
-          }, auto repair, cooling system repair, ${
-            business.primary_category?.name || "automotive services"
-          }`,
+        ? `${business.keywords.join(", ")}, radiator repair, ${business.title
+        }, ${business.city.name}, ${business.state.name}`
+        : `${business.title}, radiator repair, ${business.city.name}, ${business.state.name
+        }, auto repair, cooling system repair, ${business.primary_category?.name || "automotive services"
+        }`,
       openGraph: {
         title,
         description,
@@ -73,13 +67,13 @@ export async function generateMetadata({ params }) {
         locale: "en_US",
         images: business.image_url
           ? [
-              {
-                url: business.image_url,
-                width: 1200,
-                height: 630,
-                alt: business.title,
-              },
-            ]
+            {
+              url: business.image_url,
+              width: 1200,
+              height: 630,
+              alt: business.title,
+            },
+          ]
           : [],
         siteName: "RadiatorRepairHub",
       },
@@ -224,16 +218,16 @@ async function Page({ params }) {
     telephone: business.phone,
     ...(business.keywords &&
       business.keywords.length > 0 && {
-        keywords: business.keywords.join(", "),
-      }),
+      keywords: business.keywords.join(", "),
+    }),
     ...(business.highlights &&
       business.highlights.length > 0 && {
-        amenityFeature: business.highlights.map((highlight) => ({
-          "@type": "LocationFeatureSpecification",
-          name: highlight,
-          value: true,
-        })),
-      }),
+      amenityFeature: business.highlights.map((highlight) => ({
+        "@type": "LocationFeatureSpecification",
+        name: highlight,
+        value: true,
+      })),
+    }),
     address: {
       "@type": "PostalAddress",
       streetAddress: business.address,
@@ -244,10 +238,10 @@ async function Page({ params }) {
     geo:
       business.latitude && business.longitude
         ? {
-            "@type": "GeoCoordinates",
-            latitude: business.latitude,
-            longitude: business.longitude,
-          }
+          "@type": "GeoCoordinates",
+          latitude: business.latitude,
+          longitude: business.longitude,
+        }
         : undefined,
     image: business.image_url,
     aggregateRating: {
@@ -313,11 +307,11 @@ async function Page({ params }) {
     { name: "Categories", url: "/categories" },
     ...(business.primary_category
       ? [
-          {
-            name: business.primary_category.name,
-            url: `/category/${business.primary_category.slug}`,
-          },
-        ]
+        {
+          name: business.primary_category.name,
+          url: `/category/${business.primary_category.slug}`,
+        },
+      ]
       : []),
     {
       name: business.city.name,
@@ -416,11 +410,10 @@ async function Page({ params }) {
                     {business.image_url ? (
                       <Image
                         src={business.image_url}
-                        alt={`${business.title} - ${
-                          business.keywords && business.keywords.length > 0
+                        alt={`${business.title} - ${business.keywords && business.keywords.length > 0
                             ? business.keywords[0]
                             : "radiator repair services"
-                        } in ${business.city.name}, ${business.state.name}`}
+                          } in ${business.city.name}, ${business.state.name}`}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         className="object-cover object-center"
@@ -469,7 +462,7 @@ async function Page({ params }) {
                       Secondary Categories
                     </h3>
                     {business.secondary_categories &&
-                    business.secondary_categories.length > 0 ? (
+                      business.secondary_categories.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
                         {business.secondary_categories.map((category) => (
                           <Link
@@ -519,9 +512,8 @@ async function Page({ params }) {
                   {/* Google Maps Embed */}
                   <div className="w-full h-64 md:h-96 rounded-lg overflow-hidden">
                     <iframe
-                      src={`https://www.google.com/maps/embed/v1/place?key=${
-                        process.env.GOOGLE_MAPS_API_KEY
-                      }&q=${encodeURIComponent(business.address)}`}
+                      src={`https://www.google.com/maps/embed/v1/place?key=${process.env.GOOGLE_MAPS_API_KEY
+                        }&q=${encodeURIComponent(business.address)}`}
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
@@ -565,11 +557,10 @@ async function Page({ params }) {
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`w-6 h-6 ${
-                            i < Math.floor(business.total_score)
+                          className={`w-6 h-6 ${i < Math.floor(business.total_score)
                               ? "text-yellow-400 fill-current"
                               : "text-gray-300"
-                          }`}
+                            }`}
                         />
                       ))}
                     </div>
@@ -672,76 +663,76 @@ async function Page({ params }) {
               {(paymentFeatures.length > 0 ||
                 accessibilityFeatures.length > 0 ||
                 otherFeatures.length > 0) && (
-                <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
-                    Service Features
-                  </h2>
-                  <div className="space-y-3 md:space-y-4">
-                    {paymentFeatures.length > 0 && (
-                      <div>
-                        <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                          Payment Methods
-                        </h3>
-                        <div className="flex flex-col gap-2">
-                          {paymentFeatures.map((feature, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-2 md:gap-3"
-                            >
-                              <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                              <span className="text-gray-700 capitalize text-xs md:text-sm">
-                                {feature.value}
-                              </span>
-                            </div>
-                          ))}
+                  <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
+                      Service Features
+                    </h2>
+                    <div className="space-y-3 md:space-y-4">
+                      {paymentFeatures.length > 0 && (
+                        <div>
+                          <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
+                            Payment Methods
+                          </h3>
+                          <div className="flex flex-col gap-2">
+                            {paymentFeatures.map((feature, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-2 md:gap-3"
+                              >
+                                <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                                <span className="text-gray-700 capitalize text-xs md:text-sm">
+                                  {feature.value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {accessibilityFeatures.length > 0 && (
-                      <div>
-                        <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                          Accessibility
-                        </h3>
-                        <div className="flex flex-col gap-2">
-                          {accessibilityFeatures.map((feature, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-2 md:gap-3"
-                            >
-                              <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                              <span className="text-gray-700 capitalize text-xs md:text-sm">
-                                {feature.value}
-                              </span>
-                            </div>
-                          ))}
+                      {accessibilityFeatures.length > 0 && (
+                        <div>
+                          <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
+                            Accessibility
+                          </h3>
+                          <div className="flex flex-col gap-2">
+                            {accessibilityFeatures.map((feature, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-2 md:gap-3"
+                              >
+                                <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                                <span className="text-gray-700 capitalize text-xs md:text-sm">
+                                  {feature.value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {otherFeatures.length > 0 && (
-                      <div>
-                        <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                          Other
-                        </h3>
-                        <div className="flex flex-col gap-2">
-                          {otherFeatures.map((feature, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-2 md:gap-3"
-                            >
-                              <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                              <span className="text-gray-700 capitalize text-xs md:text-sm">
-                                {feature.value}
-                              </span>
-                            </div>
-                          ))}
+                      {otherFeatures.length > 0 && (
+                        <div>
+                          <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
+                            Other
+                          </h3>
+                          <div className="flex flex-col gap-2">
+                            {otherFeatures.map((feature, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-2 md:gap-3"
+                              >
+                                <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                                <span className="text-gray-700 capitalize text-xs md:text-sm">
+                                  {feature.value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
         </div>
