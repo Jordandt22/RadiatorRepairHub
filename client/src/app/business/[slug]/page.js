@@ -23,6 +23,12 @@ import OpenStatus from "@/components/businesses/status/OpenStatus";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
+import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
+import {
+  DEFAULT_OG_IMAGE,
+  NOINDEX_ROBOTS,
+  INDEX_ROBOTS,
+} from "@/lib/seo/metadata";
 
 // Generate metadata for business pages
 export async function generateMetadata({ params }) {
@@ -36,6 +42,7 @@ export async function generateMetadata({ params }) {
       return {
         title: "Business Not Found - RadiatorRepairHub",
         description: "The requested business could not be found.",
+        robots: NOINDEX_ROBOTS,
       };
     }
 
@@ -67,35 +74,34 @@ export async function generateMetadata({ params }) {
         locale: "en_US",
         images: business.image_url
           ? [
-            {
-              url: business.image_url,
-              width: 1200,
-              height: 630,
-              alt: business.title,
-            },
-          ]
-          : [],
+              {
+                url: business.image_url,
+                width: 1200,
+                height: 630,
+                alt: business.title,
+              },
+            ]
+          : [DEFAULT_OG_IMAGE],
         siteName: "RadiatorRepairHub",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [
+          business.image_url ? business.image_url : DEFAULT_OG_IMAGE.url,
+        ],
       },
       alternates: {
         canonical: `https://radiatorrepairhub.com/business/${slug}`,
       },
-      robots: {
-        index: true,
-        follow: true,
-        googleBot: {
-          index: true,
-          follow: true,
-          "max-video-preview": -1,
-          "max-image-preview": "large",
-          "max-snippet": -1,
-        },
-      },
+      robots: INDEX_ROBOTS,
     };
   } catch (error) {
     return {
       title: "Business Not Found - RadiatorRepairHub",
       description: "The requested business could not be found.",
+      robots: NOINDEX_ROBOTS,
     };
   }
 }
@@ -244,13 +250,16 @@ async function Page({ params }) {
         }
         : undefined,
     image: business.image_url,
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: business.total_score,
-      reviewCount: business.reviews_count,
-      bestRating: 5,
-      worstRating: 1,
-    },
+    ...(business.reviews_count > 0 &&
+      business.total_score > 0 && {
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: business.total_score,
+          reviewCount: business.reviews_count,
+          bestRating: 5,
+          worstRating: 1,
+        },
+      }),
     priceRange: "$$",
     openingHoursSpecification: business.hours
       ?.flatMap((day) => {
@@ -735,6 +744,10 @@ async function Page({ params }) {
                 )}
             </div>
           </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <DirectoryDisclaimer className="mt-8" />
         </div>
       </div>
 

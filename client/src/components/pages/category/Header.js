@@ -9,7 +9,7 @@ function Header({ categoryName, categorySlug }) {
   ];
 
   const pageTitle = `${categoryName} Businesses`;
-  const pageDescription = `Find trusted ${categoryName} specialists in your area. Compare services, read reviews, and get your vehicle running smoothly.`;
+  const pageDescription = `Find trusted ${categoryName.toLowerCase()} specialists in your area. Compare services, read reviews, and get your vehicle running smoothly.`;
 
   return (
     <PageHeader

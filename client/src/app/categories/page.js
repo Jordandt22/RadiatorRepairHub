@@ -35,12 +35,6 @@ export const metadata = {
   },
 };
 
-export const viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 5,
-};
-
 async function Page() {
   // ItemList Schema for Categories
   const itemListSchema = {
@@ -50,7 +44,7 @@ async function Page() {
     description: "Browse all auto repair and radiator service categories",
     url: "https://radiatorrepairhub.com/categories",
     numberOfItems: PRIMARY_CATEGORIES.length,
-    itemListElement: PRIMARY_CATEGORIES.slice(0, 10).map((category, index) => ({
+    itemListElement: PRIMARY_CATEGORIES.map((category, index) => ({
       "@type": "ListItem",
       position: index + 1,
       name: category.name,

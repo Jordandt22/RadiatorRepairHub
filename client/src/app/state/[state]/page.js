@@ -3,6 +3,7 @@ import STATES from "@/lib/data/states";
 
 // Components
 import BusinessesContainer from "@/components/businesses/BusinessesContainer";
+import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
 export async function generateStaticParams() {
   const topStates = ["CA", "TX", "FL", "NY", "WA"];
@@ -19,6 +20,7 @@ export async function generateMetadata({ params }) {
     return {
       title: "State Not Found - RadiatorRepairHub",
       description: "The requested state could not be found.",
+      robots: NOINDEX_ROBOTS,
     };
   }
 
@@ -28,7 +30,7 @@ export async function generateMetadata({ params }) {
   return {
     title,
     description,
-    keywords: `radiator repair ${stateData.name}, auto repair ${stateData.name}, ${stateData.name} mechanics, cooling system repair ${stateData.name}, automotive services ${stateData.name}`,
+    keywords: `radiator repair ${stateData.name}, auto repair shop ${stateData.name}, auto repair ${stateData.name}, radiator services ${stateData.name}, ${stateData.name} mechanics, cooling system repair ${stateData.name}`,
     openGraph: {
       title,
       description,
@@ -39,17 +41,7 @@ export async function generateMetadata({ params }) {
     alternates: {
       canonical: `https://radiatorrepairhub.com/state/${state}`,
     },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
+    robots: INDEX_ROBOTS,
   };
 }
 

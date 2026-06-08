@@ -8,6 +8,7 @@ import { ToastProvider } from "@/contexts/ToastProvider";
 // Components
 import ContactForm from "@/components/pages/contact/ContactForm";
 import ContactHeader from "@/components/pages/contact/ContactHeader";
+import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 
 export const metadata = {
   title:
@@ -186,6 +187,8 @@ const Page = () => {
               </div>
             </div>
           </div>
+
+          <DirectoryDisclaimer className="mt-12 max-w-4xl mx-auto" />
         </div>
       </div>
     </>

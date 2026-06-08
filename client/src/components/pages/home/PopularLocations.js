@@ -8,8 +8,8 @@ function PopularLocations() {
     { name: "Texas", code: "TX" },
     { name: "New York", code: "NY" },
     { name: "Florida", code: "FL" },
-    { name: "Washington", code: "WA" },
-    { name: "Iowa", code: "IA" },
+    { name: "Vermont", code: "VT" },
+    { name: "Massachusetts", code: "MA" },
   ];
 
   return (

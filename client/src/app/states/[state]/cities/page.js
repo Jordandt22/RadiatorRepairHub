@@ -6,17 +6,20 @@ import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 // Data
 import STATES from "@/lib/data/states";
 import CITIES from "@/lib/data/cities";
+import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
 // Generate metadata for cities page
 export async function generateMetadata({ params }) {
   const { state } = await params;
+  const stateCode = state.toUpperCase();
 
-  const stateData = STATES.find((s) => s.code === state);
+  const stateData = STATES.find((s) => s.code === stateCode);
 
   if (!stateData) {
     return {
       title: "Cities Not Found - RadiatorRepairHub",
       description: "The requested state cities could not be found.",
+      robots: NOINDEX_ROBOTS,
     };
   }
 
@@ -35,27 +38,18 @@ export async function generateMetadata({ params }) {
       siteName: "RadiatorRepairHub",
     },
     alternates: {
-      canonical: `https://radiatorrepairhub.com/states/${state}/cities`,
+      canonical: `https://radiatorrepairhub.com/states/${stateCode}/cities`,
     },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
+    robots: INDEX_ROBOTS,
   };
 }
 
 async function Page({ params }) {
   const { state } = await params;
+  const stateCode = state.toUpperCase();
 
   // Find the state data
-  const stateData = STATES.find((s) => s.code === state);
+  const stateData = STATES.find((s) => s.code === stateCode);
   if (!stateData) {
     return notFound();
   }
@@ -72,7 +66,7 @@ async function Page({ params }) {
     "@type": "CollectionPage",
     name: `Cities in ${stateData.name}`,
     description: `Browse all cities in ${stateData.name} with radiator repair services`,
-    url: `https://radiatorrepairhub.com/states/${state}/cities`,
+    url: `https://radiatorrepairhub.com/states/${stateCode}/cities`,
     isPartOf: {
       "@id": "https://radiatorrepairhub.com/#website",
     },

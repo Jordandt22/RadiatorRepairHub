@@ -2,6 +2,7 @@ import React from "react";
 
 // Components
 import BusinessesContainer from "@/components/businesses/BusinessesContainer";
+import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
 export async function generateStaticParams() {
   const topCities = [
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }) {
   return {
     title,
     description,
-    keywords: `radiator repair ${cityName} ${stateName}, auto repair ${cityName}, ${cityName} mechanics, cooling system repair ${cityName} ${stateName}, automotive services ${cityName}`,
+    keywords: `radiator repair ${cityName} ${stateName}, auto repair shop ${cityName}, auto repair ${cityName}, radiator services ${cityName}, ${cityName} mechanics, cooling system repair ${cityName} ${stateName}`,
     openGraph: {
       title,
       description,
@@ -42,19 +43,9 @@ export async function generateMetadata({ params }) {
       siteName: "RadiatorRepairHub",
     },
     alternates: {
-      canonical: `https://radiatorrepairhub.com/state/${state}/city/${city}`,
+      canonical: `https://radiatorrepairhub.com/state/${stateName}/city/${city}`,
     },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
+    robots: INDEX_ROBOTS,
   };
 }
 

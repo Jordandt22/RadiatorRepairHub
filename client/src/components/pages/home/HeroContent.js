@@ -159,7 +159,7 @@ function HeroContent() {
             Find Trusted Radiator Repair
             <span className="block text-blue-300 mt-4">Shops Near You</span>
           </h1>
-          <p className="text-xl text-gray-300 mb-16 max-w-3xl mx-auto font-body">
+          <p className="text-xl text-gray-300 mb-10 max-w-3xl mx-auto font-body">
             Search our directory of verified radiator repair businesses across
             the U.S.
           </p>

@@ -1,3 +1,7 @@
+import { MAINTENANCE_METADATA } from "@/lib/seo/metadata";
+
+export const metadata = MAINTENANCE_METADATA;
+
 export default function Page() {
   return (
     <div className="min-h-screen flex flex-col items-center pt-48 bg-gray-100 text-center">
