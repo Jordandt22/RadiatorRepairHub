@@ -5,6 +5,8 @@ function main() {
     fs.readFileSync("./src/data/final.json", "utf-8")
   );
 
+  console.log("Businesses:", businesses.length);
+
   const cities = {};
   const states = {};
 

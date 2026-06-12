@@ -374,14 +374,10 @@ export const getSearchedBusinesses = async (req, res) => {
   if (cachedCountData) {
     count = cachedCountData.data;
 
-    // Check Page
     totalPages = Math.ceil(count / formattedLimit);
-    if (formattedPage > totalPages) {
+    if (totalPages > 0 && formattedPage > totalPages) {
       formattedPage = totalPages;
     }
-  } else {
-    // Prevent going over total pages
-    formattedPage = 1;
   }
 
   // Get Cached Data

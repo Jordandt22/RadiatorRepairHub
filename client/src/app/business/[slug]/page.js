@@ -74,13 +74,13 @@ export async function generateMetadata({ params }) {
         locale: "en_US",
         images: business.image_url
           ? [
-              {
-                url: business.image_url,
-                width: 1200,
-                height: 630,
-                alt: business.title,
-              },
-            ]
+            {
+              url: business.image_url,
+              width: 1200,
+              height: 630,
+              alt: business.title,
+            },
+          ]
           : [DEFAULT_OG_IMAGE],
         siteName: "RadiatorRepairHub",
       },
@@ -199,11 +199,23 @@ async function Page({ params }) {
                 <span>Closed</span>
               ) : (
                 <div className="space-y-1">
-                  {day.hours_text.split(",").map((timePeriod, timeIndex) => (
-                    <div key={timeIndex} className="text-sm">
-                      {timePeriod.trim()}
-                    </div>
-                  ))}
+                  <>
+                    {
+                      day?.hours_text ? (
+                        <>
+                          {day?.hours_text?.split(",").map((timePeriod, timeIndex) => (
+                            <div key={timeIndex} className="text-sm">
+                              {timePeriod.trim()}
+                            </div>
+                          ))}
+                        </>
+                      ) : (
+                        <div key={business.id + " " + day.day_of_week} className="text-sm">
+                          Not Available
+                        </div>
+                      )
+                    }
+                  </>
                 </div>
               )}
             </div>
@@ -252,14 +264,14 @@ async function Page({ params }) {
     image: business.image_url,
     ...(business.reviews_count > 0 &&
       business.total_score > 0 && {
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: business.total_score,
-          reviewCount: business.reviews_count,
-          bestRating: 5,
-          worstRating: 1,
-        },
-      }),
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: business.total_score,
+        reviewCount: business.reviews_count,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    }),
     priceRange: "$$",
     openingHoursSpecification: business.hours
       ?.flatMap((day) => {
@@ -420,8 +432,8 @@ async function Page({ params }) {
                       <Image
                         src={business.image_url}
                         alt={`${business.title} - ${business.keywords && business.keywords.length > 0
-                            ? business.keywords[0]
-                            : "radiator repair services"
+                          ? business.keywords[0]
+                          : "radiator repair services"
                           } in ${business.city.name}, ${business.state.name}`}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -567,8 +579,8 @@ async function Page({ params }) {
                         <Star
                           key={i}
                           className={`w-6 h-6 ${i < Math.floor(business.total_score)
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
                             }`}
                         />
                       ))}

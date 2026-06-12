@@ -12,15 +12,21 @@ import BusinessHours from "../cards/BusinessHours";
 import BusinessInfo from "../cards/BusinessInfo";
 
 function Listings({ businesses, data, page, stateData, cityData }) {
-  const { filters, updateURL } = useFilters();
+  const { filters, appliedFilters, updateURL } = useFilters();
   const [activeCard, setActiveCard] = useState(null);
   const [activeBackCard, setActiveBackCard] = useState(1);
 
   useEffect(() => {
-    if (data && data.page !== page) {
-      updateURL(stateData, cityData, data.page, filters);
+    if (!data || data.page === page) return;
+
+    // Only correct the URL when the server clamped past the last valid page
+    if (data.page < page) {
+      updateURL(stateData, cityData, data.page, {
+        ...filters,
+        sort_option: appliedFilters?.sort_option || 1,
+      });
     }
-  }, [data, page, stateData, cityData, filters]);
+  }, [data, page, stateData, cityData, filters, appliedFilters, updateURL]);
 
   return (
     <div>

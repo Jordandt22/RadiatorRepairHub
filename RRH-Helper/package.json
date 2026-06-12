@@ -7,7 +7,13 @@
     "start": "node src/index.js",
     "tally": "node src/tallyLocations.js",
     "slugs": "node src/citySlugs.js",
-    "cities": "node src/getCitiyData.js"
+    "cities": "node src/getCityData.js",
+    "filter": "node src/scripts/cursor/filterNewJson.js",
+    "csv": "node src/scripts/cursor/jsonToCsv.js",
+    "enrich": "node src/scripts/enrich.js",
+    "build-final": "node src/scripts/buildFinal.js",
+    "process": "node src/scripts/enrich.js && node src/scripts/buildFinal.js",
+    "insert": "node src/scripts/insert.js"
   },
   "keywords": [],
   "author": "",

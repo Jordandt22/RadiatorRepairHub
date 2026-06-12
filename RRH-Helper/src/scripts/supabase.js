@@ -4,9 +4,12 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+const supabaseUrl = process.env.NODE_ENV === "development" ? process.env.DEV_SUPABASE_URL : process.env.SUPABASE_URL;
+const supabaseKey = process.env.NODE_ENV === "development" ? process.env.DEV_SUPABASE_KEY : process.env.SUPABASE_KEY;
+
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
+  supabaseUrl,
+  supabaseKey
 );
 
 const DAYS = [
@@ -19,9 +22,16 @@ const DAYS = [
   "Sunday",
 ];
 
+function normalizeReviewsDistribution(dist) {
+  if (!dist || dist === "") return {};
+  return dist;
+}
+
 // --- Bulk Insert Function ---
-async function insertBusinesses(businessArray) {
+export async function insertBusinesses(businessArray) {
   const businessInserts = businessArray.map((b) => ({
+    ...(b.id ? { id: b.id } : {}),
+    slug: b.slug,
     title: b.title,
     address: b.address,
     neighborhood: b.neighborhood,
@@ -32,37 +42,29 @@ async function insertBusinesses(businessArray) {
     country_code: b.country_code,
     website: b.website,
     phone: b.phone,
-    phone_unformatted: b.phone_unformatted,
     total_score: b.total_score,
-    permanently_closed: b.permanently_closed === "TRUE",
-    temporarily_closed: b.temporarily_closed === "TRUE",
     place_id: b.place_id,
     primary_category_id: b.primary_category_id,
     fid: b.fid,
     cid: b.cid,
     reviews_count: Number(b.reviews_count),
-    images_count: Number(b.images_count),
     scraped_at: b.scraped_at,
-    opening_hours: b.opening_hours,
-    additional_info: b.additional_info,
     url: b.url,
-    search_page_url: b.search_page_url,
-    search_string: b.search_string,
-    language: b.language,
     rank: Number(b.rank),
-    is_advertisement: b.is_advertisement === "TRUE",
     image_url: b.image_url,
     kgmid: b.kgmid,
-    reviews_distribution: b.reviews_distribution || {},
+    reviews_distribution: normalizeReviewsDistribution(b.reviews_distribution),
     latitude: b.latitude,
     longitude: b.longitude,
     description: b.description,
-    service_tags: b.service_tags,
     title_tag: b.title_tag,
     meta_description: b.meta_description,
     local_note: b.local_note,
-    opening_hours_specification: b.opening_hours_specification || {},
-    keywords: b.keywords,
+    keywords: Array.isArray(b.keywords) ? b.keywords : [],
+    highlights: Array.isArray(b.highlights) ? b.highlights : [],
+    booking_links: Array.isArray(b.booking_links) ? b.booking_links : [],
+    owner_updates: Array.isArray(b.owner_updates) ? b.owner_updates : [],
+    image_urls: Array.isArray(b.image_urls) ? b.image_urls : [],
   }));
 
   const { data: insertedBusinesses, error: businessError } = await supabase
@@ -72,7 +74,7 @@ async function insertBusinesses(businessArray) {
 
   if (businessError) {
     console.error("❌ Error inserting businesses:", businessError);
-    return;
+    return false;
   }
 
   console.log(`✅ Inserted ${insertedBusinesses.length} businesses`);
@@ -183,6 +185,8 @@ async function insertBusinesses(businessArray) {
         `✅ Inserted ${secondaryCategoriesInserts.length} business_secondary_categories`
       );
   }
+
+  return true;
 }
 
 // Parse multiple periods like "7:45 AM to 12 PM, 1:15 to 5 PM"
