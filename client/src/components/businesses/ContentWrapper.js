@@ -30,14 +30,16 @@ import BranchBoundBanner from "../promo/BranchBoundBanner";
 function ContentWrapper({ stateData, cityData, searchParams }) {
   const pathname = usePathname();
   const { page: pageParam, sort: sortParam } = searchParams;
-  const { filters, setAppliedFilters, setFilters, clearAllFiltersHelper } =
-    useFilters();
-  let page = 1;
-
-  // Validate Page Parma
-  if (!isNaN(pageParam) && pageParam >= 1) {
-    page = Number(pageParam);
-  }
+  const {
+    filters,
+    appliedFilters,
+    setAppliedFilters,
+    setFilters,
+    clearAllFiltersHelper,
+  } = useFilters();
+  const parsedPage = Number(pageParam);
+  const page =
+    !Number.isNaN(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
 
   useEffect(() => {
     const whitelist = {
@@ -53,12 +55,28 @@ function ContentWrapper({ stateData, cityData, searchParams }) {
     delete filterParams.page;
     delete filterParams.sort;
     let sort = 1;
-    let formattedFilters = {
-      ...filters,
-    };
+    let formattedFilters = { ...filters };
 
     if (stateData) delete formattedFilters.state_id;
     if (cityData) delete formattedFilters.city_id;
+
+    // Preserve active filters when only the page param changes (city/state pages)
+    if (appliedFilters) {
+      formattedFilters = {
+        ...formattedFilters,
+        total_score: appliedFilters.total_score,
+        reviews_count: appliedFilters.reviews_count,
+        title: appliedFilters.title ?? formattedFilters.title,
+        primary_category_id:
+          appliedFilters.primary_category_id ?? formattedFilters.primary_category_id,
+        secondary_categories:
+          appliedFilters.secondary_categories ?? formattedFilters.secondary_categories,
+        features: appliedFilters.features
+          ? Object.keys(appliedFilters.features)
+          : formattedFilters.features,
+        open: appliedFilters.open ?? formattedFilters.open,
+      };
+    }
 
     // Validate Sort Param
     const sortOptions = {

@@ -1,51 +1,32 @@
 import React from "react";
 import FeaturedBusinessesPage from "@/components/pages/featured/FeaturedBusinessesPage";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata = {
-  title:
-    "Featured Radiator Repair Shops | Top-Rated Auto Repair Services - RadiatorRepairHub",
-  description:
-    "Discover featured radiator repair shops with top ratings and reviews. Find the best auto repair services in your area with verified customer feedback and quality guarantees.",
+const title =
+  "Featured Radiator Repair Shops | Top-Rated Auto Repair Services - RadiatorRepairHub";
+const description =
+  "Discover featured radiator repair shops with top ratings and reviews. Find the best auto repair services in your area with verified customer feedback and quality guarantees.";
+
+export const metadata = buildPageMetadata({
+  title,
+  description,
   keywords:
     "featured radiator repair, top rated auto repair, best radiator shops, highly rated mechanics, quality radiator service",
-  openGraph: {
-    title:
-      "Featured Radiator Repair Shops | Top-Rated Auto Repair Services - RadiatorRepairHub",
-    description:
-      "Discover featured radiator repair shops with top ratings and reviews. Find the best auto repair services in your area with verified customer feedback and quality guarantees.",
-    type: "website",
-    locale: "en_US",
-    siteName: "RadiatorRepairHub",
-  },
-  alternates: {
-    canonical: "https://radiatorrepairhub.com/featured",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-};
+  path: "/featured",
+});
 
 async function Page() {
-  // ItemList Schema for Featured Businesses
-  const itemListSchema = {
+  const collectionSchema = {
     "@context": "https://schema.org",
-    "@type": "ItemList",
+    "@type": "CollectionPage",
     name: "Featured Radiator Repair Shops",
     description:
       "Top-rated radiator repair businesses and auto repair services",
     url: "https://radiatorrepairhub.com/featured",
-    numberOfItems: 12,
-    itemListOrder: "https://schema.org/ItemListOrderDescending",
-    itemListElement: "Featured businesses based on ratings and reviews",
+    isPartOf: {
+      "@id": "https://radiatorrepairhub.com/#website",
+    },
   };
 
   return (
@@ -53,7 +34,7 @@ async function Page() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(itemListSchema),
+          __html: JSON.stringify(collectionSchema),
         }}
       />
       <FeaturedBusinessesPage />

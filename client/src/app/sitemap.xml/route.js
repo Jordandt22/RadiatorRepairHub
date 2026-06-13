@@ -1,112 +1,11 @@
 import { NextResponse } from "next/server";
-import PRIMARY_CATEGORIES from "@/lib/data/primary_categories";
-import STATES from "@/lib/data/states";
+import { buildSitemapEntries } from "@/lib/seo/sitemap";
 
 export async function GET() {
   const baseUrl = "https://radiatorrepairhub.com";
   const currentDate = new Date().toISOString();
+  const allPages = buildSitemapEntries(currentDate);
 
-  // Static pages
-  const staticPages = [
-    {
-      url: "",
-      lastModified: currentDate,
-      changeFrequency: "weekly",
-      priority: 1.0,
-    },
-    {
-      url: "/categories",
-      lastModified: currentDate,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: "/search",
-      lastModified: currentDate,
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-    {
-      url: "/about",
-      lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: "/contact",
-      lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: "/get-listed",
-      lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: "/featured",
-      lastModified: currentDate,
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-    {
-      url: "/faq",
-      lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: "/privacy",
-      lastModified: currentDate,
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-    {
-      url: "/terms",
-      lastModified: currentDate,
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-  ];
-
-  // Category pages
-  const categoryPages = PRIMARY_CATEGORIES.map((category) => ({
-    url: `/category/${category.slug}`,
-    lastModified: currentDate,
-    changeFrequency: "weekly",
-    priority: 0.8,
-  }));
-
-  // State pages
-  const statePages = STATES.map((state) => ({
-    url: `/state/${state.code}`,
-    lastModified: currentDate,
-    changeFrequency: "weekly",
-    priority: 0.7,
-  }));
-
-  // Major states from PopularLocation component - higher priority
-  const majorStates = ["CA", "TX", "NY", "FL", "WA", "IA"];
-
-  const majorStatePages = majorStates.map((stateCode) => ({
-    url: `/state/${stateCode}`,
-    lastModified: currentDate,
-    changeFrequency: "daily",
-    priority: 0.9,
-  }));
-
-  // Combine all pages (major states will override regular state pages due to higher priority)
-  const allPages = [
-    ...staticPages,
-    ...categoryPages,
-    ...statePages.filter(
-      (page) => !majorStates.includes(page.url.split("/").pop())
-    ),
-    ...majorStatePages,
-  ];
-
-  // Generate XML sitemap
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${allPages
@@ -124,7 +23,7 @@ ${allPages
   return new NextResponse(sitemap, {
     headers: {
       "Content-Type": "application/xml",
-      "Cache-Control": "public, max-age=86400, s-maxage=86400", // Cache for 24 hours
+      "Cache-Control": "public, max-age=86400, s-maxage=86400",
     },
   });
 }

@@ -3,6 +3,59 @@ import fs from "fs";
 const hasTrue = (arr, label) =>
   Array.isArray(arr) && arr.some((item) => item[label]);
 
+function toBoolString(val) {
+  if (val === "TRUE" || val === "FALSE") return val;
+  return val ? "TRUE" : "FALSE";
+}
+
+function normalizeCid(cid) {
+  if (cid == null || cid === "") return cid;
+  const num = Number(cid);
+  return Number.isNaN(num) ? cid : num;
+}
+
+function normalizeReviewsDistribution(dist) {
+  if (dist == null || dist === "") return "";
+  if (typeof dist === "object" && Object.keys(dist).length === 0) return "";
+  return dist;
+}
+
+function normalizeKeywords(keywords) {
+  if (Array.isArray(keywords)) {
+    return keywords.map((k) => String(k).trim()).filter(Boolean);
+  }
+  if (typeof keywords === "string" && keywords.trim()) {
+    return keywords.split(",").map((k) => k.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+function buildHighlights(biz) {
+  const highlights = [];
+
+  if (biz.wheelchair_accessible) highlights.push("Wheelchair Accessible");
+  if (biz.credit_cards) highlights.push("Credit Cards Accepted");
+  if (biz.debit_cards) highlights.push("Debit Cards Accepted");
+  if (biz.nfc_mobile_payments) highlights.push("NFC Mobile Payments");
+  if (biz.onsite_services) highlights.push("Onsite Services");
+  if (biz.oil_change) highlights.push("Oil Change");
+  if (biz.mechanic) highlights.push("On-site Mechanic");
+  if (biz.restroom) highlights.push("Restroom Available");
+  if (biz.appointments_recommended) highlights.push("Appointments Recommended");
+
+  if (biz.total_score === 5) {
+    highlights.push("Perfect 5-Star Rating");
+  } else if (biz.total_score >= 4.5) {
+    highlights.push(`${biz.total_score}-Star Rating`);
+  }
+
+  if (biz.reviews_count >= 100) {
+    highlights.push(`${biz.reviews_count}+ Customer Reviews`);
+  }
+
+  return highlights;
+}
+
 // 🔹 Helper: convert camelCase / PascalCase / etc → snake_case
 function toSnakeCase(str) {
   return str
@@ -26,7 +79,7 @@ function keysToSnakeCase(obj) {
   return obj; // primitive → return as-is
 }
 
-function formatBusiness(biz) {
+export function formatBusiness(biz) {
   const bizData = biz.enriched || {};
   const enrichedBiz = {
     ...biz,
@@ -54,7 +107,10 @@ function formatBusiness(biz) {
     local_note: bizData.localNote || "",
     opening_hours_specification:
       bizData.localBusinessSchema?.openingHoursSpecification || null,
-    keywords: bizData.localBusinessSchema?.keywords || "",
+    keywords: normalizeKeywords(bizData.localBusinessSchema?.keywords),
+    booking_links: Array.isArray(biz.bookingLinks) ? biz.bookingLinks : [],
+    owner_updates: Array.isArray(biz.ownerUpdates) ? biz.ownerUpdates : [],
+    image_urls: Array.isArray(biz.imageUrls) ? biz.imageUrls : [],
   };
 
   // Format to Snake Case
@@ -76,7 +132,7 @@ function formatBusiness(biz) {
   delete formattedBiz.plus_code;
 
   // Update Additional Fields
-  const info = formattedBiz.additional_info;
+  const info = formattedBiz.additional_info || {};
 
   // service options
   if (hasTrue(info.service_options, "onsite_services")) {
@@ -121,6 +177,32 @@ function formatBusiness(biz) {
   if (hasTrue(info.planning, "appointments_recommended")) {
     formattedBiz.appointments_recommended = true;
   }
+
+  formattedBiz.permanently_closed = toBoolString(formattedBiz.permanently_closed);
+  formattedBiz.temporarily_closed = toBoolString(formattedBiz.temporarily_closed);
+  formattedBiz.is_advertisement = toBoolString(
+    formattedBiz.is_advertisement ?? false
+  );
+  formattedBiz.language = formattedBiz.language || "en";
+  formattedBiz.website = formattedBiz.website || "";
+  formattedBiz.cid = normalizeCid(formattedBiz.cid);
+  formattedBiz.reviews_distribution = normalizeReviewsDistribution(
+    formattedBiz.reviews_distribution
+  );
+
+  formattedBiz.booking_links = Array.isArray(formattedBiz.booking_links)
+    ? formattedBiz.booking_links
+    : [];
+  formattedBiz.owner_updates = Array.isArray(formattedBiz.owner_updates)
+    ? formattedBiz.owner_updates
+    : [];
+  formattedBiz.image_urls = Array.isArray(formattedBiz.image_urls)
+    ? formattedBiz.image_urls
+    : [];
+
+  formattedBiz.highlights = Array.isArray(bizData.highlights)
+    ? bizData.highlights
+    : buildHighlights(formattedBiz);
 
   return formattedBiz;
 }

@@ -3,45 +3,28 @@ import Link from "next/link";
 import FAQSection from "@/components/seo/FAQSection";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
+import { FAQ_KEYWORDS } from "@/lib/seo/keywords";
+import { EXTRA_FAQS } from "@/lib/seo/faqs";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata = {
-  title:
-    "Frequently Asked Questions | Radiator Repair Help & Support - RadiatorRepairHub",
-  description:
-    "Get answers to common questions about radiator repair services. Learn about costs, finding repair shops, what to look for, and more. Expert advice for your cooling system needs.",
-  keywords:
-    "radiator repair FAQ, cooling system questions, auto repair help, radiator repair costs, find radiator repair shop, automotive FAQ",
-  openGraph: {
-    title:
-      "Frequently Asked Questions | Radiator Repair Help & Support - RadiatorRepairHub",
-    description:
-      "Get answers to common questions about radiator repair services. Learn about costs, finding repair shops, what to look for, and more.",
-    type: "website",
-    locale: "en_US",
-    siteName: "RadiatorRepairHub",
-  },
-  alternates: {
-    canonical: "https://radiatorrepairhub.com/faq",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-};
+const faqTitle =
+  "Frequently Asked Questions | Radiator Repair Help & Support - RadiatorRepairHub";
+const faqDescription =
+  "Get answers to common questions about radiator repair services, servicing of a radiator, car radiator repair, and finding a radiator repair shop near me.";
+
+export const metadata = buildPageMetadata({
+  title: faqTitle,
+  description: faqDescription,
+  keywords: FAQ_KEYWORDS,
+  path: "/faq",
+});
 
 export default function FAQPage() {
   const faqs = [
     {
-      question: "How do I find radiator repair services near me?",
+      question: "How do I find a radiator repair shop in my area?",
       answer:
-        "Use our search tool to enter your location and instantly see verified radiator repair shops in your area. You can filter by ratings, reviews, hours, services offered to find the best match for your needs.",
+        "Use our search tool to enter your city or ZIP code and browse verified radiator repair shops near you. Filter by ratings, reviews, hours, and services to find the best match for your needs.",
     },
     {
       question: "What should I look for in a radiator repair shop?",
@@ -99,6 +82,9 @@ export default function FAQPage() {
       answer:
         "Business owners can submit their information through our Get Listed page. We review all submissions to ensure they meet our quality standards for radiator repair services. Listings are currently free.",
     },
+    ...EXTRA_FAQS.filter(
+      (faq) => faq.question !== "How do I find a radiator repair shop in my area?"
+    ),
   ];
 
   const breadcrumbItems = [

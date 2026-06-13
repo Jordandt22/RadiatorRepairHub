@@ -15,11 +15,23 @@ function BusinessHours({ business, setActiveCard }) {
           <div key={index} className="flex justify-between text-sm mb-2">
             <span className="font-medium text-gray-700">{day.day_of_week}</span>
             <div className="flex-col flex items-end">
-              {day.hours_text.split(",").map((hour, index) => (
-                <span key={index} className="text-gray-600">
-                  {hour}
-                </span>
-              ))}
+              <>
+                {
+                  day?.hours_text ? (
+                    <>
+                      {day?.hours_text?.split(",").map((hour, index) => (
+                        <span key={index} className="text-gray-600">
+                          {hour}
+                        </span>
+                      ))}
+                    </>
+                  ) : (
+                    <div key={business.id + " " + day.day_of_week} className="text-sm">
+                      Not Available
+                    </div>
+                  )
+                }
+              </>
             </div>
           </div>
         ))}

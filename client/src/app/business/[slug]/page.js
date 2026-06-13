@@ -23,6 +23,12 @@ import OpenStatus from "@/components/businesses/status/OpenStatus";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
+import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
+import {
+  DEFAULT_OG_IMAGE,
+  NOINDEX_ROBOTS,
+  INDEX_ROBOTS,
+} from "@/lib/seo/metadata";
 
 // Generate metadata for business pages
 export async function generateMetadata({ params }) {
@@ -36,6 +42,7 @@ export async function generateMetadata({ params }) {
       return {
         title: "Business Not Found - RadiatorRepairHub",
         description: "The requested business could not be found.",
+        robots: NOINDEX_ROBOTS,
       };
     }
 
@@ -74,28 +81,27 @@ export async function generateMetadata({ params }) {
               alt: business.title,
             },
           ]
-          : [],
+          : [DEFAULT_OG_IMAGE],
         siteName: "RadiatorRepairHub",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [
+          business.image_url ? business.image_url : DEFAULT_OG_IMAGE.url,
+        ],
       },
       alternates: {
         canonical: `https://radiatorrepairhub.com/business/${slug}`,
       },
-      robots: {
-        index: true,
-        follow: true,
-        googleBot: {
-          index: true,
-          follow: true,
-          "max-video-preview": -1,
-          "max-image-preview": "large",
-          "max-snippet": -1,
-        },
-      },
+      robots: INDEX_ROBOTS,
     };
   } catch (error) {
     return {
       title: "Business Not Found - RadiatorRepairHub",
       description: "The requested business could not be found.",
+      robots: NOINDEX_ROBOTS,
     };
   }
 }
@@ -193,11 +199,23 @@ async function Page({ params }) {
                 <span>Closed</span>
               ) : (
                 <div className="space-y-1">
-                  {day.hours_text.split(",").map((timePeriod, timeIndex) => (
-                    <div key={timeIndex} className="text-sm">
-                      {timePeriod.trim()}
-                    </div>
-                  ))}
+                  <>
+                    {
+                      day?.hours_text ? (
+                        <>
+                          {day?.hours_text?.split(",").map((timePeriod, timeIndex) => (
+                            <div key={timeIndex} className="text-sm">
+                              {timePeriod.trim()}
+                            </div>
+                          ))}
+                        </>
+                      ) : (
+                        <div key={business.id + " " + day.day_of_week} className="text-sm">
+                          Not Available
+                        </div>
+                      )
+                    }
+                  </>
                 </div>
               )}
             </div>
@@ -244,13 +262,16 @@ async function Page({ params }) {
         }
         : undefined,
     image: business.image_url,
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: business.total_score,
-      reviewCount: business.reviews_count,
-      bestRating: 5,
-      worstRating: 1,
-    },
+    ...(business.reviews_count > 0 &&
+      business.total_score > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: business.total_score,
+        reviewCount: business.reviews_count,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    }),
     priceRange: "$$",
     openingHoursSpecification: business.hours
       ?.flatMap((day) => {
@@ -411,8 +432,8 @@ async function Page({ params }) {
                       <Image
                         src={business.image_url}
                         alt={`${business.title} - ${business.keywords && business.keywords.length > 0
-                            ? business.keywords[0]
-                            : "radiator repair services"
+                          ? business.keywords[0]
+                          : "radiator repair services"
                           } in ${business.city.name}, ${business.state.name}`}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -558,8 +579,8 @@ async function Page({ params }) {
                         <Star
                           key={i}
                           className={`w-6 h-6 ${i < Math.floor(business.total_score)
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
                             }`}
                         />
                       ))}
@@ -735,6 +756,10 @@ async function Page({ params }) {
                 )}
             </div>
           </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <DirectoryDisclaimer className="mt-8" />
         </div>
       </div>
 

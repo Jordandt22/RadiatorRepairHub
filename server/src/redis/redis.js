@@ -1,8 +1,23 @@
 import Redis from "ioredis";
+
+const isDev = process.env.NODE_ENV === "development";
+
+const redisHost = isDev ? process.env.DEV_REDIS_URL : process.env.REDIS_URL;
+const redisPort = Number(
+  isDev ? process.env.DEV_REDIS_PORT : process.env.REDIS_PORT
+);
+const redisPassword = isDev
+  ? process.env.DEV_REDIS_PASSWORD
+  : process.env.REDIS_PASSWORD;
+
+if (process.env.NODE_ENV !== "production") {
+  console.log(`Redis: using ${isDev ? "DEV" : "PROD"} (${redisHost}:${redisPort})`);
+}
+
 export const redisClient = new Redis({
-  host: process.env.REDIS_URL,
-  port: process.env.REDIS_PORT,
-  password: process.env.REDIS_PASSWORD,
+  host: redisHost,
+  port: redisPort,
+  password: redisPassword,
 });
 
 // Check Key for Development

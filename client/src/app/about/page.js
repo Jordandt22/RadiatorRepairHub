@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import PageHeader from "@/components/layout/Header/PageHeader";
+import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 
 export const metadata = {
   title: "About RadiatorRepairHub | Your Trusted Radiator Repair Directory",
@@ -236,6 +237,8 @@ function AboutPage() {
             RadiatorRepairHub: Where overheated drivers meet cooling system
             experts.
           </p>
+
+          <DirectoryDisclaimer className="mb-16" />
         </div>
       </div>
     </>

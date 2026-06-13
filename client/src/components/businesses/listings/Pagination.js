@@ -51,10 +51,17 @@ function Pagination({
     );
   }
 
-  const getHref = (page) =>
-    getFilterURL(stateData, cityData, page, {
+  const getHref = (pageNum) =>
+    getFilterURL(stateData, cityData, pageNum, {
       ...filters,
-      sort_option: appliedFilters.sort_option,
+      total_score: appliedFilters?.total_score ?? filters.total_score,
+      reviews_count: appliedFilters?.reviews_count ?? filters.reviews_count,
+      title: appliedFilters?.title ?? filters.title,
+      primary_category_id:
+        appliedFilters?.primary_category_id ?? filters.primary_category_id,
+      secondary_categories:
+        appliedFilters?.secondary_categories ?? filters.secondary_categories,
+      sort_option: appliedFilters?.sort_option || 1,
     });
 
   // Generate windowed pagination for desktop

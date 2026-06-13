@@ -3,6 +3,8 @@ import CategoryBusinessesPage from "@/components/pages/category/CategoryBusiness
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 import PRIMARY_CATEGORIES from "@/lib/data/primary_categories";
 import { notFound } from "next/navigation";
+import { CATEGORY_KEYWORDS } from "@/lib/seo/keywords";
+import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
 // Generate metadata for category pages
 export async function generateMetadata({ params }) {
@@ -16,18 +18,21 @@ export async function generateMetadata({ params }) {
     return {
       title: "Category Not Found - RadiatorRepairHub",
       description: "The requested category could not be found.",
+      robots: NOINDEX_ROBOTS,
     };
   }
 
   const title = `${primaryCategory.name} Services | Find ${primaryCategory.name} Near You - RadiatorRepairHub`;
   const description = `Find trusted ${primaryCategory.name.toLowerCase()} services near you. Browse our directory of verified ${primaryCategory.name.toLowerCase()} businesses across the U.S. Compare services, read reviews, and connect with certified professionals.`;
 
+  const defaultKeywords = `${primaryCategory.name}, ${primaryCategory.name.toLowerCase()} services, auto repair, automotive services, radiator repair, cooling system repair, car maintenance`;
+  const keywords =
+    CATEGORY_KEYWORDS[slug.toLowerCase()] ?? defaultKeywords;
+
   return {
     title,
     description,
-    keywords: `${
-      primaryCategory.name
-    }, ${primaryCategory.name.toLowerCase()} services, auto repair, automotive services, radiator repair, cooling system repair, car maintenance`,
+    keywords,
     openGraph: {
       title,
       description,
@@ -38,17 +43,7 @@ export async function generateMetadata({ params }) {
     alternates: {
       canonical: `https://radiatorrepairhub.com/category/${slug}`,
     },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
+    robots: INDEX_ROBOTS,
   };
 }
 

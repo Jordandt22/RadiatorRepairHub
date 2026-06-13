@@ -12,7 +12,7 @@ function SearchHeader({ title }) {
     : `Radiator Repair Services for "${title}"`;
 
   const pageDescription = `Find trusted radiator repair specialists${
-    title ? ` for "${title}"` : ""
+    title ? ` for "${title}"` : " in your area"
   }. Compare services, read reviews, and get your vehicle running smoothly.`;
 
   return (

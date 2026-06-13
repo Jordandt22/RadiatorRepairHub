@@ -1,6 +1,6 @@
 import React from "react";
 
-const FAQSection = ({ faqs, title = "Frequently Asked Questions" }) => {
+const FAQSection = ({ faqs, title = "Frequently Asked Questions", includeSchema = true }) => {
   // Generate FAQ structured data
   const faqStructuredData = {
     "@context": "https://schema.org",
@@ -17,13 +17,14 @@ const FAQSection = ({ faqs, title = "Frequently Asked Questions" }) => {
 
   return (
     <>
-      {/* FAQ Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(faqStructuredData),
-        }}
-      />
+      {includeSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(faqStructuredData),
+          }}
+        />
+      )}
 
       <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

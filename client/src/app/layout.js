@@ -7,6 +7,8 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar/Navbar";
 import Footer from "@/components/layout/Footer/Footer";
 import BackToTop from "@/components/layout/BackToTop/BackToTop";
+import { ALL_KEYWORDS } from "@/lib/seo/keywords";
+import { DEFAULT_OG_IMAGE, DEFAULT_TWITTER, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,9 +26,8 @@ export const metadata = {
   title:
     "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services Near You",
   description:
-    "RadiatorRepairHub helps you find trusted auto radiator repair shops near you. Browse by city, compare services, read reviews, and keep your car running cool. Connect with certified radiator repair specialists.",
-  keywords:
-    "radiator repair, auto radiator, car radiator, radiator service, cooling system repair, automotive repair, radiator replacement, car maintenance",
+    "RadiatorRepairHub helps you find radiator repair near me, trusted auto repair shop listings, and radiator services. Browse by city, compare reviews, and connect with certified specialists.",
+  keywords: ALL_KEYWORDS,
   authors: [{ name: "RadiatorRepairHub" }],
   creator: "RadiatorRepairHub",
   publisher: "RadiatorRepairHub",
@@ -58,29 +59,15 @@ export const metadata = {
     locale: "en_US",
     url: "https://radiatorrepairhub.com",
     siteName: "RadiatorRepairHub",
-    images: [
-      {
-        url: "https://radiatorrepairhub.com/assets/logos/logo.png",
-        width: 1200,
-        height: 630,
-        alt: "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
-      },
-    ],
+    images: [DEFAULT_OG_IMAGE],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+  twitter: DEFAULT_TWITTER,
+  robots: INDEX_ROBOTS,
+  ...(process.env.GOOGLE_VERIFICATION_ID && {
+    verification: {
+      google: process.env.GOOGLE_VERIFICATION_ID,
     },
-  },
-  verification: {
-    google: process.env.GOOGLE_VERIFICATION_ID,
-  },
+  }),
   other: {
     "apple-mobile-web-app-title": "RadiatorRepairHub",
     "apple-mobile-web-app-capable": "yes",
@@ -113,7 +100,7 @@ export default function RootLayout({ children }) {
       height: 200,
     },
     description:
-      "Find trusted auto radiator repair services near you. Connect with certified radiator repair specialists across the United States.",
+      "Find radiator repair near me, auto repair shop listings, and radiator services. Connect with certified specialists across the United States.",
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer service",
@@ -140,7 +127,8 @@ export default function RootLayout({ children }) {
     "@id": "https://radiatorrepairhub.com/#website",
     url: "https://radiatorrepairhub.com",
     name: "RadiatorRepairHub",
-    description: "Find trusted auto radiator repair services near you",
+    description:
+      "Find radiator repair near me, auto repair shops, and radiator services in your area",
     publisher: {
       "@id": "https://radiatorrepairhub.com/#organization",
     },
@@ -150,7 +138,7 @@ export default function RootLayout({ children }) {
         target: {
           "@type": "EntryPoint",
           urlTemplate:
-            "https://radiatorrepairhub.com/search?q={search_term_string}",
+            "https://radiatorrepairhub.com/search?title={search_term_string}",
         },
         "query-input": "required name=search_term_string",
       },
