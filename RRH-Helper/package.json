@@ -13,7 +13,8 @@
     "enrich": "node src/scripts/enrich.js",
     "build-final": "node src/scripts/buildFinal.js",
     "process": "node src/scripts/enrich.js && node src/scripts/buildFinal.js",
-    "insert": "node src/scripts/insert.js"
+    "insert": "node src/scripts/insert.js",
+    "backfill-hours": "node src/scripts/backfillHours.js"
   },
   "keywords": [],
   "author": "",

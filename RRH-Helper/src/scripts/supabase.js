@@ -92,41 +92,7 @@ export async function insertBusinesses(businessArray) {
     const businessId = idMap[b.place_id];
     if (!businessId) continue;
 
-    // Map days to hours string
-    const dayMap = new Map(
-      (b.opening_hours || []).map((h) => [h.day, h.hours])
-    );
-
-    for (const day of DAYS) {
-      const hoursStr = dayMap.get(day);
-
-      if (!hoursStr || hoursStr.toLowerCase().includes("closed")) {
-        hoursInserts.push({
-          business_id: businessId,
-          day_of_week: day,
-          hours: [],
-          is_closed: true,
-        });
-      } else if (
-        hoursStr.toLowerCase().includes("24 hours") ||
-        hoursStr.toLowerCase().includes("open 24 hours")
-      ) {
-        hoursInserts.push({
-          business_id: businessId,
-          day_of_week: day,
-          hours: [{ opening_time: "00:00:00", closing_time: "23:59:59" }],
-          is_closed: false,
-        });
-      } else {
-        const periods = parseMultipleHours(hoursStr);
-        hoursInserts.push({
-          business_id: businessId,
-          day_of_week: day,
-          hours: periods,
-          is_closed: false,
-        });
-      }
-    }
+    hoursInserts.push(...buildBusinessHoursRows(businessId, b.opening_hours));
 
     // Features
     featuresInserts.push({
@@ -189,16 +155,61 @@ export async function insertBusinesses(businessArray) {
   return true;
 }
 
+export function buildBusinessHoursRows(businessId, openingHours = []) {
+  const dayMap = new Map(openingHours.map((h) => [h.day, h.hours]));
+  const rows = [];
+
+  for (const day of DAYS) {
+    const hoursStr = dayMap.get(day);
+
+    if (!hoursStr || hoursStr.toLowerCase().includes("closed")) {
+      rows.push({
+        business_id: businessId,
+        day_of_week: day,
+        hours: [],
+        is_closed: true,
+        hours_text: "Closed",
+      });
+    } else if (
+      hoursStr.toLowerCase().includes("24 hours") ||
+      hoursStr.toLowerCase().includes("open 24 hours")
+    ) {
+      rows.push({
+        business_id: businessId,
+        day_of_week: day,
+        hours: [{ open: "00:00", close: "23:59" }],
+        is_closed: false,
+        hours_text: hoursStr,
+      });
+    } else {
+      rows.push({
+        business_id: businessId,
+        day_of_week: day,
+        hours: parseMultipleHours(hoursStr),
+        is_closed: false,
+        hours_text: hoursStr,
+      });
+    }
+  }
+
+  return rows;
+}
+
+function toHourMinute(timeStr) {
+  if (!timeStr) return null;
+  return timeStr.slice(0, 5);
+}
+
 // Parse multiple periods like "7:45 AM to 12 PM, 1:15 to 5 PM"
 function parseMultipleHours(str) {
   const periods = [];
-  const parts = str.split(/,/); // Split by comma
+  const parts = str.split(/,/);
   for (const p of parts) {
     const [open, close] = p.split(/\s+to\s+/i).map((s) => s && s.trim());
     if (!open || !close) continue;
     periods.push({
-      opening_time: parseSingleTime(open),
-      closing_time: parseSingleTime(close),
+      open: toHourMinute(parseSingleTime(open)),
+      close: toHourMinute(parseSingleTime(close)),
     });
   }
   return periods;
