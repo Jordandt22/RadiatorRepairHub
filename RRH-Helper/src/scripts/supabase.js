@@ -1,16 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
-import dotenv from "dotenv";
+import { createSupabaseClient } from "./supabaseClient.js";
 
-dotenv.config();
-
-const supabaseUrl = process.env.NODE_ENV === "development" ? process.env.DEV_SUPABASE_URL : process.env.SUPABASE_URL;
-const supabaseKey = process.env.NODE_ENV === "development" ? process.env.DEV_SUPABASE_KEY : process.env.SUPABASE_KEY;
-
-const supabase = createClient(
-  supabaseUrl,
-  supabaseKey
-);
+const supabase = createSupabaseClient();
 
 const DAYS = [
   "Monday",

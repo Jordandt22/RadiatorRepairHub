@@ -9,11 +9,15 @@
     "slugs": "node src/citySlugs.js",
     "cities": "node src/getCityData.js",
     "filter": "node src/scripts/cursor/filterNewJson.js",
+    "log-categories": "node src/scripts/cursor/logCategories.js",
     "csv": "node src/scripts/cursor/jsonToCsv.js",
     "enrich": "node src/scripts/enrich.js",
     "build-final": "node src/scripts/buildFinal.js",
     "process": "node src/scripts/enrich.js && node src/scripts/buildFinal.js",
-    "insert": "node src/scripts/insert.js",
+    "insert": "npm run insert-dev",
+    "insert-dev": "cross-env RRH_TARGET=dev node src/scripts/insert.js",
+    "insert-prod": "cross-env RRH_TARGET=prod node src/scripts/insert.js",
+    "delete-batch": "node src/scripts/deleteBatch.js",
     "backfill-hours": "node src/scripts/backfillHours.js"
   },
   "keywords": [],
@@ -26,5 +30,8 @@
     "dotenv": "^17.2.2",
     "json2csv": "^6.0.0-alpha.2",
     "slugify": "^1.6.6"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }
