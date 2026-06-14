@@ -1,7 +1,7 @@
 import React from "react";
 import CategoriesPage from "@/components/pages/categories/CategoriesPage";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
-import PRIMARY_CATEGORIES from "@/lib/data/primary_categories";
+import { fetchPrimaryCategories } from "@/lib/api/categories";
 
 export const metadata = {
   title:
@@ -36,15 +36,17 @@ export const metadata = {
 };
 
 async function Page() {
-  // ItemList Schema for Categories
+  const { data: primaryCategories } = await fetchPrimaryCategories();
+  const categories = primaryCategories || [];
+
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: "Auto Repair Service Categories",
     description: "Browse all auto repair and radiator service categories",
     url: "https://radiatorrepairhub.com/categories",
-    numberOfItems: PRIMARY_CATEGORIES.length,
-    itemListElement: PRIMARY_CATEGORIES.map((category, index) => ({
+    numberOfItems: categories.length,
+    itemListElement: categories.map((category, index) => ({
       "@type": "ListItem",
       position: index + 1,
       name: category.name,
@@ -60,7 +62,7 @@ async function Page() {
           __html: JSON.stringify(itemListSchema),
         }}
       />
-      <CategoriesPage />
+      <CategoriesPage primaryCategories={categories} />
       <BranchBoundBanner />
     </>
   );

@@ -1,12 +1,14 @@
 "use client";
 
 import React from "react";
+import useSWR from "swr";
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
 
-// Data
-import CITIES from "@/lib/data/cities";
+// Utils
+import { getFetcher } from "@/lib/utils/utils";
+import { getLocationApiUrl } from "@/lib/api/location";
 
 // Components
 import FilterComboBox from "../inputs/FilterComboBox";
@@ -14,12 +16,17 @@ import FilterComboBox from "../inputs/FilterComboBox";
 function CitySearch({ stateData }) {
   const { filters } = useFilters();
 
-  // Filter cities based on selected state
-  const citiesData = stateData
-    ? CITIES.filter((city) => city.state_id === stateData?.id)
-    : filters.state_id
-    ? CITIES.filter((city) => city.state_id === filters.state_id)
-    : CITIES;
+  const stateId = stateData?.id || filters.state_id;
+  const citiesUrl = stateId
+    ? getLocationApiUrl(`/states/${stateId}/cities`)
+    : getLocationApiUrl("/cities");
+
+  const { data } = useSWR(citiesUrl, getFetcher, {
+    revalidateOnFocus: false,
+    revalidateIfStale: false,
+  });
+
+  const citiesData = data?.data || [];
 
   return (
     <FilterComboBox

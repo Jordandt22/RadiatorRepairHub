@@ -65,6 +65,19 @@ export const validateBoolean = (value) => {
   return parsedValue;
 };
 
+export const parseIdListParam = (value, max = 5) => {
+  if (!value || typeof value !== "string") return [];
+
+  return [
+    ...new Set(
+      value
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean)
+    ),
+  ].slice(0, max);
+};
+
 // Format
 export const formatFeatures = (features) => {
   if (!features || features.length === 0) return {};

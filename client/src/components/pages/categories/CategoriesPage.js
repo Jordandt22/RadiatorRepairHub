@@ -2,25 +2,22 @@
 
 import React, { useState, useMemo } from "react";
 
-// Data
-import PRIMARY_CATEGORIES from "@/lib/data/primary_categories";
-
 // Components
 import CategoriesGrid from "./CategoriesGrid";
 import PageHeader from "@/components/layout/Header/PageHeader";
 
-function CategoriesPage() {
+function CategoriesPage({ primaryCategories = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredCategories = useMemo(() => {
     if (!searchTerm.trim()) {
-      return PRIMARY_CATEGORIES;
+      return primaryCategories;
     }
 
-    return PRIMARY_CATEGORIES.filter((category) =>
+    return primaryCategories.filter((category) =>
       category.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm]);
+  }, [searchTerm, primaryCategories]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -36,7 +33,7 @@ function CategoriesPage() {
         categories={filteredCategories}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        totalCategories={PRIMARY_CATEGORIES.length}
+        totalCategories={primaryCategories.length}
         filteredCount={filteredCategories.length}
       />
     </div>

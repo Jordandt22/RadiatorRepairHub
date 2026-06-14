@@ -5,7 +5,7 @@ import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 
 // Data
 import STATES from "@/lib/data/states";
-import CITIES from "@/lib/data/cities";
+import { fetchCitiesByStateId } from "@/lib/api/location";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
 // Generate metadata for cities page
@@ -48,19 +48,16 @@ async function Page({ params }) {
   const { state } = await params;
   const stateCode = state.toUpperCase();
 
-  // Find the state data
   const stateData = STATES.find((s) => s.code === stateCode);
   if (!stateData) {
     return notFound();
   }
 
-  // Filter cities by state
-  const stateCities = CITIES.filter((city) => city.state_id === stateData.id);
+  const { data: stateCities } = await fetchCitiesByStateId(stateData.id);
+  const sortedCities = [...(stateCities || [])].sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
 
-  // Sort cities alphabetically
-  stateCities.sort((a, b) => a.name.localeCompare(b.name));
-
-  // CollectionPage Schema for Cities
   const collectionSchema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -88,7 +85,7 @@ async function Page({ params }) {
           __html: JSON.stringify(collectionSchema),
         }}
       />
-      <CitiesPage stateData={stateData} stateCities={stateCities} />
+      <CitiesPage stateData={stateData} stateCities={sortedCities} />
       <BranchBoundBanner />
     </>
   );

@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
 import { buildSitemapEntries } from "@/lib/seo/sitemap";
+import { fetchAllCities } from "@/lib/api/location";
+import { fetchPrimaryCategories } from "@/lib/api/categories";
 
 export async function GET() {
   const baseUrl = "https://radiatorrepairhub.com";
   const currentDate = new Date().toISOString();
-  const allPages = buildSitemapEntries(currentDate);
+  const [{ data: cities }, { data: primaryCategories }] = await Promise.all([
+    fetchAllCities(),
+    fetchPrimaryCategories(),
+  ]);
+  const allPages = buildSitemapEntries(
+    currentDate,
+    cities || [],
+    primaryCategories || []
+  );
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

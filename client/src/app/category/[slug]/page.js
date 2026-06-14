@@ -1,18 +1,14 @@
 import React from "react";
 import CategoryBusinessesPage from "@/components/pages/category/CategoryBusinessesPage";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
-import PRIMARY_CATEGORIES from "@/lib/data/primary_categories";
 import { notFound } from "next/navigation";
+import { fetchPrimaryCategoryBySlug } from "@/lib/api/categories";
 import { CATEGORY_KEYWORDS } from "@/lib/seo/keywords";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
-// Generate metadata for category pages
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-
-  const primaryCategory = PRIMARY_CATEGORIES.find(
-    (c) => c.slug.toLowerCase() === slug.toLowerCase()
-  );
+  const { data: primaryCategory } = await fetchPrimaryCategoryBySlug(slug);
 
   if (!primaryCategory) {
     return {
@@ -51,21 +47,16 @@ async function Page({ params, searchParams }) {
   const { slug } = await params;
   const { page } = await searchParams;
 
-  // Validate slug
-  const primaryCategory = PRIMARY_CATEGORIES.find(
-    (c) => c.slug.toLowerCase() === slug.toLowerCase()
-  );
+  const { data: primaryCategory } = await fetchPrimaryCategoryBySlug(slug);
   if (!slug || !primaryCategory) {
     return notFound();
   }
 
-  // Validate page
   let formattedPage = 1;
   if (page && !isNaN(page) && page >= 1 && page <= 20) {
     formattedPage = parseInt(page);
   }
 
-  // CollectionPage Schema
   const collectionSchema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
