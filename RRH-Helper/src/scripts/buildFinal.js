@@ -4,13 +4,16 @@ import { fileURLToPath } from "url";
 import { randomUUID } from "crypto";
 import slugify from "slugify";
 import { formatBusiness } from "./format.js";
+import { FLOW_PATHS, ensureFlowDirs } from "./flowPaths.js";
+
+ensureFlowDirs();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
-const RAW_DIR = path.join(ROOT, "raw");
 const SUPABASE_DIR = path.join(ROOT, "supabase");
 
-const INPUT_FILE = path.join(RAW_DIR, "start.json");
+const INPUT_FILE = FLOW_PATHS.enriched;
+const OUTPUT_FILE = FLOW_PATHS.final;
 
 const FINAL_FIELDS = [
   "id",
@@ -99,9 +102,17 @@ function loadJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 }
 
-function writeRawJson(filename, data) {
-  fs.mkdirSync(RAW_DIR, { recursive: true });
-  fs.writeFileSync(path.join(RAW_DIR, filename), JSON.stringify(data, null, 2));
+function writeFlowJson(filePath, data) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+function normalizeStateCode(stateCode) {
+  return stateCode?.toString().toUpperCase();
+}
+
+function cityNaturalKey(slug, stateId, stateCode) {
+  return `${slug}|${stateId}|${normalizeStateCode(stateCode)}`;
 }
 
 function makeSlug(name) {
@@ -117,18 +128,22 @@ function normalizePostalCode(zip) {
 
 function buildFinal() {
   if (!fs.existsSync(INPUT_FILE)) {
-    throw new Error(`Input file not found: ${INPUT_FILE}`);
+    throw new Error(
+      `Enriched file not found: ${INPUT_FILE}. Run "npm run enrich" first.`
+    );
   }
 
-  const startData = loadJson(INPUT_FILE);
-  const unenrichedCount = startData.filter((b) => !b.enriched?.description).length;
+  const enrichedData = loadJson(INPUT_FILE);
+  const unenrichedCount = enrichedData.filter((b) => {
+    return !b?.enriched
+  }).length;
   if (unenrichedCount > 0) {
     console.warn(
       `⚠️ ${unenrichedCount} businesses have no enrichment. Run "npm run enrich" first.`
     );
   }
 
-  const businesses = startData.map(formatBusiness);
+  const businesses = enrichedData.map(formatBusiness);
   const states = loadJson(path.join(SUPABASE_DIR, "states.json"));
   const cities = loadJson(path.join(SUPABASE_DIR, "cities.json"));
   const postalCodes = loadJson(path.join(SUPABASE_DIR, "postal_codes.json"));
@@ -154,22 +169,39 @@ function buildFinal() {
   const stateCodeMap = Object.fromEntries(
     states.map((s) => [s.code.toLowerCase(), s])
   );
+  const stateIdToCode = Object.fromEntries(
+    states.map((s) => [s.id, normalizeStateCode(s.code)])
+  );
 
   const cityMap = {};
   cities.forEach((c) => {
-    cityMap[`${c.name.toLowerCase()}|${c.state_id}`] = c;
+    const stateCode = stateIdToCode[c.state_id];
+    if (!stateCode) return;
+    cityMap[cityNaturalKey(c.slug, c.state_id, stateCode)] = c;
+  });
+
+  const cityIdToSlug = Object.fromEntries(cities.map((c) => [c.id, c.slug]));
+  const cityIdToMeta = {};
+  cities.forEach((c) => {
+    const stateCode = stateIdToCode[c.state_id];
+    if (!stateCode) return;
+    cityIdToMeta[c.id] = { slug: c.slug, stateId: c.state_id, stateCode };
   });
 
   const postalCodeMap = {};
   postalCodes.forEach((p) => {
-    postalCodeMap[`${p.city_id}|${p.code.toString().toLowerCase()}`] = p;
+    const meta = cityIdToMeta[p.city_id];
+    if (!meta) return;
+    postalCodeMap[
+      `${meta.slug}|${meta.stateCode}|${p.code.toString().toLowerCase()}`
+    ] = p;
   });
 
   const primaryMap = Object.fromEntries(
-    primaryCategories.map((p) => [p.name.toLowerCase(), p])
+    primaryCategories.map((p) => [p.slug, p])
   );
   const secondaryMap = Object.fromEntries(
-    secondaryCategories.map((s) => [s.name.toLowerCase(), s])
+    secondaryCategories.map((s) => [s.slug, s])
   );
 
   const newCities = [];
@@ -178,18 +210,23 @@ function buildFinal() {
   const newPostalCodes = [];
   const final = [];
 
-  function resolveCity(name, stateId) {
-    const key = `${name.trim().toLowerCase()}|${stateId}`;
+  function resolveCity(name, state) {
+    const slug = makeSlug(name);
+    const stateCode = normalizeStateCode(state.code);
+    const key = cityNaturalKey(slug, state.id, stateCode);
     if (cityMap[key]) return cityMap[key];
 
     const city = {
       id: randomUUID(),
       name: name.trim(),
-      state_id: stateId,
-      slug: makeSlug(name),
+      state_id: state.id,
+      state_code: state.code,
+      slug,
     };
 
     cityMap[key] = city;
+    cityIdToSlug[city.id] = slug;
+    cityIdToMeta[city.id] = { slug, stateId: state.id, stateCode };
     newCities.push(city);
     return city;
   }
@@ -197,46 +234,50 @@ function buildFinal() {
   function resolvePrimaryCategory(name) {
     if (!name) return null;
 
-    const key = name.trim().toLowerCase();
-    if (primaryMap[key]) return primaryMap[key];
+    const slug = makeSlug(name);
+    if (primaryMap[slug]) return primaryMap[slug];
 
     const category = {
       id: randomUUID(),
       name: name.trim(),
-      slug: makeSlug(name),
+      slug,
     };
 
-    primaryMap[key] = category;
+    primaryMap[slug] = category;
     newPrimaryCategories.push(category);
     return category;
   }
 
   function resolveSecondaryCategory(name) {
-    const key = name.trim().toLowerCase();
-    if (secondaryMap[key]) return secondaryMap[key];
+    const slug = makeSlug(name);
+    if (secondaryMap[slug]) return secondaryMap[slug];
 
     const category = {
       id: randomUUID(),
       name: name.trim(),
-      slug: makeSlug(name),
+      slug,
     };
 
-    secondaryMap[key] = category;
+    secondaryMap[slug] = category;
     newSecondaryCategories.push(category);
     return category;
   }
 
-  function resolvePostalCode(code, cityId) {
-    if (!code || !cityId) return null;
+  function resolvePostalCode(code, city, state) {
+    if (!code || !city) return null;
 
     const normalized = normalizePostalCode(code);
-    const key = `${cityId}|${normalized.toString().toLowerCase()}`;
+    const key = `${city.slug}|${normalizeStateCode(state.code)}|${normalized
+      .toString()
+      .toLowerCase()}`;
     if (postalCodeMap[key]) return postalCodeMap[key];
 
     const postalCode = {
       id: randomUUID(),
       code: normalized,
-      city_id: cityId,
+      city_id: city.id,
+      city_slug: city.slug,
+      state_code: state.code,
     };
 
     postalCodeMap[key] = postalCode;
@@ -262,8 +303,8 @@ function buildFinal() {
       continue;
     }
 
-    const city = resolveCity(biz.city, state.id);
-    const postalCode = resolvePostalCode(biz.postal_code, city.id);
+    const city = resolveCity(biz.city, state);
+    const postalCode = resolvePostalCode(biz.postal_code, city, state);
     const primaryCategory = resolvePrimaryCategory(biz.category_name);
 
     const secondaryCategoryIds = [];
@@ -293,13 +334,15 @@ function buildFinal() {
     );
   }
 
-  writeRawJson("final.json", final);
-  writeRawJson("new_cities.json", newCities);
-  writeRawJson("new_primary_categories.json", newPrimaryCategories);
-  writeRawJson("new_secondary_categories.json", newSecondaryCategories);
-  writeRawJson("new_postal_codes.json", newPostalCodes);
+  writeFlowJson(OUTPUT_FILE, final);
+  writeFlowJson(FLOW_PATHS.newCities, newCities);
+  writeFlowJson(FLOW_PATHS.newPrimaryCategories, newPrimaryCategories);
+  writeFlowJson(FLOW_PATHS.newSecondaryCategories, newSecondaryCategories);
+  writeFlowJson(FLOW_PATHS.newPostalCodes, newPostalCodes);
 
-  console.log(`✅ Processed ${final.length} businesses → raw/final.json`);
+  console.log(
+    `📄 Created final.json from enrich/enriched.json (${final.length} businesses)`
+  );
   console.log(`   New cities: ${newCities.length}`);
   console.log(`   New primary categories: ${newPrimaryCategories.length}`);
   console.log(`   New secondary categories: ${newSecondaryCategories.length}`);

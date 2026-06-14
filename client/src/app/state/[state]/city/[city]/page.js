@@ -1,8 +1,13 @@
 import React from "react";
+import { notFound } from "next/navigation";
 
 // Components
 import BusinessesContainer from "@/components/businesses/BusinessesContainer";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
+
+// Data
+import STATES from "@/lib/data/states";
+import { fetchCityBySlug } from "@/lib/api/location";
 
 export async function generateStaticParams() {
   const topCities = [
@@ -19,14 +24,22 @@ export async function generateStaticParams() {
 // Generate metadata for city pages
 export async function generateMetadata({ params }) {
   const { state, city } = await params;
+  const stateCode = state.toUpperCase();
+  const stateData = STATES.find((s) => s.code === stateCode);
 
-  // Convert slug to readable format
-  const cityName = city
+  let cityName = city
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-  const stateName = state.toUpperCase();
+  if (stateData) {
+    const { data: cityData } = await fetchCityBySlug(stateData.id, city);
+    if (cityData?.name) {
+      cityName = cityData.name;
+    }
+  }
+
+  const stateName = stateCode;
 
   const title = `Radiator Repair in ${cityName}, ${stateName} | Find Auto Repair Shops - RadiatorRepairHub`;
   const description = `Find trusted radiator repair services in ${cityName}, ${stateName}. Browse our directory of verified auto repair shops, mechanics, and cooling system specialists. Compare services, read reviews, and connect with certified professionals.`;
@@ -52,21 +65,23 @@ export async function generateMetadata({ params }) {
 async function Page({ params, searchParams }) {
   const { state, city } = await params;
   const searchParamsData = await searchParams;
+  const stateCode = state.toUpperCase();
 
-  // Convert slug to readable format for schema
-  const cityName = city
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+  const stateData = STATES.find((s) => s.code === stateCode);
+  if (!stateData) {
+    return notFound();
+  }
 
-  const stateName = state.toUpperCase();
+  const { data: cityData } = await fetchCityBySlug(stateData.id, city);
+  if (!cityData) {
+    return notFound();
+  }
 
-  // CollectionPage Schema for City
   const collectionSchema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `Radiator Repair Services in ${cityName}, ${stateName}`,
-    description: `Directory of radiator repair shops and auto repair services in ${cityName}, ${stateName}`,
+    name: `Radiator Repair Services in ${cityData.name}, ${stateCode}`,
+    description: `Directory of radiator repair shops and auto repair services in ${cityData.name}, ${stateCode}`,
     url: `https://radiatorrepairhub.com/state/${state}/city/${city}`,
     isPartOf: {
       "@id": "https://radiatorrepairhub.com/#website",
@@ -76,10 +91,10 @@ async function Page({ params, searchParams }) {
       serviceType: "Radiator Repair",
       areaServed: {
         "@type": "City",
-        name: cityName,
+        name: cityData.name,
         containedInPlace: {
           "@type": "State",
-          name: stateName,
+          name: stateData.name,
         },
       },
     },
@@ -94,8 +109,8 @@ async function Page({ params, searchParams }) {
         }}
       />
       <BusinessesContainer
-        state={state}
-        city={city}
+        stateData={stateData}
+        cityData={cityData}
         searchParams={searchParamsData}
       />
     </>

@@ -1,15 +1,16 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import Anthropic from "@anthropic-ai/sdk";
 import dotenv from "dotenv";
+import { FLOW_PATHS, ensureFlowDirs } from "./flowPaths.js";
 
 dotenv.config();
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.join(__dirname, "..");
-const RAW_DIR = path.join(ROOT, "raw");
-const INPUT_FILE = path.join(RAW_DIR, "start.json");
+ensureFlowDirs();
+
+const FILTERED_FILE = FLOW_PATHS.filtered;
+const ENRICHED_FILE = FLOW_PATHS.enriched;
+const ENRICH_DIR = path.dirname(ENRICHED_FILE);
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-4-20250514";
@@ -19,9 +20,52 @@ function loadJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 }
 
-function saveStartJson(businesses) {
-  fs.mkdirSync(RAW_DIR, { recursive: true });
-  fs.writeFileSync(INPUT_FILE, JSON.stringify(businesses, null, 2));
+function saveEnrichedJson(businesses) {
+  fs.mkdirSync(ENRICH_DIR, { recursive: true });
+  fs.writeFileSync(ENRICHED_FILE, JSON.stringify(businesses, null, 2));
+}
+
+function mergeWithExistingEnrichment(filtered, existing = []) {
+  const enrichedByPlaceId = new Map(
+    existing.filter((b) => b.placeId).map((b) => [b.placeId, b])
+  );
+
+  return filtered.map((business) => {
+    const existingBiz = business.placeId
+      ? enrichedByPlaceId.get(business.placeId)
+      : null;
+
+    if (existingBiz?.enriched?.description) {
+      return { ...business, enriched: existingBiz.enriched };
+    }
+
+    return business;
+  });
+}
+
+function prepareEnrichedFile() {
+  if (!fs.existsSync(FILTERED_FILE)) {
+    throw new Error(
+      `Filtered file not found: ${FILTERED_FILE}. Run "npm run filter" first.`
+    );
+  }
+
+  const filtered = loadJson(FILTERED_FILE);
+  const isNewFile = !fs.existsSync(ENRICHED_FILE);
+  const existing = isNewFile ? [] : loadJson(ENRICHED_FILE);
+  const merged = mergeWithExistingEnrichment(filtered, existing);
+
+  saveEnrichedJson(merged);
+
+  if (isNewFile) {
+    console.log(
+      `📄 Created enriched.json from filter/start.json (${merged.length} businesses)`
+    );
+  } else {
+    console.log(`📋 Synced enriched.json with filter/start.json (${merged.length} businesses)`);
+  }
+
+  return merged;
 }
 
 function buildPrompt(business) {
@@ -94,20 +138,16 @@ async function enrichOne(business) {
 }
 
 export async function enrichBusinesses() {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new Error("ANTHROPIC_API_KEY is not set in .env");
-  }
-
-  if (!fs.existsSync(INPUT_FILE)) {
-    throw new Error(`Input file not found: ${INPUT_FILE}`);
-  }
-
-  const businesses = loadJson(INPUT_FILE);
+  const businesses = prepareEnrichedFile();
   const pending = businesses.filter((b) => !isEnriched(b));
 
   if (pending.length === 0) {
     console.log("✅ All businesses already enriched");
     return businesses;
+  }
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error("ANTHROPIC_API_KEY is not set in .env");
   }
 
   console.log(
@@ -138,11 +178,11 @@ export async function enrichBusinesses() {
       }
     }
 
-    saveStartJson(businesses);
+    saveEnrichedJson(businesses);
     console.log(`💾 Progress saved (${enrichedCount}/${pending.length})`);
   }
 
-  console.log(`✅ Enrichment complete → ${INPUT_FILE}`);
+  console.log(`✅ Enrichment complete → ${ENRICHED_FILE}`);
   return businesses;
 }
 

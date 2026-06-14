@@ -2,11 +2,12 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { Parser } from "json2csv";
+import { FLOW_PATHS } from "../flowPaths.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const inputPath = path.join(__dirname, "../../raw/start.json");
-const outputPath = path.join(__dirname, "../../raw/start.csv");
+const inputPath = FLOW_PATHS.filtered;
+const outputPath = path.join(path.dirname(inputPath), "start.csv");
 
 function serializeForCsv(value) {
   if (value === null || value === undefined) return "";

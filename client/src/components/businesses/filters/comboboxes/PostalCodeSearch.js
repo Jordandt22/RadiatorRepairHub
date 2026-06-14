@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useMemo, useState, useRef, useEffect } from "react";
+import useSWR from "swr";
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
 
-// Data
-import POSTAL_CODES from "@/lib/data/postal_codes.json";
-import CITIES from "@/lib/data/cities.json";
+// Utils
+import { getFetcher } from "@/lib/utils/utils";
+import { getLocationApiUrl } from "@/lib/api/location";
 
 function PostalCodeSearch({ stateData }) {
   const { filters, updateFilter } = useFilters();
@@ -19,48 +20,38 @@ function PostalCodeSearch({ stateData }) {
   const dropdownRef = useRef(null);
   const optionRefs = useRef([]);
 
-  // Filter postal codes based on selected state or city
-  const postalCodesData = useMemo(() => {
-    // If a city is selected (from URL or filter), show only postal codes for that city
-    if (filters.city_id) {
-      return POSTAL_CODES.filter(
-        (postal) => postal.city_id === filters.city_id
-      );
-    }
+  const cityId = filters.city_id;
+  const stateId = stateData?.id || filters.state_id;
 
-    // If a state is selected (from URL or filter), show postal codes for all cities in that state
-    if (stateData?.id || filters.state_id) {
-      const stateId = stateData?.id || filters.state_id;
-      // Get all cities in the selected state
-      const citiesInState = CITIES.filter((city) => city.state_id === stateId);
-      const cityIds = citiesInState.map((city) => city.id);
+  const postalCodesUrl = cityId
+    ? getLocationApiUrl(`/cities/${cityId}/postal-codes`)
+    : stateId
+    ? getLocationApiUrl(`/states/${stateId}/postal-codes`)
+    : null;
 
-      // Return postal codes for those cities
-      return POSTAL_CODES.filter((postal) => cityIds.includes(postal.city_id));
-    }
+  const { data } = useSWR(postalCodesUrl, getFetcher, {
+    revalidateOnFocus: false,
+    revalidateIfStale: false,
+  });
 
-    // If no state or city is selected, show all postal codes
-    return POSTAL_CODES;
-  }, [filters.city_id, filters.state_id, stateData]);
+  const postalCodesData = useMemo(() => data?.data || [], [data]);
 
-  // Filter options based on search term
   const filteredOptions = useMemo(() => {
     if (searchTerm.trim() === "") {
       return postalCodesData;
     }
     return postalCodesData.filter((option) =>
-      option.code.toLowerCase().includes(searchTerm.toLowerCase())
+      option.code.toString().toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, postalCodesData]);
 
-  // Get the selected option from URL
   useEffect(() => {
     const defaultSelectedOption = postalCodesData.find(
       (option) => option.id === filters.postal_code_id
     );
     if (defaultSelectedOption) {
       setSelectedOption(defaultSelectedOption);
-      setSearchTerm(defaultSelectedOption.code);
+      setSearchTerm(defaultSelectedOption.code.toString());
     } else {
       setSelectedOption(null);
       setSearchTerm("");
@@ -68,7 +59,6 @@ function PostalCodeSearch({ stateData }) {
     }
   }, [filters.postal_code_id, postalCodesData]);
 
-  // Scroll highlighted option into view
   useEffect(() => {
     if (isOpen && optionRefs.current[highlightedIndex]) {
       optionRefs.current[highlightedIndex].scrollIntoView({
@@ -78,41 +68,32 @@ function PostalCodeSearch({ stateData }) {
     }
   }, [highlightedIndex, isOpen]);
 
-  // Handle input change
   const handleInputChange = (e) => {
     let value = e.target.value;
-
-    // Only allow numbers for postal codes
     value = value.replace(/[^0-9]/g, "");
 
     setSearchTerm(value);
     setIsOpen(true);
     setHighlightedIndex(0);
 
-    // If user clears the input, clear the filter
     if (value === "") {
       updateFilter("postal_code_id", "");
     }
   };
 
-  // Handle option selection
   const handleOptionSelect = (option) => {
-    // Find the city for this postal code
-    const city = CITIES.find((c) => c.id === option.city_id);
+    const city = option.city;
 
-    // Auto-populate city and state
     if (city) {
       updateFilter("city_id", city.id);
       updateFilter("state_id", city.state_id);
     }
 
-    // Set the postal code
     updateFilter("postal_code_id", option.id);
-    setSearchTerm(option.code);
+    setSearchTerm(option.code.toString());
     setIsOpen(false);
   };
 
-  // Handle clear input
   const handleClearInput = () => {
     setSearchTerm("");
     updateFilter("postal_code_id", "");
@@ -120,39 +101,30 @@ function PostalCodeSearch({ stateData }) {
     inputRef.current?.focus();
   };
 
-  // Handle input focus
   const handleInputFocus = () => {
     setIsOpen(true);
     if (selectedOption) {
-      setSearchTerm(selectedOption.code);
+      setSearchTerm(selectedOption.code.toString());
     }
     setHighlightedIndex(0);
   };
 
-  // Handle input blur
   const handleInputBlur = () => {
-    // Delay closing to allow option click
     setTimeout(() => {
       if (!dropdownRef.current?.contains(document.activeElement)) {
         setIsOpen(false);
-        // Reset search term to selected option if no selection was made
-        if (selectedOption && searchTerm !== selectedOption.code) {
-          setSearchTerm(selectedOption.code);
-        } else if (!selectedOption && searchTerm.trim() !== "") {
-          // If no valid option selected but has text, keep it to show invalid state
-          // This will trigger the red border
+        if (selectedOption && searchTerm !== selectedOption.code.toString()) {
+          setSearchTerm(selectedOption.code.toString());
         }
       }
     }, 150);
   };
 
-  // Check if input is invalid (has text but no matching valid selection)
   const isInvalid =
     searchTerm.trim() !== "" &&
-    (!selectedOption || searchTerm !== selectedOption.code) &&
+    (!selectedOption || searchTerm !== selectedOption.code.toString()) &&
     !isOpen;
 
-  // Handle key navigation
   const handleKeyDown = (e) => {
     if (!isOpen) return;
 
@@ -185,7 +157,6 @@ function PostalCodeSearch({ stateData }) {
         ) {
           handleOptionSelect(filteredOptions[highlightedIndex]);
         } else if (filteredOptions.length > 0) {
-          // If no option is highlighted, select the first one
           handleOptionSelect(filteredOptions[0]);
         }
         break;
@@ -209,15 +180,17 @@ function PostalCodeSearch({ stateData }) {
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           onKeyDown={handleKeyDown}
-          placeholder="Search postal codes..."
-          className={`w-full px-3 py-2 pr-10 border-2 rounded-md outline-none duration-200 ${
+          placeholder={
+            postalCodesUrl ? "Search postal codes..." : "Select a state first"
+          }
+          disabled={!postalCodesUrl}
+          className={`w-full px-3 py-2 pr-10 border-2 rounded-md outline-none duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed ${
             isInvalid
               ? "border-red-500 focus:border-red-500"
               : "border-gray-200 focus:border-blue-500"
           }`}
         />
 
-        {/* Clear Icon */}
         {searchTerm && (
           <div className="absolute inset-y-0 right-0 flex items-center pr-3">
             <button
@@ -237,7 +210,6 @@ function PostalCodeSearch({ stateData }) {
           </div>
         )}
 
-        {/* Dropdown Options */}
         {isOpen && (
           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
             {filteredOptions.length > 0 ? (

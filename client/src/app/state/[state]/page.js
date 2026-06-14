@@ -1,6 +1,6 @@
 import React from "react";
+import { notFound } from "next/navigation";
 import STATES from "@/lib/data/states";
-
 // Components
 import BusinessesContainer from "@/components/businesses/BusinessesContainer";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
@@ -52,9 +52,7 @@ async function Page({ params, searchParams }) {
   const stateData = STATES.find((s) => s.code === state.toUpperCase());
 
   if (!stateData) {
-    return (
-      <BusinessesContainer state={state} searchParams={searchParamsData} />
-    );
+    return notFound();
   }
 
   // CollectionPage Schema for State
@@ -86,7 +84,10 @@ async function Page({ params, searchParams }) {
           __html: JSON.stringify(collectionSchema),
         }}
       />
-      <BusinessesContainer state={state} searchParams={searchParamsData} />
+      <BusinessesContainer
+        stateData={stateData}
+        searchParams={searchParamsData}
+      />
     </>
   );
 }

@@ -1,15 +1,26 @@
-import React from "react";
+"use client";
 
-// Data
-import CITIES from "@/lib/data/cities";
+import React from "react";
+import useSWR from "swr";
+
+// Utils
+import { getFetcher } from "@/lib/utils/utils";
+import { getLocationApiUrl } from "@/lib/api/location";
 
 // Components
 import FilterDropdown from "../inputs/FilterDropdown";
 
 function CitiesDropdown({ stateData }) {
-  const citiesData = stateData
-    ? CITIES.filter((city) => city.state_id === stateData?.id)
-    : CITIES;
+  const citiesUrl = stateData?.id
+    ? getLocationApiUrl(`/states/${stateData.id}/cities`)
+    : getLocationApiUrl("/cities");
+
+  const { data } = useSWR(citiesUrl, getFetcher, {
+    revalidateOnFocus: false,
+    revalidateIfStale: false,
+  });
+
+  const citiesData = data?.data || [];
 
   return (
     <FilterDropdown

@@ -1,12 +1,14 @@
-import PRIMARY_CATEGORIES from "@/lib/data/primary_categories";
 import STATES from "@/lib/data/states";
-import CITIES from "@/lib/data/cities";
 
 const stateCodeById = Object.fromEntries(
   STATES.map((state) => [state.id, state.code])
 );
 
-export function buildSitemapEntries(currentDate) {
+export function buildSitemapEntries(
+  currentDate,
+  cities = [],
+  primaryCategories = []
+) {
   const staticPages = [
     { url: "", changeFrequency: "weekly", priority: 1.0 },
     { url: "/categories", changeFrequency: "weekly", priority: 0.9 },
@@ -21,7 +23,7 @@ export function buildSitemapEntries(currentDate) {
     { url: "/terms", changeFrequency: "yearly", priority: 0.3 },
   ].map((page) => ({ ...page, lastModified: currentDate }));
 
-  const categoryPages = PRIMARY_CATEGORIES.map((category) => ({
+  const categoryPages = primaryCategories.map((category) => ({
     url: `/category/${category.slug}`,
     lastModified: currentDate,
     changeFrequency: "weekly",
@@ -44,17 +46,19 @@ export function buildSitemapEntries(currentDate) {
     priority: 0.6,
   }));
 
-  const cityPages = CITIES.map((city) => {
-    const stateCode = stateCodeById[city.state_id];
-    if (!stateCode) return null;
+  const cityPages = cities
+    .map((city) => {
+      const stateCode = stateCodeById[city.state_id];
+      if (!stateCode) return null;
 
-    return {
-      url: `/state/${stateCode}/city/${city.slug}`,
-      lastModified: currentDate,
-      changeFrequency: "weekly",
-      priority: majorStates.has(stateCode) ? 0.8 : 0.6,
-    };
-  }).filter(Boolean);
+      return {
+        url: `/state/${stateCode}/city/${city.slug}`,
+        lastModified: currentDate,
+        changeFrequency: "weekly",
+        priority: majorStates.has(stateCode) ? 0.8 : 0.6,
+      };
+    })
+    .filter(Boolean);
 
   return [
     ...staticPages,

@@ -6,9 +6,6 @@ import { usePathname } from "next/navigation";
 // Data
 import FEATURES from "@/lib/data/features";
 import STATES from "@/lib/data/states";
-import CITIES from "@/lib/data/cities";
-import PRIMARY_CATEGORIES from "@/lib/data/primary_categories";
-import SECONDARY_CATEGORIES from "@/lib/data/secondary_categories";
 
 // Utils
 import {
@@ -17,6 +14,7 @@ import {
   validateNumber,
   validateBoolean,
   formatFeatures,
+  parseIdListParam,
 } from "@/lib/utils/utils";
 
 // Contexts
@@ -123,27 +121,24 @@ function ContentWrapper({ stateData, cityData, searchParams }) {
 
       // Validate Primary Category
       if (key === "primary_category_id") {
-        formattedFilters.primary_category_id = validateID(
-          value,
-          PRIMARY_CATEGORIES,
-          "id"
-        );
+        formattedFilters.primary_category_id =
+          typeof value === "string" ? value.trim() : "";
       }
 
       // Validate Secondary Categories
       if (key === "secondary_categories") {
-        formattedFilters.secondary_categories = validateArray(
-          SECONDARY_CATEGORIES,
-          "id",
-          formattedFilters,
-          "secondary_categories",
-          value
-        );
+        const fromUrl = parseIdListParam(value, 5);
+        const merged = [...(formattedFilters.secondary_categories || [])];
+        fromUrl.forEach((id) => {
+          if (!merged.includes(id)) merged.push(id);
+        });
+        formattedFilters.secondary_categories = merged.slice(0, 5);
       }
 
       // Validate City ID
       if (key === "city_id" && !cityData) {
-        formattedFilters.city_id = validateID(value, CITIES, "id");
+        formattedFilters.city_id =
+          typeof value === "string" ? value.trim() : "";
       }
 
       // Validate State ID

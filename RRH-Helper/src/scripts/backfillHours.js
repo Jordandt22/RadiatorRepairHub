@@ -4,11 +4,12 @@ import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 import { buildBusinessHoursRows } from "./supabase.js";
+import { FLOW_PATHS } from "./flowPaths.js";
 
 dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FINAL_FILE = path.join(__dirname, "..", "raw", "final.json");
+const FINAL_FILE = FLOW_PATHS.final;
 
 const supabaseUrl =
   process.env.NODE_ENV === "development"

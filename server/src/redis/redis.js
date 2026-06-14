@@ -114,11 +114,6 @@ export const getCountBusinessesByStateKey = (state_id) => ({
 });
 
 // City Businesses
-export const getCityBySlugKey = (city_slug, state_id) => ({
-  key: `CITY?CITY-SLUG:${city_slug}&STATE-ID:${state_id}`,
-  interval: 60 * 60 * 24 * 7,
-});
-
 export const getBusinessesByCityKey = (city_id, state_id, page, limit) => ({
   key: `CITY_BUSINESSES?CITY-ID:${city_id}&STATE-ID:${state_id}&PAGE:${page}&LIMIT:${limit}`,
   interval: 60 * 60 * 24 * 7,
@@ -170,6 +165,21 @@ export const getPostalCodesKey = (city_id) => ({
   interval: 60 * 60 * 24 * 7,
 });
 
+export const getAllCitiesKey = () => ({
+  key: `ALL_CITIES`,
+  interval: 60 * 60 * 24 * 7,
+});
+
+export const getCityBySlugKey = (state_id, city_slug) => ({
+  key: `CITY?CITY-SLUG:${city_slug}&STATE-ID:${state_id}`,
+  interval: 60 * 60 * 24 * 7,
+});
+
+export const getPostalCodesByStateKey = (state_id) => ({
+  key: `STATE?STATE-ID:${state_id}&POSTAL_CODES`,
+  interval: 60 * 60 * 24 * 7,
+});
+
 // --- Categories ----
 export const getPrimaryCategoriesKey = () => ({
   key: `PRIMARY_CATEGORIES`,
@@ -178,5 +188,10 @@ export const getPrimaryCategoriesKey = () => ({
 
 export const getSecondaryCategoriesKey = () => ({
   key: `SECONDARY_CATEGORIES`,
+  interval: 60 * 60 * 24 * 7,
+});
+
+export const getPrimaryCategoryBySlugKey = (slug) => ({
+  key: `PRIMARY_CATEGORY?SLUG:${slug}`,
   interval: 60 * 60 * 24 * 7,
 });
