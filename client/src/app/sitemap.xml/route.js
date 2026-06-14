@@ -3,17 +3,29 @@ import { buildSitemapEntries } from "@/lib/seo/sitemap";
 import { fetchAllCities } from "@/lib/api/location";
 import { fetchPrimaryCategories } from "@/lib/api/categories";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const baseUrl = "https://radiatorrepairhub.com";
   const currentDate = new Date().toISOString();
-  const [{ data: cities }, { data: primaryCategories }] = await Promise.all([
+
+  const [citiesResult, categoriesResult] = await Promise.all([
     fetchAllCities(),
     fetchPrimaryCategories(),
   ]);
+
+  if (citiesResult.error) {
+    console.warn("Sitemap: failed to fetch cities", citiesResult.error);
+  }
+
+  if (categoriesResult.error) {
+    console.warn("Sitemap: failed to fetch categories", categoriesResult.error);
+  }
+
   const allPages = buildSitemapEntries(
     currentDate,
-    cities || [],
-    primaryCategories || []
+    citiesResult.data || [],
+    categoriesResult.data || []
   );
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

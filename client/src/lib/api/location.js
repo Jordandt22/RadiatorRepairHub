@@ -1,27 +1,7 @@
-const REVALIDATE_SECONDS = 60 * 60 * 24;
+import { fetchApi, getApiUri } from "./fetchApi";
 
-function getApiUri() {
-  return process.env.NEXT_PUBLIC_API_URI || process.env.API_URI;
-}
-
-async function fetchLocation(path, options = {}) {
-  const apiUri = getApiUri();
-  if (!apiUri) {
-    throw new Error("Missing NEXT_PUBLIC_API_URI or API_URI");
-  }
-
-  const response = await fetch(`${apiUri}/location${path}`, {
-    ...options,
-    next: { revalidate: REVALIDATE_SECONDS, ...options.next },
-  });
-
-  const json = await response.json();
-
-  if (!response.ok || json.error) {
-    return { data: null, error: json.error, status: response.status };
-  }
-
-  return { data: json.data, error: null, status: response.status };
+async function fetchLocation(path, options) {
+  return fetchApi(`/location${path}`, options);
 }
 
 export async function fetchAllCities(options) {
@@ -45,5 +25,8 @@ export async function fetchPostalCodesByStateId(stateId, options) {
 }
 
 export function getLocationApiUrl(path) {
-  return `${getApiUri()}/location${path}`;
+  const apiUri = getApiUri();
+  return apiUri ? `${apiUri}/location${path}` : null;
 }
+
+export { getApiUri };

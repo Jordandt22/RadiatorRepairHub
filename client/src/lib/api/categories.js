@@ -1,27 +1,7 @@
-const REVALIDATE_SECONDS = 60 * 60 * 24;
+import { fetchApi, getApiUri } from "./fetchApi";
 
-function getApiUri() {
-  return process.env.NEXT_PUBLIC_API_URI || process.env.API_URI;
-}
-
-async function fetchCategories(path, options = {}) {
-  const apiUri = getApiUri();
-  if (!apiUri) {
-    throw new Error("Missing NEXT_PUBLIC_API_URI or API_URI");
-  }
-
-  const response = await fetch(`${apiUri}/categories${path}`, {
-    ...options,
-    next: { revalidate: REVALIDATE_SECONDS, ...options.next },
-  });
-
-  const json = await response.json();
-
-  if (!response.ok || json.error) {
-    return { data: null, error: json.error, status: response.status };
-  }
-
-  return { data: json.data, error: null, status: response.status };
+async function fetchCategories(path, options) {
+  return fetchApi(`/categories${path}`, options);
 }
 
 export async function fetchPrimaryCategories(options) {
@@ -37,5 +17,8 @@ export async function fetchSecondaryCategories(options) {
 }
 
 export function getCategoriesApiUrl(path) {
-  return `${getApiUri()}/categories${path}`;
+  const apiUri = getApiUri();
+  return apiUri ? `${apiUri}/categories${path}` : null;
 }
+
+export { getApiUri };
