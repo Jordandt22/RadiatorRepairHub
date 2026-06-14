@@ -5,6 +5,10 @@ import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
 import { useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
+const isPostHogEnabled =
+  process.env.NODE_ENV === "production" &&
+  process.env.NEXT_PUBLIC_POSTHOG_KEY;
+
 function PostHogPageView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -32,6 +36,8 @@ function SuspendedPostHogPageView() {
 
 export function PostHogProvider({ children }) {
   useEffect(() => {
+    if (!isPostHogEnabled) return;
+
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
       person_profiles: "identified_only",
@@ -39,6 +45,10 @@ export function PostHogProvider({ children }) {
       capture_pageleave: true,
     });
   }, []);
+
+  if (!isPostHogEnabled) {
+    return children;
+  }
 
   return (
     <PHProvider client={posthog}>

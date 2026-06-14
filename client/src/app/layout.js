@@ -148,7 +148,7 @@ export default function RootLayout({ children }) {
   };
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Organization Schema */}
         <script
@@ -181,6 +181,7 @@ export default function RootLayout({ children }) {
       </head>
       <body
         className={`${inter.variable} ${oswald.variable} font-sans antialiased`}
+        suppressHydrationWarning
       >
         {/* Google Analytics */}
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
