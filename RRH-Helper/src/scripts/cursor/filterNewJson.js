@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { FLOW_PATHS, ensureFlowDirs } from "../flowPaths.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+ensureFlowDirs();
 
 const FIELDS_TO_KEEP = [
   "title",
@@ -46,9 +46,14 @@ const FIELDS_TO_KEEP = [
   "reviewsDistribution",
 ];
 
-const FOLDER_NAME = "raw"
-const inputPath = path.join(__dirname, `../../${FOLDER_NAME}/new.json`);
-const outputPath = path.join(__dirname, `../../${FOLDER_NAME}/start.json`);
+const inputPath = FLOW_PATHS.newJson;
+const outputPath = FLOW_PATHS.filtered;
+
+if (!fs.existsSync(inputPath)) {
+  console.error(`new.json not found: ${inputPath}`);
+  console.error("Add your scrape data to flow/raw/new.json, then run filter again.");
+  process.exit(1);
+}
 
 const data = JSON.parse(fs.readFileSync(inputPath, "utf-8"));
 
@@ -86,6 +91,7 @@ for (const item of trimmed) {
   });
 }
 
+fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, JSON.stringify(filtered, null, 2));
 
 console.log(

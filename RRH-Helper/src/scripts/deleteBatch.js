@@ -1,16 +1,13 @@
 import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
+import { FLOW_PATHS, ensureFlowDirs } from "./flowPaths.js";
 
 dotenv.config();
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.join(__dirname, "..");
-const RAW_DIR = path.join(ROOT, "raw");
+ensureFlowDirs();
 
-const FINAL_FILE = path.join(RAW_DIR, "final.json");
+const FINAL_FILE = FLOW_PATHS.final;
 
 const supabaseUrl =
   process.env.NODE_ENV === "development"
@@ -86,17 +83,20 @@ async function deleteByIds(table, ids, label) {
 
 async function main() {
   if (!fs.existsSync(FINAL_FILE)) {
-    throw new Error(`final.json not found: ${FINAL_FILE}`);
+    throw new Error(
+      `final.json not found: ${FINAL_FILE}. Run "npm run build-final" first.`
+    );
   }
 
   const businesses = loadJson(FINAL_FILE);
   const placeIds = businesses.map((b) => b.place_id).filter(Boolean);
 
   if (placeIds.length === 0) {
-    throw new Error("No place_id values found in final.json");
+    throw new Error("No place_id values found in flow/final/final.json");
   }
 
-  console.log(`Looking up ${placeIds.length} businesses from final.json...`);
+  console.log(`Reading from flow/final/final.json`);
+  console.log(`Looking up ${placeIds.length} businesses...`);
 
   const { data: dbBusinesses, error: lookupError } = await supabase
     .from("businesses")
@@ -126,32 +126,32 @@ async function main() {
 
   const referenceSets = [
     {
-      file: "new_secondary_categories.json",
+      file: FLOW_PATHS.newSecondaryCategories,
       table: "secondary_categories",
       label: "secondary categories",
     },
     {
-      file: "new_primary_categories.json",
+      file: FLOW_PATHS.newPrimaryCategories,
       table: "primary_categories",
       label: "primary categories",
     },
     {
-      file: "new_postal_codes.json",
+      file: FLOW_PATHS.newPostalCodes,
       table: "postal_codes",
       label: "postal codes",
     },
-    { file: "new_cities.json", table: "cities", label: "cities" },
+    { file: FLOW_PATHS.newCities, table: "cities", label: "cities" },
   ];
 
   for (const { file, table, label } of referenceSets) {
-    const records = loadJson(path.join(RAW_DIR, file));
+    const records = loadJson(file);
     const ids = records.map((r) => r.id).filter(Boolean);
     await deleteByIds(table, ids, label);
   }
 
   console.log("\n✅ Batch delete complete");
   console.log(
-    "Deleted: businesses from final.json, plus rows in new_postal_codes.json, new_cities.json, new_primary_categories.json, and new_secondary_categories.json."
+    "Deleted: businesses from flow/final/final.json, plus rows in flow/final/new_postal_codes.json, new_cities.json, new_primary_categories.json, and new_secondary_categories.json."
   );
   console.log(
     "Not deleted: existing cities like Phoenix (unless listed in new_cities.json), or any data outside this batch."

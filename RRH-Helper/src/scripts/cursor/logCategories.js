@@ -1,10 +1,10 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { FLOW_PATHS } from "../flowPaths.js";
 
-const FOLDER_NAME = "raw"
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const inputPath = path.join(__dirname, `../../${FOLDER_NAME}/start.json`);
+const inputPath = FLOW_PATHS.filtered;
 
 if (!fs.existsSync(inputPath)) {
   console.error(`start.json not found: ${inputPath}`);

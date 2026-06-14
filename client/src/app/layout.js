@@ -2,6 +2,7 @@ import { Inter, Oswald } from "next/font/google";
 import { Toaster } from "sonner";
 import Script from "next/script";
 import "./globals.css";
+import { PostHogProvider } from "./providers";
 
 // Components
 import Navbar from "@/components/layout/Navbar/Navbar";
@@ -199,22 +200,24 @@ export default function RootLayout({ children }) {
           </>
         )}
 
-        <Navbar />
+        <PostHogProvider>
+          <Navbar />
 
-        {children}
+          {children}
 
-        <Footer />
+          <Footer />
 
-        <BackToTop />
+          <BackToTop />
 
-        <Toaster
-          toastOptions={{
-            style: {
-              background: "transparent",
-              boxShadow: "none",
-            },
-          }}
-        />
+          <Toaster
+            toastOptions={{
+              style: {
+                background: "transparent",
+                boxShadow: "none",
+              },
+            }}
+          />
+        </PostHogProvider>
       </body>
     </html>
   );
