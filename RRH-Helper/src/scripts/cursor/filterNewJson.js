@@ -49,6 +49,10 @@ const FIELDS_TO_KEEP = [
 const inputPath = FLOW_PATHS.newJson;
 const outputPath = FLOW_PATHS.filtered;
 
+function isClosed(value) {
+  return value === true || value === "true";
+}
+
 if (!fs.existsSync(inputPath)) {
   console.error(`new.json not found: ${inputPath}`);
   console.error("Add your scrape data to flow/raw/new.json, then run filter again.");
@@ -71,8 +75,11 @@ for (const item of trimmed) {
   const hasPostalCode =
     item.postalCode != null && String(item.postalCode).trim() !== "";
   const hasMinScore = item.totalScore == null || item.totalScore >= 3;
+  const isPermanentlyClosed = isClosed(item.permanentlyClosed);
+  const isTemporarilyClosed = isClosed(item.temporarilyClosed);
+  const isOpen = !isPermanentlyClosed && !isTemporarilyClosed;
 
-  if (hasAddress && hasPostalCode && hasMinScore) {
+  if (hasAddress && hasPostalCode && hasMinScore && isOpen) {
     filtered.push(item);
     continue;
   }
@@ -81,12 +88,16 @@ for (const item of trimmed) {
   if (!hasAddress) reasons.push("missing address");
   if (!hasPostalCode) reasons.push("missing postal code");
   if (!hasMinScore) reasons.push(`totalScore below 3 (${item.totalScore})`);
+  if (isPermanentlyClosed) reasons.push("permanently closed");
+  if (isTemporarilyClosed) reasons.push("temporarily closed");
 
   removed.push({
     title: item.title,
     address: item.address ?? null,
     postalCode: item.postalCode ?? null,
     totalScore: item.totalScore ?? null,
+    permanentlyClosed: item.permanentlyClosed ?? null,
+    temporarilyClosed: item.temporarilyClosed ?? null,
     reason: reasons.join(", "),
   });
 }
