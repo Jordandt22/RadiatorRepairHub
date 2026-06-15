@@ -22,11 +22,22 @@ function Header({ stateData, cityData }) {
     cityData ? cityData.name : stateData.name
   }. Compare services, read reviews, and get your vehicle running smoothly.`;
 
+  const headerLink = cityData
+    ? {
+        label: `Go to ${stateData.name}`,
+        href: `/state/${stateData.code}`,
+      }
+    : {
+        label: "View Cities",
+        href: `/states/${stateData.code}/cities`,
+      };
+
   return (
     <PageHeader
       breadcrumbItems={breadcrumbItems}
       pageTitle={pageTitle}
       pageDescription={pageDescription}
+      headerLink={headerLink}
     />
   );
 }

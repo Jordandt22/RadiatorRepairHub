@@ -8,6 +8,7 @@ import {
   getFeaturedBusinessesKey,
   getCacheData,
   getBusinessBySlugKey,
+  getBusinessSlugsForSitemapKey,
   // getBusinessesByStateKey,
   // getCountBusinessesByStateKey,
   // getCountBusinessesByCityKey,
@@ -25,6 +26,7 @@ import {
   // getCityBySlug,
   searchBusinesses,
   getBusinessBySlug,
+  getBusinessSlugsForSitemap,
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
 
@@ -53,6 +55,30 @@ export const getFeaturedBusinesses = async (req, res) => {
   }
 
   // Cache Data
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getBusinessSlugsForSitemapHandler = async (req, res) => {
+  const { key, interval } = getBusinessSlugsForSitemapKey();
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getBusinessSlugsForSitemap();
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching business slugs for sitemap.",
+          error
+        )
+      );
+  }
+
   await cacheData(key, interval, data);
   res.status(200).json(successHandler(data));
 };

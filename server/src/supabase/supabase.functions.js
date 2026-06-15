@@ -93,6 +93,29 @@ export const getBusinessBySlug = async (business_slug) => {
   return { data: formatFullBusiness(data), error };
 };
 
+export const getBusinessSlugsForSitemap = async () => {
+  const pageSize = 1000;
+  let from = 0;
+  const all = [];
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("slug, scraped_at")
+      .order("slug")
+      .range(from, from + pageSize - 1);
+
+    if (error) return { data: null, error };
+    if (!data?.length) break;
+
+    all.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return { data: all, error: null };
+};
+
 export const countBusinessesByState = async (state_id) => {
   const { count, error } = await supabase
     .from("businesses")

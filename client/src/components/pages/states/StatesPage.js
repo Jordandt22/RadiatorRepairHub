@@ -36,6 +36,10 @@ function StatesPage() {
         breadcrumbItems={breadcrumbItems}
         pageTitle={pageTitle}
         pageDescription={pageDescription}
+        headerLink={{
+          label: "Search",
+          href: "/search",
+        }}
       />
 
       <StatesGrid

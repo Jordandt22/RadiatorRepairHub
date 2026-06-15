@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { buildSitemapEntries } from "@/lib/seo/sitemap";
 import { fetchAllCities } from "@/lib/api/location";
 import { fetchPrimaryCategories } from "@/lib/api/categories";
+import { fetchBusinessSlugsForSitemap } from "@/lib/api/businesses";
 
 export const dynamic = "force-dynamic";
 
@@ -9,9 +10,10 @@ export async function GET() {
   const baseUrl = "https://radiatorrepairhub.com";
   const currentDate = new Date().toISOString();
 
-  const [citiesResult, categoriesResult] = await Promise.all([
+  const [citiesResult, categoriesResult, businessesResult] = await Promise.all([
     fetchAllCities(),
     fetchPrimaryCategories(),
+    fetchBusinessSlugsForSitemap(),
   ]);
 
   if (citiesResult.error) {
@@ -22,10 +24,15 @@ export async function GET() {
     console.warn("Sitemap: failed to fetch categories", categoriesResult.error);
   }
 
+  if (businessesResult.error) {
+    console.warn("Sitemap: failed to fetch businesses", businessesResult.error);
+  }
+
   const allPages = buildSitemapEntries(
     currentDate,
     citiesResult.data || [],
-    categoriesResult.data || []
+    categoriesResult.data || [],
+    businessesResult.data || []
   );
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

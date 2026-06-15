@@ -21,7 +21,7 @@ function CitiesPage({ stateData, stateCities }) {
     { name: "Home", url: "/" },
     { name: "States", url: "/states" },
     { name: stateData.name, url: `/state/${stateData.code}` },
-    { name: "Cities", url: `/state/${stateData.code}/cities` },
+    { name: "Cities", url: `/states/${stateData.code}/cities` },
   ];
 
   const pageTitle = `Radiator Repair Services in ${stateData.name} Cities`;
@@ -34,6 +34,10 @@ function CitiesPage({ stateData, stateCities }) {
         breadcrumbItems={breadcrumbItems}
         pageTitle={pageTitle}
         pageDescription={pageDescription}
+        headerLink={{
+          label: "View States",
+          href: "/states",
+        }}
       />
 
       <CitiesGrid

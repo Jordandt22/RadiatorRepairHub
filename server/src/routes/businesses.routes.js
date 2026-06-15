@@ -3,6 +3,7 @@ import {
   getFeaturedBusinesses,
   getBusiness,
   getSearchedBusinesses,
+  getBusinessSlugsForSitemapHandler,
 } from "../controllers/businesses.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
@@ -22,6 +23,12 @@ const businessesRouter = Router();
 businessesRouter.get(
   "/featured",
   serverErrorCatcherWrapper(getFeaturedBusinesses)
+);
+
+// Get all business slugs for sitemap generation
+businessesRouter.get(
+  "/sitemap-slugs",
+  serverErrorCatcherWrapper(getBusinessSlugsForSitemapHandler)
 );
 
 // Get Business by Slug
