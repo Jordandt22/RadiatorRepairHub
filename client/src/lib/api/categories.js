@@ -1,18 +1,20 @@
 import { fetchApi, getApiUri } from "./fetchApi";
 
-async function fetchCategories(path, options) {
+const REFERENCE_CACHE = { cache: "no-store" };
+
+async function fetchCategories(path, options = REFERENCE_CACHE) {
   return fetchApi(`/categories${path}`, options);
 }
 
-export async function fetchPrimaryCategories(options) {
+export async function fetchPrimaryCategories(options = REFERENCE_CACHE) {
   return fetchCategories("/primary", options);
 }
 
-export async function fetchPrimaryCategoryBySlug(slug, options) {
+export async function fetchPrimaryCategoryBySlug(slug, options = REFERENCE_CACHE) {
   return fetchCategories(`/primary/slug/${slug}`, options);
 }
 
-export async function fetchSecondaryCategories(options) {
+export async function fetchSecondaryCategories(options = REFERENCE_CACHE) {
   return fetchCategories("/secondary", options);
 }
 

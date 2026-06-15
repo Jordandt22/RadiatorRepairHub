@@ -68,13 +68,30 @@ export const deleteCacheDataByPrefix = async (prefix) => {
   if (process.env.NODE_ENV === "development")
     console.log(`REDIS: Deleted All Data from Cache with [${prefix}]`);
 
-  await redisClient.keys(checkKey(prefix) + "*").then(function (keys) {
-    var pipeline = redisClient.pipeline();
-    keys.forEach(function (key) {
-      pipeline.del(checkKey(key));
-    });
-    return pipeline.exec();
+  const keys = await redisClient.keys(checkKey(prefix) + "*");
+  if (keys.length === 0) return;
+
+  const pipeline = redisClient.pipeline();
+  keys.forEach((key) => {
+    pipeline.del(key);
   });
+  await pipeline.exec();
+};
+
+export const REFERENCE_CACHE_PREFIXES = [
+  "ALL_CITIES",
+  "STATE?STATE-ID:",
+  "CITY?CITY-ID:",
+  "CITY?CITY-SLUG:",
+  "PRIMARY_CATEGORIES",
+  "SECONDARY_CATEGORIES",
+  "PRIMARY_CATEGORY?SLUG:",
+];
+
+export const clearReferenceCache = async () => {
+  for (const prefix of REFERENCE_CACHE_PREFIXES) {
+    await deleteCacheDataByPrefix(prefix);
+  }
 };
 
 export const flushDBCache = async () => {
@@ -157,41 +174,41 @@ export const getStatesKey = () => ({
 
 export const getCitiesKey = (state_id) => ({
   key: `STATE?STATE-ID:${state_id}&CITIES`,
-  interval: 60 * 60 * 24 * 7,
+  interval: 60 * 60,
 });
 
 export const getPostalCodesKey = (city_id) => ({
   key: `CITY?CITY-ID:${city_id}&POSTAL_CODES`,
-  interval: 60 * 60 * 24 * 7,
+  interval: 60 * 60,
 });
 
 export const getAllCitiesKey = () => ({
   key: `ALL_CITIES`,
-  interval: 60 * 60 * 24 * 7,
+  interval: 60 * 60,
 });
 
 export const getCityBySlugKey = (state_id, city_slug) => ({
   key: `CITY?CITY-SLUG:${city_slug}&STATE-ID:${state_id}`,
-  interval: 60 * 60 * 24 * 7,
+  interval: 60 * 60,
 });
 
 export const getPostalCodesByStateKey = (state_id) => ({
   key: `STATE?STATE-ID:${state_id}&POSTAL_CODES`,
-  interval: 60 * 60 * 24 * 7,
+  interval: 60 * 60,
 });
 
 // --- Categories ----
 export const getPrimaryCategoriesKey = () => ({
   key: `PRIMARY_CATEGORIES`,
-  interval: 60 * 60 * 24 * 7,
+  interval: 60 * 60,
 });
 
 export const getSecondaryCategoriesKey = () => ({
   key: `SECONDARY_CATEGORIES`,
-  interval: 60 * 60 * 24 * 7,
+  interval: 60 * 60,
 });
 
 export const getPrimaryCategoryBySlugKey = (slug) => ({
   key: `PRIMARY_CATEGORY?SLUG:${slug}`,
-  interval: 60 * 60 * 24 * 7,
+  interval: 60 * 60,
 });
