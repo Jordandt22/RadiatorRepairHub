@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { insertBusinesses } from "./supabase.js";
 import { createSupabaseClient, logSupabaseTarget } from "./supabaseClient.js";
+import { clearReferenceCache } from "./clearReferenceCache.js";
 import { FLOW_PATHS, ensureFlowDirs } from "./flowPaths.js";
 
 ensureFlowDirs();
@@ -409,6 +410,8 @@ async function main() {
   if (!success) {
     process.exit(1);
   }
+
+  await clearReferenceCache();
 
   console.log("✅ Insert complete");
 }

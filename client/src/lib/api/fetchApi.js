@@ -43,11 +43,18 @@ export async function fetchApi(path, options = {}) {
     };
   }
 
+  const { cache, revalidate = REVALIDATE_SECONDS, ...fetchOptions } = options;
+
+  const fetchInit =
+    cache === "no-store"
+      ? { cache: "no-store", ...fetchOptions }
+      : {
+          ...fetchOptions,
+          next: { revalidate, ...fetchOptions.next },
+        };
+
   try {
-    const response = await fetch(`${apiUri}${path}`, {
-      ...options,
-      next: { revalidate: REVALIDATE_SECONDS, ...options.next },
-    });
+    const response = await fetch(`${apiUri}${path}`, fetchInit);
 
     const parsed = await parseJsonResponse(response);
     if (!parsed.ok) {

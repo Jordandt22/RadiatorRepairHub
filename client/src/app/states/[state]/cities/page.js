@@ -8,6 +8,8 @@ import STATES from "@/lib/data/states";
 import { fetchCitiesByStateId } from "@/lib/api/location";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
+export const dynamic = "force-dynamic";
+
 // Generate metadata for cities page
 export async function generateMetadata({ params }) {
   const { state } = await params;
