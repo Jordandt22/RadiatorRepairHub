@@ -86,6 +86,7 @@ export const REFERENCE_CACHE_PREFIXES = [
   "PRIMARY_CATEGORIES",
   "SECONDARY_CATEGORIES",
   "PRIMARY_CATEGORY?SLUG:",
+  "BUSINESS_SITEMAP_SLUGS",
 ];
 
 export const clearReferenceCache = async () => {
@@ -117,6 +118,11 @@ export const getBusinessByIdKey = (business_id) => ({
 export const getBusinessBySlugKey = (business_slug) => ({
   key: `BUSINESS?BUSINESS-SLUG:${business_slug}`,
   interval: 60 * 60 * 24 * 7,
+});
+
+export const getBusinessSlugsForSitemapKey = () => ({
+  key: "BUSINESS_SITEMAP_SLUGS",
+  interval: 60 * 60,
 });
 
 // State Businesses

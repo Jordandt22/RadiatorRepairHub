@@ -7,7 +7,8 @@ const stateCodeById = Object.fromEntries(
 export function buildSitemapEntries(
   currentDate,
   cities = [],
-  primaryCategories = []
+  primaryCategories = [],
+  businesses = []
 ) {
   const staticPages = [
     { url: "", changeFrequency: "weekly", priority: 1.0 },
@@ -60,11 +61,21 @@ export function buildSitemapEntries(
     })
     .filter(Boolean);
 
+  const businessPages = businesses
+    .filter((business) => business.slug)
+    .map((business) => ({
+      url: `/business/${business.slug}`,
+      lastModified: business.scraped_at || currentDate,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    }));
+
   return [
     ...staticPages,
     ...categoryPages,
     ...statePages,
     ...stateCityIndexPages,
     ...cityPages,
+    ...businessPages,
   ];
 }
