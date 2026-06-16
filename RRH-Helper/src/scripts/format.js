@@ -87,6 +87,7 @@ export function formatBusiness(biz) {
     // Location
     latitude: biz.location?.lat || "",
     longitude: biz.location?.lng || "",
+    timezone: biz.timezone ?? null,
 
     // From Additional Fields
     mechanic: false,

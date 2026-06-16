@@ -57,11 +57,7 @@ function MobileBusinessCard({ business }) {
             <span className="text-sm text-gray-500">
               ({business.reviews_count.toLocaleString()})
             </span>
-            <OpenStatus
-              hours={business.hours}
-              latitude={business.latitude}
-              longitude={business.longitude}
-            />
+            <OpenStatus hours={business.hours} timezone={business.timezone} />
           </div>
           <p className="text-sm text-gray-600 mb-4">{business.address}</p>
 

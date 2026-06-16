@@ -47,6 +47,7 @@ export async function insertBusinesses(businessArray) {
     reviews_distribution: normalizeReviewsDistribution(b.reviews_distribution),
     latitude: b.latitude,
     longitude: b.longitude,
+    timezone: b.timezone,
     description: b.description,
     title_tag: b.title_tag,
     meta_description: b.meta_description,

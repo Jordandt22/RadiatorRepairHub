@@ -19,7 +19,10 @@
     "insert-prod": "cross-env RRH_TARGET=prod node src/scripts/insert.js",
     "clear-cache": "node src/scripts/clearReferenceCache.js",
     "delete-batch": "node src/scripts/deleteBatch.js",
-    "backfill-hours": "node src/scripts/backfillHours.js"
+    "backfill-hours": "node src/scripts/backfillHours.js",
+    "backfill-timezones": "npm run backfill-timezones-dev",
+    "backfill-timezones-dev": "cross-env RRH_TARGET=dev node src/scripts/backfillTimezones.js",
+    "backfill-timezones-prod": "cross-env RRH_TARGET=prod node src/scripts/backfillTimezones.js"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +32,7 @@
     "@anthropic-ai/sdk": "^0.61.0",
     "@supabase/supabase-js": "^2.57.2",
     "dotenv": "^17.2.2",
+    "geo-tz": "^8.1.7",
     "ioredis": "^5.11.1",
     "json2csv": "^6.0.0-alpha.2",
     "slugify": "^1.6.6"

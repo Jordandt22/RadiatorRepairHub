@@ -83,11 +83,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
             {business.primary_category.name}
           </Link>
           <div className="absolute top-3 left-3">
-            <OpenStatus
-              hours={business.hours}
-              latitude={business.latitude}
-              longitude={business.longitude}
-            />
+            <OpenStatus hours={business.hours} timezone={business.timezone} />
           </div>
         </div>
       </div>
