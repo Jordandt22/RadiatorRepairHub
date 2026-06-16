@@ -60,7 +60,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-lg text-gray-700 leading-relaxed">
             When your car&apos;s radiator needs repair, finding a trusted{" "}
-            <strong>radiator repair shop near you</strong> is crucial. Our
+            <strong>radiator repair shop near you</strong>{" "}is crucial. Our
             comprehensive directory connects you with certified specialists who
             can diagnose, repair, and maintain your vehicle&apos;s cooling
             system. From{" "}
