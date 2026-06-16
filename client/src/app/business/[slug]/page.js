@@ -29,16 +29,16 @@ import {
   NOINDEX_ROBOTS,
   INDEX_ROBOTS,
 } from "@/lib/seo/metadata";
+import { fetchBusinessBySlug } from "@/lib/api/businesses";
 
 // Generate metadata for business pages
 export async function generateMetadata({ params }) {
   const { slug } = await params;
 
   try {
-    const res = await fetch(`${process.env.API_URI}/businesses/${slug}`);
-    const data = await res.json();
+    const { data: business, error } = await fetchBusinessBySlug(slug);
 
-    if (!res.ok || data.error || !data?.data) {
+    if (error || !business) {
       return {
         title: "Business Not Found - RadiatorRepairHub",
         description: "The requested business could not be found.",
@@ -46,7 +46,6 @@ export async function generateMetadata({ params }) {
       };
     }
 
-    const business = data.data;
     const title = `Radiator Repair: ${business.title_tag} | ${business.city.name}, ${business.state.name} - RadiatorRepairHub`;
     const description = `Expert radiator repair services at ${business.title
       } in ${business.city.name}, ${business.state.name}. ${business.meta_description ||
@@ -84,20 +83,12 @@ export async function generateMetadata({ params }) {
           : [DEFAULT_OG_IMAGE],
         siteName: "RadiatorRepairHub",
       },
-      twitter: {
-        card: "summary_large_image",
-        title,
-        description,
-        images: [
-          business.image_url ? business.image_url : DEFAULT_OG_IMAGE.url,
-        ],
-      },
       alternates: {
         canonical: `https://radiatorrepairhub.com/business/${slug}`,
       },
       robots: INDEX_ROBOTS,
     };
-  } catch (error) {
+  } catch {
     return {
       title: "Business Not Found - RadiatorRepairHub",
       description: "The requested business could not be found.",
@@ -121,24 +112,23 @@ const featureIcons = {
 
 async function Page({ params }) {
   const { slug } = await params;
-  const res = await fetch(`${process.env.API_URI}/businesses/${slug}`);
-  const data = await res.json();
 
-  if (!res.ok || data.error) {
-    return (
-      <ErrorDisplay
-        status={res.status}
-        code={data?.error?.code}
-        message={data?.error?.message}
-      />
-    );
-  }
+  try {
+    const { data: business, error, status } = await fetchBusinessBySlug(slug);
 
-  if (!data?.data) {
-    return notFound();
-  }
+    if (error) {
+      return (
+        <ErrorDisplay
+          status={status || 500}
+          code={error?.code}
+          message={error?.message || "Unable to load business details."}
+        />
+      );
+    }
 
-  const business = data.data;
+    if (!business) {
+      return notFound();
+    }
 
   // Get available features
   const paymentFeatures = [];
@@ -535,19 +525,34 @@ async function Page({ params }) {
                   </div>
 
                   {/* Google Maps Embed */}
-                  <div className="w-full h-64 md:h-96 rounded-lg overflow-hidden">
-                    <iframe
-                      src={`https://www.google.com/maps/embed/v1/place?key=${process.env.GOOGLE_MAPS_API_KEY
-                        }&q=${encodeURIComponent(business.address)}`}
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      allowFullScreen=""
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      title={`Map showing location of ${business.title}`}
-                    />
-                  </div>
+                  {business.address && (
+                    <div className="w-full h-64 md:h-96 rounded-lg overflow-hidden">
+                      {process.env.GOOGLE_MAPS_API_KEY ? (
+                        <iframe
+                          src={`https://www.google.com/maps/embed/v1/place?key=${process.env.GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(business.address)}`}
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0 }}
+                          allowFullScreen=""
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          title={`Map showing location of ${business.title}`}
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center bg-gray-100 px-6 text-center">
+                          <Link
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.address)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
+                          >
+                            <MapPin className="w-5 h-5" />
+                            View {business.address} on Google Maps
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {business.url && (
                     <div className="pt-4">
@@ -774,6 +779,14 @@ async function Page({ params }) {
       <BranchBoundBanner />
     </>
   );
+  } catch {
+    return (
+      <ErrorDisplay
+        status={500}
+        message="Unable to load business details. Please try again later."
+      />
+    );
+  }
 }
 
 export default Page;

@@ -32,9 +32,6 @@ User-agent: Claude-Web
 Disallow: /
 
 User-agent: Bytespider
-Disallow: /
-
-User-agent: FacebookBot
 Disallow: /`;
 
   return new NextResponse(robotsTxt, {

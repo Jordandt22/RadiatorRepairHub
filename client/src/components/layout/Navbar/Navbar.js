@@ -71,6 +71,10 @@ function Navbar() {
       path: "/blogs",
     },
     {
+      label: "FAQ",
+      path: "/faq",
+    },
+    {
       label: "Contact",
       path: "/contact",
     },

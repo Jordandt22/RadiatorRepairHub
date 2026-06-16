@@ -28,14 +28,6 @@ export const metadata = {
       },
     ],
   },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Auto Repair Categories | Find Specialized Services - RadiatorRepairHub",
-    description:
-      "Browse our comprehensive directory of auto repair categories. Find specialized services near you.",
-    images: ["https://radiatorrepairhub.com/assets/logos/logo.png"],
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/categories",
   },

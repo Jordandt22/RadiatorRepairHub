@@ -31,13 +31,6 @@ export const metadata = {
       },
     ],
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Get Listed | Add Your Radiator Repair Business - RadiatorRepairHub",
-    description:
-      "List your radiator repair business on RadiatorRepairHub for free and get discovered by local customers.",
-    images: ["https://radiatorrepairhub.com/assets/logos/logo.png"],
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/get-listed",
   },

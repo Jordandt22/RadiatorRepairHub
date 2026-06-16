@@ -9,7 +9,7 @@ import Navbar from "@/components/layout/Navbar/Navbar";
 import Footer from "@/components/layout/Footer/Footer";
 import BackToTop from "@/components/layout/BackToTop/BackToTop";
 import { ALL_KEYWORDS } from "@/lib/seo/keywords";
-import { DEFAULT_OG_IMAGE, DEFAULT_TWITTER, INDEX_ROBOTS } from "@/lib/seo/metadata";
+import { DEFAULT_OG_IMAGE, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -62,7 +62,6 @@ export const metadata = {
     siteName: "RadiatorRepairHub",
     images: [DEFAULT_OG_IMAGE],
   },
-  twitter: DEFAULT_TWITTER,
   robots: INDEX_ROBOTS,
   ...(process.env.GOOGLE_VERIFICATION_ID && {
     verification: {
@@ -148,7 +147,7 @@ export default function RootLayout({ children }) {
   };
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         {/* Organization Schema */}
         <script

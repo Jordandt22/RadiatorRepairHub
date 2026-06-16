@@ -28,14 +28,6 @@ export const metadata = {
       },
     ],
   },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Radiator Repair by State | Find Auto Repair Services Across the US - RadiatorRepairHub",
-    description:
-      "Browse radiator repair services by state across all 50 states.",
-    images: ["https://radiatorrepairhub.com/assets/logos/logo.png"],
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/states",
   },

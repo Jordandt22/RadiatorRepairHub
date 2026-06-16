@@ -11,6 +11,17 @@ function OpenStatus({ hours, latitude, longitude }) {
     let cancelled = false;
 
     async function loadStatus() {
+      if (latitude == null || longitude == null) {
+        if (!cancelled) {
+          setBusinessStatus({
+            isOpen: false,
+            status: "Hours unavailable",
+            color: "gray",
+          });
+        }
+        return;
+      }
+
       const timezone = await resolveTimezone(latitude, longitude);
       if (cancelled) return;
 

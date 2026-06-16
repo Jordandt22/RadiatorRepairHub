@@ -35,14 +35,6 @@ export const metadata = {
       },
     ],
   },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Contact RadiatorRepairHub | Get Help Finding Radiator Repair Services",
-    description:
-      "Contact RadiatorRepairHub for support, questions, or feedback about our auto repair directory.",
-    images: ["https://radiatorrepairhub.com/assets/logos/logo.png"],
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/contact",
   },

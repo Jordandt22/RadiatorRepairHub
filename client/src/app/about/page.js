@@ -26,13 +26,6 @@ export const metadata = {
       },
     ],
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "About RadiatorRepairHub | Your Trusted Radiator Repair Directory",
-    description:
-      "Learn about RadiatorRepairHub — the trusted directory for finding reliable radiator repair shops across the U.S.",
-    images: ["https://radiatorrepairhub.com/assets/logos/logo.png"],
-  },
   alternates: {
     canonical: "https://radiatorrepairhub.com/about",
   },

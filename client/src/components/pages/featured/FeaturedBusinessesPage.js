@@ -4,31 +4,36 @@ import React from "react";
 import Header from "./Header";
 import FeaturedGrid from "./FeaturedGrid";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
+import { fetchFeaturedBusinesses } from "@/lib/api/businesses";
 
 async function FeaturedBusinessesPage() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URI}/businesses/featured`
-  );
-  const data = await res.json();
+  try {
+    const { data: businesses, error, status } = await fetchFeaturedBusinesses();
 
-  if (!res.ok || data.error) {
+    if (error) {
+      return (
+        <ErrorDisplay
+          status={status || 500}
+          code={error?.code}
+          message={error?.message || "Unable to load featured businesses."}
+        />
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-gray-50 pb-32">
+        <Header />
+        <FeaturedGrid businesses={businesses || []} />
+      </div>
+    );
+  } catch {
     return (
       <ErrorDisplay
-        status={res.status}
-        code={data?.error?.code}
-        message={data?.error?.message}
+        status={500}
+        message="Unable to load featured businesses. Please try again later."
       />
     );
   }
-
-  const businesses = data.data;
-
-  return (
-    <div className="min-h-screen bg-gray-50 pb-32">
-      <Header />
-      <FeaturedGrid businesses={businesses} />
-    </div>
-  );
 }
 
 export default FeaturedBusinessesPage;
