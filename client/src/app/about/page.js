@@ -90,7 +90,7 @@ function AboutPage() {
         {
           label: "Transparency Always: ",
           description:
-            "We continuously verify and update every listing to ensure you're never calling a disconnected number or driving to a closed shop.",
+            "We are upfront about how our directory works and how we handle visitor information. See our Privacy Policy for details on data collection and your rights.",
         },
         {
           label: "Community-Driven: ",

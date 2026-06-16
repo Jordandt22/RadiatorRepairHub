@@ -103,7 +103,7 @@ function Footer() {
 
         <div className="border-t border-gray-800 mt-12 mb-4 pt-8 text-center">
           <p className="text-gray-400 text-sm">
-            © 2025 RadiatorRepairHub. All rights reserved.
+            © {new Date().getFullYear()} RadiatorRepairHub. All rights reserved.
           </p>
         </div>
       </div>

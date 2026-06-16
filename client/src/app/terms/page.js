@@ -38,7 +38,7 @@ function TermsPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date("2025-09-22").toLocaleDateString("en-US", {
+  const lastUpdated = new Date("2026-06-13").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -461,6 +461,32 @@ function TermsPage() {
             incorporated into these Terms by reference. By using our Service,
             you consent to our data practices as described in the Privacy
             Policy.
+          </p>
+          <p className="mt-4 text-gray-700 leading-relaxed">
+            To operate and improve the Service, we use third-party tools that
+            may collect information about your visit, including:
+          </p>
+          <ul className="mt-4 text-gray-700 space-y-2">
+            <li className="mb-2 ml-6">
+              • <strong>Google Analytics</strong> — website traffic and usage
+              analytics
+            </li>
+            <li className="mb-2 ml-6">
+              • <strong>PostHog</strong> — product analytics and page
+              interaction tracking
+            </li>
+            <li className="mb-2 ml-6">
+              • <strong>Cloudflare</strong> — content delivery, DNS, security,
+              and bot protection
+            </li>
+          </ul>
+          <p className="mt-4 text-gray-700 leading-relaxed">
+            These services are described in detail in our{" "}
+            <a href="/privacy" className="text-blue-600 hover:text-blue-800 underline">
+              Privacy Policy
+            </a>
+            . Your use of the Service constitutes acceptance of data collection
+            by these third-party providers as outlined there.
           </p>
         </section>
 

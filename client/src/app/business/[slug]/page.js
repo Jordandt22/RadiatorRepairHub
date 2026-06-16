@@ -405,7 +405,11 @@ async function Page({ params }) {
                 <span className="text-sm md:text-lg mr-2">
                   ({business.reviews_count.toLocaleString()} reviews)
                 </span>
-                <OpenStatus hours={business.hours} />
+                <OpenStatus
+                  hours={business.hours}
+                  latitude={business.latitude}
+                  longitude={business.longitude}
+                />
               </div>
             </div>
           </div>
@@ -668,7 +672,11 @@ async function Page({ params }) {
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900 font-heading">
                     Business Hours
                   </h2>
-                  <OpenStatus hours={business.hours} />
+                  <OpenStatus
+                  hours={business.hours}
+                  latitude={business.latitude}
+                  longitude={business.longitude}
+                />
                 </div>
                 {business.hours ? (
                   formatBusinessHours(business.hours)

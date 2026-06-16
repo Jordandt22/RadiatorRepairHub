@@ -54,7 +54,11 @@ function DetailedBusinessCard({ business }) {
             <span className="text-sm text-gray-600">
               ({business.reviews_count} reviews)
             </span>
-            <OpenStatus hours={business.hours} />
+            <OpenStatus
+              hours={business.hours}
+              latitude={business.latitude}
+              longitude={business.longitude}
+            />
           </div>
         </div>
 
