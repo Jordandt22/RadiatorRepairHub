@@ -48,6 +48,7 @@ const FINAL_FIELDS = [
   "reviews_distribution",
   "latitude",
   "longitude",
+  "timezone",
   "mechanic",
   "restroom",
   "credit_cards",

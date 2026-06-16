@@ -1,48 +1,17 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { getBusinessOpenStatus } from "@/lib/businessHours";
-import { resolveTimezone } from "@/lib/timezoneCache";
 
-function OpenStatus({ hours, latitude, longitude }) {
-  const [businessStatus, setBusinessStatus] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadStatus() {
-      if (latitude == null || longitude == null) {
-        if (!cancelled) {
-          setBusinessStatus({
-            isOpen: false,
-            status: "Hours unavailable",
-            color: "gray",
-          });
-        }
-        return;
-      }
-
-      const timezone = await resolveTimezone(latitude, longitude);
-      if (cancelled) return;
-
-      setBusinessStatus(getBusinessOpenStatus(hours, timezone));
-    }
-
-    loadStatus();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [hours, latitude, longitude]);
-
-  if (!businessStatus) {
+function OpenStatus({ hours, timezone }) {
+  if (!timezone) {
     return (
       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-400">
         <div className="w-2 h-2 rounded-full bg-gray-300" />
-        <span className="font-medium">...</span>
+        <span className="font-medium">Hours unavailable</span>
       </div>
     );
   }
+
+  const businessStatus = getBusinessOpenStatus(hours, timezone);
 
   return (
     <div

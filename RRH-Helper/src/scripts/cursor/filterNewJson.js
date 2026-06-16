@@ -1,8 +1,25 @@
 import fs from "fs";
 import path from "path";
+import { find } from "geo-tz";
 import { FLOW_PATHS, ensureFlowDirs } from "../flowPaths.js";
 
 ensureFlowDirs();
+
+function resolveTimezone(location) {
+  const lat = Number(location?.lat);
+  const lng = Number(location?.lng);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null;
+  }
+
+  try {
+    const zones = find(lat, lng);
+    return zones[0] ?? null;
+  } catch {
+    return null;
+  }
+}
 
 const FIELDS_TO_KEEP = [
   "title",
@@ -80,7 +97,10 @@ for (const item of trimmed) {
   const isOpen = !isPermanentlyClosed && !isTemporarilyClosed;
 
   if (hasAddress && hasPostalCode && hasMinScore && isOpen) {
-    filtered.push(item);
+    filtered.push({
+      ...item,
+      timezone: resolveTimezone(item.location),
+    });
     continue;
   }
 
