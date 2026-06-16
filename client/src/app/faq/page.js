@@ -168,7 +168,7 @@ export default function FAQPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Link
               href="/categories"
               className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
@@ -202,6 +202,18 @@ export default function FAQPage() {
               </h3>
               <p className="text-gray-600 text-sm">
                 Get your radiator repair business listed on our platform
+              </p>
+            </Link>
+
+            <Link
+              href="/blogs"
+              className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Blogs
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Read guides and tips on radiator repair and cooling system care
               </p>
             </Link>
           </div>

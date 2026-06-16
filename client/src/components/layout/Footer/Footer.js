@@ -8,6 +8,7 @@ function Footer() {
     { label: "Categories", path: "/categories" },
     { label: "Find a Shop", path: "/search" },
     { label: "States", path: "/states" },
+    { label: "Blogs", path: "/blogs" },
   ];
 
   const aboutLinks = [

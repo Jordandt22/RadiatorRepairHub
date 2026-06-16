@@ -25,6 +25,23 @@ export const metadata = {
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
+    url: "https://radiatorrepairhub.com/contact",
+    images: [
+      {
+        url: "https://radiatorrepairhub.com/assets/logos/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title:
+      "Contact RadiatorRepairHub | Get Help Finding Radiator Repair Services",
+    description:
+      "Contact RadiatorRepairHub for support, questions, or feedback about our auto repair directory.",
+    images: ["https://radiatorrepairhub.com/assets/logos/logo.png"],
   },
   alternates: {
     canonical: "https://radiatorrepairhub.com/contact",

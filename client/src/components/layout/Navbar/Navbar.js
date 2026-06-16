@@ -35,8 +35,8 @@ function Navbar() {
     },
 
     {
-      label: "About",
-      path: "/about",
+      label: "Blogs",
+      path: "/blogs",
     },
     {
       label: "FAQ",
@@ -67,8 +67,8 @@ function Navbar() {
     },
 
     {
-      label: "About",
-      path: "/about",
+      label: "Blogs",
+      path: "/blogs",
     },
     {
       label: "Contact",

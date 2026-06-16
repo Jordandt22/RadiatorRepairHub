@@ -2,47 +2,20 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   const robotsTxt = `# Robots.txt for RadiatorRepairHub
-# Allow all search engines to crawl public content
 
 User-agent: *
 Allow: /
 
-# Disallow sensitive or private areas
+# Disallow internal / non-public paths
 Disallow: /api/
 Disallow: /admin/
 Disallow: /_next/
 Disallow: /private/
 
-# Allow important pages for crawling
-Allow: /search
-Allow: /categories
-Allow: /category/
-Allow: /states
-Allow: /state/
-Allow: /business/
-Allow: /featured
-Allow: /faq
-Allow: /about
-Allow: /contact
-Allow: /get-listed
-
 # Sitemap location
 Sitemap: https://radiatorrepairhub.com/sitemap.xml
 
-# Specific instructions for major search engines
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 1
-
-User-agent: DuckDuckBot
-Allow: /
-Crawl-delay: 1
-
-# Block AI training crawlers (optional)
+# Block AI training crawlers
 User-agent: GPTBot
 Disallow: /
 
@@ -56,6 +29,12 @@ User-agent: anthropic-ai
 Disallow: /
 
 User-agent: Claude-Web
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: FacebookBot
 Disallow: /`;
 
   return new NextResponse(robotsTxt, {

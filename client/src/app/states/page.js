@@ -18,6 +18,23 @@ export const metadata = {
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
+    url: "https://radiatorrepairhub.com/states",
+    images: [
+      {
+        url: "https://radiatorrepairhub.com/assets/logos/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title:
+      "Radiator Repair by State | Find Auto Repair Services Across the US - RadiatorRepairHub",
+    description:
+      "Browse radiator repair services by state across all 50 states.",
+    images: ["https://radiatorrepairhub.com/assets/logos/logo.png"],
   },
   alternates: {
     canonical: "https://radiatorrepairhub.com/states",
