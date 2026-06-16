@@ -1,10 +1,18 @@
+'use client';
+
 import React from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Info, Clock, ExternalLink } from "lucide-react";
+
+// Icons
+import { Info, Clock } from "lucide-react";
+
+// Components
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 
 function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
+  const router = useRouter();
   const buttonStyle =
     "group/hours bg-white/80 hover:bg-blue-500 rounded-full p-2 shadow-sm hover:shadow-md transition-all duration-200 backdrop-blur-sm cursor-pointer";
   const iconStyle = "w-5 h-5 text-gray-600 group-hover/hours:text-white";
@@ -31,11 +39,17 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
         )}
 
         {/* Subtle black overlay on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/50  transition-all duration-300">
+        <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/50  transition-all duration-300 cursor-pointer" onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          router.push(`/business/${business.slug}`);
+        }}>
           <div className="hidden absolute top-3 right-3 z-20 group-hover/image:flex transition-all duration-200 flex-col gap-2">
             {/* Business Info */}
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 setActiveCard(business.id);
                 setActiveBackCard(1);
               }}
@@ -47,7 +61,9 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
 
             {/* Opening Hours */}
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 setActiveCard(business.id);
                 setActiveBackCard(2);
               }}
@@ -56,16 +72,6 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
             >
               <Clock className={iconStyle} />
             </button>
-
-            {/* Link to business */}
-            <Link
-              href={`/business/${business.slug}`}
-              className={buttonStyle}
-              aria-label="View business details"
-              prefetch={false}
-            >
-              <ExternalLink className={iconStyle} />
-            </Link>
           </div>
 
           <Link
@@ -77,14 +83,25 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
             {business.primary_category.name}
           </Link>
           <div className="absolute top-3 left-3">
-            <OpenStatus hours={business.hours} />
+            <OpenStatus
+              hours={business.hours}
+              latitude={business.latitude}
+              longitude={business.longitude}
+            />
           </div>
         </div>
       </div>
 
       <div className="p-5">
         <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 font-heading text-lg">
-          {business.title}
+          <Link
+            href={`/business/${business.slug}`}
+            className="hover:text-blue-600 duration-200"
+            prefetch={false}
+            aria-label={`View ${business.title} details`}
+          >
+            {business.title}
+          </Link>
         </h3>
         <div className="flex items-center mb-1 flex-wrap gap-2">
           <div
@@ -96,8 +113,8 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
               <svg
                 key={business.title + "-" + i}
                 className={`w-4 h-4 ${i < Math.floor(business.total_score)
-                    ? "text-yellow-400"
-                    : "text-gray-300"
+                  ? "text-yellow-400"
+                  : "text-gray-300"
                   }`}
                 fill="currentColor"
                 viewBox="0 0 20 20"

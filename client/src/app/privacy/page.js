@@ -37,7 +37,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date("2025-09-22").toLocaleDateString("en-US", {
+  const lastUpdated = new Date("2026-06-13").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -110,7 +110,90 @@ function PrivacyPage() {
         {
           label: "Analytics Cookies:",
           description:
-            "Help us understand how visitors use our site (Google Analytics).",
+            "Help us understand how visitors use our site. We use Google Analytics and PostHog to collect usage data such as pages visited, session duration, and navigation patterns.",
+        },
+        {
+          label: "Security and Performance Cookies:",
+          description:
+            "Cloudflare may set cookies and use similar technologies to deliver content securely, protect against malicious traffic, and improve site performance.",
+        },
+        {
+          label: "Local Storage:",
+          description:
+            "Analytics tools may store identifiers in your browser's local storage to recognize returning visitors and maintain session continuity.",
+        },
+      ],
+    },
+  ];
+
+  const thirdPartyServicesContent = [
+    {
+      title: "Google Analytics",
+      bulletPoints: [
+        {
+          label: "Provider:",
+          description: "Google LLC",
+        },
+        {
+          label: "Purpose:",
+          description:
+            "Website traffic analysis, page views, user demographics (aggregated), and referral sources.",
+        },
+        {
+          label: "Data Collected:",
+          description:
+            "IP address (may be anonymized), browser type, device type, pages visited, time on site, and referral URLs.",
+        },
+        {
+          label: "Privacy Policy:",
+          description:
+            "https://policies.google.com/privacy",
+        },
+      ],
+    },
+    {
+      title: "PostHog",
+      bulletPoints: [
+        {
+          label: "Provider:",
+          description: "PostHog Inc.",
+        },
+        {
+          label: "Purpose:",
+          description:
+            "Product analytics, page view tracking, session recording insights, and understanding how users interact with our site.",
+        },
+        {
+          label: "Data Collected:",
+          description:
+            "Page URLs, referrer, browser and device information, session identifiers, and interaction events. PostHog is configured to create user profiles only for identified users.",
+        },
+        {
+          label: "Privacy Policy:",
+          description: "https://posthog.com/privacy",
+        },
+      ],
+    },
+    {
+      title: "Cloudflare",
+      bulletPoints: [
+        {
+          label: "Provider:",
+          description: "Cloudflare, Inc.",
+        },
+        {
+          label: "Purpose:",
+          description:
+            "Content delivery (CDN), DNS resolution, DDoS protection, bot mitigation, and web application security.",
+        },
+        {
+          label: "Data Collected:",
+          description:
+            "IP address, request headers, browser type, pages requested, and security-related logs. Cloudflare may process this data to filter malicious traffic and deliver content efficiently.",
+        },
+        {
+          label: "Privacy Policy:",
+          description: "https://www.cloudflare.com/privacypolicy/",
         },
       ],
     },
@@ -149,11 +232,12 @@ function PrivacyPage() {
         {
           label: "Website Analytics:",
           description:
-            "Analyze usage patterns, popular searches, and user behavior.",
+            "Analyze usage patterns, popular searches, and user behavior through Google Analytics and PostHog.",
         },
         {
           label: "Performance Monitoring:",
-          description: "Identify and fix technical issues.",
+          description:
+            "Identify and fix technical issues, and protect the site from abuse through Cloudflare security services.",
         },
         {
           label: "Content Optimization:",
@@ -190,7 +274,10 @@ function PrivacyPage() {
       label: "Web hosting and cloud storage",
     },
     {
-      label: "Analytics and performance monitoring",
+      label: "Content delivery, DNS, and security (Cloudflare)",
+    },
+    {
+      label: "Website analytics (Google Analytics, PostHog)",
     },
     {
       label: "Email communication services",
@@ -302,6 +389,10 @@ function PrivacyPage() {
         {
           label: "Object to certain uses of your personal information",
         },
+        {
+          label:
+            "Limit analytics tracking through your browser's privacy settings, cookie controls, or ad-blocking extensions",
+        },
       ],
     },
     {
@@ -324,7 +415,7 @@ function PrivacyPage() {
     {
       title: "Third-Party Links and Services",
       content:
-        "Our directory contains links to third-party websites and businesses. This Privacy Policy does not apply to those third-party sites or services. We are not responsible for the privacy practices or content of third-party websites. We encourage you to review the privacy policies of any third-party sites you visit.",
+        "Our directory contains links to third-party websites and businesses. This Privacy Policy does not apply to those third-party sites or services. We are not responsible for the privacy practices or content of third-party websites. We encourage you to review the privacy policies of any third-party sites you visit. For third-party services we use to operate our website (such as Google Analytics, PostHog, and Cloudflare), see the Third-Party Services section above.",
     },
     {
       title: "International Data Transfers",
@@ -447,6 +538,44 @@ function PrivacyPage() {
                     className="flex flex-col gap-1 mb-4 ml-6"
                     key={
                       "privacy-policy-information-collected-" +
+                      item.title +
+                      bulletPoint.label
+                    }
+                  >
+                    <strong>• {bulletPoint.label}</strong>{" "}
+                    {bulletPoint.description}
+                  </li>
+                ))}
+              </ul>
+            </React.Fragment>
+          ))}
+        </section>
+
+        <section className="mb-12">
+          <h2 className="text-3xl font-heading font-bold">
+            Third-Party Services
+          </h2>
+          <p className="mt-4 text-gray-700 leading-relaxed">
+            We use the following third-party services to operate, secure, and
+            improve our website. These providers may collect and process
+            information about your visit as described below. We do not control
+            how these third parties use your data; please review their privacy
+            policies for more information.
+          </p>
+
+          {thirdPartyServicesContent.map((item) => (
+            <React.Fragment
+              key={`privacy-policy-third-party-services-${item.title}`}
+            >
+              <h3 className="text-xl font-heading font-semibold mt-8 mb-4">
+                {item.title}
+              </h3>
+              <ul className="mt-2 text-gray-700">
+                {item.bulletPoints.map((bulletPoint) => (
+                  <li
+                    className="flex flex-col gap-1 mb-4 ml-6"
+                    key={
+                      "privacy-policy-third-party-services-" +
                       item.title +
                       bulletPoint.label
                     }

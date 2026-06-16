@@ -7,14 +7,6 @@ export const DEFAULT_OG_IMAGE = {
   alt: "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
 };
 
-export const DEFAULT_TWITTER = {
-  card: "summary_large_image",
-  title: "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
-  description:
-    "Find radiator repair near me, auto repair shops, and radiator services in your area.",
-  images: [DEFAULT_OG_IMAGE.url],
-};
-
 export const INDEX_ROBOTS = {
   index: true,
   follow: true,
@@ -49,22 +41,12 @@ export function buildOpenGraph({ title, description, url, images }) {
   };
 }
 
-export function buildTwitter({ title, description, images }) {
-  return {
-    card: "summary_large_image",
-    title,
-    description,
-    images: images ?? [DEFAULT_OG_IMAGE.url],
-  };
-}
-
 export function buildPageMetadata({
   title,
   description,
   keywords,
   path,
   openGraph,
-  twitter,
   robots = INDEX_ROBOTS,
 }) {
   return {
@@ -75,7 +57,6 @@ export function buildPageMetadata({
       canonical: path ? `${SITE_URL}${path}` : SITE_URL,
     },
     openGraph: openGraph ?? buildOpenGraph({ title, description, url: path }),
-    twitter: twitter ?? buildTwitter({ title, description }),
     robots,
   };
 }

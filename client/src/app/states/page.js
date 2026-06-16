@@ -18,6 +18,15 @@ export const metadata = {
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
+    url: "https://radiatorrepairhub.com/states",
+    images: [
+      {
+        url: "https://radiatorrepairhub.com/assets/logos/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
+      },
+    ],
   },
   alternates: {
     canonical: "https://radiatorrepairhub.com/states",

@@ -16,6 +16,15 @@ export const metadata = {
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
+    url: "https://radiatorrepairhub.com/about",
+    images: [
+      {
+        url: "https://radiatorrepairhub.com/assets/logos/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
+      },
+    ],
   },
   alternates: {
     canonical: "https://radiatorrepairhub.com/about",
@@ -90,7 +99,7 @@ function AboutPage() {
         {
           label: "Transparency Always: ",
           description:
-            "We continuously verify and update every listing to ensure you're never calling a disconnected number or driving to a closed shop.",
+            "We are upfront about how our directory works and how we handle visitor information. See our Privacy Policy for details on data collection and your rights.",
         },
         {
           label: "Community-Driven: ",
@@ -110,6 +119,10 @@ function AboutPage() {
     {
       label: "Ready to find your local radiator expert? Start your search now",
       href: "/search",
+    },
+    {
+      label: "Read our blog for radiator repair tips and maintenance guides",
+      href: "/blogs",
     },
     {
       label: "Own a radiator repair business? Learn about getting listed",

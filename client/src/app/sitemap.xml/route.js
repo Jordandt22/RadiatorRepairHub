@@ -3,12 +3,15 @@ import { buildSitemapEntries } from "@/lib/seo/sitemap";
 import { fetchAllCities } from "@/lib/api/location";
 import { fetchPrimaryCategories } from "@/lib/api/categories";
 import { fetchBusinessSlugsForSitemap } from "@/lib/api/businesses";
+import { getAllBlogPosts } from "@/lib/blogs";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const baseUrl = "https://radiatorrepairhub.com";
   const currentDate = new Date().toISOString();
+
+  const blogPosts = getAllBlogPosts();
 
   const [citiesResult, categoriesResult, businessesResult] = await Promise.all([
     fetchAllCities(),
@@ -32,7 +35,8 @@ export async function GET() {
     currentDate,
     citiesResult.data || [],
     categoriesResult.data || [],
-    businessesResult.data || []
+    businessesResult.data || [],
+    blogPosts
   );
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

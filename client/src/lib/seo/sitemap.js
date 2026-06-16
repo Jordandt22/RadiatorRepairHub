@@ -8,7 +8,8 @@ export function buildSitemapEntries(
   currentDate,
   cities = [],
   primaryCategories = [],
-  businesses = []
+  businesses = [],
+  blogPosts = []
 ) {
   const staticPages = [
     { url: "", changeFrequency: "weekly", priority: 1.0 },
@@ -16,6 +17,7 @@ export function buildSitemapEntries(
     { url: "/search", changeFrequency: "daily", priority: 0.9 },
     { url: "/states", changeFrequency: "weekly", priority: 0.9 },
     { url: "/about", changeFrequency: "monthly", priority: 0.7 },
+    { url: "/blogs", changeFrequency: "weekly", priority: 0.8 },
     { url: "/contact", changeFrequency: "monthly", priority: 0.7 },
     { url: "/get-listed", changeFrequency: "monthly", priority: 0.8 },
     { url: "/featured", changeFrequency: "daily", priority: 0.8 },
@@ -70,6 +72,17 @@ export function buildSitemapEntries(
       priority: 0.7,
     }));
 
+  const blogPostPages = blogPosts
+    .filter((post) => post.slug)
+    .map((post) => ({
+      url: `/blogs/${post.slug}`,
+      lastModified: post.metadata?.date
+        ? new Date(post.metadata.date).toISOString()
+        : currentDate,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    }));
+
   return [
     ...staticPages,
     ...categoryPages,
@@ -77,5 +90,6 @@ export function buildSitemapEntries(
     ...stateCityIndexPages,
     ...cityPages,
     ...businessPages,
+    ...blogPostPages,
   ];
 }
