@@ -33,16 +33,28 @@ export default function Home() {
       question: "How do I find radiator repair services in my area?",
       answer:
         "Use our search tool to enter your location and instantly see verified radiator repair shops near you. You can filter by ratings, reviews, hours, and services offered to find the best match for your needs.",
+      relatedBlog: {
+        title: "How to Choose a Radiator Shop",
+        href: "/blogs/how-to-choose-a-radiator-shop",
+      },
     },
     {
       question: "How much does radiator repair typically cost?",
       answer:
-        "Radiator repair costs vary based on the issue, vehicle type, and location. Simple repairs like fixing leaks can cost $100-300, while radiator replacement typically ranges from $300-900. Get quotes from multiple shops for the best price.",
+        "Radiator repair costs vary based on the issue, vehicle type, and location. Simple repairs like fixing leaks can cost $100–$300 when repairable, while radiator replacement typically ranges from $400–$900+. Get quotes from multiple shops for the best price.",
+      relatedBlog: {
+        title: "Radiator Repair Cost Guide",
+        href: "/blogs/radiator-repair-cost-guide",
+      },
     },
     {
       question: "What are the signs that my radiator needs repair?",
       answer:
         "Common signs include overheating, coolant leaks, low coolant levels, steam from under the hood, unusual smells, and dashboard warning lights. If you notice any of these, have your cooling system checked immediately.",
+      relatedBlog: {
+        title: "7 Signs Your Radiator Needs Repair",
+        href: "/blogs/7-signs-your-radiator-needs-repair",
+      },
     },
     ...EXTRA_FAQS,
   ];

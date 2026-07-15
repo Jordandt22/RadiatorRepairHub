@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 const FAQSection = ({ faqs, title = "Frequently Asked Questions", includeSchema = true }) => {
   // Generate FAQ structured data
@@ -47,6 +48,17 @@ const FAQSection = ({ faqs, title = "Frequently Asked Questions", includeSchema 
                   {faq.question}
                 </h3>
                 <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+                {faq.relatedBlog && (
+                  <p className="mt-3 text-sm text-gray-600">
+                    Related Blog:{" "}
+                    <Link
+                      href={faq.relatedBlog.href}
+                      className="text-blue-600 hover:text-blue-800 underline font-medium"
+                    >
+                      {faq.relatedBlog.title}
+                    </Link>
+                  </p>
+                )}
               </div>
             ))}
           </div>
