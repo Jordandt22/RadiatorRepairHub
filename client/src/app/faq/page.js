@@ -4,7 +4,6 @@ import FAQSection from "@/components/seo/FAQSection";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 import { FAQ_KEYWORDS } from "@/lib/seo/keywords";
-import { EXTRA_FAQS } from "@/lib/seo/faqs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 const faqTitle =
@@ -35,42 +34,74 @@ export default function FAQPage() {
       question: "How much does radiator repair typically cost?",
       answer:
         "Radiator repair costs vary based on the issue, vehicle type, and location. Simple repairs like fixing leaks can cost $100-300, while radiator replacement typically ranges from $300-900. Get quotes from multiple shops for the best price. Contact the business for a more accurate estimate.",
+      relatedBlog: {
+        title: "Radiator Repair Cost Guide",
+        href: "/blogs/radiator-repair-cost-guide",
+      },
     },
     {
       question: "What are the signs that my radiator needs repair?",
       answer:
         "Common signs include overheating, coolant leaks, low coolant levels, steam from under the hood, unusual smells, and dashboard warning lights. If you notice any of these, have your cooling system checked immediately.",
+      relatedBlog: {
+        title: "7 Signs Your Radiator Needs Repair",
+        href: "/blogs/7-signs-your-radiator-needs-repair",
+      },
     },
     {
       question: "Can I drive with a radiator problem?",
       answer:
         "It's not recommended to drive with radiator problems as it can lead to engine damage. If your car is overheating, pull over safely and turn off the engine. Call for a tow truck rather than risk further damage.",
+      relatedBlog: {
+        title: "Can You Drive With a Radiator Leak?",
+        href: "/blogs/can-you-drive-with-a-radiator-leak",
+      },
     },
     {
       question: "How long does radiator repair take?",
       answer:
         "Simple repairs like fixing leaks can take 1-2 hours, while radiator replacement typically takes 2-4 hours. Complex issues may require overnight service. Most shops can provide time estimates when you call.",
+      relatedBlog: {
+        title: "Radiator Repair Cost Guide",
+        href: "/blogs/radiator-repair-cost-guide",
+      },
     },
     {
       question:
         "What's the difference between radiator repair and replacement?",
       answer:
         "Repair involves fixing specific issues like leaks, clogs, or damaged components. Replacement means installing a completely new radiator. The choice depends on the extent of damage and cost-effectiveness. A professional can help you decide.",
+      relatedBlog: {
+        title: "Radiator Repair vs Replacement: Which Is Better?",
+        href: "/blogs/radiator-repair-vs-replacement-which-is-better",
+      },
     },
     {
       question: "How often should I have my radiator serviced?",
       answer:
         "Regular radiator maintenance should be done every 30,000-50,000 miles or as recommended by your vehicle manufacturer. This includes coolant flushes, checking for leaks, and ensuring proper coolant levels.",
+      relatedBlog: {
+        title: "Radiator Flush: What to Expect & Cost",
+        href: "/blogs/radiator-flush-what-to-expect-and-cost",
+      },
     },
     {
       question: "What types of coolant should I use?",
       answer:
         "Always use the coolant type specified in your vehicle's owner manual. Different vehicles require different coolant formulations (conventional, extended-life, or specific OEM formulas). Using the wrong type can cause damage.",
+      relatedBlog: {
+        title: "Radiator Flush: What to Expect & Cost",
+        href: "/blogs/radiator-flush-what-to-expect-and-cost",
+      },
     },
     {
       question: "Can I prevent radiator problems?",
       answer:
         "Yes! Regular maintenance, using the correct coolant, checking coolant levels monthly, and addressing small issues promptly can prevent major radiator problems. Also, avoid driving with an overheating engine.",
+      relatedBlog: {
+        title: "How to Spot a Radiator Leak",
+        href: "/blogs/how-to-spot-a-radiator-leak",
+      },
     },
     {
       question: "Do you verify the businesses listed on your site?",
@@ -82,9 +113,24 @@ export default function FAQPage() {
       answer:
         "Business owners can submit their information through our Get Listed page. We review all submissions to ensure they meet our quality standards for radiator repair services. Listings are currently free.",
     },
-    ...EXTRA_FAQS.filter(
-      (faq) => faq.question !== "How do I find a radiator repair shop in my area?"
-    ),
+    {
+      question: "What's included in radiator servicing?",
+      answer:
+        "Radiator servicing typically includes a coolant flush, leak inspection, pressure testing, hose and cap checks, and topping off coolant levels. Regular maintenance helps prevent overheating and extends the life of your cooling system.",
+      relatedBlog: {
+        title: "Radiator Flush: What to Expect & Cost",
+        href: "/blogs/radiator-flush-what-to-expect-and-cost",
+      },
+    },
+    {
+      question: "How do I find radiator fan repair in my area?",
+      answer:
+        "Search our directory for auto repair shops that offer radiator fan repair and cooling system diagnostics. Many specialists also handle fan clutch, fan motor, and blade replacement. Filter results by location to find shops near you.",
+      relatedBlog: {
+        title: "Why Is My Car Overheating?",
+        href: "/blogs/why-is-my-car-overheating",
+      },
+    },
   ];
 
   const breadcrumbItems = [
