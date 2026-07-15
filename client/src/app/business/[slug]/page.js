@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -20,6 +19,8 @@ import {
 
 // Components
 import OpenStatus from "@/components/businesses/status/OpenStatus";
+import BusinessImage from "@/components/businesses/BusinessImage";
+import BusinessHeroBanner from "@/components/businesses/BusinessHeroBanner";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
@@ -343,63 +344,40 @@ async function Page({ params }) {
 
       <div className="min-h-screen bg-gray-50 pb-16 md:pb-32">
         {/* Hero Section with Business Image */}
-        <div className="relative w-full h-56 sm:h-64 md:h-80 lg:h-96 bg-gray-200">
-          {business.image_url ? (
-            <Image
-              src={business.image_url}
-              alt={`${business.title} - Radiator Repair Services in ${business.city.name}, ${business.state.name}`}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 100vw, 100vw"
-              className="object-cover object-center"
-              priority
+        <BusinessHeroBanner
+          src={business.image_url}
+          alt={`${business.title} - Radiator Repair Services in ${business.city.name}, ${business.state.name}`}
+        >
+          <div className="w-full p-3 sm:p-4 md:p-6 text-white max-w-7xl mx-auto hidden md:block">
+            <BreadcrumbList
+              items={breadcrumbItems}
+              navStyles="text-gray-600 mb-4 md:mb-6 bg-slate-900 rounded-lg p-2 pl-4 pr-8 w-fit text-sm"
             />
-          ) : (
-            <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-              <div className="text-center">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-4">
-                  <Star className="w-8 h-8 md:w-10 md:h-10 text-gray-600" />
-                </div>
-                <p className="text-gray-600 text-sm md:text-lg">
-                  No image available
-                </p>
-              </div>
-            </div>
-          )}
+          </div>
 
-          {/* Overlay with business title */}
-          <div className="absolute inset-0 bg-black/75 flex flex-col items-start justify-end md:justify-between pb-4 md:pb-0">
-            <div className="w-full p-3 sm:p-4 md:p-6 text-white max-w-7xl mx-auto hidden md:block">
-              {/* Breadcrumb Navigation - Hidden on mobile */}
-              <BreadcrumbList
-                items={breadcrumbItems}
-                navStyles="text-gray-600 mb-4 md:mb-6 bg-slate-900 rounded-lg p-2 pl-4 pr-8 w-fit text-sm"
-              />
-            </div>
-
-            <div className="w-full p-3 sm:p-4 md:p-6 text-white max-w-7xl mx-auto">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-2 md:mb-4 leading-tight">
-                {business.title} - Radiator Repair Services
-              </h1>
-              {business.local_note && (
-                <p className="text-sm md:text-base italic text-gray-200 mb-2 md:mb-4">
-                  📍 {business.local_note}
-                </p>
-              )}
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="flex items-center">
-                  <Star className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 fill-current" />
-                  <span className="ml-1 font-semibold text-base md:text-lg">
-                    {business.total_score}
-                  </span>
-                </div>
-                <span className="text-sm md:text-lg mr-2">
-                  ({business.reviews_count.toLocaleString()} reviews)
+          <div className="w-full p-3 sm:p-4 md:p-6 text-white max-w-7xl mx-auto">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-2 md:mb-4 leading-tight">
+              {business.title} - Radiator Repair Services
+            </h1>
+            {business.local_note && (
+              <p className="text-sm md:text-base italic text-gray-200 mb-2 md:mb-4">
+                📍 {business.local_note}
+              </p>
+            )}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center">
+                <Star className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 fill-current" />
+                <span className="ml-1 font-semibold text-base md:text-lg">
+                  {business.total_score}
                 </span>
-                <OpenStatus hours={business.hours} timezone={business.timezone} />
               </div>
+              <span className="text-sm md:text-lg mr-2">
+                ({business.reviews_count.toLocaleString()} reviews)
+              </span>
+              <OpenStatus hours={business.hours} timezone={business.timezone} />
             </div>
           </div>
-        </div>
+        </BusinessHeroBanner>
 
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
@@ -418,30 +396,16 @@ async function Page({ params }) {
                   </div>
 
                   <div className="relative w-full h-48 md:h-64 bg-gray-200 rounded-lg overflow-hidden">
-                    {business.image_url ? (
-                      <Image
-                        src={business.image_url}
-                        alt={`${business.title} - ${business.keywords && business.keywords.length > 0
-                          ? business.keywords[0]
-                          : "radiator repair services"
-                          } in ${business.city.name}, ${business.state.name}`}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover object-center"
-                        priority={false}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <Star className="w-6 h-6 text-gray-600" />
-                          </div>
-                          <p className="text-gray-600 text-sm">
-                            No image available
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                    <BusinessImage
+                      src={business.image_url}
+                      alt={`${business.title} - ${business.keywords && business.keywords.length > 0
+                        ? business.keywords[0]
+                        : "radiator repair services"
+                        } in ${business.city.name}, ${business.state.name}`}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover object-center"
+                      iconSize="sm"
+                    />
                   </div>
                 </div>
               </div>

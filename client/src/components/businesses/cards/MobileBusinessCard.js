@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
+import BusinessImage from "@/components/businesses/BusinessImage";
 
 function MobileBusinessCard({ business }) {
   return (
@@ -12,22 +12,12 @@ function MobileBusinessCard({ business }) {
     >
       <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full">
         <div className="relative w-full h-56 bg-gray-200">
-          {business.image_url ? (
-            <Image
-              src={business.image_url}
-              alt={business.title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              className="object-cover"
-              placeholder="blur"
-              blurDataURL={business.image_url}
-              loading="lazy"
-            />
-          ) : (
-            <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-200">
-              <p className="text-sm text-gray-500">No image available</p>
-            </div>
-          )}
+          <BusinessImage
+            src={business.image_url}
+            alt={business.title}
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            showIcon={false}
+          />
         </div>
 
         <div className="p-5">

@@ -1,33 +1,19 @@
 import React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Star, Phone } from "lucide-react";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
+import BusinessImage from "@/components/businesses/BusinessImage";
 
 function DetailedBusinessCard({ business }) {
   return (
     <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:-translate-y-3 overflow-hidden">
       {/* Business Image */}
       <div className="relative w-full h-48 bg-gray-200">
-        {business.image_url ? (
-          <Image
-            src={business.image_url}
-            alt={business.title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-            className="object-cover"
-            priority={false}
-          />
-        ) : (
-          <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Star className="w-8 h-8 text-gray-500" />
-              </div>
-              <p className="text-gray-500 text-sm">No image available</p>
-            </div>
-          </div>
-        )}
+        <BusinessImage
+          src={business.image_url}
+          alt={business.title}
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+        />
       </div>
 
       <div className="p-6">

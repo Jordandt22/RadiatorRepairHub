@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 
 // Icons
@@ -10,6 +9,7 @@ import { Info, Clock } from "lucide-react";
 
 // Components
 import OpenStatus from "@/components/businesses/status/OpenStatus";
+import BusinessImage from "@/components/businesses/BusinessImage";
 
 function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
   const router = useRouter();
@@ -24,19 +24,12 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
       aria-label={`Business listing for ${business.title}`}
     >
       <div className="group/image relative w-full h-56 bg-gray-200">
-        {business.image_url ? (
-          <Image
-            src={business.image_url}
-            alt={business.title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-            className="object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-200">
-            <p className="text-gray-500 text-center">No image available</p>
-          </div>
-        )}
+        <BusinessImage
+          src={business.image_url}
+          alt={business.title}
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+          showIcon={false}
+        />
 
         {/* Subtle black overlay on hover */}
         <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/50  transition-all duration-300 cursor-pointer" onClick={(e) => {
