@@ -29,11 +29,15 @@ export default function FAQPage() {
       question: "What should I look for in a radiator repair shop?",
       answer:
         "Look for shops with certified technicians, good customer reviews, proper licensing, and experience with your vehicle type. Check if they offer warranties on their work and use quality parts. For more information, you can visit their business page and give them a call.",
+      relatedBlog: {
+        title: "How to Choose a Radiator Shop",
+        href: "/blogs/how-to-choose-a-radiator-shop",
+      },
     },
     {
       question: "How much does radiator repair typically cost?",
       answer:
-        "Radiator repair costs vary based on the issue, vehicle type, and location. Simple repairs like fixing leaks can cost $100-300, while radiator replacement typically ranges from $300-900. Get quotes from multiple shops for the best price. Contact the business for a more accurate estimate.",
+        "Radiator repair costs vary based on the issue, vehicle type, and location. Simple repairs like fixing leaks can cost $100–$300 when the radiator is repairable, while radiator replacement typically ranges from $400–$900+ (economy vehicles can be lower; trucks and luxury models higher). Get quotes from multiple shops for the best price. Contact the business for a more accurate estimate.",
       relatedBlog: {
         title: "Radiator Repair Cost Guide",
         href: "/blogs/radiator-repair-cost-guide",
@@ -51,7 +55,7 @@ export default function FAQPage() {
     {
       question: "Can I drive with a radiator problem?",
       answer:
-        "It's not recommended to drive with radiator problems as it can lead to engine damage. If your car is overheating, pull over safely and turn off the engine. Call for a tow truck rather than risk further damage.",
+        "It's not recommended to drive with radiator problems as it can lead to engine damage. If your car is overheating, steaming, or losing coolant quickly, pull over safely, turn off the engine, and call for a tow. A very slow seep with a normal temperature gauge may allow a short trip to a nearby shop — only if you can monitor the gauge the entire way.",
       relatedBlog: {
         title: "Can You Drive With a Radiator Leak?",
         href: "/blogs/can-you-drive-with-a-radiator-leak",
@@ -62,8 +66,8 @@ export default function FAQPage() {
       answer:
         "Simple repairs like fixing leaks can take 1-2 hours, while radiator replacement typically takes 2-4 hours. Complex issues may require overnight service. Most shops can provide time estimates when you call.",
       relatedBlog: {
-        title: "Radiator Repair Cost Guide",
-        href: "/blogs/radiator-repair-cost-guide",
+        title: "How Long Does Radiator Repair Take?",
+        href: "/blogs/how-long-does-radiator-repair-take",
       },
     },
     {
@@ -79,7 +83,7 @@ export default function FAQPage() {
     {
       question: "How often should I have my radiator serviced?",
       answer:
-        "Regular radiator maintenance should be done every 30,000-50,000 miles or as recommended by your vehicle manufacturer. This includes coolant flushes, checking for leaks, and ensuring proper coolant levels.",
+        "Follow your vehicle manufacturer's schedule first — many older formulas call for service around every 30,000–50,000 miles, while some extended-life coolants last much longer. Typical service includes coolant flushes or drain-and-fills, leak checks, and verifying proper coolant levels.",
       relatedBlog: {
         title: "Radiator Flush: What to Expect & Cost",
         href: "/blogs/radiator-flush-what-to-expect-and-cost",
@@ -88,7 +92,7 @@ export default function FAQPage() {
     {
       question: "What types of coolant should I use?",
       answer:
-        "Always use the coolant type specified in your vehicle's owner manual. Different vehicles require different coolant formulations (conventional, extended-life, or specific OEM formulas). Using the wrong type can cause damage.",
+        "Always use the coolant type specified in your vehicle's owner manual. Different vehicles require different formulations (conventional green, extended-life OAT/HOAT, or OEM-specific coolants). Mixing incompatible types or using the wrong formula can cause corrosion, sludge, or cooling system damage.",
       relatedBlog: {
         title: "Radiator Flush: What to Expect & Cost",
         href: "/blogs/radiator-flush-what-to-expect-and-cost",
@@ -127,8 +131,8 @@ export default function FAQPage() {
       answer:
         "Search our directory for auto repair shops that offer radiator fan repair and cooling system diagnostics. Many specialists also handle fan clutch, fan motor, and blade replacement. Filter results by location to find shops near you.",
       relatedBlog: {
-        title: "Why Is My Car Overheating?",
-        href: "/blogs/why-is-my-car-overheating",
+        title: "Radiator Fan Not Working: Symptoms and Repair",
+        href: "/blogs/radiator-fan-not-working",
       },
     },
   ];

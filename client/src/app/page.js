@@ -37,7 +37,7 @@ export default function Home() {
     {
       question: "How much does radiator repair typically cost?",
       answer:
-        "Radiator repair costs vary based on the issue, vehicle type, and location. Simple repairs like fixing leaks can cost $100-300, while radiator replacement typically ranges from $300-900. Get quotes from multiple shops for the best price.",
+        "Radiator repair costs vary based on the issue, vehicle type, and location. Simple repairs like fixing leaks can cost $100–$300 when repairable, while radiator replacement typically ranges from $400–$900+. Get quotes from multiple shops for the best price.",
     },
     {
       question: "What are the signs that my radiator needs repair?",
