@@ -24,6 +24,9 @@
     "backfill-timezones-dev": "cross-env NODE_ENV=development RRH_TARGET=dev node src/scripts/backfillTimezones.js",
     "backfill-timezones-prod": "cross-env NODE_ENV=production RRH_TARGET=prod node src/scripts/backfillTimezones.js",
     "scrape-emails": "node src/scripts/scrapeEmails.js",
+    "cleanup-bad-emails": "npm run cleanup-bad-emails-dev",
+    "cleanup-bad-emails-dev": "cross-env NODE_ENV=development node src/scripts/cleanupBadEmails.js",
+    "cleanup-bad-emails-prod": "cross-env NODE_ENV=production node src/scripts/cleanupBadEmails.js",
     "sync-emails-dev": "cross-env NODE_ENV=development node src/scripts/syncEmails.js",
     "sync-emails-prod": "cross-env NODE_ENV=production node src/scripts/syncEmails.js"
   },

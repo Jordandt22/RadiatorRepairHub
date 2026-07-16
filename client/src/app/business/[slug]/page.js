@@ -5,6 +5,7 @@ import {
   MapPin,
   Star,
   Phone,
+  Mail,
   Globe,
   ExternalLink,
   CalendarDays,
@@ -580,14 +581,6 @@ async function Page({ params }) {
                     Contact Information
                   </h2>
 
-                  {business.cta_line && business.phone && (
-                    <div className="mb-4 bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
-                      <p className="text-sm text-blue-900 font-medium">
-                        {business.cta_line}
-                      </p>
-                    </div>
-                  )}
-
                   <div className="space-y-3 md:space-y-4">
                     {business.phone ? (
                       <div className="flex items-center gap-2 md:gap-3">
@@ -604,6 +597,25 @@ async function Page({ params }) {
                         <Phone className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
                         <span className="text-sm text-gray-700">
                           No Phone Number Available
+                        </span>
+                      </div>
+                    )}
+
+                    {business.email ? (
+                      <div className="flex items-center gap-2 md:gap-3">
+                        <Mail className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
+                        <a
+                          href={`mailto:${business.email}`}
+                          className="text-sm text-gray-700 hover:text-blue-600 transition-colors font-semibold break-all"
+                        >
+                          {business.email}
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 md:gap-3">
+                        <Mail className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
+                        <span className="text-sm text-gray-700">
+                          No Email Available
                         </span>
                       </div>
                     )}
@@ -632,7 +644,10 @@ async function Page({ params }) {
                   </div>
 
                   <div className="mt-4 md:mt-5">
-                    <QuickContactDialog businessName={business.title} />
+                    <QuickContactDialog
+                      businessId={business.id}
+                      businessName={business.title}
+                    />
                   </div>
                 </div>
 

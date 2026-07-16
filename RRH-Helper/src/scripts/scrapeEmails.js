@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { isJunkEmail } from "./emailFilters.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC_ROOT = path.join(__dirname, "..");
@@ -13,7 +14,7 @@ const EMAILS_DIR = path.join(SRC_ROOT, "emails");
 // emails → emails/batch-{BATCH}/emails.json
 // need-firecrawl → emails/need-firecrawl.json (shared, append across batches)
 const LIMIT = 100;
-const BATCH = 7;
+const BATCH = 20; // ! Finished Batch 20
 
 const BATCH_DIR = path.join(EMAILS_DIR, `batch-${BATCH}`);
 const EMAILS_FILE = path.join(BATCH_DIR, "emails.json");
@@ -63,38 +64,6 @@ const PLATFORM_HOST_PATTERNS = [
   /youtube\.com$/i,
   /youtu\.be$/i,
 ];
-
-const JUNK_LOCAL_PARTS = new Set([
-  "noreply",
-  "no-reply",
-  "donotreply",
-  "do-not-reply",
-  "mailer-daemon",
-  "postmaster",
-]);
-
-const JUNK_DOMAINS = new Set([
-  "example.com",
-  "example.org",
-  "test.com",
-  "email.com",
-  "domain.com",
-  "sentry.io",
-  "wixpress.com",
-  "wix.com",
-  "squarespace.com",
-  "godaddy.com",
-  "schema.org",
-  "w3.org",
-  "googleapis.com",
-  "gstatic.com",
-  "google.com",
-  "googlemail.com",
-  "cloudflare.com",
-  "jquery.com",
-  "github.com",
-  "gravatar.com",
-]);
 
 const EMAIL_REGEX =
   /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+/g;
@@ -180,30 +149,6 @@ function buildPageUrls(websiteUrl) {
   }
 
   return urls;
-}
-
-function isJunkEmail(email) {
-  const lower = email.toLowerCase();
-  const [local, domain] = lower.split("@");
-  if (!local || !domain) return true;
-  if (local.length > 64 || domain.length > 255) return true;
-  if (JUNK_LOCAL_PARTS.has(local)) return true;
-  if (JUNK_DOMAINS.has(domain)) return true;
-  if (
-    domain.endsWith(".png") ||
-    domain.endsWith(".jpg") ||
-    domain.endsWith(".jpeg") ||
-    domain.endsWith(".gif") ||
-    domain.endsWith(".svg") ||
-    domain.endsWith(".webp") ||
-    domain.endsWith(".css") ||
-    domain.endsWith(".js")
-  ) {
-    return true;
-  }
-  if (/\.(png|jpe?g|gif|svg|webp|css|js)@/i.test(lower)) return true;
-  if (local.includes("..") || domain.includes("..")) return true;
-  return false;
 }
 
 function extractEmailsFromHtml(html) {

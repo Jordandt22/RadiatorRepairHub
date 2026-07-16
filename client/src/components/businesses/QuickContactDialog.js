@@ -24,6 +24,11 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox";
+import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import {
+  ISSUE_LABEL_TO_ENUM,
+  submitQuickContact,
+} from "@/lib/api/contact-messages";
 
 const ISSUE_OPTIONS = [
   "Overheating",
@@ -63,7 +68,8 @@ function isValidEmail(value) {
   );
 }
 
-export default function QuickContactDialog({
+function QuickContactDialogContent({
+  businessId,
   businessName,
   trigger,
   triggerClassName,
@@ -71,19 +77,18 @@ export default function QuickContactDialog({
   showTriggerIcon = true,
   children,
 }) {
+  const { showCustomSuccess, showCustomError } = useToast();
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (errors[field] || ((field === "phone" || field === "email") && errors.contact)) {
+    if (errors[field]) {
       setErrors((prev) => {
         const next = { ...prev };
         delete next[field];
-        if (field === "phone" || field === "email") {
-          delete next.contact;
-        }
         return next;
       });
     }
@@ -98,16 +103,14 @@ export default function QuickContactDialog({
       next.name = "Name is required.";
     }
 
-    if (!phone && !email) {
-      next.contact = "Enter a phone number or email.";
+    if (!email) {
+      next.email = "Email is required.";
+    } else if (!isValidEmail(email)) {
+      next.email = "Please enter a valid email address.";
     }
 
     if (phone && !isValidPhone(phone)) {
       next.phone = "Enter a valid 10-digit phone number.";
-    }
-
-    if (email && !isValidEmail(email)) {
-      next.email = "Please enter a valid email address.";
     }
 
     if (!form.issue) {
@@ -128,15 +131,54 @@ export default function QuickContactDialog({
     setErrors({});
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    // Submission handling will be wired later
-    setOpen(false);
-    resetForm();
+
+    setIsSubmitting(true);
+
+    try {
+      const issue = ISSUE_LABEL_TO_ENUM[form.issue];
+      const { error } = await submitQuickContact({
+        businessId: businessId || undefined,
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        vehicleModel: form.vehicleModel.trim() || undefined,
+        issue,
+        urgency: form.urgency,
+        additionalDetails: form.additionalDetails.trim() || undefined,
+      });
+
+      if (error) {
+        const message =
+          typeof error.message === "string"
+            ? error.message
+            : "Sorry, there was an error sending your message. Please try again.";
+        showCustomError(message, "Message Failed");
+        return;
+      }
+
+      setOpen(false);
+      resetForm();
+      showCustomSuccess(
+        businessName
+          ? `Sent to ${businessName}!`
+          : "Your message was sent successfully!",
+        "Message Sent Successfully"
+      );
+    } catch {
+      showCustomError(
+        "Sorry, there was an error sending your message. Please try again.",
+        "Message Failed"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleOpenChange = (nextOpen) => {
+    if (isSubmitting) return;
     setOpen(nextOpen);
     if (!nextOpen) {
       resetForm();
@@ -162,12 +204,14 @@ export default function QuickContactDialog({
       </>
     );
 
-  const formButtonClassName = "cursor-pointer hover:scale-95 transition-all duration-200";
+  const formButtonClassName =
+    "cursor-pointer hover:scale-95 transition-all duration-200";
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={triggerElement}>{triggerContent}</DialogTrigger>
 
-      <DialogContent className="scrollbar-subtle sm:max-w-xl max-h-[min(90vh,44rem)] overflow-y-auto">
+      <DialogContent className="scrollbar-subtle sm:max-w-xl lg:max-w-2xl max-h-[min(90vh,44rem)] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Send className="size-4" />
@@ -182,7 +226,10 @@ export default function QuickContactDialog({
 
         <form onSubmit={handleSubmit} className="grid gap-4" noValidate>
           <div className="grid gap-1.5">
-            <label htmlFor="qc-name" className="text-sm font-medium text-foreground">
+            <label
+              htmlFor="qc-name"
+              className="text-sm font-medium text-foreground"
+            >
               Name <span className="text-destructive">*</span>
             </label>
             <Input
@@ -193,6 +240,7 @@ export default function QuickContactDialog({
               onChange={(e) => updateField("name", e.target.value)}
               aria-invalid={!!errors.name}
               placeholder="John Doe"
+              disabled={isSubmitting}
             />
             {errors.name && (
               <p className="text-xs text-destructive">{errors.name}</p>
@@ -200,8 +248,38 @@ export default function QuickContactDialog({
           </div>
 
           <div className="grid gap-1.5">
-            <label htmlFor="qc-phone" className="text-sm font-medium text-foreground">
-              Phone <span className="text-muted-foreground font-normal">(optional)</span>
+            <label
+              htmlFor="qc-email"
+              className="text-sm font-medium text-foreground"
+            >
+              Email <span className="text-destructive">*</span>
+            </label>
+            <Input
+              id="qc-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={form.email}
+              onChange={(e) => updateField("email", e.target.value)}
+              aria-invalid={!!errors.email}
+              placeholder="example@gmail.com"
+              disabled={isSubmitting}
+            />
+            {errors.email && (
+              <p className="text-xs text-destructive">{errors.email}</p>
+            )}
+          </div>
+
+          <div className="grid gap-1.5">
+            <label
+              htmlFor="qc-phone"
+              className="text-sm font-medium text-foreground"
+            >
+              Phone{" "}
+              <span className="text-muted-foreground font-normal">
+                (optional)
+              </span>
             </label>
             <Input
               id="qc-phone"
@@ -210,54 +288,13 @@ export default function QuickContactDialog({
               autoComplete="tel"
               value={form.phone}
               onChange={(e) => updateField("phone", e.target.value)}
-              aria-invalid={!!errors.phone || !!errors.contact}
+              aria-invalid={!!errors.phone}
               placeholder="(555) 123-4567"
+              disabled={isSubmitting}
             />
             {errors.phone && (
               <p className="text-xs text-destructive">{errors.phone}</p>
             )}
-          </div>
-
-          <div className="grid gap-1.5">
-            <label htmlFor="qc-email" className="text-sm font-medium text-foreground">
-              Email <span className="text-muted-foreground font-normal">(optional)</span>
-            </label>
-            <Input
-              id="qc-email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              value={form.email}
-              onChange={(e) => updateField("email", e.target.value)}
-              aria-invalid={!!errors.email || !!errors.contact}
-              placeholder="example@gmail.com"
-            />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email}</p>
-            )}
-            {errors.contact && (
-              <p className="text-xs text-destructive">{errors.contact}</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Provide at least a phone number or email.
-            </p>
-          </div>
-
-          <div className="grid gap-1.5">
-            <label
-              htmlFor="qc-vehicle"
-              className="text-sm font-medium text-foreground"
-            >
-              Vehicle Model{" "}
-              <span className="text-muted-foreground font-normal">(optional)</span>
-            </label>
-            <Input
-              id="qc-vehicle"
-              name="vehicleModel"
-              value={form.vehicleModel}
-              onChange={(e) => updateField("vehicleModel", e.target.value)}
-              placeholder="e.g. 2018 Honda Civic"
-            />
           </div>
 
           <div className="grid gap-1.5">
@@ -269,11 +306,13 @@ export default function QuickContactDialog({
               items={ISSUE_OPTIONS}
               value={form.issue}
               onValueChange={(value) => updateField("issue", value)}
+              disabled={isSubmitting}
             >
               <ComboboxInput
                 placeholder="Select an issue"
                 className="w-full"
                 aria-invalid={!!errors.issue}
+                disabled={isSubmitting}
               />
               <ComboboxContent>
                 <ComboboxEmpty>No matching issue.</ComboboxEmpty>
@@ -291,6 +330,26 @@ export default function QuickContactDialog({
             )}
           </div>
 
+          <div className="grid gap-1.5">
+            <label
+              htmlFor="qc-vehicle"
+              className="text-sm font-medium text-foreground"
+            >
+              Vehicle Model{" "}
+              <span className="text-muted-foreground font-normal">
+                (optional)
+              </span>
+            </label>
+            <Input
+              id="qc-vehicle"
+              name="vehicleModel"
+              value={form.vehicleModel}
+              onChange={(e) => updateField("vehicleModel", e.target.value)}
+              placeholder="e.g. 2018 Honda Civic"
+              disabled={isSubmitting}
+            />
+          </div>
+
           <div className="grid gap-2">
             <span className="text-sm font-medium text-foreground">
               Urgency <span className="text-destructive">*</span>
@@ -299,6 +358,7 @@ export default function QuickContactDialog({
               value={form.urgency}
               onValueChange={(value) => updateField("urgency", value)}
               className="grid gap-2"
+              disabled={isSubmitting}
             >
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <RadioGroupItem value="asap" />
@@ -309,6 +369,10 @@ export default function QuickContactDialog({
                 Can Wait
               </label>
             </RadioGroup>
+            <p className="text-xs text-muted-foreground">
+              Your message will still be sent as soon as possible, this is for
+              the shops.
+            </p>
           </div>
 
           <div className="grid gap-1.5">
@@ -339,6 +403,7 @@ export default function QuickContactDialog({
                   : "Anything else the shop should know..."
               }
               rows={3}
+              disabled={isSubmitting}
             />
             {errors.additionalDetails && (
               <p className="text-xs text-destructive">
@@ -349,20 +414,36 @@ export default function QuickContactDialog({
 
           <DialogFooter className="pt-2">
             <DialogClose
-              render={<Button type="button" variant="outline" className={`px-8 ${formButtonClassName}`} />}
+              render={
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={`px-8 ${formButtonClassName}`}
+                  disabled={isSubmitting}
+                />
+              }
             >
               Cancel
             </DialogClose>
             <Button
               type="submit"
+              disabled={isSubmitting}
               className={`gap-2 bg-blue-600 text-white hover:bg-blue-700 px-12 ${formButtonClassName}`}
             >
               <Send className="size-4" />
-              Send
+              {isSubmitting ? "Sending..." : "Send"}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export default function QuickContactDialog(props) {
+  return (
+    <ToastProvider>
+      <QuickContactDialogContent {...props} />
+    </ToastProvider>
   );
 }

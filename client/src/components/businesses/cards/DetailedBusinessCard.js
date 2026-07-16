@@ -74,6 +74,7 @@ function DetailedBusinessCard({ business }) {
 
         <div className="flex items-center justify-between gap-2 pt-4 border-t border-gray-100">
           <QuickContactDialog
+            businessId={business.id}
             businessName={business.title}
             trigger={
               <Button

@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC_ROOT = path.join(__dirname, "..");
 
 // Set BATCH to match the scrape folder you want to sync (emails/batch-{BATCH}/emails.json).
-const BATCH = 6;
+const BATCH = 20; // ! Finished Batch 20
 
 const EMAILS_FILE = path.join(SRC_ROOT, "emails", `batch-${BATCH}`, "emails.json");
 
