@@ -1,8 +1,10 @@
 import React from "react";
 import Link from "next/link";
-import { MapPin, Star, Phone } from "lucide-react";
+import { MapPin, Star, Send, MoveRight } from "lucide-react";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
+import QuickContactDialog from "@/components/businesses/QuickContactDialog";
+import { Button } from "@/components/ui/button";
 
 function DetailedBusinessCard({ business }) {
   return (
@@ -70,16 +72,25 @@ function DetailedBusinessCard({ business }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="flex items-center text-gray-600">
-            <Phone className="w-4 h-4 mr-2" />
-            <span className="text-sm">{business.phone}</span>
-          </div>
+        <div className="flex items-center justify-between gap-2 pt-4 border-t border-gray-100">
+          <QuickContactDialog
+            businessName={business.title}
+            trigger={
+              <Button
+                type="button"
+                className="h-9 gap-1.5 bg-blue-600 text-white hover:bg-blue-600 cursor-pointer hover:scale-105 hover:shadow-md transition-all duration-200 px-8"
+              />
+            }
+          >
+            <Send className="size-3.5" />
+            Contact
+          </QuickContactDialog>
           <Link
             href={`/business/${business.slug}`}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 duration-300 hover:scale-105"
+            className="inline-flex items-center gap-1.5 bg-secondary px-4 py-2 rounded-full text-sm font-medium hover:shadow-md duration-300 hover:scale-105"
           >
             View Details
+            <MoveRight className="w-4 h-4" />
           </Link>
         </div>
       </div>

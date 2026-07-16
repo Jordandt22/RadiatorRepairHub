@@ -11,8 +11,9 @@ function ContactSection() {
             Get In Touch
           </h2>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-            Have questions about our radiator repair directory? We&apos;re here
-            to help you find the perfect repair shop for your needs.
+            Questions about the RadiatorRepairHub directory, listings, or
+            partnerships? Contact our team — to reach a repair shop, use Quick
+            Contact on their business page.
           </p>
         </div>
 
@@ -64,10 +65,11 @@ function ContactSection() {
                 Have a Question?
               </h3>
               <p className="text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
-                <strong>Need help</strong> finding a radiator repair shop? Have{" "}
-                <strong>questions</strong> about our services? Want to get your{" "}
-                <strong>business listed</strong>? We&apos;re here to help you
-                find the perfect repair solution for your vehicle.
+                <strong>Directory support</strong>, listing questions,{" "}
+                <strong>partnerships</strong>, or website feedback? Message the
+                RadiatorRepairHub team. Want your shop in the directory?{" "}
+                <strong>Get listed</strong> for free. Need a repair shop?
+                Contact them from their business page.
               </p>
               <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
                 <Link
