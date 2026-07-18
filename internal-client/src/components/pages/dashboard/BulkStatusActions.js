@@ -1,4 +1,4 @@
-import { CheckIcon, FlagIcon } from "lucide-react";
+import { CheckIcon, FlagIcon, RefreshCwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function BulkStatusActions({
@@ -9,10 +9,11 @@ export default function BulkStatusActions({
   onApprove,
   showFlag = true,
   showApprove = true,
+  onRefresh,
+  refreshPending = false,
+  refreshError = null,
 }) {
-  if (!showFlag && !showApprove) {
-    return null;
-  }
+  const showBulkActions = showFlag || showApprove;
 
   return (
     <div className="flex flex-col gap-2">
@@ -34,19 +35,34 @@ export default function BulkStatusActions({
             Approve All
           </Button>
         ) : null}
-        {selectedCount > 0 ? (
-          <span className="text-sm text-muted-foreground">
-            {selectedCount} selected
-          </span>
-        ) : (
-          <span className="text-sm text-muted-foreground">
-            Select messages to update
-          </span>
-        )}
+        {showBulkActions ? (
+          selectedCount > 0 ? (
+            <span className="text-sm text-muted-foreground">
+              {selectedCount} selected
+            </span>
+          ) : (
+            <span className="text-sm text-muted-foreground">
+              Select messages to update
+            </span>
+          )
+        ) : null}
+        <Button
+          variant="outline"
+          size="sm"
+          className="ml-auto"
+          disabled={refreshPending}
+          onClick={onRefresh}
+        >
+          <RefreshCwIcon className={refreshPending ? "animate-spin" : undefined} />
+          Refresh
+        </Button>
       </div>
 
       {actionError ? (
         <p className="text-sm text-destructive">{actionError}</p>
+      ) : null}
+      {refreshError ? (
+        <p className="text-sm text-destructive">{refreshError}</p>
       ) : null}
     </div>
   );

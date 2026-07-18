@@ -591,6 +591,8 @@ async function Page({ params }) {
                     <QuickContactDialog
                       businessId={business.id}
                       businessName={business.title}
+                      email={business.email}
+                      phone={business.phone}
                     />
                   </div>
                 </div>

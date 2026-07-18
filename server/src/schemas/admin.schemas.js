@@ -32,3 +32,11 @@ export const GetContactMessagesQuerySchema = Yup.object({
     .oneOf([...CONTACT_MESSAGE_STATUSES, null], "Invalid status")
     .optional(),
 });
+
+export const CACHE_INVALIDATE_RESOURCES = ["contact-messages"];
+
+export const InvalidateCacheSchema = Yup.object({
+  resource: Yup.string()
+    .oneOf(CACHE_INVALIDATE_RESOURCES, "Invalid cache resource")
+    .required("Resource is required"),
+});

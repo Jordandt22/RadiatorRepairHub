@@ -3,12 +3,14 @@ import {
   loginAdmin,
   getContactMessages,
   updateContactMessagesStatus,
+  invalidateCache,
 } from "../../controllers/admin/admin.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
 import {
   LoginAdminSchema,
   UpdateContactMessagesStatusSchema,
   GetContactMessagesQuerySchema,
+  InvalidateCacheSchema,
 } from "../../schemas/admin.schemas.js";
 import { bodyValidator, queryValidator } from "../../middleware/validators.js";
 import { authAdmin } from "../../middleware/admin.mw.js";
@@ -33,6 +35,13 @@ adminRouter.patch(
   authAdmin,
   bodyValidator(UpdateContactMessagesStatusSchema),
   serverErrorCatcherWrapper(updateContactMessagesStatus)
+);
+
+adminRouter.post(
+  "/cache/invalidate",
+  authAdmin,
+  bodyValidator(InvalidateCacheSchema),
+  serverErrorCatcherWrapper(invalidateCache)
 );
 
 export default adminRouter;

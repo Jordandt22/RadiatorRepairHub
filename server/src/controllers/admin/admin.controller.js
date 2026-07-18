@@ -13,7 +13,7 @@ import {
   deleteCacheDataByPrefix,
 } from "../../redis/redis.js";
 
-const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR } = errorCodes;
+const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
 
 export const loginAdmin = async (req, res) => {
   const { password } = req.body;
@@ -120,6 +120,30 @@ export const updateContactMessagesStatus = async (req, res) => {
     successHandler({
       updated: contactMessageIds.length,
       contactMessageIds,
+    })
+  );
+};
+
+const CACHE_RESOURCE_PREFIXES = {
+  "contact-messages": "CONTACT_MESSAGES",
+};
+
+export const invalidateCache = async (req, res) => {
+  const { resource } = req.body;
+  const prefix = CACHE_RESOURCE_PREFIXES[resource];
+
+  if (!prefix) {
+    return res
+      .status(400)
+      .json(customErrorHandler(YUP_ERROR, "Invalid cache resource"));
+  }
+
+  await deleteCacheDataByPrefix(prefix);
+
+  return res.status(200).json(
+    successHandler({
+      resource,
+      invalidated: true,
     })
   );
 };

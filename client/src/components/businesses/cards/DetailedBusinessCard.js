@@ -76,6 +76,8 @@ function DetailedBusinessCard({ business }) {
           <QuickContactDialog
             businessId={business.id}
             businessName={business.title}
+            email={business.email}
+            phone={business.phone}
             trigger={
               <Button
                 type="button"

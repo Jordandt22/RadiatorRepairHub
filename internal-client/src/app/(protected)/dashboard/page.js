@@ -46,6 +46,7 @@ export default function DashboardPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [actionError, setActionError] = useState(null);
+  const [refreshError, setRefreshError] = useState(null);
 
   const statusFilter = TAB_STATUS[activeTab] ?? null;
 
@@ -148,6 +149,40 @@ export default function DashboardPage() {
     },
   });
 
+  const refreshMutation = useMutation({
+    mutationFn: async () => {
+      const result = await fetchApi("/admin/cache/invalidate", {
+        method: "POST",
+        accessToken,
+        body: JSON.stringify({ resource: "contact-messages" }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to refresh cache";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onMutate: () => {
+      setRefreshError(null);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
+    },
+    onError: (err) => {
+      setRefreshError(err.message || "Failed to refresh");
+    },
+  });
+
   useEffect(() => {
     setLoading(statusMutation.isPending);
   }, [statusMutation.isPending, setLoading]);
@@ -225,6 +260,9 @@ export default function DashboardPage() {
           onApprove={() => runStatusUpdate("approved")}
           showFlag={activeTab !== "flagged" && activeTab !== "sent"}
           showApprove={activeTab !== "approved" && activeTab !== "sent"}
+          onRefresh={() => refreshMutation.mutate()}
+          refreshPending={refreshMutation.isPending || isFetching}
+          refreshError={refreshError}
         />
 
         {error && !isFetching ? (

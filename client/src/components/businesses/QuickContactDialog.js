@@ -72,6 +72,14 @@ function isValidEmail(value) {
   );
 }
 
+function hasBusinessContactInfo(email, phone) {
+  const normalizedEmail =
+    typeof email === "string" ? email.trim() : email;
+  const normalizedPhone =
+    typeof phone === "string" ? phone.trim() : phone;
+  return Boolean(normalizedEmail || normalizedPhone);
+}
+
 function QuickContactDialogContent({
   businessId,
   businessName,
@@ -500,6 +508,10 @@ function QuickContactDialogContent({
 }
 
 export default function QuickContactDialog(props) {
+  if (!hasBusinessContactInfo(props.email, props.phone)) {
+    return null;
+  }
+
   return (
     <ToastProvider>
       <QuickContactDialogContent {...props} />
