@@ -6,10 +6,21 @@ import { createSupabaseClient, logSupabaseTarget } from "./supabaseClient.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC_ROOT = path.join(__dirname, "..");
 
-// Set BATCH to match the scrape folder you want to sync (emails/batch-{BATCH}/emails.json).
-const BATCH = 20; // ! Finished Batch 20
+// "custom" → emails/batch-{BATCH}/emails.json
+// "firecrawl" → emails/firecrawl/batch-{BATCH}/emails.json
+const SOURCE = "firecrawl"; // "custom" | "firecrawl"
+const BATCH = 1;
 
-const EMAILS_FILE = path.join(SRC_ROOT, "emails", `batch-${BATCH}`, "emails.json");
+const EMAILS_FILE =
+  SOURCE === "firecrawl"
+    ? path.join(
+      SRC_ROOT,
+      "emails",
+      "firecrawl",
+      `batch-${BATCH}`,
+      "emails.json"
+    )
+    : path.join(SRC_ROOT, "emails", `batch-${BATCH}`, "emails.json");
 
 const force = process.argv.includes("--force");
 const dryRun = process.argv.includes("--dry-run");
@@ -50,6 +61,10 @@ async function updateEmail(id, email) {
 }
 
 async function main() {
+  if (SOURCE !== "custom" && SOURCE !== "firecrawl") {
+    throw new Error('SOURCE must be "custom" or "firecrawl"');
+  }
+
   logSupabaseTarget();
 
   if (dryRun) {
@@ -65,9 +80,12 @@ async function main() {
     (e) => e?.slug && e?.email && String(e.email).trim()
   );
 
-  console.log(
-    `Loaded ${entries.length} emails from batch-${BATCH}/emails.json\n`
-  );
+  const labelPath =
+    SOURCE === "firecrawl"
+      ? `firecrawl/batch-${BATCH}/emails.json`
+      : `batch-${BATCH}/emails.json`;
+
+  console.log(`Loaded ${entries.length} emails from ${labelPath}\n`);
 
   let updated = 0;
   let skipped = 0;

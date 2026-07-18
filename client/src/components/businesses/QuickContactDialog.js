@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import debounce from "lodash.debounce";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,10 +26,13 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { usePostHog } from "posthog-js/react";
 import {
   ISSUE_LABEL_TO_ENUM,
   submitQuickContact,
 } from "@/lib/api/contact-messages";
+
+const SUBMIT_DEBOUNCE_MS = 2000;
 
 const ISSUE_OPTIONS = [
   "Overheating",
@@ -78,10 +82,20 @@ function QuickContactDialogContent({
   children,
 }) {
   const { showCustomSuccess, showCustomError } = useToast();
+  const posthog = usePostHog();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
+  const suppressCancelRef = useRef(false);
+
+  const capture = (event, props = {}) => {
+    posthog?.capture(event, {
+      business_id: businessId || undefined,
+      business_name: businessName || undefined,
+      ...props,
+    });
+  };
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -131,9 +145,8 @@ function QuickContactDialogContent({
     setErrors({});
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
+  const submitMessage = async () => {
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
 
@@ -159,8 +172,15 @@ function QuickContactDialogContent({
         return;
       }
 
+      capture("contact_form_submitted", {
+        issue,
+        urgency: form.urgency,
+      });
+
+      suppressCancelRef.current = true;
       setOpen(false);
       resetForm();
+      capture("contact_form_closed");
       showCustomSuccess(
         businessName
           ? `Sent to ${businessName}!`
@@ -177,12 +197,51 @@ function QuickContactDialogContent({
     }
   };
 
+  const submitMessageRef = useRef(submitMessage);
+  submitMessageRef.current = submitMessage;
+
+  const debouncedSubmit = useMemo(
+    () =>
+      debounce(
+        () => {
+          submitMessageRef.current?.();
+        },
+        SUBMIT_DEBOUNCE_MS,
+        { leading: true, trailing: false }
+      ),
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedSubmit.cancel();
+    };
+  }, [debouncedSubmit]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    if (!validate()) return;
+    debouncedSubmit();
+  };
+
   const handleOpenChange = (nextOpen) => {
     if (isSubmitting) return;
     setOpen(nextOpen);
-    if (!nextOpen) {
-      resetForm();
+    if (nextOpen) {
+      capture("contact_form_opened");
+      return;
     }
+
+    if (suppressCancelRef.current) {
+      suppressCancelRef.current = false;
+      return;
+    }
+
+    capture("contact_form_cancelled");
+    capture("contact_form_closed");
+    debouncedSubmit.cancel();
+    resetForm();
   };
 
   const detailsRequired = form.issue === "Other";

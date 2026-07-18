@@ -36,6 +36,7 @@ const JUNK_DOMAINS = new Set([
   "gravatar.com",
   "indiantypefoundry.com",
   "latofonts.com",
+  "mhtml.blink",
 ]);
 
 const JUNK_DOMAIN_SUFFIXES = [
@@ -44,6 +45,7 @@ const JUNK_DOMAIN_SUFFIXES = [
   ".wixpress.com",
   ".googleapis.com",
   ".gstatic.com",
+  ".blink",
 ];
 
 const PLACEHOLDER_EMAILS = new Set([
@@ -68,6 +70,15 @@ export function getJunkReason(email) {
 
   if (PLACEHOLDER_EMAILS.has(lower)) return "placeholder";
   if (JUNK_LOCAL_PARTS.has(local)) return "junk_local";
+
+  // Chrome/Blink MHTML frame IDs: frame-<hex>@mhtml.blink
+  if (domain === "mhtml.blink" || domain.endsWith(".blink")) {
+    return "browser_artifact";
+  }
+  if (/^frame-[0-9a-f]{8,}$/i.test(local)) {
+    return "browser_artifact";
+  }
+
   if (JUNK_DOMAINS.has(domain)) {
     if (
       domain === "mysite.com" ||
@@ -87,6 +98,7 @@ export function getJunkReason(email) {
     ) {
       return "font_cdn";
     }
+    if (domain === "mhtml.blink") return "browser_artifact";
     return "junk_domain";
   }
 
@@ -96,6 +108,7 @@ export function getJunkReason(email) {
   for (const suffix of JUNK_DOMAIN_SUFFIXES) {
     if (domain.endsWith(suffix) || domain === suffix.slice(1)) {
       if (suffix.includes("sentry")) return "sentry";
+      if (suffix.includes("blink")) return "browser_artifact";
       return "junk_domain";
     }
   }

@@ -4,9 +4,6 @@ import { notFound } from "next/navigation";
 import {
   MapPin,
   Star,
-  Phone,
-  Mail,
-  Globe,
   ExternalLink,
   CalendarDays,
   CreditCard,
@@ -23,6 +20,7 @@ import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import BusinessHeroBanner from "@/components/businesses/BusinessHeroBanner";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
+import BusinessContactLinks from "@/components/businesses/BusinessContactLinks";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
@@ -581,67 +579,13 @@ async function Page({ params }) {
                     Contact Information
                   </h2>
 
-                  <div className="space-y-3 md:space-y-4">
-                    {business.phone ? (
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <Phone className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
-                        <a
-                          href={`tel:${business.phone}`}
-                          className="text-sm text-gray-700 hover:text-blue-600 transition-colors font-semibold"
-                        >
-                          {business.phone}
-                        </a>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <Phone className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
-                        <span className="text-sm text-gray-700">
-                          No Phone Number Available
-                        </span>
-                      </div>
-                    )}
-
-                    {business.email ? (
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <Mail className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
-                        <a
-                          href={`mailto:${business.email}`}
-                          className="text-sm text-gray-700 hover:text-blue-600 transition-colors font-semibold break-all"
-                        >
-                          {business.email}
-                        </a>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <Mail className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
-                        <span className="text-sm text-gray-700">
-                          No Email Available
-                        </span>
-                      </div>
-                    )}
-
-                    {business.website ? (
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <Globe className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
-                        <Link
-                          href={business.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1 break-all"
-                        >
-                          Visit Website
-                          <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <Globe className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
-                        <span className="text-sm text-gray-700">
-                          No Website Available
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  <BusinessContactLinks
+                    businessId={business.id}
+                    businessName={business.title}
+                    phone={business.phone}
+                    email={business.email}
+                    website={business.website}
+                  />
 
                   <div className="mt-4 md:mt-5">
                     <QuickContactDialog

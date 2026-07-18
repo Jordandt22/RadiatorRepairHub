@@ -8,6 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC_ROOT = path.join(__dirname, "..");
 const EMAILS_DIR = path.join(SRC_ROOT, "emails");
 const NEED_FIRECRAWL_FILE = path.join(EMAILS_DIR, "need-firecrawl.json");
+const FIRECRAWL_DIR = path.join(EMAILS_DIR, "firecrawl");
 
 const dryRun = process.argv.includes("--dry-run");
 
@@ -25,21 +26,41 @@ function saveJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-function listBatchEmailFiles() {
+function listCustomBatchFiles() {
   if (!fs.existsSync(EMAILS_DIR)) return [];
 
   return fs
     .readdirSync(EMAILS_DIR, { withFileTypes: true })
     .filter((d) => d.isDirectory() && /^batch-\d+$/.test(d.name))
     .map((d) => ({
-      batch: d.name,
+      label: d.name,
+      source: "custom",
       file: path.join(EMAILS_DIR, d.name, "emails.json"),
     }))
     .filter((b) => fs.existsSync(b.file))
     .sort(
       (a, b) =>
-        Number(a.batch.replace("batch-", "")) -
-        Number(b.batch.replace("batch-", ""))
+        Number(a.label.replace("batch-", "")) -
+        Number(b.label.replace("batch-", ""))
+    );
+}
+
+function listFirecrawlBatchFiles() {
+  if (!fs.existsSync(FIRECRAWL_DIR)) return [];
+
+  return fs
+    .readdirSync(FIRECRAWL_DIR, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && /^batch-\d+$/.test(d.name))
+    .map((d) => ({
+      label: `firecrawl/${d.name}`,
+      source: "firecrawl",
+      file: path.join(FIRECRAWL_DIR, d.name, "emails.json"),
+    }))
+    .filter((b) => fs.existsSync(b.file))
+    .sort(
+      (a, b) =>
+        Number(a.label.replace("firecrawl/batch-", "")) -
+        Number(b.label.replace("firecrawl/batch-", ""))
     );
 }
 
@@ -74,7 +95,7 @@ async function main() {
     console.log("Dry run — no files or DB rows will be written\n");
   }
 
-  const batchFiles = listBatchEmailFiles();
+  const batchFiles = [...listCustomBatchFiles(), ...listFirecrawlBatchFiles()];
   if (batchFiles.length === 0) {
     console.log("No batch emails.json files found.");
     return;
@@ -85,17 +106,21 @@ async function main() {
     needFirecrawl.map((e) => e.slug).filter(Boolean)
   );
 
+  // Firecrawl junk is removed so the next scrape can retry with better filters
+  // (do not add to still-need, which would skip them).
+
   let removed = 0;
   let moved = 0;
   let cleared = 0;
   let alreadyNull = 0;
   let missing = 0;
   let failed = 0;
+  let firecrawlRemoved = 0;
 
-  for (const { batch, file } of batchFiles) {
+  for (const { label, source, file } of batchFiles) {
     const entries = loadJson(file, []);
     if (!Array.isArray(entries)) {
-      console.error(`❌ ${batch}/emails.json is not an array — skipped`);
+      console.error(`❌ ${label}/emails.json is not an array — skipped`);
       continue;
     }
 
@@ -112,17 +137,18 @@ async function main() {
     }
 
     console.log(
-      `\n${batch}: ${entries.length} emails → keep ${keep.length}, remove ${bad.length}`
+      `\n${label}: ${entries.length} emails → keep ${keep.length}, remove ${bad.length}`
     );
 
     if (bad.length === 0) continue;
 
     for (const { entry, reason } of bad) {
       removed++;
-      const label = entry.slug || "(no-slug)";
-      console.log(`  🗑️  ${label} — ${entry.email} (${reason})`);
+      if (source === "firecrawl") firecrawlRemoved++;
+      const slugLabel = entry.slug || "(no-slug)";
+      console.log(`  🗑️  ${slugLabel} — ${entry.email} (${reason})`);
 
-      if (!needFirecrawlSlugs.has(entry.slug)) {
+      if (source === "custom" && entry.slug && !needFirecrawlSlugs.has(entry.slug)) {
         needFirecrawl.push({
           slug: entry.slug,
           website: entry.website || "",
@@ -160,9 +186,14 @@ async function main() {
   }
 
   console.log(
-    `\nDone. removed from batches: ${removed} | added to need-firecrawl: ${moved} | supabase cleared: ${cleared} | already null: ${alreadyNull} | missing: ${missing} | failed: ${failed}`
+    `\nDone. removed from batches: ${removed} (firecrawl: ${firecrawlRemoved}) | added to need-firecrawl: ${moved} | supabase cleared: ${cleared} | already null: ${alreadyNull} | missing: ${missing} | failed: ${failed}`
   );
-  console.log(`need-firecrawl total: ${needFirecrawl.length}`);
+  console.log(
+    `need-firecrawl total: ${needFirecrawl.length}` +
+      (firecrawlRemoved
+        ? ` | firecrawl junk removed (eligible for retry on next scrape)`
+        : "")
+  );
 }
 
 main().catch((err) => {
