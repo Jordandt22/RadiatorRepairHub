@@ -1,6 +1,16 @@
 import React from "react";
 import Link from "next/link";
-import { Mail, MapPin, Clock, CheckCircle, List } from "lucide-react";
+import {
+  Mail,
+  MapPin,
+  Clock,
+  CheckCircle,
+  List,
+  Store,
+  Search,
+  Info,
+  MoveRight,
+} from "lucide-react";
 
 // Contexts
 import { ToastProvider } from "@/contexts/ToastProvider";
@@ -11,17 +21,15 @@ import ContactHeader from "@/components/pages/contact/ContactHeader";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 
 export const metadata = {
-  title:
-    "Contact RadiatorRepairHub | Get Help Finding Radiator Repair Services",
+  title: "Contact RadiatorRepairHub | Directory Support & Feedback",
   description:
-    "Contact RadiatorRepairHub for help finding radiator repair services. Get support, ask questions, or provide feedback about our directory of trusted cooling system experts.",
+    "Contact the RadiatorRepairHub team about the directory, listings, partnerships, or website feedback. To reach a repair shop, use Quick Contact on that business's page.",
   keywords:
-    "contact radiator repair hub, radiator repair help, cooling system support, auto repair directory contact",
+    "contact radiator repair hub, directory support, listing help, website feedback, radiator repair hub contact",
   openGraph: {
-    title:
-      "Contact RadiatorRepairHub | Get Help Finding Radiator Repair Services",
+    title: "Contact RadiatorRepairHub | Directory Support & Feedback",
     description:
-      "Contact RadiatorRepairHub for help finding radiator repair services. Get support, ask questions, or provide feedback about our directory of trusted cooling system experts.",
+      "Reach the RadiatorRepairHub team for directory support, listing questions, and partnerships. Contact repair shops directly from their business page.",
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
@@ -52,13 +60,12 @@ export const metadata = {
 };
 
 const Page = () => {
-  // ContactPage Schema
   const contactPageSchema = {
     "@context": "https://schema.org",
     "@type": "ContactPage",
     name: "Contact RadiatorRepairHub",
     description:
-      "Get in touch with RadiatorRepairHub for support and inquiries",
+      "Contact the RadiatorRepairHub team for directory support, listing help, and partnerships",
     url: "https://radiatorrepairhub.com/contact",
     mainEntity: {
       "@id": "https://radiatorrepairhub.com/#organization",
@@ -74,27 +81,67 @@ const Page = () => {
         }}
       />
       <div className="min-h-screen bg-gray-5 pb-32">
-        {/* Header */}
         <ContactHeader />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Contact Form */}
-            <div className="lg:col-span-2">
+          {/* Business contact notice */}
+          <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-5 md:p-6">
+            <div className="flex items-start gap-3 md:gap-4">
+
+              <div className="min-w-0 flex-1">
+                <h2 className="flex items-center gap-2 text-lg font-medium mb-1 font-heading">
+                  <Info className="w-5 h-5 text-yellow-700" />
+                  Looking to Contact a Repair Shop?
+                </h2>
+                <p className="text-sm md:text-base mb-4 leading-relaxed">
+                  This form reaches the <strong>RadiatorRepairHub</strong> team
+                  only (directory support, listing issues, partnerships, and
+                  website feedback). We cannot forward repair requests or
+                  schedule appointments with shops.
+                </p>
+                <p className="text-sm md:text-base mb-4 leading-relaxed">
+                  To message a business, open their listing and use{" "}
+                  <strong>Quick Contact</strong> on the business page or call
+                  them using the phone number listed there.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href="/search"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-8 py-2 text-sm font-semibold text-white hover:bg-blue-600 transition-all hover:scale-95"
+                  >
+                    <Search className="w-4 h-4" />
+                    Find a Shop
+                  </Link>
+                  <Link
+                    href="/featured"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-blue-600 px-8 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
+                  >
+                    <Store className="w-4 h-4" />
+                    Featured Businesses
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:items-stretch">
+            <div className="lg:col-span-2 flex">
               <ToastProvider>
-                <ContactForm />
+                <ContactForm
+                  className="h-full w-full"
+                  formTitle="Message RadiatorRepairHub"
+                  messagePlaceholder="Tell us about your directory question, listing issue, partnership idea, or website feedback..."
+                />
               </ToastProvider>
             </div>
 
-            {/* Contact Information */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-lg p-8 h-fit border-t-5 border-blue-200 hover:border-blue-500 transition-all duration-300">
+            <div className="lg:col-span-1 flex">
+              <div className="bg-white rounded-xl shadow-lg p-8 h-full w-full flex flex-col border-t-5 border-blue-200 hover:border-blue-500 transition-all duration-300">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 font-heading">
-                  Get in Touch
+                  About This Contact Form
                 </h2>
 
-                <div className="space-y-6">
-                  {/* Email */}
+                <div className="space-y-6 flex-1">
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
                       <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -102,22 +149,21 @@ const Page = () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                        Email Us
+                      <h3 className="text-md font-semibold text-gray-900 mb-1">
+                        Email the Team
                       </h3>
-                      <p className="text-gray-600 mb-2">
-                        Send us an email anytime
+                      <p className="text-sm text-gray-600 mb-2">
+                        For RadiatorRepairHub support and inquiries
                       </p>
                       <a
                         href={`mailto:${process.env.BUSINESS_EMAIL}`}
-                        className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                        className="text-sm text-blue-600 hover:text-blue-600 font-medium transition-colors break-all"
                       >
                         {process.env.BUSINESS_EMAIL}
                       </a>
                     </div>
                   </div>
 
-                  {/* Response Time */}
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
                       <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -125,17 +171,15 @@ const Page = () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      <h3 className="text-md font-semibold text-gray-900 mb-1">
                         Response Time
                       </h3>
-                      <p className="text-gray-600">
-                        We typically respond to all inquiries within 24 hours
-                        during business days.
+                      <p className="text-sm text-gray-600">
+                        We typically respond within 24 hours on business days.
                       </p>
                     </div>
                   </div>
 
-                  {/* Location */}
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
                       <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -143,17 +187,33 @@ const Page = () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                        Service Area
+                      <h3 className="text-md font-semibold text-gray-900 mb-1">
+                        What We Can Help With
                       </h3>
-                      <p className="text-gray-600">
-                        We help connect you with radiator repair professionals
-                        across the United States.
+                      <p className="text-sm text-gray-600">
+                        Directory questions, incorrect listing details, website
+                        bugs, advertising, and partnerships across the U.S.
                       </p>
                     </div>
                   </div>
 
-                  {/* Get Listed */}
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
+                        <Store className="w-6 h-6 text-slate-600" />
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-md font-semibold text-gray-900 mb-1">
+                        Contacting a Shop
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Use <strong>Quick Contact</strong> (or the phone number)
+                        on that business&apos;s page — not this form.
+                      </p>
+                    </div>
+                  </div>
+
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
                       <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -161,43 +221,45 @@ const Page = () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      <h3 className="text-md font-semibold text-gray-900 mb-1">
                         Own a Business?
                       </h3>
-                      <p className="text-gray-600">
-                        Want to get your business listed? We can help grow your
-                        business and reach more customers.
+                      <p className="text-sm text-gray-600">
+                        Request a free listing so customers can find your
+                        radiator repair services.
                       </p>
                     </div>
                   </div>
 
                   <Link
                     href="/get-listed"
-                    className="block mt-4 font-medium rounded-full border-2 border-blue-500 text-blue-500 px-4 py-2 text-center hover:bg-blue-500 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 font-medium rounded-full border-2 border-blue-600 text-blue-600 px-4 py-2 text-center hover:bg-blue-600 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-sm"
                   >
                     Get Listed
+                    <MoveRight className="w-4 h-4" />
                   </Link>
                 </div>
 
-                {/* Additional Info */}
-                <div className="mt-8 p-6 bg-blue-50 rounded-lg">
-                  <div className="flex items-center mb-3">
-                    <CheckCircle className="w-5 h-5 text-blue-600 mr-2" />
-                    <h4 className="font-semibold text-blue-900">
-                      Quick Response Guarantee
-                    </h4>
+                <div className="mt-auto pt-8">
+                  <div className="p-6 bg-blue-50 rounded-lg">
+                    <div className="flex items-center mb-3">
+                      <CheckCircle className="w-5 h-5 text-blue-600 mr-2" />
+                      <h4 className="font-semibold text-blue-900">
+                        Platform Support
+                      </h4>
+                    </div>
+                    <p className="text-sm text-blue-800">
+                      Messages sent here go to RadiatorRepairHub staff. For
+                      repairs, quotes, or appointments, contact the shop on their
+                      business page.
+                    </p>
                   </div>
-                  <p className="text-sm text-blue-800">
-                    We&apos;re committed to helping you find the right radiator
-                    repair service. All inquiries receive a personalized
-                    response within 24 hours.
-                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-          <DirectoryDisclaimer className="mt-12 max-w-4xl mx-auto" />
+          <DirectoryDisclaimer className="mt-12" />
         </div>
       </div>
     </>

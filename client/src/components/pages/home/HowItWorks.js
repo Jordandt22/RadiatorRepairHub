@@ -40,7 +40,8 @@ function HowItWorks() {
             {
               step: 4,
               title: "Contact the business",
-              description: "Call or visit the shop that best fits your needs",
+              description:
+                "Use Quick Contact on the business page, or call or visit the shop directly",
               icon: <Phone className="w-8 h-8" />,
             },
           ].map((item, index) => (

@@ -4,10 +4,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export function getSupabaseTarget() {
+  // Prefer NODE_ENV; RRH_TARGET remains a legacy override for older scripts.
+  if (process.env.NODE_ENV === "production") return "prod";
+  if (process.env.NODE_ENV === "development") return "dev";
   if (process.env.RRH_TARGET === "prod") return "prod";
   if (process.env.RRH_TARGET === "dev") return "dev";
-  if (process.env.NODE_ENV === "development") return "dev";
-  if (process.env.NODE_ENV === "production") return "prod";
   return "dev";
 }
 
@@ -43,5 +44,8 @@ export function createSupabaseClient() {
 
 export function logSupabaseTarget() {
   const target = getSupabaseTarget();
-  console.log(`Using ${target === "dev" ? "DEV" : "PRODUCTION"} Supabase`);
+  const nodeEnv = process.env.NODE_ENV || "(unset)";
+  console.log(
+    `Using ${target === "dev" ? "DEV" : "PRODUCTION"} Supabase (NODE_ENV=${nodeEnv})`
+  );
 }

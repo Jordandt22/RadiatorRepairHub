@@ -4,8 +4,6 @@ import { notFound } from "next/navigation";
 import {
   MapPin,
   Star,
-  Phone,
-  Globe,
   ExternalLink,
   CalendarDays,
   CreditCard,
@@ -21,6 +19,8 @@ import {
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import BusinessHeroBanner from "@/components/businesses/BusinessHeroBanner";
+import QuickContactDialog from "@/components/businesses/QuickContactDialog";
+import BusinessContactLinks from "@/components/businesses/BusinessContactLinks";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
@@ -381,10 +381,10 @@ async function Page({ params }) {
 
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-              {/* Main Content */}
-              <div className="lg:col-span-2 space-y-4 md:space-y-8">
+              {/* Main Content — contents on mobile so cards can interleave with sidebar via order */}
+              <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-8">
                 {/* Description */}
-                <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <div className="order-1 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-1">
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
                     About Our Business
                   </h2>
@@ -411,7 +411,7 @@ async function Page({ params }) {
                 </div>
 
                 {/* Categories */}
-                <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <div className="order-5 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-2">
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
                     Service Categories
                   </h2>
@@ -457,7 +457,7 @@ async function Page({ params }) {
                 </div>
 
                 {/* Map Section */}
-                <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <div className="order-6 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-3">
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
                     Business Location
                   </h2>
@@ -531,10 +531,10 @@ async function Page({ params }) {
                 </div>
               </div>
 
-              {/* Sidebar */}
-              <div className="space-y-4 md:space-y-6">
+              {/* Sidebar — contents on mobile so reviews/contact/hours sit after About */}
+              <div className="contents lg:flex lg:flex-col lg:gap-6">
                 {/* Rating Summary */}
-                <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <div className="order-2 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-1">
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
                     Customer Reviews
                   </h2>
@@ -564,74 +564,39 @@ async function Page({ params }) {
                         href={business.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-6 text-white bg-blue-600 rounded-full px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95 flex items-center gap-1 justify-center"
+                        className="mt-4 text-sm text-white bg-blue-600 rounded-full px-6 font-medium py-2 hover:bg-blue-700 duration-300 hover:scale-95 flex items-center gap-2 justify-center"
                       >
                         View All Reviews
+                        <ExternalLink className="size-4" />
                       </Link>
                     )}
                   </div>
                 </div>
 
                 {/* Contact Information */}
-                <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <div className="order-3 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-2">
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
-                    Contact for Radiator Repair
+                    Contact Information
                   </h2>
 
-                  {business.cta_line && business.phone && (
-                    <div className="mb-4 bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
-                      <p className="text-sm md:text-base text-blue-900 font-medium">
-                        {business.cta_line}
-                      </p>
-                    </div>
-                  )}
+                  <BusinessContactLinks
+                    businessId={business.id}
+                    businessName={business.title}
+                    phone={business.phone}
+                    email={business.email}
+                    website={business.website}
+                  />
 
-                  <div className="space-y-3 md:space-y-4">
-                    {business.phone ? (
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <Phone className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
-                        <a
-                          href={`tel:${business.phone}`}
-                          className="text-sm md:text-base text-gray-700 hover:text-blue-600 transition-colors font-semibold"
-                        >
-                          {business.phone}
-                        </a>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <Phone className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
-                        <span className="text-sm md:text-base text-gray-700">
-                          No Phone Number Available
-                        </span>
-                      </div>
-                    )}
-
-                    {business.website ? (
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <Globe className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
-                        <Link
-                          href={business.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm md:text-base text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1 break-all"
-                        >
-                          Visit Website
-                          <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <Globe className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
-                        <span className="text-sm md:text-base text-gray-700">
-                          No Website Available
-                        </span>
-                      </div>
-                    )}
+                  <div className="mt-4 md:mt-5">
+                    <QuickContactDialog
+                      businessId={business.id}
+                      businessName={business.title}
+                    />
                   </div>
                 </div>
 
                 {/* Business Hours */}
-                <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <div className="order-4 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-3">
                   <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 font-heading">
                       Business Hours
@@ -652,7 +617,7 @@ async function Page({ params }) {
                 {(paymentFeatures.length > 0 ||
                   accessibilityFeatures.length > 0 ||
                   otherFeatures.length > 0) && (
-                    <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                    <div className="order-7 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-4">
                       <div className="space-y-3 md:space-y-4">
                         {paymentFeatures.length > 0 && (
                           <div>
@@ -666,7 +631,7 @@ async function Page({ params }) {
                                   className="flex items-center gap-2 md:gap-3"
                                 >
                                   <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                  <span className="text-gray-700 capitalize text-xs md:text-sm">
+                                  <span className="text-gray-700 capitalize text-sm">
                                     {feature.value}
                                   </span>
                                 </div>
@@ -687,7 +652,7 @@ async function Page({ params }) {
                                   className="flex items-center gap-2 md:gap-3"
                                 >
                                   <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                  <span className="text-gray-700 capitalize text-xs md:text-sm">
+                                  <span className="text-gray-700 capitalize text-sm">
                                     {feature.value}
                                   </span>
                                 </div>
@@ -708,7 +673,7 @@ async function Page({ params }) {
                                   className="flex items-center gap-2 md:gap-3"
                                 >
                                   <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                  <span className="text-gray-700 capitalize text-xs md:text-sm">
+                                  <span className="text-gray-700 capitalize text-sm">
                                     {feature.value}
                                   </span>
                                 </div>

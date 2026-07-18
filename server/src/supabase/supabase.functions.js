@@ -372,3 +372,13 @@ export const getPrimaryCategoryBySlug = async (slug) => {
 
   return { data, error };
 };
+
+export const insertContactMessage = async (payload) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .insert(payload)
+    .select("contact_message_id")
+    .single();
+
+  return { data, error };
+};

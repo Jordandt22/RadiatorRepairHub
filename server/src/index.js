@@ -10,6 +10,7 @@ import { arcjetMiddleware } from "./middleware/arcjet.mw.js";
 import businessesRouter from "./routes/businesses.routes.js";
 import locationRouter from "./routes/location.routes.js";
 import categoriesRouter from "./routes/categories.routes.js";
+import contactMessagesRouter from "./routes/contact-messages.routes.js";
 
 const app = express();
 
@@ -49,6 +50,9 @@ app.use(`/v${API_VERSION}/api/location`, locationRouter);
 
 // Routes for Categories
 app.use(`/v${API_VERSION}/api/categories`, categoriesRouter);
+
+// Routes for Contact Messages
+app.use(`/v${API_VERSION}/api/contact-messages`, contactMessagesRouter);
 
 // PORT and Sever
 const server = http.createServer(app);
