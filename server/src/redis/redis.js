@@ -203,6 +203,12 @@ export const getPostalCodesByStateKey = (state_id) => ({
   interval: 60 * 60,
 });
 
+// --- Contact Messages ----
+export const getContactMessagesKey = (page, limit, status = null) => ({
+  key: `CONTACT_MESSAGES?PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}`,
+  interval: 60 * 5,
+});
+
 // --- Categories ----
 export const getPrimaryCategoriesKey = () => ({
   key: `PRIMARY_CATEGORIES`,

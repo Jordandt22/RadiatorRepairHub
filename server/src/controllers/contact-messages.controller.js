@@ -7,6 +7,7 @@ import {
   getBusinessById,
   insertContactMessage,
 } from "../supabase/supabase.functions.js";
+import { deleteCacheDataByPrefix } from "../redis/redis.js";
 
 const { SUPABASE_ERROR, ROUTE_NOT_FOUND } = errorCodes;
 
@@ -65,6 +66,8 @@ export const createContactMessage = async (req, res) => {
         )
       );
   }
+
+  await deleteCacheDataByPrefix("CONTACT_MESSAGES");
 
   return res.status(201).json(
     successHandler({

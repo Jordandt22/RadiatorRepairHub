@@ -382,3 +382,31 @@ export const insertContactMessage = async (payload) => {
 
   return { data, error };
 };
+
+export const getContactMessages = async (page, limit, status = null) => {
+  let query = supabase
+    .from("contact_messages")
+    .select("*, business:businesses(*)", { count: "exact" })
+    .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};
+
+export const updateContactMessagesStatus = async (ids, status) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({ status })
+    .in("contact_message_id", ids)
+    .select("contact_message_id");
+
+  return { data, error };
+};

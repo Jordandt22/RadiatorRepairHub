@@ -11,6 +11,7 @@ import businessesRouter from "./routes/businesses.routes.js";
 import locationRouter from "./routes/location.routes.js";
 import categoriesRouter from "./routes/categories.routes.js";
 import contactMessagesRouter from "./routes/contact-messages.routes.js";
+import adminRouter from "./routes/admin/admin.routes.js";
 
 const app = express();
 
@@ -20,7 +21,9 @@ const notProduction = NODE_ENV !== "production";
 app.use(helmet());
 app.use(
   cors({
-    origin: notProduction ? "http://localhost:3000" : WEB_URL,
+    origin: notProduction
+      ? ["http://localhost:3000", "http://localhost:3001"]
+      : WEB_URL,
   })
 );
 app.use(express.urlencoded({ extended: false }));
@@ -53,6 +56,9 @@ app.use(`/v${API_VERSION}/api/categories`, categoriesRouter);
 
 // Routes for Contact Messages
 app.use(`/v${API_VERSION}/api/contact-messages`, contactMessagesRouter);
+
+// Routes for Admin
+app.use(`/v${API_VERSION}/api/admin`, adminRouter);
 
 // PORT and Sever
 const server = http.createServer(app);
