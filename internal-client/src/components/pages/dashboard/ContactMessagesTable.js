@@ -1,4 +1,4 @@
-import { EyeIcon } from "lucide-react";
+import { EyeIcon, LockIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -13,13 +13,23 @@ import {
   IssueBadge,
   StatusBadge,
   UrgencyBadge,
+  ConfirmationBadge,
 } from "@/components/pages/dashboard/ContactMessageBadges";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import ContactMessagesEmptyState from "@/components/pages/dashboard/ContactMessagesEmptyState";
 
-function hasBusinessEmail(message) {
+export const EMAIL_SEND_SELECTION_CAP = 5;
+
+export function hasBusinessEmail(message) {
   const email = message?.business?.email;
   return typeof email === "string" && email.trim().length > 0;
+}
+
+function isMessageSelectable(message, isRowSelectable) {
+  if (typeof isRowSelectable === "function") {
+    return isRowSelectable(message);
+  }
+  return true;
 }
 
 function MessagesTable({
@@ -28,90 +38,139 @@ function MessagesTable({
   onToggleId,
   onToggleAll,
   onViewClick,
+  maxSelectable = null,
+  selectionHint = null,
+  isRowSelectable = null,
+  showConfirmation = false,
 }) {
-  const pageIds = messages.map((message) => message.contact_message_id);
-  const selectedOnPage = pageIds.filter((id) => selectedIds.has(id));
+  const selectableMessages = messages.filter((message) =>
+    isMessageSelectable(message, isRowSelectable),
+  );
+  const selectableIds = selectableMessages.map(
+    (message) => message.contact_message_id,
+  );
+  const selectedOnPage = selectableIds.filter((id) => selectedIds.has(id));
+  const selectableCount =
+    maxSelectable == null
+      ? selectableIds.length
+      : Math.min(selectableIds.length, maxSelectable);
   const allSelected =
-    pageIds.length > 0 && selectedOnPage.length === pageIds.length;
+    selectableCount > 0 && selectedOnPage.length >= selectableCount;
   const someSelected =
-    selectedOnPage.length > 0 && selectedOnPage.length < pageIds.length;
+    selectedOnPage.length > 0 && selectedOnPage.length < selectableCount;
+  const hasSelectableRows = selectableIds.length > 0;
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-10">
-            <Checkbox
-              checked={allSelected}
-              indeterminate={someSelected}
-              onCheckedChange={(checked) => onToggleAll(checked === true)}
-              onClick={(event) => event.stopPropagation()}
-              aria-label="Select all in this table"
-            />
-          </TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Business</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Issue</TableHead>
-          <TableHead>Urgency</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Created</TableHead>
-          <TableHead className="w-20" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {messages.map((message) => {
-          const id = message.contact_message_id;
-          const isSelected = selectedIds.has(id);
-
-          return (
-            <TableRow
-              key={id}
-              className="group cursor-pointer"
-              data-state={isSelected ? "selected" : undefined}
-              onClick={() => onToggleId(id, !isSelected)}
-            >
-              <TableCell onClick={(event) => event.stopPropagation()}>
-                <Checkbox
-                  checked={isSelected}
-                  onCheckedChange={(checked) =>
-                    onToggleId(id, checked === true)
-                  }
-                  aria-label={`Select ${message.name}`}
-                />
-              </TableCell>
-              <TableCell className="font-semibold">{message.name}</TableCell>
-              <TableCell>{message.business?.title || "—"}</TableCell>
-              <TableCell>{message.email}</TableCell>
-              <TableCell>
-                <IssueBadge issue={message.issue} />
-              </TableCell>
-              <TableCell>
-                <UrgencyBadge urgency={message.urgency} />
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={message.status} />
-              </TableCell>
-              <TableCell>{formatDate(message.created_at)}</TableCell>
-              <TableCell
-                className="text-right"
+    <div className="flex flex-col gap-2">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-10">
+              <Checkbox
+                checked={allSelected}
+                indeterminate={someSelected}
+                disabled={!hasSelectableRows}
+                onCheckedChange={(checked) => onToggleAll(checked === true)}
                 onClick={(event) => event.stopPropagation()}
+                aria-label="Select all in this table"
+              />
+            </TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Business</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Issue</TableHead>
+            <TableHead>Urgency</TableHead>
+            <TableHead>Status</TableHead>
+            {showConfirmation ? <TableHead>Confirmation</TableHead> : null}
+            <TableHead>Created</TableHead>
+            <TableHead className="w-20" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {messages.map((message) => {
+            const id = message.contact_message_id;
+            const isSelected = selectedIds.has(id);
+            const rowLocked = !isMessageSelectable(message, isRowSelectable);
+            const selectionBlocked =
+              (rowLocked && !isSelected) ||
+              (maxSelectable != null &&
+                !isSelected &&
+                selectedOnPage.length >= maxSelectable);
+
+            return (
+              <TableRow
+                key={id}
+                className={
+                  rowLocked ? "group cursor-default" : "group cursor-pointer"
+                }
+                data-state={isSelected ? "selected" : undefined}
+                onClick={() => {
+                  if (rowLocked) return;
+                  if (selectionBlocked) return;
+                  onToggleId(id, !isSelected);
+                }}
               >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-                  onClick={() => onViewClick(message)}
+                <TableCell onClick={(event) => event.stopPropagation()}>
+                  {rowLocked ? (
+                    <LockIcon
+                      className="size-4 text-muted-foreground/60"
+                      aria-label={`${message.name} is locked`}
+                    />
+                  ) : (
+                    <Checkbox
+                      checked={isSelected}
+                      disabled={selectionBlocked}
+                      onCheckedChange={(checked) => {
+                        if (checked === true && selectionBlocked) return;
+                        onToggleId(id, checked === true);
+                      }}
+                      aria-label={`Select ${message.name}`}
+                    />
+                  )}
+                </TableCell>
+                <TableCell className="font-semibold">{message.name}</TableCell>
+                <TableCell>{message.business?.title || "—"}</TableCell>
+                <TableCell>{message.email}</TableCell>
+                <TableCell>
+                  <IssueBadge issue={message.issue} />
+                </TableCell>
+                <TableCell>
+                  <UrgencyBadge urgency={message.urgency} />
+                </TableCell>
+                <TableCell>
+                  <StatusBadge status={message.status} />
+                </TableCell>
+                {showConfirmation ? (
+                  <TableCell>
+                    <ConfirmationBadge
+                      confirmationSent={message.confirmation_sent}
+                    />
+                  </TableCell>
+                ) : null}
+                <TableCell>{formatDate(message.created_at)}</TableCell>
+                <TableCell
+                  className="text-right"
+                  onClick={(event) => event.stopPropagation()}
                 >
-                  <EyeIcon />
-                  View
-                </Button>
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="opacity-0 transition-all duration-200 group-hover:opacity-100 focus-visible:opacity-100 cursor-pointer hover:scale-95 focus-visible:scale-95"
+                    onClick={() => onViewClick(message)}
+                  >
+                    <EyeIcon />
+                    View
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+      {selectionHint ? (
+        <p className="text-xs text-muted-foreground">{selectionHint}</p>
+      ) : null}
+    </div>
   );
 }
 
@@ -128,14 +187,46 @@ function ApprovedMessagesTables({
   messages,
   selectedIds,
   onToggleId,
-  onToggleAll,
   onViewClick,
 }) {
   const withEmail = messages.filter(hasBusinessEmail);
   const withoutEmail = messages.filter((message) => !hasBusinessEmail(message));
+  const withEmailIds = withEmail.map((message) => message.contact_message_id);
+  const selectedWithEmailCount = withEmailIds.filter((id) =>
+    selectedIds.has(id),
+  ).length;
+  const atEmailCap = selectedWithEmailCount >= EMAIL_SEND_SELECTION_CAP;
 
-  const handleToggleAllIn = (group, checked) => {
-    for (const message of group) {
+  const handleToggleEmailId = (id, checked) => {
+    if (
+      checked &&
+      !selectedIds.has(id) &&
+      selectedWithEmailCount >= EMAIL_SEND_SELECTION_CAP
+    ) {
+      return;
+    }
+    onToggleId(id, checked);
+  };
+
+  const handleToggleAllEmail = (checked) => {
+    if (!checked) {
+      for (const id of withEmailIds) {
+        if (selectedIds.has(id)) onToggleId(id, false);
+      }
+      return;
+    }
+
+    let remaining = EMAIL_SEND_SELECTION_CAP - selectedWithEmailCount;
+    for (const id of withEmailIds) {
+      if (remaining <= 0) break;
+      if (selectedIds.has(id)) continue;
+      onToggleId(id, true);
+      remaining -= 1;
+    }
+  };
+
+  const handleToggleAllPhone = (checked) => {
+    for (const message of withoutEmail) {
       onToggleId(message.contact_message_id, checked);
     }
   };
@@ -155,9 +246,15 @@ function ApprovedMessagesTables({
           <MessagesTable
             messages={withEmail}
             selectedIds={selectedIds}
-            onToggleId={onToggleId}
-            onToggleAll={(checked) => handleToggleAllIn(withEmail, checked)}
+            onToggleId={handleToggleEmailId}
+            onToggleAll={handleToggleAllEmail}
             onViewClick={onViewClick}
+            maxSelectable={EMAIL_SEND_SELECTION_CAP}
+            selectionHint={
+              atEmailCap
+                ? `Select up to ${EMAIL_SEND_SELECTION_CAP} messages to send.`
+                : null
+            }
           />
         ) : (
           <SectionEmpty
@@ -181,13 +278,78 @@ function ApprovedMessagesTables({
             messages={withoutEmail}
             selectedIds={selectedIds}
             onToggleId={onToggleId}
-            onToggleAll={(checked) => handleToggleAllIn(withoutEmail, checked)}
+            onToggleAll={handleToggleAllPhone}
             onViewClick={onViewClick}
           />
         ) : (
           <SectionEmpty
             title="No Businesses with Phone Numbers Only"
             description="Approved messages linked to businesses missing an email will appear here."
+          />
+        )}
+      </section>
+    </div>
+  );
+}
+
+function SentMessagesTables({ messages, selectedIds, onToggleId, onViewClick }) {
+  const autoSent = messages.filter((message) => message.send_method === "auto");
+  const manuallySent = messages.filter(
+    (message) => message.send_method !== "auto",
+  );
+
+  const handleToggleAllIn = (group, checked) => {
+    for (const message of group) {
+      onToggleId(message.contact_message_id, checked);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-8">
+      <section className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold text-foreground">Auto Sent</h2>
+          <span className="text-xs text-muted-foreground">{autoSent.length}</span>
+        </div>
+        {autoSent.length > 0 ? (
+          <MessagesTable
+            messages={autoSent}
+            selectedIds={selectedIds}
+            onToggleId={onToggleId}
+            onToggleAll={(checked) => handleToggleAllIn(autoSent, checked)}
+            onViewClick={onViewClick}
+            showConfirmation
+          />
+        ) : (
+          <SectionEmpty
+            title="No Auto Sent Messages"
+            description="Messages sent through Send Messages will appear here."
+          />
+        )}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold text-foreground">
+            Manually Sent
+          </h2>
+          <span className="text-xs text-muted-foreground">
+            {manuallySent.length}
+          </span>
+        </div>
+        {manuallySent.length > 0 ? (
+          <MessagesTable
+            messages={manuallySent}
+            selectedIds={selectedIds}
+            onToggleId={onToggleId}
+            onToggleAll={(checked) => handleToggleAllIn(manuallySent, checked)}
+            onViewClick={onViewClick}
+            showConfirmation
+          />
+        ) : (
+          <SectionEmpty
+            title="No Manually Sent Messages"
+            description="Messages marked as sent manually will appear here."
           />
         )}
       </section>
@@ -213,7 +375,17 @@ export default function ContactMessagesTable({
         messages={messages}
         selectedIds={selectedIds}
         onToggleId={onToggleId}
-        onToggleAll={onToggleAll}
+        onViewClick={onViewClick}
+      />
+    );
+  }
+
+  if (activeTab === "sent") {
+    return (
+      <SentMessagesTables
+        messages={messages}
+        selectedIds={selectedIds}
+        onToggleId={onToggleId}
         onViewClick={onViewClick}
       />
     );

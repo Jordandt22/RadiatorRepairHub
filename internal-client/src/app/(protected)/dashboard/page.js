@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   useMutation,
@@ -21,7 +21,10 @@ import StatusFilterTabs, {
   VALID_TABS,
 } from "@/components/pages/dashboard/StatusFilterTabs";
 import BulkStatusActions from "@/components/pages/dashboard/BulkStatusActions";
-import ContactMessagesTable from "@/components/pages/dashboard/ContactMessagesTable";
+import ContactMessagesTable, {
+  EMAIL_SEND_SELECTION_CAP,
+  hasBusinessEmail,
+} from "@/components/pages/dashboard/ContactMessagesTable";
 import ContactMessagesTableSkeleton from "@/components/pages/dashboard/ContactMessagesTableSkeleton";
 import ContactMessageDrawer from "@/components/pages/dashboard/ContactMessageDrawer";
 import Pagination from "@/components/pages/dashboard/Pagination";
@@ -37,7 +40,7 @@ export default function DashboardPage() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
-  const { setLoading } = useLoading();
+  const { setLoading, showLoading, hideLoading } = useLoading();
   const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState(() =>
     resolveTab(searchParams.get("tab")),
@@ -49,6 +52,7 @@ export default function DashboardPage() {
   const [refreshError, setRefreshError] = useState(null);
 
   const statusFilter = TAB_STATUS[activeTab] ?? null;
+  const archivedFilter = activeTab === "archived";
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -58,8 +62,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!searchParams.get("tab")) {
-      replaceDashboardTab("all");
-      setActiveTab("all");
+      // URL only — activeTab already defaults via resolveTab(null) => "all"
+      window.history.replaceState(
+        window.history.state,
+        "",
+        "/dashboard?tab=all",
+      );
     }
   }, [searchParams]);
 
@@ -88,11 +96,12 @@ export default function DashboardPage() {
   };
 
   const { data, error, isLoading, isFetching, isPlaceholderData } = useQuery({
-    queryKey: ["contact-messages", page, statusFilter],
+    queryKey: ["contact-messages", page, statusFilter, archivedFilter],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
         limit: String(PAGE_LIMIT),
+        archived: String(archivedFilter),
       });
       if (statusFilter) {
         params.set("status", statusFilter);
@@ -149,6 +158,78 @@ export default function DashboardPage() {
     },
   });
 
+  const archiveMutation = useMutation({
+    mutationFn: async ({ archived, contact_message_ids }) => {
+      const result = await fetchApi("/admin/contact-messages/archived", {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify({ archived, contact_message_ids }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to update archive status";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      setActionError(null);
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to update archive status");
+    },
+  });
+
+  const sendMutation = useMutation({
+    mutationFn: async (contact_message_ids) => {
+      const result = await fetchApi("/admin/contact-messages/send", {
+        method: "POST",
+        accessToken,
+        body: JSON.stringify({ contact_message_ids }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to send messages";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onMutate: () => {
+      setActionError(null);
+      showLoading();
+    },
+    onSuccess: async () => {
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to send messages");
+    },
+    onSettled: () => {
+      hideLoading();
+    },
+  });
+
   const refreshMutation = useMutation({
     mutationFn: async () => {
       const result = await fetchApi("/admin/cache/invalidate", {
@@ -184,10 +265,18 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    setLoading(statusMutation.isPending);
-  }, [statusMutation.isPending, setLoading]);
+    if (sendMutation.isPending) return;
+    setLoading(statusMutation.isPending || archiveMutation.isPending);
+  }, [
+    statusMutation.isPending,
+    archiveMutation.isPending,
+    sendMutation.isPending,
+    setLoading,
+  ]);
 
   const debouncedStatusUpdateRef = useRef(null);
+  const debouncedSendRef = useRef(null);
+  const debouncedArchiveUpdateRef = useRef(null);
 
   useEffect(() => {
     debouncedStatusUpdateRef.current = debounce(
@@ -203,6 +292,37 @@ export default function DashboardPage() {
     return () => debouncedStatusUpdateRef.current?.cancel();
   }, []);
 
+  useEffect(() => {
+    debouncedSendRef.current = debounce(
+      ({ contact_message_ids, isPending, mutate }) => {
+        if (
+          contact_message_ids.length === 0 ||
+          contact_message_ids.length > EMAIL_SEND_SELECTION_CAP ||
+          isPending
+        ) {
+          return;
+        }
+        mutate(contact_message_ids);
+      },
+      400,
+    );
+    return () => debouncedSendRef.current?.cancel();
+  }, []);
+
+  useEffect(() => {
+    debouncedArchiveUpdateRef.current = debounce(
+      ({ archived, contact_message_ids, isPending, mutate }) => {
+        if (contact_message_ids.length === 0 || isPending) {
+          return;
+        }
+        setActionError(null);
+        mutate({ archived, contact_message_ids });
+      },
+      400,
+    );
+    return () => debouncedArchiveUpdateRef.current?.cancel();
+  }, []);
+
   const runStatusUpdate = (status) => {
     debouncedStatusUpdateRef.current?.({
       status,
@@ -212,15 +332,59 @@ export default function DashboardPage() {
     });
   };
 
+  const runSendMessages = () => {
+    debouncedSendRef.current?.({
+      contact_message_ids: Array.from(selectedIds),
+      isPending: sendMutation.isPending,
+      mutate: sendMutation.mutate,
+    });
+  };
+
+  const runArchiveUpdate = (archived) => {
+    debouncedArchiveUpdateRef.current?.({
+      archived,
+      contact_message_ids: Array.from(selectedIds),
+      isPending: archiveMutation.isPending,
+      mutate: archiveMutation.mutate,
+    });
+  };
+
+  const messages = data?.contactMessages ?? [];
+
+  const emailAvailableIdSet = useMemo(() => {
+    if (activeTab !== "approved") return new Set();
+    return new Set(
+      messages
+        .filter(hasBusinessEmail)
+        .map((message) => message.contact_message_id),
+    );
+  }, [activeTab, messages]);
+
   if (!isReady || !accessToken) {
     return null;
   }
 
-  const messages = data?.contactMessages ?? [];
   const totalPages = data?.totalPages ?? 0;
   const hasSelection = selectedIds.size > 0;
-  const actionsDisabled = !hasSelection || statusMutation.isPending;
+  const actionsDisabled =
+    !hasSelection ||
+    statusMutation.isPending ||
+    sendMutation.isPending ||
+    archiveMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
+
+  const selectedIdList = Array.from(selectedIds);
+  const allSelectedHaveEmail =
+    selectedIdList.length > 0 &&
+    selectedIdList.every((id) => emailAvailableIdSet.has(id));
+  const canSendMessages =
+    activeTab === "approved" &&
+    allSelectedHaveEmail &&
+    selectedIdList.length >= 1 &&
+    selectedIdList.length <= EMAIL_SEND_SELECTION_CAP &&
+    !sendMutation.isPending &&
+    !statusMutation.isPending &&
+    !archiveMutation.isPending;
 
   const handleToggleId = (id, checked) => {
     setSelectedIds((prev) => {
@@ -247,6 +411,16 @@ export default function DashboardPage() {
     setDrawerOpen(true);
   };
 
+  const isArchivedTab = activeTab === "archived";
+  const selectionIncludesSent =
+    activeTab === "all" &&
+    messages.some(
+      (message) =>
+        selectedIds.has(message.contact_message_id) &&
+        message.status === "sent",
+    );
+  const statusActionsDisabled = actionsDisabled || selectionIncludesSent;
+
   return (
     <div className="mx-auto flex w-full px-8 flex-1 flex-col gap-4 px-3 py-6">
       <StatusFilterTabs value={activeTab} onValueChange={handleTabChange} />
@@ -254,12 +428,36 @@ export default function DashboardPage() {
       <div className="mt-4 flex flex-col gap-4">
         <BulkStatusActions
           selectedCount={selectedIds.size}
-          disabled={actionsDisabled}
+          disabled={statusActionsDisabled}
           actionError={actionError}
           onFlag={() => runStatusUpdate("flagged")}
           onApprove={() => runStatusUpdate("approved")}
-          showFlag={activeTab !== "flagged" && activeTab !== "sent"}
-          showApprove={activeTab !== "approved" && activeTab !== "sent"}
+          showFlag={
+            !isArchivedTab &&
+            activeTab !== "flagged" &&
+            activeTab !== "sent"
+          }
+          showApprove={
+            !isArchivedTab &&
+            activeTab !== "approved" &&
+            activeTab !== "sent"
+          }
+          showMarkSent={activeTab === "approved"}
+          showSendMessages={activeTab === "approved"}
+          showSendConfirmations={activeTab === "sent"}
+          showArchive={!isArchivedTab}
+          showUnarchive={isArchivedTab}
+          markSentDisabled={actionsDisabled}
+          sendMessagesDisabled={!canSendMessages}
+          sendConfirmationsDisabled={actionsDisabled}
+          archiveDisabled={actionsDisabled}
+          unarchiveDisabled={actionsDisabled}
+          onMarkSent={() => runStatusUpdate("sent")}
+          onSendMessages={runSendMessages}
+          onSendConfirmations={() => {}}
+          onArchive={() => runArchiveUpdate(true)}
+          onUnarchive={() => runArchiveUpdate(false)}
+          sendPending={sendMutation.isPending}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
           refreshError={refreshError}

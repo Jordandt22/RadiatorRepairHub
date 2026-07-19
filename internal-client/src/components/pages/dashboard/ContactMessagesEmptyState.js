@@ -1,4 +1,5 @@
 import {
+  ArchiveIcon,
   CheckIcon,
   FlagIcon,
   InboxIcon,
@@ -25,6 +26,11 @@ const EMPTY_BY_TAB = {
     icon: SendIcon,
     title: "No sent messages",
     description: "Messages emailed to businesses will show up here.",
+  },
+  archived: {
+    icon: ArchiveIcon,
+    title: "No archived messages",
+    description: "Archived messages will appear here.",
   },
 };
 

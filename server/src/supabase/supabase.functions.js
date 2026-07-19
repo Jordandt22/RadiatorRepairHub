@@ -383,10 +383,16 @@ export const insertContactMessage = async (payload) => {
   return { data, error };
 };
 
-export const getContactMessages = async (page, limit, status = null) => {
+export const getContactMessages = async (
+  page,
+  limit,
+  status = null,
+  archived = false
+) => {
   let query = supabase
     .from("contact_messages")
     .select("*, business:businesses(*)", { count: "exact" })
+    .eq("archived", archived)
     .order("created_at", { ascending: false });
 
   if (status) {
@@ -402,9 +408,48 @@ export const getContactMessages = async (page, limit, status = null) => {
 };
 
 export const updateContactMessagesStatus = async (ids, status) => {
+  const payload = { status };
+  if (status === "sent") {
+    payload.send_method = "manual";
+  }
+
   const { data, error } = await supabase
     .from("contact_messages")
-    .update({ status })
+    .update(payload)
+    .in("contact_message_id", ids)
+    .neq("status", "sent")
+    .select("contact_message_id");
+
+  return { data, error };
+};
+
+export const updateContactMessagesArchived = async (ids, archived) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({ archived })
+    .in("contact_message_id", ids)
+    .select("contact_message_id");
+
+  return { data, error };
+};
+
+export const getContactMessagesByIds = async (ids) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .select("*, business:businesses(id, email, title, slug)")
+    .in("contact_message_id", ids);
+
+  return { data, error };
+};
+
+export const markContactMessagesSent = async (ids) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({
+      status: "sent",
+      send_method: "auto",
+      sent_at: new Date().toISOString(),
+    })
     .in("contact_message_id", ids)
     .select("contact_message_id");
 

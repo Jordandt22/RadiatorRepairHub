@@ -204,8 +204,8 @@ export const getPostalCodesByStateKey = (state_id) => ({
 });
 
 // --- Contact Messages ----
-export const getContactMessagesKey = (page, limit, status = null) => ({
-  key: `CONTACT_MESSAGES?PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}`,
+export const getContactMessagesKey = (page, limit, status = null, archived = false) => ({
+  key: `CONTACT_MESSAGES?PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}&ARCHIVED:${archived}`,
   interval: 60 * 5,
 });
 

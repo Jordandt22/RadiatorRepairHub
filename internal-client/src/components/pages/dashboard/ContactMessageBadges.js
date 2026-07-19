@@ -9,9 +9,11 @@ import {
   ZapIcon,
 } from "lucide-react";
 import {
+  formatConfirmationLabel,
   formatIssueLabel,
   formatStatusLabel,
   formatUrgencyLabel,
+  CONFIRMATION_BADGE_CLASSES,
   ISSUE_BADGE_CLASSES,
   STATUS_BADGE_CLASSES,
   URGENCY_BADGE_CLASSES,
@@ -73,6 +75,21 @@ export function UrgencyBadge({ urgency }) {
     >
       {Icon ? <Icon data-icon="inline-start" /> : null}
       {formatUrgencyLabel(urgency)}
+    </Badge>
+  );
+}
+
+export function ConfirmationBadge({ confirmationSent }) {
+  const confirmed = Boolean(confirmationSent);
+  const Icon = confirmed ? CheckIcon : ClockIcon;
+
+  return (
+    <Badge
+      variant="outline"
+      className={CONFIRMATION_BADGE_CLASSES[confirmed]}
+    >
+      <Icon data-icon="inline-start" />
+      {formatConfirmationLabel(confirmed)}
     </Badge>
   );
 }

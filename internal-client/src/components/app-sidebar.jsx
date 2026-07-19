@@ -9,6 +9,7 @@ import {
   CheckIcon,
   FlagIcon,
   SendIcon,
+  ArchiveIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -47,14 +48,19 @@ const data = {
           icon: <CheckIcon />,
         },
         {
+          title: "Sent",
+          url: "/dashboard?tab=sent",
+          icon: <SendIcon />,
+        },
+        {
           title: "Flagged",
           url: "/dashboard?tab=flagged",
           icon: <FlagIcon />,
         },
         {
-          title: "Sent",
-          url: "/dashboard?tab=sent",
-          icon: <SendIcon />,
+          title: "Archived",
+          url: "/dashboard?tab=archived",
+          icon: <ArchiveIcon />,
         },
       ],
     },

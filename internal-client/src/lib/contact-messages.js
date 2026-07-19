@@ -48,6 +48,11 @@ export const URGENCY_BADGE_CLASSES = {
   2: "border-transparent bg-zinc-100 text-zinc-700",
 };
 
+export const CONFIRMATION_BADGE_CLASSES = {
+  true: "border-transparent bg-emerald-100 text-emerald-800",
+  false: "border-transparent bg-zinc-100 text-zinc-700",
+};
+
 export function formatIssueLabel(issue) {
   return ISSUE_LABELS[issue] || issue || "—";
 }
@@ -58,4 +63,8 @@ export function formatStatusLabel(status) {
 
 export function formatUrgencyLabel(urgency) {
   return URGENCY_LABELS[urgency] || urgency || "—";
+}
+
+export function formatConfirmationLabel(confirmationSent) {
+  return confirmationSent ? "Confirmed" : "Unconfirmed";
 }

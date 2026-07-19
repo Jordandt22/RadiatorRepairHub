@@ -5,13 +5,20 @@ import {
   customErrorHandler,
   successHandler,
 } from "../../helpers/customErrorHandler.js";
-import { getContactMessages as fetchContactMessages, updateContactMessagesStatus as updateMessagesStatus } from "../../supabase/supabase.functions.js";
+import {
+  getContactMessages as fetchContactMessages,
+  updateContactMessagesStatus as updateMessagesStatus,
+  updateContactMessagesArchived as updateMessagesArchived,
+  getContactMessagesByIds,
+  markContactMessagesSent,
+} from "../../supabase/supabase.functions.js";
 import {
   cacheData,
   getCacheData,
   getContactMessagesKey,
   deleteCacheDataByPrefix,
 } from "../../redis/redis.js";
+import { resendClient } from "../../resend/resend.js";
 
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
 
@@ -51,14 +58,20 @@ export const getContactMessages = async (req, res) => {
   let page = Number(req.query.page);
   const limit = Number(req.query.limit);
   const status = req.query.status || null;
+  const archived = req.query.archived === true || req.query.archived === "true";
 
-  const { key, interval } = getContactMessagesKey(page, limit, status);
+  const { key, interval } = getContactMessagesKey(page, limit, status, archived);
   const cachedData = await getCacheData(key);
   if (cachedData) {
     return res.status(200).json(successHandler(cachedData.data));
   }
 
-  const { data, count, error } = await fetchContactMessages(page, limit, status);
+  const { data, count, error } = await fetchContactMessages(
+    page,
+    limit,
+    status,
+    archived
+  );
   if (error) {
     return res
       .status(500)
@@ -84,6 +97,7 @@ export const getContactMessages = async (req, res) => {
     page,
     limit,
     status,
+    archived,
   };
 
   await cacheData(key, interval, compiledData);
@@ -120,6 +134,186 @@ export const updateContactMessagesStatus = async (req, res) => {
     successHandler({
       updated: contactMessageIds.length,
       contactMessageIds,
+    })
+  );
+};
+
+export const updateContactMessagesArchived = async (req, res) => {
+  const { archived, contact_message_ids } = req.body;
+
+  const { data, error } = await updateMessagesArchived(
+    contact_message_ids,
+    archived
+  );
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating contact message archive status.",
+          error
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("CONTACT_MESSAGES");
+
+  const contactMessageIds = (data ?? []).map(
+    (row) => row.contact_message_id
+  );
+
+  return res.status(200).json(
+    successHandler({
+      updated: contactMessageIds.length,
+      contactMessageIds,
+      archived,
+    })
+  );
+};
+
+export const sendContactMessages = async (req, res) => {
+  const { contact_message_ids } = req.body;
+  const { SENDER_EMAIL, TEST_RECIPIENT_EMAIL, RESEND_API_KEY } = process.env;
+
+  if (!RESEND_API_KEY || !SENDER_EMAIL) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "Email sending is not configured."
+        )
+      );
+  }
+
+  if (
+    process.env.NODE_ENV === "development" &&
+    !TEST_RECIPIENT_EMAIL
+  ) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "TEST_RECIPIENT_EMAIL is required in development."
+        )
+      );
+  }
+
+  const { data: messages, error: fetchError } = await getContactMessagesByIds(
+    contact_message_ids
+  );
+
+  if (fetchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching contact messages.",
+          fetchError
+        )
+      );
+  }
+
+  const byId = new Map(
+    (messages ?? []).map((row) => [row.contact_message_id, row])
+  );
+
+  const skipped = [];
+  const eligible = [];
+
+  for (const id of contact_message_ids) {
+    const message = byId.get(id);
+
+    if (!message) {
+      skipped.push({ id, reason: "not_found" });
+      continue;
+    }
+
+    if (message.status !== "approved") {
+      skipped.push({ id, reason: "not_approved" });
+      continue;
+    }
+
+    const businessEmail =
+      typeof message.business?.email === "string"
+        ? message.business.email.trim()
+        : "";
+
+    if (!businessEmail) {
+      skipped.push({ id, reason: "missing_business_email" });
+      continue;
+    }
+
+    eligible.push({ message, businessEmail });
+  }
+
+  if (eligible.length === 0) {
+    return res.status(200).json(
+      successHandler({
+        sent: [],
+        skipped,
+      })
+    );
+  }
+
+  const batchPayload = eligible.map(({ businessEmail }) => ({
+    from: SENDER_EMAIL,
+    to: [
+      process.env.NODE_ENV === "development"
+        ? TEST_RECIPIENT_EMAIL
+        : businessEmail,
+    ],
+    subject: "Test",
+    html: "<p>Test message here.</p>",
+  }));
+
+  const { data: batchData, error: batchError } =
+    await resendClient()?.batch?.send(batchPayload);
+
+  if (batchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          batchError.message || "Failed to send emails.",
+          batchError
+        )
+      );
+  }
+
+  const sentIds = eligible.map(({ message }) => message.contact_message_id);
+
+  const { data: updated, error: updateError } =
+    await markContactMessagesSent(sentIds);
+
+  if (updateError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Emails were sent but status could not be updated.",
+          updateError
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("CONTACT_MESSAGES");
+
+  const resendResults = Array.isArray(batchData)
+    ? batchData
+    : batchData?.data ?? [];
+
+  return res.status(200).json(
+    successHandler({
+      sent: (updated ?? []).map((row) => row.contact_message_id),
+      skipped,
+      resendIds: resendResults.map((item) => item.id).filter(Boolean),
     })
   );
 };
