@@ -22,7 +22,7 @@ export default function Home() {
 
   useEffect(() => {
     if (isReady && accessToken) {
-        router.replace("/dashboard?tab=all");
+      router.replace("/dashboard?tab=all");
     }
   }, [isReady, accessToken, router]);
 

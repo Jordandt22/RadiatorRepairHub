@@ -4,7 +4,9 @@ import {
   FlagIcon,
   MessageCircleOffIcon,
   SendIcon,
+  TimerIcon,
   XIcon,
+  ZapIcon,
 } from "lucide-react";
 import {
   formatIssueLabel,
@@ -23,6 +25,11 @@ const STATUS_ICONS = {
   declined: XIcon,
   no_response: MessageCircleOffIcon,
   flagged: FlagIcon,
+};
+
+const URGENCY_ICONS = {
+  1: ZapIcon,
+  2: TimerIcon,
 };
 
 export function IssueBadge({ issue }) {
@@ -54,6 +61,8 @@ export function StatusBadge({ status }) {
 }
 
 export function UrgencyBadge({ urgency }) {
+  const Icon = URGENCY_ICONS[urgency];
+
   return (
     <Badge
       variant="outline"
@@ -62,6 +71,7 @@ export function UrgencyBadge({ urgency }) {
         "border-transparent bg-zinc-100 text-zinc-700"
       }
     >
+      {Icon ? <Icon data-icon="inline-start" /> : null}
       {formatUrgencyLabel(urgency)}
     </Badge>
   );

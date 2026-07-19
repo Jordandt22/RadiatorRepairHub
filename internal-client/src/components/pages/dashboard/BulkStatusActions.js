@@ -49,7 +49,7 @@ export default function BulkStatusActions({
         <Button
           variant="outline"
           size="sm"
-          className="ml-auto"
+          className="ml-auto cursor-pointer hover:translate-y-[-2px] hover:shadow-md hover:bg-gray-100 transition-all duration-300"
           disabled={refreshPending}
           onClick={onRefresh}
         >

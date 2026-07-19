@@ -17,18 +17,18 @@ import {
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import ContactMessagesEmptyState from "@/components/pages/dashboard/ContactMessagesEmptyState";
 
-export default function ContactMessagesTable({
+function hasBusinessEmail(message) {
+  const email = message?.business?.email;
+  return typeof email === "string" && email.trim().length > 0;
+}
+
+function MessagesTable({
   messages,
   selectedIds,
   onToggleId,
   onToggleAll,
   onViewClick,
-  activeTab = "all",
 }) {
-  if (!messages?.length) {
-    return <ContactMessagesEmptyState activeTab={activeTab} />;
-  }
-
   const pageIds = messages.map((message) => message.contact_message_id);
   const selectedOnPage = pageIds.filter((id) => selectedIds.has(id));
   const allSelected =
@@ -46,7 +46,7 @@ export default function ContactMessagesTable({
               indeterminate={someSelected}
               onCheckedChange={(checked) => onToggleAll(checked === true)}
               onClick={(event) => event.stopPropagation()}
-              aria-label="Select all on page"
+              aria-label="Select all in this table"
             />
           </TableHead>
           <TableHead>Name</TableHead>
@@ -112,5 +112,120 @@ export default function ContactMessagesTable({
         })}
       </TableBody>
     </Table>
+  );
+}
+
+function SectionEmpty({ title, description }) {
+  return (
+    <div className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-8 text-center">
+      <p className="text-sm font-medium text-foreground">{title}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function ApprovedMessagesTables({
+  messages,
+  selectedIds,
+  onToggleId,
+  onToggleAll,
+  onViewClick,
+}) {
+  const withEmail = messages.filter(hasBusinessEmail);
+  const withoutEmail = messages.filter((message) => !hasBusinessEmail(message));
+
+  const handleToggleAllIn = (group, checked) => {
+    for (const message of group) {
+      onToggleId(message.contact_message_id, checked);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-8">
+      <section className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold text-foreground">
+            Email Available
+          </h2>
+          <span className="text-xs text-muted-foreground">
+            {withEmail.length}
+          </span>
+        </div>
+        {withEmail.length > 0 ? (
+          <MessagesTable
+            messages={withEmail}
+            selectedIds={selectedIds}
+            onToggleId={onToggleId}
+            onToggleAll={(checked) => handleToggleAllIn(withEmail, checked)}
+            onViewClick={onViewClick}
+          />
+        ) : (
+          <SectionEmpty
+            title="No Businesses with Email Available"
+            description="Approved messages linked to businesses that have an email will appear here."
+          />
+        )}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold text-foreground">
+            Phone Numbers Only
+          </h2>
+          <span className="text-xs text-muted-foreground">
+            {withoutEmail.length}
+          </span>
+        </div>
+        {withoutEmail.length > 0 ? (
+          <MessagesTable
+            messages={withoutEmail}
+            selectedIds={selectedIds}
+            onToggleId={onToggleId}
+            onToggleAll={(checked) => handleToggleAllIn(withoutEmail, checked)}
+            onViewClick={onViewClick}
+          />
+        ) : (
+          <SectionEmpty
+            title="No Businesses with Phone Numbers Only"
+            description="Approved messages linked to businesses missing an email will appear here."
+          />
+        )}
+      </section>
+    </div>
+  );
+}
+
+export default function ContactMessagesTable({
+  messages,
+  selectedIds,
+  onToggleId,
+  onToggleAll,
+  onViewClick,
+  activeTab = "all",
+}) {
+  if (!messages?.length) {
+    return <ContactMessagesEmptyState activeTab={activeTab} />;
+  }
+
+  if (activeTab === "approved") {
+    return (
+      <ApprovedMessagesTables
+        messages={messages}
+        selectedIds={selectedIds}
+        onToggleId={onToggleId}
+        onToggleAll={onToggleAll}
+        onViewClick={onViewClick}
+      />
+    );
+  }
+
+  return (
+    <MessagesTable
+      messages={messages}
+      selectedIds={selectedIds}
+      onToggleId={onToggleId}
+      onToggleAll={onToggleAll}
+      onViewClick={onViewClick}
+    />
   );
 }

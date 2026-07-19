@@ -26,7 +26,7 @@ import ContactMessagesTableSkeleton from "@/components/pages/dashboard/ContactMe
 import ContactMessageDrawer from "@/components/pages/dashboard/ContactMessageDrawer";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
-const PAGE_LIMIT = 30;
+const PAGE_LIMIT = 10;
 
 function resolveTab(tab) {
   return VALID_TABS.includes(tab) ? tab : "all";

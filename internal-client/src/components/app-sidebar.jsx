@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import {
-  GalleryVerticalEndIcon,
+  Wrench,
   MailIcon,
   Building2Icon,
   InboxIcon,
@@ -25,7 +25,7 @@ const data = {
   teams: [
     {
       name: "RRH",
-      logo: <GalleryVerticalEndIcon />,
+      logo: <Wrench />,
       plan: "RadiatorRepairHub",
     },
   ],
