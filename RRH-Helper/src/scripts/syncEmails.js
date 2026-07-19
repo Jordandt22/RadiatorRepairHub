@@ -9,7 +9,7 @@ const SRC_ROOT = path.join(__dirname, "..");
 // "custom" → emails/batch-{BATCH}/emails.json
 // "firecrawl" → emails/firecrawl/batch-{BATCH}/emails.json
 const SOURCE = "firecrawl"; // "custom" | "firecrawl"
-const BATCH = 1;
+const BATCH = 2;
 
 const EMAILS_FILE =
   SOURCE === "firecrawl"

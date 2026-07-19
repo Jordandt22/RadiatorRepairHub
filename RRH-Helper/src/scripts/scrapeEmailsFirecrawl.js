@@ -18,7 +18,7 @@ const FIRECRAWL_DIR = path.join(EMAILS_DIR, "firecrawl");
 // Output: emails/firecrawl/batch-{BATCH}/emails.json
 // Failures: emails/firecrawl/still-need.json (append across batches)
 const LIMIT = 100;
-const BATCH = 2;
+const BATCH = 3;
 
 const BATCH_DIR = path.join(FIRECRAWL_DIR, `batch-${BATCH}`);
 const EMAILS_FILE = path.join(BATCH_DIR, "emails.json");
