@@ -7,6 +7,7 @@ import {
   Building2Icon,
   InboxIcon,
   CheckIcon,
+  ClockIcon,
   FlagIcon,
   SendIcon,
   ArchiveIcon,
@@ -41,6 +42,11 @@ const data = {
           title: "All",
           url: "/dashboard?tab=all",
           icon: <InboxIcon />,
+        },
+        {
+          title: "Pending",
+          url: "/dashboard?tab=pending",
+          icon: <ClockIcon />,
         },
         {
           title: "Approved",

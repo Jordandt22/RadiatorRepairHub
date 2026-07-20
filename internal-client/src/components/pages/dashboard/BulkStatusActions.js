@@ -3,6 +3,7 @@ import {
   ArchiveRestoreIcon,
   BadgeCheckIcon,
   CheckIcon,
+  ClockIcon,
   FlagIcon,
   MailCheckIcon,
   MailIcon,
@@ -18,14 +19,19 @@ export default function BulkStatusActions({
   actionError,
   onFlag,
   onApprove,
+  onMarkPending,
   showFlag = true,
   showApprove = true,
+  showMarkPending = false,
   showMarkSent = false,
   showSendMessages = false,
   showSendConfirmations = false,
   showMarkConfirmed = false,
   showArchive = false,
   showUnarchive = false,
+  flagDisabled,
+  approveDisabled,
+  markPendingDisabled,
   markSentDisabled = true,
   sendMessagesDisabled = true,
   sendConfirmationsDisabled = true,
@@ -43,9 +49,13 @@ export default function BulkStatusActions({
   refreshPending = false,
   refreshError = null,
 }) {
+  const flagIsDisabled = flagDisabled ?? disabled;
+  const approveIsDisabled = approveDisabled ?? disabled;
+  const markPendingIsDisabled = markPendingDisabled ?? disabled;
   const showBulkActions =
     showFlag ||
     showApprove ||
+    showMarkPending ||
     showMarkSent ||
     showSendMessages ||
     showSendConfirmations ||
@@ -64,7 +74,7 @@ export default function BulkStatusActions({
           <Button
             variant="outline"
             size="sm"
-            disabled={disabled}
+            disabled={flagIsDisabled}
             onClick={onFlag}
             className={buttonClassName}
           >
@@ -72,10 +82,22 @@ export default function BulkStatusActions({
             Flag All
           </Button>
         ) : null}
+        {showMarkPending ? (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={markPendingIsDisabled}
+            onClick={onMarkPending}
+            className={buttonClassName}
+          >
+            <ClockIcon />
+            Mark Pending
+          </Button>
+        ) : null}
         {showApprove ? (
           <Button
             size="sm"
-            disabled={disabled}
+            disabled={approveIsDisabled}
             onClick={onApprove}
             className={primaryButtonClassName}
           >

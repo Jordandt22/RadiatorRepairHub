@@ -66,7 +66,7 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
     <a href="${escapeHtml(claimLink ?? getWebBaseUrl())}" style="color: #1a73e8;">claim your free business listing here</a>.
   </p>
 
-  <p>Otherwise, feel free to reach out to this person directly using the info above.</p>
+  <p>Otherwise, feel free to reach out to this person directly using the info above or let us know and we can contact them for you.</p>
 
   <p>If you have any questions, please feel free to reply to this email or contact us anytime.</p>
 

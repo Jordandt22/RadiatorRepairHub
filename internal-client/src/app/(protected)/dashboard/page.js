@@ -532,13 +532,17 @@ export default function DashboardPage() {
   };
 
   const isArchivedTab = activeTab === "archived";
-  const selectionIncludesSent =
-    activeTab === "all" &&
+  const selectionIncludesStatus = (status) =>
     messages.some(
       (message) =>
         selectedIds.has(message.contact_message_id) &&
-        message.status === "sent",
+        message.status === status,
     );
+  const selectionIncludesSent =
+    activeTab === "all" && selectionIncludesStatus("sent");
+  const selectionIncludesPending = selectionIncludesStatus("pending");
+  const selectionIncludesFlagged = selectionIncludesStatus("flagged");
+  const selectionIncludesApproved = selectionIncludesStatus("approved");
   const selectionIncludesConfirmed =
     activeTab === "sent" &&
     messages.some(
@@ -554,6 +558,10 @@ export default function DashboardPage() {
         !hasContactEmail(message),
     );
   const statusActionsDisabled = actionsDisabled || selectionIncludesSent;
+  const flagDisabled = statusActionsDisabled || selectionIncludesFlagged;
+  const markPendingDisabled =
+    statusActionsDisabled || selectionIncludesPending;
+  const approveDisabled = statusActionsDisabled || selectionIncludesApproved;
   const markConfirmedDisabled =
     actionsDisabled || selectionIncludesConfirmed;
   const sendConfirmationsDisabled =
@@ -570,9 +578,13 @@ export default function DashboardPage() {
         <BulkStatusActions
           selectedCount={selectedIds.size}
           disabled={statusActionsDisabled}
+          flagDisabled={flagDisabled}
+          markPendingDisabled={markPendingDisabled}
+          approveDisabled={approveDisabled}
           actionError={actionError}
           onFlag={() => runStatusUpdate("flagged")}
           onApprove={() => runStatusUpdate("approved")}
+          onMarkPending={() => runStatusUpdate("pending")}
           showFlag={
             !isArchivedTab &&
             activeTab !== "flagged" &&
@@ -583,6 +595,7 @@ export default function DashboardPage() {
             activeTab !== "approved" &&
             activeTab !== "sent"
           }
+          showMarkPending={activeTab === "all" || activeTab === "approved"}
           showMarkSent={activeTab === "approved"}
           showSendMessages={activeTab === "approved"}
           showMarkConfirmed={activeTab === "sent"}

@@ -1,6 +1,7 @@
 import {
   ArchiveIcon,
   CheckIcon,
+  ClockIcon,
   FlagIcon,
   InboxIcon,
   SendIcon,
@@ -11,6 +12,11 @@ const EMPTY_BY_TAB = {
     icon: InboxIcon,
     title: "No contact messages",
     description: "New submissions will show up here.",
+  },
+  pending: {
+    icon: ClockIcon,
+    title: "No pending messages",
+    description: "New submissions awaiting review will appear here.",
   },
   approved: {
     icon: CheckIcon,

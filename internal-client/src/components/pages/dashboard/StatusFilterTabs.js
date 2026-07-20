@@ -1,6 +1,7 @@
 import {
   ArchiveIcon,
   CheckIcon,
+  ClockIcon,
   FlagIcon,
   InboxIcon,
   SendIcon,
@@ -9,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const TAB_STATUS = {
   all: null,
+  pending: "pending",
   approved: "approved",
   sent: "sent",
   flagged: "flagged",
@@ -26,6 +28,10 @@ export default function StatusFilterTabs({ value, onValueChange }) {
         <TabsTrigger value="all" className={triggerClassName}>
           <InboxIcon data-icon="inline-center" />
           All
+        </TabsTrigger>
+        <TabsTrigger value="pending" className={triggerClassName}>
+          <ClockIcon data-icon="inline-center" />
+          Pending
         </TabsTrigger>
         <TabsTrigger value="approved" className={triggerClassName}>
           <CheckIcon data-icon="inline-center" />
