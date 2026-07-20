@@ -129,6 +129,7 @@ export default function BulkStatusActions({
   showDeclinedOutcome = false,
   showNoResponseOutcome = false,
   showRespondedOutcome = false,
+  showMarkResponded = false,
   showArchive = false,
   showUnarchive = false,
   flagDisabled,
@@ -176,6 +177,7 @@ export default function BulkStatusActions({
     showDeclinedOutcome ||
     showNoResponseOutcome ||
     showRespondedOutcome ||
+    showMarkResponded ||
     showArchive ||
     showUnarchive;
 
@@ -252,6 +254,14 @@ export default function BulkStatusActions({
             onSend={onSendDeclinedMessages}
             destructive
             triggerClassName="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
+          />
+        ) : null}
+        {showMarkResponded ? (
+          <ActionButton
+            label="Mark Responded"
+            icon={MessageCircleIcon}
+            disabled={markRespondedDisabled}
+            onClick={onMarkResponded}
           />
         ) : null}
         {showNoResponseOutcome ? (

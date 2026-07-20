@@ -132,9 +132,12 @@ export const MESSAGE_ON_ITS_WAY = Object.freeze({
 export const DECLINED_RECOMMENDATIONS_FALLBACK =
   "We'd be happy to help you find another shop nearby, feel free to browse other listings on RadiatorRepairHub, or let us know if you'd like some help.";
 
-export const buildDeclinedRecommendationsHtml = (shops) => {
+export const buildNearbyRecommendationsHtml = (
+  shops,
+  fallback = DECLINED_RECOMMENDATIONS_FALLBACK
+) => {
   if (!Array.isArray(shops) || shops.length === 0) {
-    return `<p>${DECLINED_RECOMMENDATIONS_FALLBACK}</p>`;
+    return `<p>${fallback}</p>`;
   }
 
   const items = shops
@@ -151,6 +154,9 @@ export const buildDeclinedRecommendationsHtml = (shops) => {
   return `<ul style="padding-left: 20px; margin: 16px 0;">${items}</ul>`;
 };
 
+export const buildDeclinedRecommendationsHtml = (shops) =>
+  buildNearbyRecommendationsHtml(shops, DECLINED_RECOMMENDATIONS_FALLBACK);
+
 // Declined: business cannot take the request
 export const MESSAGE_DECLINED = Object.freeze({
   subject: (businessName) =>
@@ -165,6 +171,27 @@ export const MESSAGE_DECLINED = Object.freeze({
   ${recommendationsHtml ?? `<p>${DECLINED_RECOMMENDATIONS_FALLBACK}</p>`}
 
   <p>Sorry for the inconvenience, and thanks for using RadiatorRepairHub!</p>
+
+  <p>The RadiatorRepairHub Team</p>
+  `,
+});
+
+// No response: business has not replied
+export const MESSAGE_NO_RESPONSE = Object.freeze({
+  subject: (businessName) =>
+    `Update on your message to ${businessName ?? "the business"}`,
+  html: (name, businessName, recommendationsHtml) => `
+  <p>Hi ${name ?? "There"},</p>
+
+  <p>We haven't heard back from <strong>${businessName ?? "the business"}</strong> yet regarding your inquiry. Sometimes businesses take a bit longer to respond, especially during busy periods.</p>
+
+  <p>In the meantime, here are a few other nearby shops that might be able to help:</p>
+
+  ${recommendationsHtml ?? `<p>${DECLINED_RECOMMENDATIONS_FALLBACK}</p>`}
+
+  <p>Feel free to reach out to them, or wait a bit longer to hear back from ${businessName ?? "the business"}.</p>
+
+  <p>Thanks for using RadiatorRepairHub!</p>
 
   <p>The RadiatorRepairHub Team</p>
   `,

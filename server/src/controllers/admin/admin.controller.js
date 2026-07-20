@@ -14,6 +14,8 @@ import {
   markContactMessagesSent,
   getNearbyBusinessRecommendations,
   markContactMessagesDeclined as markMessagesDeclined,
+  markContactMessagesResponded as markMessagesResponded,
+  markContactMessagesNoResponse as markMessagesNoResponse,
 } from "../../supabase/supabase.functions.js";
 import {
   cacheData,
@@ -26,7 +28,10 @@ import {
   FREE_LEAD_CLAIM_OFFER_MESSAGE,
   MESSAGE_ON_ITS_WAY,
   MESSAGE_DECLINED,
+  MESSAGE_NO_RESPONSE,
   buildDeclinedRecommendationsHtml,
+  buildNearbyRecommendationsHtml,
+  DECLINED_RECOMMENDATIONS_FALLBACK,
   buildBusinessClaimLink,
   SENDER_NAME,
 } from "../../lib/constants/messages.js";
@@ -607,6 +612,11 @@ export const sendContactDeclined = async (req, res) => {
       continue;
     }
 
+    if (!message.confirmation_sent) {
+      skipped.push({ id, reason: "not_confirmed" });
+      continue;
+    }
+
     const contactEmail =
       typeof message.email === "string" ? message.email.trim() : "";
 
@@ -713,6 +723,174 @@ export const sendContactDeclined = async (req, res) => {
   );
 };
 
+export const sendContactNoResponse = async (req, res) => {
+  const { contact_message_ids } = req.body;
+  const { SENDER_EMAIL, RESEND_API_KEY } = process.env;
+
+  if (!RESEND_API_KEY || !SENDER_EMAIL) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "Email sending is not configured."
+        )
+      );
+  }
+
+  const { data: messages, error: fetchError } = await getContactMessagesByIds(
+    contact_message_ids
+  );
+
+  if (fetchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching contact messages.",
+          fetchError
+        )
+      );
+  }
+
+  const byId = new Map(
+    (messages ?? []).map((row) => [row.contact_message_id, row])
+  );
+
+  const skipped = [];
+  const eligible = [];
+
+  for (const id of contact_message_ids) {
+    const message = byId.get(id);
+
+    if (!message) {
+      skipped.push({ id, reason: "not_found" });
+      continue;
+    }
+
+    if (message.status === "no_response") {
+      skipped.push({ id, reason: "already_no_response" });
+      continue;
+    }
+
+    if (message.status !== "sent") {
+      skipped.push({ id, reason: "not_sent" });
+      continue;
+    }
+
+    if (!message.confirmation_sent) {
+      skipped.push({ id, reason: "not_confirmed" });
+      continue;
+    }
+
+    const contactEmail =
+      typeof message.email === "string" ? message.email.trim() : "";
+
+    if (!contactEmail) {
+      skipped.push({ id, reason: "missing_contact_email" });
+      continue;
+    }
+
+    eligible.push({ message, contactEmail });
+  }
+
+  if (eligible.length === 0) {
+    return res.status(200).json(
+      successHandler({
+        sent: [],
+        skipped,
+      })
+    );
+  }
+
+  const batchPayload = [];
+
+  for (const { message, contactEmail } of eligible) {
+    const { data: recommendations, error: recommendationsError } =
+      await getNearbyBusinessRecommendations({
+        excludeBusinessId: message.business?.id ?? message.business_id,
+        cityId: message.business?.city_id,
+        postalCodeId: message.business?.postal_code_id,
+        limit: 3,
+      });
+
+    if (recommendationsError) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            "There was an error fetching nearby business recommendations.",
+            recommendationsError
+          )
+        );
+    }
+
+    const recommendationsHtml = buildNearbyRecommendationsHtml(
+      recommendations ?? [],
+      DECLINED_RECOMMENDATIONS_FALLBACK
+    );
+
+    batchPayload.push({
+      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+      to: [contactEmail],
+      subject: MESSAGE_NO_RESPONSE.subject(message.business?.title),
+      html: MESSAGE_NO_RESPONSE.html(
+        message.name,
+        message.business?.title,
+        recommendationsHtml
+      ),
+    });
+  }
+
+  const { data: batchData, error: batchError } =
+    await resendClient()?.batch?.send(batchPayload);
+
+  if (batchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          batchError.message || "Failed to send no-response emails.",
+          batchError
+        )
+      );
+  }
+
+  const sentIds = eligible.map(({ message }) => message.contact_message_id);
+
+  const { data: updated, error: updateError } =
+    await markMessagesNoResponse(sentIds);
+
+  if (updateError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Emails were sent but status could not be updated.",
+          updateError
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("CONTACT_MESSAGES");
+
+  const resendResults = Array.isArray(batchData)
+    ? batchData
+    : batchData?.data ?? [];
+
+  return res.status(200).json(
+    successHandler({
+      sent: (updated ?? []).map((row) => row.contact_message_id),
+      skipped,
+      resendIds: resendResults.map((item) => item.id).filter(Boolean),
+    })
+  );
+};
+
 export const markContactMessagesDeclined = async (req, res) => {
   const { contact_message_ids } = req.body;
 
@@ -771,6 +949,17 @@ export const markContactMessagesDeclined = async (req, res) => {
           )
         );
     }
+
+    if (!message.confirmation_sent) {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "Only confirmed messages can be marked as declined."
+          )
+        );
+    }
   }
 
   const { data, error } = await markMessagesDeclined(contact_message_ids);
@@ -800,6 +989,208 @@ export const markContactMessagesDeclined = async (req, res) => {
       contactMessageIds,
       status: "declined",
       declined_at: declinedAt,
+    })
+  );
+};
+
+export const markContactMessagesResponded = async (req, res) => {
+  const { contact_message_ids } = req.body;
+
+  const { data: existing, error: fetchError } = await getContactMessagesByIds(
+    contact_message_ids
+  );
+
+  if (fetchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching contact messages.",
+          fetchError
+        )
+      );
+  }
+
+  const byId = new Map(
+    (existing ?? []).map((row) => [row.contact_message_id, row])
+  );
+
+  for (const id of contact_message_ids) {
+    const message = byId.get(id);
+
+    if (!message) {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "One or more contact messages could not be found."
+          )
+        );
+    }
+
+    if (message.status === "responded") {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "One or more selected messages are already marked as responded."
+          )
+        );
+    }
+
+    if (message.status !== "sent") {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "Only sent messages can be marked as responded."
+          )
+        );
+    }
+
+    if (!message.confirmation_sent) {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "Only confirmed messages can be marked as responded."
+          )
+        );
+    }
+  }
+
+  const { data, error } = await markMessagesResponded(contact_message_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error marking contact messages as responded.",
+          error
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("CONTACT_MESSAGES");
+
+  const contactMessageIds = (data ?? []).map(
+    (row) => row.contact_message_id
+  );
+  const respondedAt = data?.[0]?.responded_at ?? null;
+
+  return res.status(200).json(
+    successHandler({
+      updated: contactMessageIds.length,
+      contactMessageIds,
+      status: "responded",
+      responded_at: respondedAt,
+    })
+  );
+};
+
+export const markContactMessagesNoResponse = async (req, res) => {
+  const { contact_message_ids } = req.body;
+
+  const { data: existing, error: fetchError } = await getContactMessagesByIds(
+    contact_message_ids
+  );
+
+  if (fetchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching contact messages.",
+          fetchError
+        )
+      );
+  }
+
+  const byId = new Map(
+    (existing ?? []).map((row) => [row.contact_message_id, row])
+  );
+
+  for (const id of contact_message_ids) {
+    const message = byId.get(id);
+
+    if (!message) {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "One or more contact messages could not be found."
+          )
+        );
+    }
+
+    if (message.status === "no_response") {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "One or more selected messages are already marked as no response."
+          )
+        );
+    }
+
+    if (message.status !== "sent") {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "Only sent messages can be marked as no response."
+          )
+        );
+    }
+
+    if (!message.confirmation_sent) {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "Only confirmed messages can be marked as no response."
+          )
+        );
+    }
+  }
+
+  const { data, error } = await markMessagesNoResponse(contact_message_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error marking contact messages as no response.",
+          error
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("CONTACT_MESSAGES");
+
+  const contactMessageIds = (data ?? []).map(
+    (row) => row.contact_message_id
+  );
+
+  return res.status(200).json(
+    successHandler({
+      updated: contactMessageIds.length,
+      contactMessageIds,
+      status: "no_response",
     })
   );
 };

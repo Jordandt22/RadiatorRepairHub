@@ -503,7 +503,35 @@ export const markContactMessagesDeclined = async (ids) => {
     })
     .in("contact_message_id", ids)
     .eq("status", "sent")
+    .eq("confirmation_sent", true)
     .select("contact_message_id, declined_at");
+
+  return { data, error };
+};
+
+export const markContactMessagesResponded = async (ids) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({
+      status: "responded",
+      responded_at: new Date().toISOString(),
+    })
+    .in("contact_message_id", ids)
+    .eq("status", "sent")
+    .eq("confirmation_sent", true)
+    .select("contact_message_id, responded_at");
+
+  return { data, error };
+};
+
+export const markContactMessagesNoResponse = async (ids) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({ status: "no_response" })
+    .in("contact_message_id", ids)
+    .eq("status", "sent")
+    .eq("confirmation_sent", true)
+    .select("contact_message_id");
 
   return { data, error };
 };

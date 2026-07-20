@@ -16,6 +16,7 @@ import { formatFullDate } from "@/components/pages/dashboard/formatDate";
 import {
   buildFreeLeadClaimOfferPreview,
   buildMessageDeclinedPreview,
+  buildMessageNoResponsePreview,
   buildMessageOnItsWayPreview,
 } from "@/lib/messages";
 
@@ -31,6 +32,9 @@ function DetailRow({ label, children }) {
 function buildEmailPreview(message) {
   if (message.status === "declined") {
     return buildMessageDeclinedPreview(message);
+  }
+  if (message.status === "no_response") {
+    return buildMessageNoResponsePreview(message);
   }
   if (message.status === "sent") {
     return buildMessageOnItsWayPreview(message);

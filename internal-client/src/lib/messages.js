@@ -131,6 +131,26 @@ export const MESSAGE_DECLINED = Object.freeze({
   `,
 });
 
+export const MESSAGE_NO_RESPONSE = Object.freeze({
+  subject: (businessName) =>
+    `Update on your message to ${businessName ?? "the business"}`,
+  html: (name, businessName, recommendationsHtml) => `
+  <p>Hi ${displayValue(name ?? "There")},</p>
+
+  <p>We haven't heard back from <strong>${displayValue(businessName ?? "the business")}</strong> yet regarding your inquiry. Sometimes businesses take a bit longer to respond, especially during busy periods.</p>
+
+  <p>In the meantime, here are a few other nearby shops that might be able to help:</p>
+
+  ${recommendationsHtml ?? `<p>${DECLINED_RECOMMENDATIONS_FALLBACK}</p>`}
+
+  <p>Feel free to reach out to them, or wait a bit longer to hear back from ${displayValue(businessName ?? "the business")}.</p>
+
+  <p>Thanks for using RadiatorRepairHub!</p>
+
+  <p>The RadiatorRepairHub Team</p>
+  `,
+});
+
 export function buildFreeLeadClaimOfferPreview(message) {
   return {
     subject: FREE_LEAD_CLAIM_OFFER_MESSAGE.subject,
@@ -163,6 +183,18 @@ export function buildMessageDeclinedPreview(message) {
   return {
     subject: MESSAGE_DECLINED.subject(businessName),
     html: MESSAGE_DECLINED.html(
+      message?.name,
+      businessName,
+      `<p>${DECLINED_RECOMMENDATIONS_FALLBACK}</p>`,
+    ),
+  };
+}
+
+export function buildMessageNoResponsePreview(message) {
+  const businessName = message?.business?.title;
+  return {
+    subject: MESSAGE_NO_RESPONSE.subject(businessName),
+    html: MESSAGE_NO_RESPONSE.html(
       message?.name,
       businessName,
       `<p>${DECLINED_RECOMMENDATIONS_FALLBACK}</p>`,

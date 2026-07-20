@@ -378,6 +378,114 @@ export default function DashboardPage() {
     },
   });
 
+  const markRespondedMutation = useMutation({
+    mutationFn: async (contact_message_ids) => {
+      const result = await fetchApi("/admin/contact-messages/responded", {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify({ contact_message_ids }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to mark messages as responded";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      setActionError(null);
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to mark messages as responded");
+    },
+  });
+
+  const markNoResponseMutation = useMutation({
+    mutationFn: async (contact_message_ids) => {
+      const result = await fetchApi("/admin/contact-messages/no-response", {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify({ contact_message_ids }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to mark messages as no response";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      setActionError(null);
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to mark messages as no response");
+    },
+  });
+
+  const sendNoResponseMutation = useMutation({
+    mutationFn: async (contact_message_ids) => {
+      const result = await fetchApi(
+        "/admin/contact-messages/send-no-response",
+        {
+          method: "POST",
+          accessToken,
+          body: JSON.stringify({ contact_message_ids }),
+        },
+      );
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to send no-response emails";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onMutate: () => {
+      setActionError(null);
+      showLoading();
+    },
+    onSuccess: async () => {
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to send no-response emails");
+    },
+    onSettled: () => {
+      hideLoading();
+    },
+  });
+
   const refreshMutation = useMutation({
     mutationFn: async () => {
       const result = await fetchApi("/admin/cache/invalidate", {
@@ -416,7 +524,8 @@ export default function DashboardPage() {
     if (
       sendMutation.isPending ||
       sendConfirmationsMutation.isPending ||
-      sendDeclinedMutation.isPending
+      sendDeclinedMutation.isPending ||
+      sendNoResponseMutation.isPending
     ) {
       return;
     }
@@ -424,16 +533,21 @@ export default function DashboardPage() {
       statusMutation.isPending ||
         archiveMutation.isPending ||
         confirmMutation.isPending ||
-        markDeclinedMutation.isPending,
+        markDeclinedMutation.isPending ||
+        markRespondedMutation.isPending ||
+        markNoResponseMutation.isPending,
     );
   }, [
     statusMutation.isPending,
     archiveMutation.isPending,
     confirmMutation.isPending,
     markDeclinedMutation.isPending,
+    markRespondedMutation.isPending,
+    markNoResponseMutation.isPending,
     sendMutation.isPending,
     sendConfirmationsMutation.isPending,
     sendDeclinedMutation.isPending,
+    sendNoResponseMutation.isPending,
     setLoading,
   ]);
 
@@ -551,11 +665,35 @@ export default function DashboardPage() {
     });
   };
 
+  const runMarkResponded = () => {
+    debouncedConfirmUpdateRef.current?.({
+      contact_message_ids: Array.from(selectedIds),
+      isPending: markRespondedMutation.isPending,
+      mutate: markRespondedMutation.mutate,
+    });
+  };
+
   const runSendDeclinedMessages = () => {
     debouncedSendRef.current?.({
       contact_message_ids: Array.from(selectedIds),
       isPending: sendDeclinedMutation.isPending,
       mutate: sendDeclinedMutation.mutate,
+    });
+  };
+
+  const runMarkNoResponse = () => {
+    debouncedConfirmUpdateRef.current?.({
+      contact_message_ids: Array.from(selectedIds),
+      isPending: markNoResponseMutation.isPending,
+      mutate: markNoResponseMutation.mutate,
+    });
+  };
+
+  const runSendNoResponse = () => {
+    debouncedSendRef.current?.({
+      contact_message_ids: Array.from(selectedIds),
+      isPending: sendNoResponseMutation.isPending,
+      mutate: sendNoResponseMutation.mutate,
     });
   };
 
@@ -585,7 +723,10 @@ export default function DashboardPage() {
     sendMutation.isPending ||
     sendConfirmationsMutation.isPending ||
     sendDeclinedMutation.isPending ||
+    sendNoResponseMutation.isPending ||
     markDeclinedMutation.isPending ||
+    markRespondedMutation.isPending ||
+    markNoResponseMutation.isPending ||
     archiveMutation.isPending ||
     confirmMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
@@ -647,6 +788,13 @@ export default function DashboardPage() {
         selectedIds.has(message.contact_message_id) &&
         Boolean(message.confirmation_sent),
     );
+  const selectionIncludesUnconfirmed =
+    activeTab === "sent" &&
+    messages.some(
+      (message) =>
+        selectedIds.has(message.contact_message_id) &&
+        !Boolean(message.confirmation_sent),
+    );
   const selectionMissingContactEmail =
     activeTab === "sent" &&
     messages.some(
@@ -666,11 +814,16 @@ export default function DashboardPage() {
     selectionIncludesConfirmed ||
     selectionMissingContactEmail ||
     selectedIds.size > EMAIL_SEND_SELECTION_CAP;
-  const markDeclinedDisabled = actionsDisabled;
+  const outcomeRequiresConfirmedDisabled =
+    actionsDisabled || selectionIncludesUnconfirmed;
+  const markDeclinedDisabled = outcomeRequiresConfirmedDisabled;
+  const markRespondedDisabled = outcomeRequiresConfirmedDisabled;
+  const markNoResponseDisabled = outcomeRequiresConfirmedDisabled;
   const sendDeclinedMessagesDisabled =
-    actionsDisabled ||
+    outcomeRequiresConfirmedDisabled ||
     selectionMissingContactEmail ||
     selectedIds.size > EMAIL_SEND_SELECTION_CAP;
+  const sendNoResponseDisabled = sendDeclinedMessagesDisabled;
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-4 py-4 md:gap-4 md:px-8 md:py-6">
@@ -704,6 +857,8 @@ export default function DashboardPage() {
           showSendMessages={activeTab === "approved"}
           showConfirmedOutcome={activeTab === "sent"}
           showDeclinedOutcome={activeTab === "sent"}
+          showNoResponseOutcome={activeTab === "sent"}
+          showMarkResponded={activeTab === "sent"}
           showArchive={!isArchivedTab}
           showUnarchive={isArchivedTab}
           markSentDisabled={actionsDisabled}
@@ -712,6 +867,9 @@ export default function DashboardPage() {
           sendConfirmationsDisabled={sendConfirmationsDisabled}
           markDeclinedDisabled={markDeclinedDisabled}
           sendDeclinedMessagesDisabled={sendDeclinedMessagesDisabled}
+          markNoResponseDisabled={markNoResponseDisabled}
+          sendNoResponseDisabled={sendNoResponseDisabled}
+          markRespondedDisabled={markRespondedDisabled}
           archiveDisabled={actionsDisabled}
           unarchiveDisabled={actionsDisabled}
           onMarkSent={() => runStatusUpdate("sent")}
@@ -720,12 +878,16 @@ export default function DashboardPage() {
           onSendConfirmations={runSendConfirmations}
           onMarkDeclined={runMarkDeclined}
           onSendDeclinedMessages={runSendDeclinedMessages}
+          onMarkNoResponse={runMarkNoResponse}
+          onSendNoResponse={runSendNoResponse}
+          onMarkResponded={runMarkResponded}
           onArchive={() => runArchiveUpdate(true)}
           onUnarchive={() => runArchiveUpdate(false)}
           sendPending={
             sendMutation.isPending ||
             sendConfirmationsMutation.isPending ||
-            sendDeclinedMutation.isPending
+            sendDeclinedMutation.isPending ||
+            sendNoResponseMutation.isPending
           }
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
