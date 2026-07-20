@@ -33,7 +33,7 @@ import Pagination from "@/components/pages/dashboard/Pagination";
 const PAGE_LIMIT = 10;
 
 function resolveTab(tab) {
-  return VALID_TABS.includes(tab) ? tab : "all";
+  return VALID_TABS.includes(tab) ? tab : "pending";
 }
 
 export default function DashboardPage() {
@@ -63,11 +63,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!searchParams.get("tab")) {
-      // URL only — activeTab already defaults via resolveTab(null) => "all"
+      // URL only — activeTab already defaults via resolveTab(null) => "pending"
       window.history.replaceState(
         window.history.state,
         "",
-        "/dashboard?tab=all",
+        "/dashboard?tab=pending",
       );
     }
   }, [searchParams]);
@@ -637,8 +637,6 @@ export default function DashboardPage() {
         selectedIds.has(message.contact_message_id) &&
         message.status === status,
     );
-  const selectionIncludesSent =
-    activeTab === "all" && selectionIncludesStatus("sent");
   const selectionIncludesPending = selectionIncludesStatus("pending");
   const selectionIncludesFlagged = selectionIncludesStatus("flagged");
   const selectionIncludesApproved = selectionIncludesStatus("approved");
@@ -656,7 +654,7 @@ export default function DashboardPage() {
         selectedIds.has(message.contact_message_id) &&
         !hasContactEmail(message),
     );
-  const statusActionsDisabled = actionsDisabled || selectionIncludesSent;
+  const statusActionsDisabled = actionsDisabled;
   const flagDisabled = statusActionsDisabled || selectionIncludesFlagged;
   const markPendingDisabled =
     statusActionsDisabled || selectionIncludesPending;
@@ -693,21 +691,19 @@ export default function DashboardPage() {
             !isArchivedTab &&
             activeTab !== "flagged" &&
             activeTab !== "sent" &&
-            activeTab !== "in_progress"
+            activeTab !== "result"
           }
           showApprove={
             !isArchivedTab &&
             activeTab !== "approved" &&
             activeTab !== "sent" &&
-            activeTab !== "in_progress"
+            activeTab !== "result"
           }
-          showMarkPending={activeTab === "all" || activeTab === "approved"}
+          showMarkPending={activeTab === "approved"}
           showMarkSent={activeTab === "approved"}
           showSendMessages={activeTab === "approved"}
-          showMarkConfirmed={activeTab === "sent"}
-          showSendConfirmations={activeTab === "sent"}
-          showMarkDeclined={activeTab === "sent"}
-          showSendDeclinedMessages={activeTab === "sent"}
+          showConfirmedOutcome={activeTab === "sent"}
+          showDeclinedOutcome={activeTab === "sent"}
           showArchive={!isArchivedTab}
           showUnarchive={isArchivedTab}
           markSentDisabled={actionsDisabled}

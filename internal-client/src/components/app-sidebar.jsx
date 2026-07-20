@@ -5,13 +5,12 @@ import {
   Wrench,
   MailIcon,
   Building2Icon,
-  InboxIcon,
   CheckIcon,
   ClockIcon,
   FlagIcon,
   SendIcon,
   ArchiveIcon,
-  ListChecksIcon,
+  CircleCheckIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -35,15 +34,10 @@ const data = {
   navMain: [
     {
       title: "Contact Form",
-      url: "/dashboard?tab=all",
+      url: "/dashboard?tab=pending",
       icon: <MailIcon />,
       isActive: true,
       items: [
-        {
-          title: "All",
-          url: "/dashboard?tab=all",
-          icon: <InboxIcon />,
-        },
         {
           title: "Pending",
           url: "/dashboard?tab=pending",
@@ -60,9 +54,9 @@ const data = {
           icon: <SendIcon />,
         },
         {
-          title: "In Progress",
-          url: "/dashboard?tab=in_progress",
-          icon: <ListChecksIcon />,
+          title: "Result",
+          url: "/dashboard?tab=result",
+          icon: <CircleCheckIcon />,
         },
         {
           title: "Flagged",

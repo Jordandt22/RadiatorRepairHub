@@ -395,7 +395,7 @@ export const getContactMessages = async (
     .eq("archived", archived)
     .order("created_at", { ascending: false });
 
-  if (status === "in_progress") {
+  if (status === "result") {
     query = query.in("status", ["responded", "declined", "no_response"]);
   } else if (status) {
     query = query.eq("status", status);

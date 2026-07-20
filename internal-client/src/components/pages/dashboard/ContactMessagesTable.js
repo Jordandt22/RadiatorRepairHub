@@ -502,7 +502,7 @@ export default function ContactMessagesTable({
   onToggleId,
   onToggleAll,
   onViewClick,
-  activeTab = "all",
+  activeTab = "pending",
 }) {
   if (!messages?.length) {
     return <ContactMessagesEmptyState activeTab={activeTab} />;
@@ -530,7 +530,7 @@ export default function ContactMessagesTable({
     );
   }
 
-  if (activeTab === "in_progress") {
+  if (activeTab === "result") {
     return (
       <InProgressMessagesTables
         messages={messages}

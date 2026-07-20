@@ -3,8 +3,7 @@ import {
   ChevronDownIcon,
   ClockIcon,
   FlagIcon,
-  InboxIcon,
-  ListChecksIcon,
+  CircleCheckIcon,
   SendIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,11 +17,10 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const TAB_STATUS = {
-  all: null,
   pending: "pending",
   approved: "approved",
   sent: "sent",
-  in_progress: "in_progress",
+  result: "result",
   flagged: "flagged",
   archived: null,
 };
@@ -30,11 +28,10 @@ export const TAB_STATUS = {
 export const VALID_TABS = Object.keys(TAB_STATUS);
 
 const TAB_OPTIONS = [
-  { value: "all", label: "All", Icon: InboxIcon },
   { value: "pending", label: "Pending", Icon: ClockIcon },
   { value: "approved", label: "Approved", Icon: CheckIcon },
   { value: "sent", label: "Sent", Icon: SendIcon },
-  { value: "in_progress", label: "In Progress", Icon: ListChecksIcon },
+  { value: "result", label: "Result", Icon: CircleCheckIcon },
   { value: "flagged", label: "Flagged", Icon: FlagIcon },
 ];
 

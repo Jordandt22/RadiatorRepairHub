@@ -16,7 +16,7 @@ export const CONTACT_MESSAGE_STATUSES = [
 
 export const CONTACT_MESSAGE_QUERY_STATUSES = [
   ...CONTACT_MESSAGE_STATUSES,
-  "in_progress",
+  "result",
 ];
 
 export const UpdateContactMessagesStatusSchema = Yup.object({

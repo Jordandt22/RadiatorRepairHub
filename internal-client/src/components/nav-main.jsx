@@ -37,24 +37,24 @@ function getTabFromUrl(url, pathname, search) {
 function isSubItemActive(url, pathname, currentTab) {
   const tab = getTabFromUrl(url, pathname);
   if (tab == null) return false;
-  return (currentTab ?? "all") === tab;
+  return (currentTab ?? "pending") === tab;
 }
 
 export function NavMain({ items, label = "Messages" }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [currentTab, setCurrentTab] = useState(
-    () => searchParams.get("tab") ?? "all",
+    () => searchParams.get("tab") ?? "pending",
   );
 
   useEffect(() => {
-    setCurrentTab(searchParams.get("tab") ?? "all");
+    setCurrentTab(searchParams.get("tab") ?? "pending");
   }, [searchParams]);
 
   useEffect(() => {
     return subscribeToDashboardTab((tab) => {
       startTransition(() => {
-        setCurrentTab(tab ?? "all");
+        setCurrentTab(tab ?? "pending");
       });
     });
   }, []);
@@ -66,7 +66,7 @@ export function NavMain({ items, label = "Messages" }) {
     }
 
     event.preventDefault();
-    const tab = target.searchParams.get("tab") ?? "all";
+    const tab = target.searchParams.get("tab") ?? "pending";
     if (tab === currentTab) return;
 
     setCurrentTab(tab);

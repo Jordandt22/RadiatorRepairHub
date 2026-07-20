@@ -1,17 +1,25 @@
 import {
   ArchiveIcon,
   ArchiveRestoreIcon,
-  BadgeCheckIcon,
   CheckIcon,
+  ChevronDownIcon,
   ClockIcon,
   FlagIcon,
   MailCheckIcon,
   MailIcon,
+  MessageCircleIcon,
+  MessageCircleOffIcon,
   RefreshCwIcon,
   SendIcon,
   XIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 function ActionButton({
@@ -41,6 +49,70 @@ function ActionButton({
   );
 }
 
+function OutcomeMenu({
+  label,
+  icon: Icon,
+  markLabel = "Mark only",
+  sendLabel = "Send email",
+  markDisabled = true,
+  sendDisabled = true,
+  onMark,
+  onSend,
+  variant = "outline",
+  triggerClassName,
+  destructive = false,
+}) {
+  const menuDisabled = markDisabled && sendDisabled;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        disabled={menuDisabled}
+        render={
+          <Button
+            variant={variant}
+            size="sm"
+            aria-label={label}
+            className={cn(
+              "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:translate-y-[-2px] hover:shadow-md max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+              triggerClassName,
+            )}
+          />
+        }
+      >
+        <Icon />
+        <span className="hidden md:inline">{label}</span>
+        <ChevronDownIcon className="hidden size-3.5 opacity-70 md:inline" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-44">
+        <DropdownMenuItem
+          disabled={markDisabled}
+          className="cursor-pointer"
+          onClick={() => {
+            if (markDisabled) return;
+            onMark?.();
+          }}
+        >
+          <CheckIcon />
+          <span>{markLabel}</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          disabled={sendDisabled}
+          variant={destructive ? "destructive" : "default"}
+          className="cursor-pointer"
+          onClick={() => {
+            if (sendDisabled) return;
+            onSend?.();
+          }}
+        >
+          <SendIcon />
+          <span>{sendLabel}</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export default function BulkStatusActions({
   selectedCount,
   disabled,
@@ -53,10 +125,10 @@ export default function BulkStatusActions({
   showMarkPending = false,
   showMarkSent = false,
   showSendMessages = false,
-  showSendConfirmations = false,
-  showMarkConfirmed = false,
-  showMarkDeclined = false,
-  showSendDeclinedMessages = false,
+  showConfirmedOutcome = false,
+  showDeclinedOutcome = false,
+  showNoResponseOutcome = false,
+  showRespondedOutcome = false,
   showArchive = false,
   showUnarchive = false,
   flagDisabled,
@@ -64,18 +136,26 @@ export default function BulkStatusActions({
   markPendingDisabled,
   markSentDisabled = true,
   sendMessagesDisabled = true,
-  sendConfirmationsDisabled = true,
   markConfirmedDisabled = true,
+  sendConfirmationsDisabled = true,
   markDeclinedDisabled = true,
   sendDeclinedMessagesDisabled = true,
+  markNoResponseDisabled = true,
+  sendNoResponseDisabled = true,
+  markRespondedDisabled = true,
+  sendRespondedDisabled = true,
   archiveDisabled = true,
   unarchiveDisabled = true,
   onMarkSent,
   onSendMessages,
-  onSendConfirmations,
   onMarkConfirmed,
+  onSendConfirmations,
   onMarkDeclined,
   onSendDeclinedMessages,
+  onMarkNoResponse,
+  onSendNoResponse,
+  onMarkResponded,
+  onSendResponded,
   onArchive,
   onUnarchive,
   sendPending = false,
@@ -92,10 +172,10 @@ export default function BulkStatusActions({
     showMarkPending ||
     showMarkSent ||
     showSendMessages ||
-    showSendConfirmations ||
-    showMarkConfirmed ||
-    showMarkDeclined ||
-    showSendDeclinedMessages ||
+    showConfirmedOutcome ||
+    showDeclinedOutcome ||
+    showNoResponseOutcome ||
+    showRespondedOutcome ||
     showArchive ||
     showUnarchive;
 
@@ -150,41 +230,48 @@ export default function BulkStatusActions({
             className={buttonClassName}
           />
         ) : null}
-        {showMarkConfirmed ? (
-          <ActionButton
-            label="Mark Confirmed"
+        {showConfirmedOutcome ? (
+          <OutcomeMenu
+            label="Confirmed"
             icon={MailCheckIcon}
-            disabled={markConfirmedDisabled}
-            onClick={onMarkConfirmed}
-          />
-        ) : null}
-        {showSendConfirmations ? (
-          <ActionButton
-            label="Send Confirmations"
-            icon={BadgeCheckIcon}
+            markDisabled={markConfirmedDisabled}
+            sendDisabled={sendConfirmationsDisabled || sendPending}
+            onMark={onMarkConfirmed}
+            onSend={onSendConfirmations}
+            triggerClassName={buttonClassName}
             variant="default"
-            disabled={sendConfirmationsDisabled}
-            onClick={onSendConfirmations}
-            className={buttonClassName}
           />
         ) : null}
-        {showMarkDeclined ? (
-          <ActionButton
-            label="Mark Declined"
+        {showDeclinedOutcome ? (
+          <OutcomeMenu
+            label="Declined"
             icon={XIcon}
-            disabled={markDeclinedDisabled}
-            onClick={onMarkDeclined}
-            className="border-destructive text-destructive hover:bg-destructive/10"
+            markDisabled={markDeclinedDisabled}
+            sendDisabled={sendDeclinedMessagesDisabled || sendPending}
+            onMark={onMarkDeclined}
+            onSend={onSendDeclinedMessages}
+            destructive
+            triggerClassName="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
           />
         ) : null}
-        {showSendDeclinedMessages ? (
-          <ActionButton
-            label="Send Declined Messages"
-            icon={SendIcon}
-            variant="destructive"
-            disabled={sendDeclinedMessagesDisabled || sendPending}
-            onClick={onSendDeclinedMessages}
-            className="border-destructive/10 hover:bg-destructive/10"
+        {showNoResponseOutcome ? (
+          <OutcomeMenu
+            label="No Response"
+            icon={MessageCircleOffIcon}
+            markDisabled={markNoResponseDisabled}
+            sendDisabled={sendNoResponseDisabled || sendPending}
+            onMark={onMarkNoResponse}
+            onSend={onSendNoResponse}
+          />
+        ) : null}
+        {showRespondedOutcome ? (
+          <OutcomeMenu
+            label="Responded"
+            icon={MessageCircleIcon}
+            markDisabled={markRespondedDisabled}
+            sendDisabled={sendRespondedDisabled || sendPending}
+            onMark={onMarkResponded}
+            onSend={onSendResponded}
           />
         ) : null}
         {showBulkActions && selectedCount > 0 ? (

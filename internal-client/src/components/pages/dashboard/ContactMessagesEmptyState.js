@@ -3,17 +3,11 @@ import {
   CheckIcon,
   ClockIcon,
   FlagIcon,
-  InboxIcon,
-  ListChecksIcon,
+  CircleCheckIcon,
   SendIcon,
 } from "lucide-react";
 
 const EMPTY_BY_TAB = {
-  all: {
-    icon: InboxIcon,
-    title: "No contact messages",
-    description: "New submissions will show up here.",
-  },
   pending: {
     icon: ClockIcon,
     title: "No pending messages",
@@ -22,7 +16,7 @@ const EMPTY_BY_TAB = {
   approved: {
     icon: CheckIcon,
     title: "No approved messages",
-    description: "Approve messages from All or Flagged to see them here.",
+    description: "Approve messages from Pending or Flagged to see them here.",
   },
   flagged: {
     icon: FlagIcon,
@@ -34,9 +28,9 @@ const EMPTY_BY_TAB = {
     title: "No sent messages",
     description: "Messages emailed to businesses will show up here.",
   },
-  in_progress: {
-    icon: ListChecksIcon,
-    title: "No in progress messages",
+  result: {
+    icon: CircleCheckIcon,
+    title: "No result messages",
     description:
       "Responded, declined, and no-response messages will appear here.",
   },
@@ -47,8 +41,8 @@ const EMPTY_BY_TAB = {
   },
 };
 
-export default function ContactMessagesEmptyState({ activeTab = "all" }) {
-  const content = EMPTY_BY_TAB[activeTab] ?? EMPTY_BY_TAB.all;
+export default function ContactMessagesEmptyState({ activeTab = "pending" }) {
+  const content = EMPTY_BY_TAB[activeTab] ?? EMPTY_BY_TAB.pending;
   const Icon = content.icon;
 
   return (
