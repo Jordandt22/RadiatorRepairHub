@@ -9,9 +9,37 @@ import {
   MailIcon,
   RefreshCwIcon,
   SendIcon,
+  XIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+function ActionButton({
+  label,
+  icon: Icon,
+  variant = "outline",
+  disabled,
+  onClick,
+  className,
+  iconClassName,
+}) {
+  return (
+    <Button
+      variant={variant}
+      size="sm"
+      disabled={disabled}
+      onClick={onClick}
+      aria-label={label}
+      className={cn(
+        "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:translate-y-[-2px] hover:shadow-md max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+        className,
+      )}
+    >
+      <Icon className={iconClassName} />
+      <span className="hidden md:inline">{label}</span>
+    </Button>
+  );
+}
 
 export default function BulkStatusActions({
   selectedCount,
@@ -27,6 +55,8 @@ export default function BulkStatusActions({
   showSendMessages = false,
   showSendConfirmations = false,
   showMarkConfirmed = false,
+  showMarkDeclined = false,
+  showSendDeclinedMessages = false,
   showArchive = false,
   showUnarchive = false,
   flagDisabled,
@@ -36,12 +66,16 @@ export default function BulkStatusActions({
   sendMessagesDisabled = true,
   sendConfirmationsDisabled = true,
   markConfirmedDisabled = true,
+  markDeclinedDisabled = true,
+  sendDeclinedMessagesDisabled = true,
   archiveDisabled = true,
   unarchiveDisabled = true,
   onMarkSent,
   onSendMessages,
   onSendConfirmations,
   onMarkConfirmed,
+  onMarkDeclined,
+  onSendDeclinedMessages,
   onArchive,
   onUnarchive,
   sendPending = false,
@@ -60,148 +94,134 @@ export default function BulkStatusActions({
     showSendMessages ||
     showSendConfirmations ||
     showMarkConfirmed ||
+    showMarkDeclined ||
+    showSendDeclinedMessages ||
     showArchive ||
     showUnarchive;
 
-  const buttonClassName =
-    "cursor-pointer hover:translate-y-[-2px] hover:shadow-md transition-all duration-300 px-6 rounded-full";
-  const primaryButtonClassName =
-    buttonClassName + " border-primary/75 hover:shadow-lg hover:bg-primary/75";
+  const buttonClassName = "border-primary/75 hover:shadow-lg hover:bg-primary/75";
+  const archiveButtonClassName =
+    "border-muted-foreground/80 bg-muted-foreground text-white hover:bg-muted-foreground/80 hover:text-white";
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-nowrap items-center gap-2 overflow-x-auto md:flex-wrap md:overflow-visible">
         {showFlag ? (
-          <Button
-            variant="outline"
-            size="sm"
+          <ActionButton
+            label="Flag All"
+            icon={FlagIcon}
             disabled={flagIsDisabled}
             onClick={onFlag}
-            className={buttonClassName}
-          >
-            <FlagIcon />
-            Flag All
-          </Button>
+          />
         ) : null}
         {showMarkPending ? (
-          <Button
-            variant="outline"
-            size="sm"
+          <ActionButton
+            label="Mark Pending"
+            icon={ClockIcon}
             disabled={markPendingIsDisabled}
             onClick={onMarkPending}
-            className={buttonClassName}
-          >
-            <ClockIcon />
-            Mark Pending
-          </Button>
+          />
         ) : null}
         {showApprove ? (
-          <Button
-            size="sm"
+          <ActionButton
+            label="Approve All"
+            icon={CheckIcon}
+            variant="default"
             disabled={approveIsDisabled}
             onClick={onApprove}
-            className={primaryButtonClassName}
-          >
-            <CheckIcon />
-            Approve All
-          </Button>
+            className={buttonClassName}
+          />
         ) : null}
         {showMarkSent ? (
-          <Button
-            variant="outline"
-            size="sm"
+          <ActionButton
+            label="Mark Sent"
+            icon={MailIcon}
             disabled={markSentDisabled}
             onClick={onMarkSent}
-            className={buttonClassName}
-          >
-            <MailIcon />
-            Mark Sent
-          </Button>
+          />
         ) : null}
         {showSendMessages ? (
-          <Button
-            size="sm"
+          <ActionButton
+            label="Send Messages"
+            icon={SendIcon}
+            variant="default"
             disabled={sendMessagesDisabled || sendPending}
             onClick={onSendMessages}
-            className={primaryButtonClassName}
-          >
-            <SendIcon />
-            Send Messages
-          </Button>
+            className={buttonClassName}
+          />
         ) : null}
         {showMarkConfirmed ? (
-          <Button
-            variant="outline"
-            size="sm"
+          <ActionButton
+            label="Mark Confirmed"
+            icon={MailCheckIcon}
             disabled={markConfirmedDisabled}
             onClick={onMarkConfirmed}
-            className={buttonClassName}
-          >
-            <MailCheckIcon />
-            Mark Confirmed
-          </Button>
+          />
         ) : null}
         {showSendConfirmations ? (
-          <Button
-            size="sm"
+          <ActionButton
+            label="Send Confirmations"
+            icon={BadgeCheckIcon}
+            variant="default"
             disabled={sendConfirmationsDisabled}
             onClick={onSendConfirmations}
-            className={primaryButtonClassName}
-          >
-            <BadgeCheckIcon />
-            Send Confirmations
-          </Button>
+            className={buttonClassName}
+          />
         ) : null}
-        {showBulkActions ? (
-          selectedCount > 0 ? (
-            <span className="text-sm text-muted-foreground">
-              {selectedCount} selected
-            </span>
-          ) : (
-            <span className="text-sm text-muted-foreground">
-              Select messages to update
-            </span>
-          )
+        {showMarkDeclined ? (
+          <ActionButton
+            label="Mark Declined"
+            icon={XIcon}
+            disabled={markDeclinedDisabled}
+            onClick={onMarkDeclined}
+            className="border-destructive text-destructive hover:bg-destructive/10"
+          />
         ) : null}
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          {showArchive ? (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={archiveDisabled}
-              onClick={onArchive}
-              className={cn(
-                buttonClassName,
-                "border-muted-foreground/80 bg-muted-foreground text-white hover:bg-muted-foreground/80 hover:text-white",
-              )}
-            >
-              <ArchiveIcon />
-              Archive
-            </Button>
-          ) : null}
-          {showUnarchive ? (
-            <Button
-              size="sm"
-              disabled={unarchiveDisabled}
-              onClick={onUnarchive}
-              className={primaryButtonClassName}
-            >
-              <ArchiveRestoreIcon />
-              Unarchive
-            </Button>
-          ) : null}
-          <Button
-            variant="outline"
-            size="sm"
-            className={`hover:bg-gray-100 ${buttonClassName}`}
-            disabled={refreshPending}
-            onClick={onRefresh}
-          >
-            <RefreshCwIcon
-              className={refreshPending ? "animate-spin" : undefined}
-            />
-            Refresh
-          </Button>
-        </div>
+        {showSendDeclinedMessages ? (
+          <ActionButton
+            label="Send Declined Messages"
+            icon={SendIcon}
+            variant="destructive"
+            disabled={sendDeclinedMessagesDisabled || sendPending}
+            onClick={onSendDeclinedMessages}
+            className="border-destructive/10 hover:bg-destructive/10"
+          />
+        ) : null}
+        {showBulkActions && selectedCount > 0 ? (
+          <span className="hidden shrink-0 text-sm text-muted-foreground md:inline">
+            {selectedCount} selected
+          </span>
+        ) : null}
+        {showArchive ? (
+          <ActionButton
+            label="Archive"
+            icon={ArchiveIcon}
+            disabled={archiveDisabled}
+            onClick={onArchive}
+            className={cn("md:ml-auto", archiveButtonClassName)}
+          />
+        ) : null}
+        {showUnarchive ? (
+          <ActionButton
+            label="Unarchive"
+            icon={ArchiveRestoreIcon}
+            variant="default"
+            disabled={unarchiveDisabled}
+            onClick={onUnarchive}
+            className={cn("md:ml-auto", buttonClassName)}
+          />
+        ) : null}
+        <ActionButton
+          label="Refresh"
+          icon={RefreshCwIcon}
+          disabled={refreshPending}
+          onClick={onRefresh}
+          className={cn(
+            "hover:bg-gray-100",
+            !showArchive && !showUnarchive ? "md:ml-auto" : null,
+          )}
+          iconClassName={refreshPending ? "animate-spin" : undefined}
+        />
       </div>
 
       {actionError ? (

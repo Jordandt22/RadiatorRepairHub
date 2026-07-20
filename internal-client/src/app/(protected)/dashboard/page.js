@@ -306,6 +306,78 @@ export default function DashboardPage() {
     },
   });
 
+  const sendDeclinedMutation = useMutation({
+    mutationFn: async (contact_message_ids) => {
+      const result = await fetchApi("/admin/contact-messages/send-declined", {
+        method: "POST",
+        accessToken,
+        body: JSON.stringify({ contact_message_ids }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to send declined emails";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onMutate: () => {
+      setActionError(null);
+      showLoading();
+    },
+    onSuccess: async () => {
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to send declined emails");
+    },
+    onSettled: () => {
+      hideLoading();
+    },
+  });
+
+  const markDeclinedMutation = useMutation({
+    mutationFn: async (contact_message_ids) => {
+      const result = await fetchApi("/admin/contact-messages/declined", {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify({ contact_message_ids }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to mark messages as declined";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      setActionError(null);
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to mark messages as declined");
+    },
+  });
+
   const refreshMutation = useMutation({
     mutationFn: async () => {
       const result = await fetchApi("/admin/cache/invalidate", {
@@ -341,18 +413,27 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    if (sendMutation.isPending || sendConfirmationsMutation.isPending) return;
+    if (
+      sendMutation.isPending ||
+      sendConfirmationsMutation.isPending ||
+      sendDeclinedMutation.isPending
+    ) {
+      return;
+    }
     setLoading(
       statusMutation.isPending ||
-      archiveMutation.isPending ||
-      confirmMutation.isPending,
+        archiveMutation.isPending ||
+        confirmMutation.isPending ||
+        markDeclinedMutation.isPending,
     );
   }, [
     statusMutation.isPending,
     archiveMutation.isPending,
     confirmMutation.isPending,
+    markDeclinedMutation.isPending,
     sendMutation.isPending,
     sendConfirmationsMutation.isPending,
+    sendDeclinedMutation.isPending,
     setLoading,
   ]);
 
@@ -462,6 +543,22 @@ export default function DashboardPage() {
     });
   };
 
+  const runMarkDeclined = () => {
+    debouncedConfirmUpdateRef.current?.({
+      contact_message_ids: Array.from(selectedIds),
+      isPending: markDeclinedMutation.isPending,
+      mutate: markDeclinedMutation.mutate,
+    });
+  };
+
+  const runSendDeclinedMessages = () => {
+    debouncedSendRef.current?.({
+      contact_message_ids: Array.from(selectedIds),
+      isPending: sendDeclinedMutation.isPending,
+      mutate: sendDeclinedMutation.mutate,
+    });
+  };
+
   const messages = useMemo(
     () => data?.contactMessages ?? [],
     [data?.contactMessages],
@@ -487,6 +584,8 @@ export default function DashboardPage() {
     statusMutation.isPending ||
     sendMutation.isPending ||
     sendConfirmationsMutation.isPending ||
+    sendDeclinedMutation.isPending ||
+    markDeclinedMutation.isPending ||
     archiveMutation.isPending ||
     confirmMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
@@ -569,12 +668,17 @@ export default function DashboardPage() {
     selectionIncludesConfirmed ||
     selectionMissingContactEmail ||
     selectedIds.size > EMAIL_SEND_SELECTION_CAP;
+  const markDeclinedDisabled = actionsDisabled;
+  const sendDeclinedMessagesDisabled =
+    actionsDisabled ||
+    selectionMissingContactEmail ||
+    selectedIds.size > EMAIL_SEND_SELECTION_CAP;
 
   return (
-    <div className="mx-auto flex w-full px-8 flex-1 flex-col gap-4 py-6">
+    <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-4 py-4 md:gap-4 md:px-8 md:py-6">
       <StatusFilterTabs value={activeTab} onValueChange={handleTabChange} />
 
-      <div className="mt-4 flex flex-col gap-4">
+      <div className="mt-2 flex flex-col gap-3 md:mt-4 md:gap-4">
         <BulkStatusActions
           selectedCount={selectedIds.size}
           disabled={statusActionsDisabled}
@@ -588,34 +692,44 @@ export default function DashboardPage() {
           showFlag={
             !isArchivedTab &&
             activeTab !== "flagged" &&
-            activeTab !== "sent"
+            activeTab !== "sent" &&
+            activeTab !== "in_progress"
           }
           showApprove={
             !isArchivedTab &&
             activeTab !== "approved" &&
-            activeTab !== "sent"
+            activeTab !== "sent" &&
+            activeTab !== "in_progress"
           }
           showMarkPending={activeTab === "all" || activeTab === "approved"}
           showMarkSent={activeTab === "approved"}
           showSendMessages={activeTab === "approved"}
           showMarkConfirmed={activeTab === "sent"}
           showSendConfirmations={activeTab === "sent"}
+          showMarkDeclined={activeTab === "sent"}
+          showSendDeclinedMessages={activeTab === "sent"}
           showArchive={!isArchivedTab}
           showUnarchive={isArchivedTab}
           markSentDisabled={actionsDisabled}
           sendMessagesDisabled={!canSendMessages}
           markConfirmedDisabled={markConfirmedDisabled}
           sendConfirmationsDisabled={sendConfirmationsDisabled}
+          markDeclinedDisabled={markDeclinedDisabled}
+          sendDeclinedMessagesDisabled={sendDeclinedMessagesDisabled}
           archiveDisabled={actionsDisabled}
           unarchiveDisabled={actionsDisabled}
           onMarkSent={() => runStatusUpdate("sent")}
           onSendMessages={runSendMessages}
           onMarkConfirmed={runMarkConfirmed}
           onSendConfirmations={runSendConfirmations}
+          onMarkDeclined={runMarkDeclined}
+          onSendDeclinedMessages={runSendDeclinedMessages}
           onArchive={() => runArchiveUpdate(true)}
           onUnarchive={() => runArchiveUpdate(false)}
           sendPending={
-            sendMutation.isPending || sendConfirmationsMutation.isPending
+            sendMutation.isPending ||
+            sendConfirmationsMutation.isPending ||
+            sendDeclinedMutation.isPending
           }
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}

@@ -15,6 +15,7 @@ import {
 import { formatFullDate } from "@/components/pages/dashboard/formatDate";
 import {
   buildFreeLeadClaimOfferPreview,
+  buildMessageDeclinedPreview,
   buildMessageOnItsWayPreview,
 } from "@/lib/messages";
 
@@ -27,12 +28,18 @@ function DetailRow({ label, children }) {
   );
 }
 
+function buildEmailPreview(message) {
+  if (message.status === "declined") {
+    return buildMessageDeclinedPreview(message);
+  }
+  if (message.status === "sent") {
+    return buildMessageOnItsWayPreview(message);
+  }
+  return buildFreeLeadClaimOfferPreview(message);
+}
+
 export default function ContactMessageDrawer({ message, open, onOpenChange }) {
-  const emailPreview = message
-    ? message.status === "sent"
-      ? buildMessageOnItsWayPreview(message)
-      : buildFreeLeadClaimOfferPreview(message)
-    : null;
+  const emailPreview = message ? buildEmailPreview(message) : null;
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} swipeDirection="right">
@@ -96,6 +103,12 @@ export default function ContactMessageDrawer({ message, open, onOpenChange }) {
               </DetailRow>
               <DetailRow label="Confirmed at">
                 {formatFullDate(message.confirmation_sent_at)}
+              </DetailRow>
+              <DetailRow label="Declined at">
+                {formatFullDate(message.declined_at)}
+              </DetailRow>
+              <DetailRow label="Responded at">
+                {formatFullDate(message.responded_at)}
               </DetailRow>
               <DetailRow label="Message ID">
                 <span className="break-all font-mono text-xs">

@@ -9,8 +9,14 @@ export const CONTACT_MESSAGE_STATUSES = [
   "sent",
   "declined",
   "no_response",
+  "responded",
   "approved",
   "flagged",
+];
+
+export const CONTACT_MESSAGE_QUERY_STATUSES = [
+  ...CONTACT_MESSAGE_STATUSES,
+  "in_progress",
 ];
 
 export const UpdateContactMessagesStatusSchema = Yup.object({
@@ -39,6 +45,21 @@ export const SendContactConfirmationsSchema = Yup.object({
     .required("Contact message IDs are required"),
 });
 
+export const SendContactDeclinedSchema = Yup.object({
+  contact_message_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid contact message ID").required())
+    .min(1, "At least one contact message ID is required")
+    .max(5, "At most 5 contact messages can be sent at once")
+    .required("Contact message IDs are required"),
+});
+
+export const MarkContactMessagesDeclinedSchema = Yup.object({
+  contact_message_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid contact message ID").required())
+    .min(1, "At least one contact message ID is required")
+    .required("Contact message IDs are required"),
+});
+
 export const UpdateContactMessagesArchivedSchema = Yup.object({
   archived: Yup.boolean().required("Archived is required"),
   contact_message_ids: Yup.array()
@@ -60,7 +81,7 @@ export const GetContactMessagesQuerySchema = Yup.object({
   status: Yup.string()
     .transform((value) => (value === "" || value == null ? null : value))
     .nullable()
-    .oneOf([...CONTACT_MESSAGE_STATUSES, null], "Invalid status")
+    .oneOf([...CONTACT_MESSAGE_QUERY_STATUSES, null], "Invalid status")
     .optional(),
   archived: Yup.boolean()
     .transform((value, originalValue) => {

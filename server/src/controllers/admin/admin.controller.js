@@ -12,6 +12,8 @@ import {
   markContactMessagesConfirmed as markMessagesConfirmed,
   getContactMessagesByIds,
   markContactMessagesSent,
+  getNearbyBusinessRecommendations,
+  markContactMessagesDeclined as markMessagesDeclined,
 } from "../../supabase/supabase.functions.js";
 import {
   cacheData,
@@ -20,7 +22,14 @@ import {
   deleteCacheDataByPrefix,
 } from "../../redis/redis.js";
 import { resendClient } from "../../resend/resend.js";
-import { FREE_LEAD_CLAIM_OFFER_MESSAGE, MESSAGE_ON_ITS_WAY, buildBusinessClaimLink, SENDER_NAME } from "../../lib/constants/messages.js";
+import {
+  FREE_LEAD_CLAIM_OFFER_MESSAGE,
+  MESSAGE_ON_ITS_WAY,
+  MESSAGE_DECLINED,
+  buildDeclinedRecommendationsHtml,
+  buildBusinessClaimLink,
+  SENDER_NAME,
+} from "../../lib/constants/messages.js";
 
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
 
@@ -538,6 +547,259 @@ export const sendContactConfirmations = async (req, res) => {
       sent: (updated ?? []).map((row) => row.contact_message_id),
       skipped,
       resendIds: resendResults.map((item) => item.id).filter(Boolean),
+    })
+  );
+};
+
+export const sendContactDeclined = async (req, res) => {
+  const { contact_message_ids } = req.body;
+  const { SENDER_EMAIL, RESEND_API_KEY } = process.env;
+
+  if (!RESEND_API_KEY || !SENDER_EMAIL) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "Email sending is not configured."
+        )
+      );
+  }
+
+  const { data: messages, error: fetchError } = await getContactMessagesByIds(
+    contact_message_ids
+  );
+
+  if (fetchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching contact messages.",
+          fetchError
+        )
+      );
+  }
+
+  const byId = new Map(
+    (messages ?? []).map((row) => [row.contact_message_id, row])
+  );
+
+  const skipped = [];
+  const eligible = [];
+
+  for (const id of contact_message_ids) {
+    const message = byId.get(id);
+
+    if (!message) {
+      skipped.push({ id, reason: "not_found" });
+      continue;
+    }
+
+    if (message.status === "declined") {
+      skipped.push({ id, reason: "already_declined" });
+      continue;
+    }
+
+    if (message.status !== "sent") {
+      skipped.push({ id, reason: "not_sent" });
+      continue;
+    }
+
+    const contactEmail =
+      typeof message.email === "string" ? message.email.trim() : "";
+
+    if (!contactEmail) {
+      skipped.push({ id, reason: "missing_contact_email" });
+      continue;
+    }
+
+    eligible.push({ message, contactEmail });
+  }
+
+  if (eligible.length === 0) {
+    return res.status(200).json(
+      successHandler({
+        sent: [],
+        skipped,
+      })
+    );
+  }
+
+  const batchPayload = [];
+
+  for (const { message, contactEmail } of eligible) {
+    const { data: recommendations, error: recommendationsError } =
+      await getNearbyBusinessRecommendations({
+        excludeBusinessId: message.business?.id ?? message.business_id,
+        cityId: message.business?.city_id,
+        postalCodeId: message.business?.postal_code_id,
+        limit: 3,
+      });
+
+    if (recommendationsError) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            "There was an error fetching nearby business recommendations.",
+            recommendationsError
+          )
+        );
+    }
+
+    const recommendationsHtml = buildDeclinedRecommendationsHtml(
+      recommendations ?? []
+    );
+
+    batchPayload.push({
+      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+      to: [contactEmail],
+      subject: MESSAGE_DECLINED.subject(message.business?.title),
+      html: MESSAGE_DECLINED.html(
+        message.name,
+        message.business?.title,
+        recommendationsHtml
+      ),
+    });
+  }
+
+  const { data: batchData, error: batchError } =
+    await resendClient()?.batch?.send(batchPayload);
+
+  if (batchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          batchError.message || "Failed to send declined emails.",
+          batchError
+        )
+      );
+  }
+
+  const sentIds = eligible.map(({ message }) => message.contact_message_id);
+
+  const { data: updated, error: updateError } =
+    await markMessagesDeclined(sentIds);
+
+  if (updateError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Emails were sent but status could not be updated.",
+          updateError
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("CONTACT_MESSAGES");
+
+  const resendResults = Array.isArray(batchData)
+    ? batchData
+    : batchData?.data ?? [];
+
+  return res.status(200).json(
+    successHandler({
+      sent: (updated ?? []).map((row) => row.contact_message_id),
+      skipped,
+      resendIds: resendResults.map((item) => item.id).filter(Boolean),
+    })
+  );
+};
+
+export const markContactMessagesDeclined = async (req, res) => {
+  const { contact_message_ids } = req.body;
+
+  const { data: existing, error: fetchError } = await getContactMessagesByIds(
+    contact_message_ids
+  );
+
+  if (fetchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching contact messages.",
+          fetchError
+        )
+      );
+  }
+
+  const byId = new Map(
+    (existing ?? []).map((row) => [row.contact_message_id, row])
+  );
+
+  for (const id of contact_message_ids) {
+    const message = byId.get(id);
+
+    if (!message) {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "One or more contact messages could not be found."
+          )
+        );
+    }
+
+    if (message.status === "declined") {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "One or more selected messages are already declined."
+          )
+        );
+    }
+
+    if (message.status !== "sent") {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "Only sent messages can be marked as declined."
+          )
+        );
+    }
+  }
+
+  const { data, error } = await markMessagesDeclined(contact_message_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error marking contact messages as declined.",
+          error
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("CONTACT_MESSAGES");
+
+  const contactMessageIds = (data ?? []).map(
+    (row) => row.contact_message_id
+  );
+  const declinedAt = data?.[0]?.declined_at ?? null;
+
+  return res.status(200).json(
+    successHandler({
+      updated: contactMessageIds.length,
+      contactMessageIds,
+      status: "declined",
+      declined_at: declinedAt,
     })
   );
 };

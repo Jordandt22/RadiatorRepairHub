@@ -86,7 +86,7 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
     <a href="${claimLink ?? getWebBaseUrl()}" style="color: #1a73e8;">claim your free business listing here</a>.
   </p>
 
-  <p>Otherwise, feel free to reach out to this person directly using the info above or let us know and we can contact them for you.</p>
+  <p>Otherwise, feel free to reach out to this person directly using the info above.</p>
 
   <p>If you have any questions, please feel free to reply to this email or contact us anytime.</p>
 
@@ -124,6 +124,47 @@ export const MESSAGE_ON_ITS_WAY = Object.freeze({
   <p>If you have any questions, please feel free to reply to this email or contact us anytime.</p>
 
   <p>Thanks for using RadiatorRepairHub!</p>
+
+  <p>The RadiatorRepairHub Team</p>
+  `,
+});
+
+export const DECLINED_RECOMMENDATIONS_FALLBACK =
+  "We'd be happy to help you find another shop nearby, feel free to browse other listings on RadiatorRepairHub, or let us know if you'd like some help.";
+
+export const buildDeclinedRecommendationsHtml = (shops) => {
+  if (!Array.isArray(shops) || shops.length === 0) {
+    return `<p>${DECLINED_RECOMMENDATIONS_FALLBACK}</p>`;
+  }
+
+  const items = shops
+    .map((shop) => {
+      const title = shop?.title ?? "Shop";
+      const rating =
+        shop?.total_score == null ? "N/A" : String(shop.total_score);
+      const address = shop?.address ?? "Address unavailable";
+      const pageUrl = buildBusinessClaimLink(shop?.slug);
+      return `<li style="margin-bottom: 12px;"><strong>${title}</strong> — Rating: ${rating}<br>${address}<br><a href="${pageUrl}" style="color: #1a73e8;">View on RadiatorRepairHub</a></li>`;
+    })
+    .join("");
+
+  return `<ul style="padding-left: 20px; margin: 16px 0;">${items}</ul>`;
+};
+
+// Declined: business cannot take the request
+export const MESSAGE_DECLINED = Object.freeze({
+  subject: (businessName) =>
+    `Update on your message to ${businessName ?? "the business"}`,
+  html: (name, businessName, recommendationsHtml) => `
+  <p>Hi ${name ?? "There"},</p>
+
+  <p>Unfortunately, <strong>${businessName ?? "the business"}</strong> isn't able to take on your request at this time.</p>
+
+  <p>Here are a few other nearby shops that might be able to help:</p>
+
+  ${recommendationsHtml ?? `<p>${DECLINED_RECOMMENDATIONS_FALLBACK}</p>`}
+
+  <p>Sorry for the inconvenience, and thanks for using RadiatorRepairHub!</p>
 
   <p>The RadiatorRepairHub Team</p>
   `,

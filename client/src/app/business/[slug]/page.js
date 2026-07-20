@@ -32,6 +32,22 @@ import {
 } from "@/lib/seo/metadata";
 import { fetchBusinessBySlug } from "@/lib/api/businesses";
 
+function getGoogleMapsQuery(business) {
+  if (business.place_id) {
+    return `place_id:${business.place_id}`;
+  }
+
+  if (business.latitude != null && business.longitude != null) {
+    return `${business.latitude},${business.longitude}`;
+  }
+
+  if (business.address) {
+    return business.address;
+  }
+
+  return null;
+}
+
 // Generate metadata for business pages
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -130,6 +146,8 @@ async function Page({ params }) {
     if (!business) {
       return notFound();
     }
+
+    const mapsQuery = getGoogleMapsQuery(business);
 
     // Get available features
     const paymentFeatures = [];
@@ -484,12 +502,12 @@ async function Page({ params }) {
                       </Link>
                     </div>
 
-                    {/* Google Maps Embed */}
-                    {business.address && (
+                    {/* Google Maps Embed — prefer place_id, then lat/lng, then address */}
+                    {mapsQuery && (
                       <div className="w-full h-64 md:h-96 rounded-lg overflow-hidden">
                         {process.env.GOOGLE_MAPS_API_KEY ? (
                           <iframe
-                            src={`https://www.google.com/maps/embed/v1/place?key=${process.env.GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(business.address)}`}
+                            src={`https://www.google.com/maps/embed/v1/place?key=${process.env.GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(mapsQuery)}`}
                             width="100%"
                             height="100%"
                             style={{ border: 0 }}
@@ -501,13 +519,14 @@ async function Page({ params }) {
                         ) : (
                           <div className="flex h-full items-center justify-center bg-gray-100 px-6 text-center">
                             <Link
-                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.address)}`}
+                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
                             >
                               <MapPin className="w-5 h-5" />
-                              View {business.address} on Google Maps
+                              View {business.address || business.title} on
+                              Google Maps
                             </Link>
                           </div>
                         )}

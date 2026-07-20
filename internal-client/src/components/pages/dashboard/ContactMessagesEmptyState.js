@@ -4,6 +4,7 @@ import {
   ClockIcon,
   FlagIcon,
   InboxIcon,
+  ListChecksIcon,
   SendIcon,
 } from "lucide-react";
 
@@ -32,6 +33,12 @@ const EMPTY_BY_TAB = {
     icon: SendIcon,
     title: "No sent messages",
     description: "Messages emailed to businesses will show up here.",
+  },
+  in_progress: {
+    icon: ListChecksIcon,
+    title: "No in progress messages",
+    description:
+      "Responded, declined, and no-response messages will appear here.",
   },
   archived: {
     icon: ArchiveIcon,

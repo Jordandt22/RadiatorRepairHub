@@ -5,8 +5,10 @@ import {
   updateContactMessagesStatus,
   updateContactMessagesArchived,
   markContactMessagesConfirmed,
+  markContactMessagesDeclined,
   sendContactMessages,
   sendContactConfirmations,
+  sendContactDeclined,
   invalidateCache,
 } from "../../controllers/admin/admin.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
@@ -15,8 +17,10 @@ import {
   UpdateContactMessagesStatusSchema,
   UpdateContactMessagesArchivedSchema,
   MarkContactMessagesConfirmedSchema,
+  MarkContactMessagesDeclinedSchema,
   SendContactMessagesSchema,
   SendContactConfirmationsSchema,
+  SendContactDeclinedSchema,
   GetContactMessagesQuerySchema,
   InvalidateCacheSchema,
 } from "../../schemas/admin.schemas.js";
@@ -59,6 +63,13 @@ adminRouter.patch(
   serverErrorCatcherWrapper(markContactMessagesConfirmed)
 );
 
+adminRouter.patch(
+  "/contact-messages/declined",
+  authAdmin,
+  bodyValidator(MarkContactMessagesDeclinedSchema),
+  serverErrorCatcherWrapper(markContactMessagesDeclined)
+);
+
 adminRouter.post(
   "/contact-messages/send",
   authAdmin,
@@ -71,6 +82,13 @@ adminRouter.post(
   authAdmin,
   bodyValidator(SendContactConfirmationsSchema),
   serverErrorCatcherWrapper(sendContactConfirmations)
+);
+
+adminRouter.post(
+  "/contact-messages/send-declined",
+  authAdmin,
+  bodyValidator(SendContactDeclinedSchema),
+  serverErrorCatcherWrapper(sendContactDeclined)
 );
 
 adminRouter.post(
