@@ -172,6 +172,20 @@ function QuickContactDialogContent({
       });
 
       if (error) {
+        if (
+          error.code === "form-error" &&
+          error.message &&
+          typeof error.message === "object"
+        ) {
+          setErrors((prev) => ({ ...prev, ...error.message }));
+          showCustomError(
+            error.message.email ||
+              "Please fix the errors below before submitting.",
+            "Validation Error"
+          );
+          return;
+        }
+
         const message =
           typeof error.message === "string"
             ? error.message

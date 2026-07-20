@@ -8,8 +8,9 @@ import {
   insertContactMessage,
 } from "../supabase/supabase.functions.js";
 import { deleteCacheDataByPrefix } from "../redis/redis.js";
+import { verifyEmailReputation } from "../abstract/emailReputation.js";
 
-const { SUPABASE_ERROR, ROUTE_NOT_FOUND } = errorCodes;
+const { SUPABASE_ERROR, ROUTE_NOT_FOUND, YUP_ERROR, SERVER_ERROR } = errorCodes;
 
 const URGENCY_MAP = {
   asap: 1,
@@ -28,6 +29,7 @@ export const createContactMessage = async (req, res) => {
     additionalDetails,
   } = req.body;
 
+  // Check Business
   if (businessId) {
     const { data: business, error: businessError } =
       await getBusinessById(businessId);
@@ -44,10 +46,37 @@ export const createContactMessage = async (req, res) => {
     }
   }
 
+  // Verify Email
+  const trimmedEmail = email.trim();
+  const emailCheck = await verifyEmailReputation(trimmedEmail);
+
+  if (!emailCheck.ok) {
+    const { error: verifyError } = emailCheck;
+
+    if (verifyError.type === "undeliverable") {
+      return res.status(422).json(
+        customErrorHandler(YUP_ERROR, {
+          email: verifyError.message,
+        })
+      );
+    }
+
+    return res
+      .status(503)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          verifyError.message || "Unable to verify email address right now.",
+          verifyError.cause
+        )
+      );
+  }
+
+  // Insert Contact Message
   const { data, error } = await insertContactMessage({
     business_id: businessId || null,
     name: name.trim(),
-    email: email.trim(),
+    email: trimmedEmail,
     phone: phone?.trim() || "",
     vehicle: vehicleModel?.trim() || null,
     issue,
