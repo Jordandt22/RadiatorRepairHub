@@ -191,6 +191,39 @@ export default function DashboardPage() {
     },
   });
 
+  const confirmMutation = useMutation({
+    mutationFn: async (contact_message_ids) => {
+      const result = await fetchApi("/admin/contact-messages/confirmed", {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify({ contact_message_ids }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to mark messages as confirmed";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      setActionError(null);
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to mark messages as confirmed");
+    },
+  });
+
   const sendMutation = useMutation({
     mutationFn: async (contact_message_ids) => {
       const result = await fetchApi("/admin/contact-messages/send", {
@@ -266,10 +299,15 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (sendMutation.isPending) return;
-    setLoading(statusMutation.isPending || archiveMutation.isPending);
+    setLoading(
+      statusMutation.isPending ||
+        archiveMutation.isPending ||
+        confirmMutation.isPending,
+    );
   }, [
     statusMutation.isPending,
     archiveMutation.isPending,
+    confirmMutation.isPending,
     sendMutation.isPending,
     setLoading,
   ]);
@@ -277,6 +315,7 @@ export default function DashboardPage() {
   const debouncedStatusUpdateRef = useRef(null);
   const debouncedSendRef = useRef(null);
   const debouncedArchiveUpdateRef = useRef(null);
+  const debouncedConfirmUpdateRef = useRef(null);
 
   useEffect(() => {
     debouncedStatusUpdateRef.current = debounce(
@@ -323,6 +362,20 @@ export default function DashboardPage() {
     return () => debouncedArchiveUpdateRef.current?.cancel();
   }, []);
 
+  useEffect(() => {
+    debouncedConfirmUpdateRef.current = debounce(
+      ({ contact_message_ids, isPending, mutate }) => {
+        if (contact_message_ids.length === 0 || isPending) {
+          return;
+        }
+        setActionError(null);
+        mutate(contact_message_ids);
+      },
+      400,
+    );
+    return () => debouncedConfirmUpdateRef.current?.cancel();
+  }, []);
+
   const runStatusUpdate = (status) => {
     debouncedStatusUpdateRef.current?.({
       status,
@@ -349,6 +402,14 @@ export default function DashboardPage() {
     });
   };
 
+  const runMarkConfirmed = () => {
+    debouncedConfirmUpdateRef.current?.({
+      contact_message_ids: Array.from(selectedIds),
+      isPending: confirmMutation.isPending,
+      mutate: confirmMutation.mutate,
+    });
+  };
+
   const messages = data?.contactMessages ?? [];
 
   const emailAvailableIdSet = useMemo(() => {
@@ -370,7 +431,8 @@ export default function DashboardPage() {
     !hasSelection ||
     statusMutation.isPending ||
     sendMutation.isPending ||
-    archiveMutation.isPending;
+    archiveMutation.isPending ||
+    confirmMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
 
   const selectedIdList = Array.from(selectedIds);
@@ -384,7 +446,8 @@ export default function DashboardPage() {
     selectedIdList.length <= EMAIL_SEND_SELECTION_CAP &&
     !sendMutation.isPending &&
     !statusMutation.isPending &&
-    !archiveMutation.isPending;
+    !archiveMutation.isPending &&
+    !confirmMutation.isPending;
 
   const handleToggleId = (id, checked) => {
     setSelectedIds((prev) => {
@@ -419,7 +482,27 @@ export default function DashboardPage() {
         selectedIds.has(message.contact_message_id) &&
         message.status === "sent",
     );
+  const selectionIncludesConfirmed =
+    activeTab === "sent" &&
+    messages.some(
+      (message) =>
+        selectedIds.has(message.contact_message_id) &&
+        Boolean(message.confirmation_sent),
+    );
+  const selectionMissingBusinessEmail =
+    activeTab === "sent" &&
+    messages.some(
+      (message) =>
+        selectedIds.has(message.contact_message_id) &&
+        !hasBusinessEmail(message),
+    );
   const statusActionsDisabled = actionsDisabled || selectionIncludesSent;
+  const markConfirmedDisabled =
+    actionsDisabled || selectionIncludesConfirmed;
+  const sendConfirmationsDisabled =
+    actionsDisabled ||
+    selectionIncludesConfirmed ||
+    selectionMissingBusinessEmail;
 
   return (
     <div className="mx-auto flex w-full px-8 flex-1 flex-col gap-4 px-3 py-6">
@@ -444,16 +527,19 @@ export default function DashboardPage() {
           }
           showMarkSent={activeTab === "approved"}
           showSendMessages={activeTab === "approved"}
+          showMarkConfirmed={activeTab === "sent"}
           showSendConfirmations={activeTab === "sent"}
           showArchive={!isArchivedTab}
           showUnarchive={isArchivedTab}
           markSentDisabled={actionsDisabled}
           sendMessagesDisabled={!canSendMessages}
-          sendConfirmationsDisabled={actionsDisabled}
+          markConfirmedDisabled={markConfirmedDisabled}
+          sendConfirmationsDisabled={sendConfirmationsDisabled}
           archiveDisabled={actionsDisabled}
           unarchiveDisabled={actionsDisabled}
           onMarkSent={() => runStatusUpdate("sent")}
           onSendMessages={runSendMessages}
+          onMarkConfirmed={runMarkConfirmed}
           onSendConfirmations={() => {}}
           onArchive={() => runArchiveUpdate(true)}
           onUnarchive={() => runArchiveUpdate(false)}

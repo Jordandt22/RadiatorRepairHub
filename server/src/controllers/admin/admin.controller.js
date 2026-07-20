@@ -9,6 +9,7 @@ import {
   getContactMessages as fetchContactMessages,
   updateContactMessagesStatus as updateMessagesStatus,
   updateContactMessagesArchived as updateMessagesArchived,
+  markContactMessagesConfirmed as markMessagesConfirmed,
   getContactMessagesByIds,
   markContactMessagesSent,
 } from "../../supabase/supabase.functions.js";
@@ -19,6 +20,7 @@ import {
   deleteCacheDataByPrefix,
 } from "../../redis/redis.js";
 import { resendClient } from "../../resend/resend.js";
+import { FREE_LEAD_CLAIM_OFFER_MESSAGE, buildBusinessClaimLink } from "../../lib/constants/messages.js";
 
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
 
@@ -173,6 +175,84 @@ export const updateContactMessagesArchived = async (req, res) => {
   );
 };
 
+export const markContactMessagesConfirmed = async (req, res) => {
+  const { contact_message_ids } = req.body;
+
+  const { data: existing, error: fetchError } = await getContactMessagesByIds(
+    contact_message_ids
+  );
+
+  if (fetchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching contact messages.",
+          fetchError
+        )
+      );
+  }
+
+  const byId = new Map(
+    (existing ?? []).map((row) => [row.contact_message_id, row])
+  );
+
+  for (const id of contact_message_ids) {
+    const message = byId.get(id);
+
+    if (!message) {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "One or more contact messages could not be found."
+          )
+        );
+    }
+
+    if (message.confirmation_sent) {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "One or more selected messages are already confirmed."
+          )
+        );
+    }
+  }
+
+  const { data, error } = await markMessagesConfirmed(contact_message_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error marking contact messages as confirmed.",
+          error
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("CONTACT_MESSAGES");
+
+  const contactMessageIds = (data ?? []).map(
+    (row) => row.contact_message_id
+  );
+
+  return res.status(200).json(
+    successHandler({
+      updated: contactMessageIds.length,
+      contactMessageIds,
+      confirmation_sent: true,
+    })
+  );
+};
+
 export const sendContactMessages = async (req, res) => {
   const { contact_message_ids } = req.body;
   const { SENDER_EMAIL, TEST_RECIPIENT_EMAIL, RESEND_API_KEY } = process.env;
@@ -260,15 +340,27 @@ export const sendContactMessages = async (req, res) => {
     );
   }
 
-  const batchPayload = eligible.map(({ businessEmail }) => ({
+  const batchPayload = eligible.map(({ message, businessEmail }) => ({
     from: SENDER_EMAIL,
     to: [
       process.env.NODE_ENV === "development"
         ? TEST_RECIPIENT_EMAIL
         : businessEmail,
     ],
-    subject: "Test",
-    html: "<p>Test message here.</p>",
+    subject: FREE_LEAD_CLAIM_OFFER_MESSAGE.subject,
+    html: FREE_LEAD_CLAIM_OFFER_MESSAGE.html(
+      message.business?.title,
+      {
+        name: message.name,
+        phone: message.phone,
+        email: message.email,
+        vehicle: message.vehicle,
+        issue: message.issue,
+        urgency: message.urgency,
+        additionalDetails: message.additional_details,
+      },
+      buildBusinessClaimLink(message.business?.slug)
+    ),
   }));
 
   const { data: batchData, error: batchError } =

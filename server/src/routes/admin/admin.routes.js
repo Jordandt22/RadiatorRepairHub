@@ -4,6 +4,7 @@ import {
   getContactMessages,
   updateContactMessagesStatus,
   updateContactMessagesArchived,
+  markContactMessagesConfirmed,
   sendContactMessages,
   invalidateCache,
 } from "../../controllers/admin/admin.controller.js";
@@ -12,6 +13,7 @@ import {
   LoginAdminSchema,
   UpdateContactMessagesStatusSchema,
   UpdateContactMessagesArchivedSchema,
+  MarkContactMessagesConfirmedSchema,
   SendContactMessagesSchema,
   GetContactMessagesQuerySchema,
   InvalidateCacheSchema,
@@ -46,6 +48,13 @@ adminRouter.patch(
   authAdmin,
   bodyValidator(UpdateContactMessagesArchivedSchema),
   serverErrorCatcherWrapper(updateContactMessagesArchived)
+);
+
+adminRouter.patch(
+  "/contact-messages/confirmed",
+  authAdmin,
+  bodyValidator(MarkContactMessagesConfirmedSchema),
+  serverErrorCatcherWrapper(markContactMessagesConfirmed)
 );
 
 adminRouter.post(

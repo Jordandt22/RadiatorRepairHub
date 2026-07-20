@@ -13,6 +13,7 @@ import {
   UrgencyBadge,
 } from "@/components/pages/dashboard/ContactMessageBadges";
 import { formatFullDate } from "@/components/pages/dashboard/formatDate";
+import { buildFreeLeadClaimOfferPreview } from "@/lib/messages";
 
 function DetailRow({ label, children }) {
   return (
@@ -24,6 +25,8 @@ function DetailRow({ label, children }) {
 }
 
 export default function ContactMessageDrawer({ message, open, onOpenChange }) {
+  const emailPreview = message ? buildFreeLeadClaimOfferPreview(message) : null;
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange} swipeDirection="right">
       <DrawerContent>
@@ -97,6 +100,24 @@ export default function ContactMessageDrawer({ message, open, onOpenChange }) {
                 </DetailRow>
               ) : null}
             </dl>
+
+            {emailPreview ? (
+              <section className="mt-6 mb-4">
+                <h3 className="mb-2 text-sm font-semibold text-foreground">
+                  Message Preview
+                </h3>
+                <p className="mb-3 text-xs text-muted-foreground">
+                  Subject:{" "}
+                  <span className="font-medium text-foreground">
+                    {emailPreview.subject}
+                  </span>
+                </p>
+                <div
+                  className="rounded-lg border border-border bg-background p-4 text-sm text-foreground [&_a]:text-blue-600 [&_a]:underline [&_p]:mb-3 [&_p:last-child]:mb-0 [&_table]:text-sm"
+                  dangerouslySetInnerHTML={{ __html: emailPreview.html }}
+                />
+              </section>
+            ) : null}
           </div>
         ) : null}
 

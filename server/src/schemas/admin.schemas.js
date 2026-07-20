@@ -39,6 +39,13 @@ export const UpdateContactMessagesArchivedSchema = Yup.object({
     .required("Contact message IDs are required"),
 });
 
+export const MarkContactMessagesConfirmedSchema = Yup.object({
+  contact_message_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid contact message ID").required())
+    .min(1, "At least one contact message ID is required")
+    .required("Contact message IDs are required"),
+});
+
 export const GetContactMessagesQuerySchema = Yup.object({
   page: Yup.number().min(1).max(100).required(),
   limit: Yup.number().min(1).max(30).required(),

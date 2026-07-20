@@ -4,6 +4,7 @@ import {
   BadgeCheckIcon,
   CheckIcon,
   FlagIcon,
+  MailCheckIcon,
   MailIcon,
   RefreshCwIcon,
   SendIcon,
@@ -22,16 +23,19 @@ export default function BulkStatusActions({
   showMarkSent = false,
   showSendMessages = false,
   showSendConfirmations = false,
+  showMarkConfirmed = false,
   showArchive = false,
   showUnarchive = false,
   markSentDisabled = true,
   sendMessagesDisabled = true,
   sendConfirmationsDisabled = true,
+  markConfirmedDisabled = true,
   archiveDisabled = true,
   unarchiveDisabled = true,
   onMarkSent,
   onSendMessages,
   onSendConfirmations,
+  onMarkConfirmed,
   onArchive,
   onUnarchive,
   sendPending = false,
@@ -45,6 +49,7 @@ export default function BulkStatusActions({
     showMarkSent ||
     showSendMessages ||
     showSendConfirmations ||
+    showMarkConfirmed ||
     showArchive ||
     showUnarchive;
 
@@ -101,6 +106,18 @@ export default function BulkStatusActions({
             Send Messages
           </Button>
         ) : null}
+        {showMarkConfirmed ? (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={markConfirmedDisabled}
+            onClick={onMarkConfirmed}
+            className={buttonClassName}
+          >
+            <MailCheckIcon />
+            Mark Confirmed
+          </Button>
+        ) : null}
         {showSendConfirmations ? (
           <Button
             size="sm"
@@ -130,7 +147,10 @@ export default function BulkStatusActions({
               size="sm"
               disabled={archiveDisabled}
               onClick={onArchive}
-              className={cn(buttonClassName, "border-muted-foreground/80 bg-muted-foreground text-white hover:bg-muted-foreground/80 hover:text-white")}
+              className={cn(
+                buttonClassName,
+                "border-muted-foreground/80 bg-muted-foreground text-white hover:bg-muted-foreground/80 hover:text-white",
+              )}
             >
               <ArchiveIcon />
               Archive

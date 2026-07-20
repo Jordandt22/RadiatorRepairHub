@@ -433,6 +433,17 @@ export const updateContactMessagesArchived = async (ids, archived) => {
   return { data, error };
 };
 
+export const markContactMessagesConfirmed = async (ids) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({ confirmation_sent: true })
+    .in("contact_message_id", ids)
+    .or("confirmation_sent.eq.false,confirmation_sent.is.null")
+    .select("contact_message_id");
+
+  return { data, error };
+};
+
 export const getContactMessagesByIds = async (ids) => {
   const { data, error } = await supabase
     .from("contact_messages")
