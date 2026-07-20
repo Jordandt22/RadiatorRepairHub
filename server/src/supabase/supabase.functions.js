@@ -411,6 +411,7 @@ export const updateContactMessagesStatus = async (ids, status) => {
   const payload = { status };
   if (status === "sent") {
     payload.send_method = "manual";
+    payload.sent_at = new Date().toISOString();
   }
 
   const { data, error } = await supabase
@@ -436,10 +437,13 @@ export const updateContactMessagesArchived = async (ids, archived) => {
 export const markContactMessagesConfirmed = async (ids) => {
   const { data, error } = await supabase
     .from("contact_messages")
-    .update({ confirmation_sent: true })
+    .update({
+      confirmation_sent: true,
+      confirmation_sent_at: new Date().toISOString(),
+    })
     .in("contact_message_id", ids)
     .or("confirmation_sent.eq.false,confirmation_sent.is.null")
-    .select("contact_message_id");
+    .select("contact_message_id, confirmation_sent_at");
 
   return { data, error };
 };

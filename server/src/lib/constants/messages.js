@@ -100,12 +100,31 @@ export const UNDER_REVIEW_MESSAGE = Object.freeze({
   html: (name, businessName) => `
   <p>Hi ${name ?? "There"},</p>
 
-  <p>Thanks for reaching out through RadiatorRepairHub! We're currently reviewing your message, which usually takes about 15-30 minutes.</p>
+  <p>Thanks for reaching out through RadiatorRepairHub! We're currently reviewing your message, which usually takes about 10-20 minutes.</p>
 
   <p>Once approved, we'll forward your message to <strong>${businessName ?? "the business"}</strong> — you may hear back from them directly, or we'll follow up to confirm it's been sent.</p>
 
   <p>If you need a faster response, we'd recommend contacting the business directly in the meantime.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
+// Confirmation: message forwarded to business
+export const MESSAGE_ON_ITS_WAY = Object.freeze({
+  subject: (businessName) =>
+    `Your message is on its way to ${businessName ?? "the business"}`,
+  html: (name, businessName) => `
+  <p>Hi ${name ?? "There"},</p>
+
+  <p>Good news! Your message has been sent to <strong>${businessName ?? "the business"}</strong>! They now have your contact info and details about your inquiry, so you should hear back from them soon or we'll contact you with an update.</p>
+
+  <p>If you don't hear back within a day or so, feel free to reach out to them directly.</p>
+
+  <p>If you have any questions, please feel free to reply to this email or contact us anytime.</p>
+
+  <p>Thanks for using RadiatorRepairHub!</p>
+
+  <p>The RadiatorRepairHub Team</p>
   `,
 });

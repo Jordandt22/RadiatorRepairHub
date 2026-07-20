@@ -264,6 +264,48 @@ export default function DashboardPage() {
     },
   });
 
+  const sendConfirmationsMutation = useMutation({
+    mutationFn: async (contact_message_ids) => {
+      const result = await fetchApi(
+        "/admin/contact-messages/send-confirmations",
+        {
+          method: "POST",
+          accessToken,
+          body: JSON.stringify({ contact_message_ids }),
+        },
+      );
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to send confirmation emails";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onMutate: () => {
+      setActionError(null);
+      showLoading();
+    },
+    onSuccess: async () => {
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to send confirmation emails");
+    },
+    onSettled: () => {
+      hideLoading();
+    },
+  });
+
   const refreshMutation = useMutation({
     mutationFn: async () => {
       const result = await fetchApi("/admin/cache/invalidate", {
@@ -299,7 +341,7 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    if (sendMutation.isPending) return;
+    if (sendMutation.isPending || sendConfirmationsMutation.isPending) return;
     setLoading(
       statusMutation.isPending ||
         archiveMutation.isPending ||
@@ -310,6 +352,7 @@ export default function DashboardPage() {
     archiveMutation.isPending,
     confirmMutation.isPending,
     sendMutation.isPending,
+    sendConfirmationsMutation.isPending,
     setLoading,
   ]);
 
@@ -411,6 +454,14 @@ export default function DashboardPage() {
     });
   };
 
+  const runSendConfirmations = () => {
+    debouncedSendRef.current?.({
+      contact_message_ids: Array.from(selectedIds),
+      isPending: sendConfirmationsMutation.isPending,
+      mutate: sendConfirmationsMutation.mutate,
+    });
+  };
+
   const messages = data?.contactMessages ?? [];
 
   const emailAvailableIdSet = useMemo(() => {
@@ -432,6 +483,7 @@ export default function DashboardPage() {
     !hasSelection ||
     statusMutation.isPending ||
     sendMutation.isPending ||
+    sendConfirmationsMutation.isPending ||
     archiveMutation.isPending ||
     confirmMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
@@ -446,6 +498,7 @@ export default function DashboardPage() {
     selectedIdList.length >= 1 &&
     selectedIdList.length <= EMAIL_SEND_SELECTION_CAP &&
     !sendMutation.isPending &&
+    !sendConfirmationsMutation.isPending &&
     !statusMutation.isPending &&
     !archiveMutation.isPending &&
     !confirmMutation.isPending;
@@ -503,7 +556,8 @@ export default function DashboardPage() {
   const sendConfirmationsDisabled =
     actionsDisabled ||
     selectionIncludesConfirmed ||
-    selectionMissingContactEmail;
+    selectionMissingContactEmail ||
+    selectedIds.size > EMAIL_SEND_SELECTION_CAP;
 
   return (
     <div className="mx-auto flex w-full px-8 flex-1 flex-col gap-4 px-3 py-6">
@@ -541,10 +595,12 @@ export default function DashboardPage() {
           onMarkSent={() => runStatusUpdate("sent")}
           onSendMessages={runSendMessages}
           onMarkConfirmed={runMarkConfirmed}
-          onSendConfirmations={() => {}}
+          onSendConfirmations={runSendConfirmations}
           onArchive={() => runArchiveUpdate(true)}
           onUnarchive={() => runArchiveUpdate(false)}
-          sendPending={sendMutation.isPending}
+          sendPending={
+            sendMutation.isPending || sendConfirmationsMutation.isPending
+          }
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
           refreshError={refreshError}

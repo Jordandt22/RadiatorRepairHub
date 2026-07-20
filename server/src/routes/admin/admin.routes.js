@@ -6,6 +6,7 @@ import {
   updateContactMessagesArchived,
   markContactMessagesConfirmed,
   sendContactMessages,
+  sendContactConfirmations,
   invalidateCache,
 } from "../../controllers/admin/admin.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
@@ -15,6 +16,7 @@ import {
   UpdateContactMessagesArchivedSchema,
   MarkContactMessagesConfirmedSchema,
   SendContactMessagesSchema,
+  SendContactConfirmationsSchema,
   GetContactMessagesQuerySchema,
   InvalidateCacheSchema,
 } from "../../schemas/admin.schemas.js";
@@ -62,6 +64,13 @@ adminRouter.post(
   authAdmin,
   bodyValidator(SendContactMessagesSchema),
   serverErrorCatcherWrapper(sendContactMessages)
+);
+
+adminRouter.post(
+  "/contact-messages/send-confirmations",
+  authAdmin,
+  bodyValidator(SendContactConfirmationsSchema),
+  serverErrorCatcherWrapper(sendContactConfirmations)
 );
 
 adminRouter.post(

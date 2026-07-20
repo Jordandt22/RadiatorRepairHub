@@ -91,6 +91,25 @@ export function buildBusinessClaimLink(businessSlug) {
   return `${baseUrl}/business/${businessSlug}`;
 }
 
+// Keep in sync with server/src/lib/constants/messages.js
+export const MESSAGE_ON_ITS_WAY = Object.freeze({
+  subject: (businessName) =>
+    `Your message is on its way to ${businessName ?? "the business"}`,
+  html: (name, businessName) => `
+  <p>Hi ${displayValue(name ?? "There")},</p>
+
+  <p>Good news! Your message has been sent to <strong>${displayValue(businessName ?? "the business")}</strong>! They now have your contact info and details about your inquiry, so you should hear back from them soon or we'll contact you with an update.</p>
+
+  <p>If you don't hear back within a day or so, feel free to reach out to them directly.</p>
+
+  <p>If you have any questions, please feel free to reply to this email or contact us anytime.</p>
+
+  <p>Thanks for using RadiatorRepairHub!</p>
+
+  <p>The RadiatorRepairHub Team</p>
+  `,
+});
+
 export function buildFreeLeadClaimOfferPreview(message) {
   return {
     subject: FREE_LEAD_CLAIM_OFFER_MESSAGE.subject,
@@ -107,5 +126,13 @@ export function buildFreeLeadClaimOfferPreview(message) {
       },
       buildBusinessClaimLink(message?.business?.slug)
     ),
+  };
+}
+
+export function buildMessageOnItsWayPreview(message) {
+  const businessName = message?.business?.title;
+  return {
+    subject: MESSAGE_ON_ITS_WAY.subject(businessName),
+    html: MESSAGE_ON_ITS_WAY.html(message?.name, businessName),
   };
 }

@@ -13,7 +13,10 @@ import {
   UrgencyBadge,
 } from "@/components/pages/dashboard/ContactMessageBadges";
 import { formatFullDate } from "@/components/pages/dashboard/formatDate";
-import { buildFreeLeadClaimOfferPreview } from "@/lib/messages";
+import {
+  buildFreeLeadClaimOfferPreview,
+  buildMessageOnItsWayPreview,
+} from "@/lib/messages";
 
 function DetailRow({ label, children }) {
   return (
@@ -25,7 +28,11 @@ function DetailRow({ label, children }) {
 }
 
 export default function ContactMessageDrawer({ message, open, onOpenChange }) {
-  const emailPreview = message ? buildFreeLeadClaimOfferPreview(message) : null;
+  const emailPreview = message
+    ? message.status === "sent"
+      ? buildMessageOnItsWayPreview(message)
+      : buildFreeLeadClaimOfferPreview(message)
+    : null;
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} swipeDirection="right">
@@ -86,6 +93,9 @@ export default function ContactMessageDrawer({ message, open, onOpenChange }) {
               </DetailRow>
               <DetailRow label="Sent at">
                 {formatFullDate(message.sent_at)}
+              </DetailRow>
+              <DetailRow label="Confirmed at">
+                {formatFullDate(message.confirmation_sent_at)}
               </DetailRow>
               <DetailRow label="Message ID">
                 <span className="break-all font-mono text-xs">

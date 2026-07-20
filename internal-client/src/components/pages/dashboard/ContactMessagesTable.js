@@ -30,6 +30,10 @@ export function hasContactEmail(message) {
   return typeof email === "string" && email.trim().length > 0;
 }
 
+function formatMessageCount(count) {
+  return `${count} ${count === 1 ? "Message" : "Messages"}`;
+}
+
 function isMessageSelectable(message, isRowSelectable) {
   if (typeof isRowSelectable === "function") {
     return isRowSelectable(message);
@@ -47,6 +51,8 @@ function MessagesTable({
   selectionHint = null,
   isRowSelectable = null,
   showConfirmation = false,
+  dateField = "created_at",
+  dateLabel = "Created",
 }) {
   const selectableMessages = messages.filter((message) =>
     isMessageSelectable(message, isRowSelectable),
@@ -87,7 +93,8 @@ function MessagesTable({
             <TableHead>Urgency</TableHead>
             <TableHead>Status</TableHead>
             {showConfirmation ? <TableHead>Confirmation</TableHead> : null}
-            <TableHead>Created</TableHead>
+            {showConfirmation ? <TableHead>Confirmed At</TableHead> : null}
+            <TableHead>{dateLabel}</TableHead>
             <TableHead className="w-20" />
           </TableRow>
         </TableHeader>
@@ -152,7 +159,12 @@ function MessagesTable({
                     />
                   </TableCell>
                 ) : null}
-                <TableCell>{formatDate(message.created_at)}</TableCell>
+                {showConfirmation ? (
+                  <TableCell>
+                    {formatDate(message.confirmation_sent_at)}
+                  </TableCell>
+                ) : null}
+                <TableCell>{formatDate(message[dateField])}</TableCell>
                 <TableCell
                   className="text-right"
                   onClick={(event) => event.stopPropagation()}
@@ -241,10 +253,10 @@ function ApprovedMessagesTables({
       <section className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between gap-2">
           <h2 className="text-sm font-semibold text-foreground">
-            Email Available
+            Emails Available
           </h2>
           <span className="text-xs text-muted-foreground">
-            {withEmail.length}
+            {formatMessageCount(withEmail.length)}
           </span>
         </div>
         {withEmail.length > 0 ? (
@@ -275,7 +287,7 @@ function ApprovedMessagesTables({
             Phone Numbers Only
           </h2>
           <span className="text-xs text-muted-foreground">
-            {withoutEmail.length}
+            {formatMessageCount(withoutEmail.length)}
           </span>
         </div>
         {withoutEmail.length > 0 ? (
@@ -314,7 +326,9 @@ function SentMessagesTables({ messages, selectedIds, onToggleId, onViewClick }) 
       <section className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between gap-2">
           <h2 className="text-sm font-semibold text-foreground">Auto Sent</h2>
-          <span className="text-xs text-muted-foreground">{autoSent.length}</span>
+          <span className="text-xs text-muted-foreground">
+            {formatMessageCount(autoSent.length)}
+          </span>
         </div>
         {autoSent.length > 0 ? (
           <MessagesTable
@@ -324,6 +338,8 @@ function SentMessagesTables({ messages, selectedIds, onToggleId, onViewClick }) 
             onToggleAll={(checked) => handleToggleAllIn(autoSent, checked)}
             onViewClick={onViewClick}
             showConfirmation
+            dateField="sent_at"
+            dateLabel="Sent At"
           />
         ) : (
           <SectionEmpty
@@ -339,7 +355,7 @@ function SentMessagesTables({ messages, selectedIds, onToggleId, onViewClick }) 
             Manually Sent
           </h2>
           <span className="text-xs text-muted-foreground">
-            {manuallySent.length}
+            {formatMessageCount(manuallySent.length)}
           </span>
         </div>
         {manuallySent.length > 0 ? (
@@ -350,6 +366,8 @@ function SentMessagesTables({ messages, selectedIds, onToggleId, onViewClick }) 
             onToggleAll={(checked) => handleToggleAllIn(manuallySent, checked)}
             onViewClick={onViewClick}
             showConfirmation
+            dateField="sent_at"
+            dateLabel="Sent At"
           />
         ) : (
           <SectionEmpty

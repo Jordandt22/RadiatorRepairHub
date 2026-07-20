@@ -20,7 +20,7 @@ import {
   deleteCacheDataByPrefix,
 } from "../../redis/redis.js";
 import { resendClient } from "../../resend/resend.js";
-import { FREE_LEAD_CLAIM_OFFER_MESSAGE, buildBusinessClaimLink, SENDER_NAME } from "../../lib/constants/messages.js";
+import { FREE_LEAD_CLAIM_OFFER_MESSAGE, MESSAGE_ON_ITS_WAY, buildBusinessClaimLink, SENDER_NAME } from "../../lib/constants/messages.js";
 
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
 
@@ -243,12 +243,14 @@ export const markContactMessagesConfirmed = async (req, res) => {
   const contactMessageIds = (data ?? []).map(
     (row) => row.contact_message_id
   );
+  const confirmationSentAt = data?.[0]?.confirmation_sent_at ?? null;
 
   return res.status(200).json(
     successHandler({
       updated: contactMessageIds.length,
       contactMessageIds,
       confirmation_sent: true,
+      confirmation_sent_at: confirmationSentAt,
     })
   );
 };
@@ -390,6 +392,136 @@ export const sendContactMessages = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "Emails were sent but status could not be updated.",
+          updateError
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("CONTACT_MESSAGES");
+
+  const resendResults = Array.isArray(batchData)
+    ? batchData
+    : batchData?.data ?? [];
+
+  return res.status(200).json(
+    successHandler({
+      sent: (updated ?? []).map((row) => row.contact_message_id),
+      skipped,
+      resendIds: resendResults.map((item) => item.id).filter(Boolean),
+    })
+  );
+};
+
+export const sendContactConfirmations = async (req, res) => {
+  const { contact_message_ids } = req.body;
+  const { SENDER_EMAIL, RESEND_API_KEY } = process.env;
+
+  if (!RESEND_API_KEY || !SENDER_EMAIL) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "Email sending is not configured."
+        )
+      );
+  }
+
+  const { data: messages, error: fetchError } = await getContactMessagesByIds(
+    contact_message_ids
+  );
+
+  if (fetchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching contact messages.",
+          fetchError
+        )
+      );
+  }
+
+  const byId = new Map(
+    (messages ?? []).map((row) => [row.contact_message_id, row])
+  );
+
+  const skipped = [];
+  const eligible = [];
+
+  for (const id of contact_message_ids) {
+    const message = byId.get(id);
+
+    if (!message) {
+      skipped.push({ id, reason: "not_found" });
+      continue;
+    }
+
+    if (message.status !== "sent") {
+      skipped.push({ id, reason: "not_sent" });
+      continue;
+    }
+
+    if (message.confirmation_sent) {
+      skipped.push({ id, reason: "already_confirmed" });
+      continue;
+    }
+
+    const contactEmail =
+      typeof message.email === "string" ? message.email.trim() : "";
+
+    if (!contactEmail) {
+      skipped.push({ id, reason: "missing_contact_email" });
+      continue;
+    }
+
+    eligible.push({ message, contactEmail });
+  }
+
+  if (eligible.length === 0) {
+    return res.status(200).json(
+      successHandler({
+        sent: [],
+        skipped,
+      })
+    );
+  }
+
+  const batchPayload = eligible.map(({ message, contactEmail }) => ({
+    from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+    to: [contactEmail],
+    subject: MESSAGE_ON_ITS_WAY.subject(message.business?.title),
+    html: MESSAGE_ON_ITS_WAY.html(message.name, message.business?.title),
+  }));
+
+  const { data: batchData, error: batchError } =
+    await resendClient()?.batch?.send(batchPayload);
+
+  if (batchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          batchError.message || "Failed to send confirmation emails.",
+          batchError
+        )
+      );
+  }
+
+  const sentIds = eligible.map(({ message }) => message.contact_message_id);
+
+  const { data: updated, error: updateError } =
+    await markMessagesConfirmed(sentIds);
+
+  if (updateError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Emails were sent but confirmation status could not be updated.",
           updateError
         )
       );

@@ -31,6 +31,14 @@ export const SendContactMessagesSchema = Yup.object({
     .required("Contact message IDs are required"),
 });
 
+export const SendContactConfirmationsSchema = Yup.object({
+  contact_message_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid contact message ID").required())
+    .min(1, "At least one contact message ID is required")
+    .max(5, "At most 5 contact messages can be sent at once")
+    .required("Contact message IDs are required"),
+});
+
 export const UpdateContactMessagesArchivedSchema = Yup.object({
   archived: Yup.boolean().required("Archived is required"),
   contact_message_ids: Yup.array()
