@@ -9,6 +9,8 @@ import {
 } from "../supabase/supabase.functions.js";
 import { deleteCacheDataByPrefix } from "../redis/redis.js";
 import { verifyEmailReputation } from "../abstract/emailReputation.js";
+import { resendClient } from "../resend/resend.js";
+import { UNDER_REVIEW_MESSAGE, SENDER_NAME } from "../lib/constants/messages.js";
 
 const { SUPABASE_ERROR, ROUTE_NOT_FOUND, YUP_ERROR, SERVER_ERROR } = errorCodes;
 
@@ -29,6 +31,8 @@ export const createContactMessage = async (req, res) => {
     additionalDetails,
   } = req.body;
 
+  let businessName = null;
+
   // Check Business
   if (businessId) {
     const { data: business, error: businessError } =
@@ -44,6 +48,8 @@ export const createContactMessage = async (req, res) => {
           )
         );
     }
+
+    businessName = business.title ?? null;
   }
 
   // Verify Email
@@ -97,6 +103,22 @@ export const createContactMessage = async (req, res) => {
   }
 
   await deleteCacheDataByPrefix("CONTACT_MESSAGES");
+
+  // Send Under Review Email
+  const { SENDER_EMAIL, RESEND_API_KEY } = process.env;
+
+  if (RESEND_API_KEY && SENDER_EMAIL) {
+    const { error: sendError } = await resendClient().emails.send({
+      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+      to: [trimmedEmail],
+      subject: UNDER_REVIEW_MESSAGE.subject,
+      html: UNDER_REVIEW_MESSAGE.html(name.trim(), businessName),
+    });
+
+    if (sendError && process.env.NODE_ENV === "development") {
+      console.error("Failed to send under-review email:", sendError);
+    }
+  }
 
   return res.status(201).json(
     successHandler({

@@ -1,3 +1,5 @@
+export const SENDER_NAME = "RadiatorRepairHub Team";
+
 const URGENCY_LABELS = {
   1: "ASAP",
   2: "Can Wait",
@@ -87,6 +89,22 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
   <p>Otherwise, feel free to reach out to this person directly using the info above.</p>
 
   <p>If you have any questions, please feel free to reply to this email or contact us anytime.</p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
+// Under Review Email
+export const UNDER_REVIEW_MESSAGE = Object.freeze({
+  subject: "Your Message is Under Review",
+  html: (name, businessName) => `
+  <p>Hi ${name ?? "There"},</p>
+
+  <p>Thanks for reaching out through RadiatorRepairHub! We're currently reviewing your message, which usually takes about 15-30 minutes.</p>
+
+  <p>Once approved, we'll forward your message to <strong>${businessName ?? "the business"}</strong> — you may hear back from them directly, or we'll follow up to confirm it's been sent.</p>
+
+  <p>If you need a faster response, we'd recommend contacting the business directly in the meantime.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `,

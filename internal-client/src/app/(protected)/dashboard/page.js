@@ -24,6 +24,7 @@ import BulkStatusActions from "@/components/pages/dashboard/BulkStatusActions";
 import ContactMessagesTable, {
   EMAIL_SEND_SELECTION_CAP,
   hasBusinessEmail,
+  hasContactEmail,
 } from "@/components/pages/dashboard/ContactMessagesTable";
 import ContactMessagesTableSkeleton from "@/components/pages/dashboard/ContactMessagesTableSkeleton";
 import ContactMessageDrawer from "@/components/pages/dashboard/ContactMessageDrawer";
@@ -489,12 +490,12 @@ export default function DashboardPage() {
         selectedIds.has(message.contact_message_id) &&
         Boolean(message.confirmation_sent),
     );
-  const selectionMissingBusinessEmail =
+  const selectionMissingContactEmail =
     activeTab === "sent" &&
     messages.some(
       (message) =>
         selectedIds.has(message.contact_message_id) &&
-        !hasBusinessEmail(message),
+        !hasContactEmail(message),
     );
   const statusActionsDisabled = actionsDisabled || selectionIncludesSent;
   const markConfirmedDisabled =
@@ -502,7 +503,7 @@ export default function DashboardPage() {
   const sendConfirmationsDisabled =
     actionsDisabled ||
     selectionIncludesConfirmed ||
-    selectionMissingBusinessEmail;
+    selectionMissingContactEmail;
 
   return (
     <div className="mx-auto flex w-full px-8 flex-1 flex-col gap-4 px-3 py-6">

@@ -25,6 +25,11 @@ export function hasBusinessEmail(message) {
   return typeof email === "string" && email.trim().length > 0;
 }
 
+export function hasContactEmail(message) {
+  const email = message?.email;
+  return typeof email === "string" && email.trim().length > 0;
+}
+
 function isMessageSelectable(message, isRowSelectable) {
   if (typeof isRowSelectable === "function") {
     return isRowSelectable(message);

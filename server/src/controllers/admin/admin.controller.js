@@ -20,7 +20,7 @@ import {
   deleteCacheDataByPrefix,
 } from "../../redis/redis.js";
 import { resendClient } from "../../resend/resend.js";
-import { FREE_LEAD_CLAIM_OFFER_MESSAGE, buildBusinessClaimLink } from "../../lib/constants/messages.js";
+import { FREE_LEAD_CLAIM_OFFER_MESSAGE, buildBusinessClaimLink, SENDER_NAME } from "../../lib/constants/messages.js";
 
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
 
@@ -341,7 +341,7 @@ export const sendContactMessages = async (req, res) => {
   }
 
   const batchPayload = eligible.map(({ message, businessEmail }) => ({
-    from: SENDER_EMAIL,
+    from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
     to: [
       process.env.NODE_ENV === "development"
         ? TEST_RECIPIENT_EMAIL
