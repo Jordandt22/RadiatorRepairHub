@@ -344,8 +344,8 @@ export default function DashboardPage() {
     if (sendMutation.isPending || sendConfirmationsMutation.isPending) return;
     setLoading(
       statusMutation.isPending ||
-        archiveMutation.isPending ||
-        confirmMutation.isPending,
+      archiveMutation.isPending ||
+      confirmMutation.isPending,
     );
   }, [
     statusMutation.isPending,
@@ -462,7 +462,10 @@ export default function DashboardPage() {
     });
   };
 
-  const messages = data?.contactMessages ?? [];
+  const messages = useMemo(
+    () => data?.contactMessages ?? [],
+    [data?.contactMessages],
+  );
 
   const emailAvailableIdSet = useMemo(() => {
     if (activeTab !== "approved") return new Set();
@@ -560,7 +563,7 @@ export default function DashboardPage() {
     selectedIds.size > EMAIL_SEND_SELECTION_CAP;
 
   return (
-    <div className="mx-auto flex w-full px-8 flex-1 flex-col gap-4 px-3 py-6">
+    <div className="mx-auto flex w-full px-8 flex-1 flex-col gap-4 py-6">
       <StatusFilterTabs value={activeTab} onValueChange={handleTabChange} />
 
       <div className="mt-4 flex flex-col gap-4">

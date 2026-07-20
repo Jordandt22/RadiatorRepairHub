@@ -20,7 +20,7 @@ import {
 
 function DetailRow({ label, children }) {
   return (
-    <div className="grid gap-1 border-b border-border py-3 last:border-b-0">
+    <div className="grid gap-1 border-b border-border py-3">
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd className="text-sm text-foreground">{children}</dd>
     </div>
@@ -123,7 +123,7 @@ export default function ContactMessageDrawer({ message, open, onOpenChange }) {
                   </span>
                 </p>
                 <div
-                  className="rounded-lg border border-border bg-background p-4 text-sm text-foreground [&_a]:text-blue-600 [&_a]:underline [&_p]:mb-3 [&_p:last-child]:mb-0 [&_table]:text-sm"
+                  className="rounded-lg border border-border bg-background p-4 text-sm text-foreground [&_a]:underline [&_p]:mb-3"
                   dangerouslySetInnerHTML={{ __html: emailPreview.html }}
                 />
               </section>

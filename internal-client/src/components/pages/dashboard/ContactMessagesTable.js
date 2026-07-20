@@ -172,7 +172,7 @@ function MessagesTable({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="opacity-0 transition-all duration-200 group-hover:opacity-100 focus-visible:opacity-100 cursor-pointer hover:scale-95 focus-visible:scale-95"
+                    className="opacity-0 transition-all duration-200 group-hover:opacity-100 cursor-pointer hover:scale-95 focus-visible:scale-95"
                     onClick={() => onViewClick(message)}
                   >
                     <EyeIcon />
