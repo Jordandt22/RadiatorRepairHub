@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Suspense } from "react";
 import {
   Wrench,
   MailIcon,
@@ -86,7 +87,9 @@ export function AppSidebar({ ...props }) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} label="Messages" />
+        <Suspense fallback={null}>
+          <NavMain items={data.navMain} label="Messages" />
+        </Suspense>
       </SidebarContent>
       <NavLogout />
       <SidebarRail />
