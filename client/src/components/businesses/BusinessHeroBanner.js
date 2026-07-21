@@ -25,6 +25,7 @@ export default function BusinessHeroBanner({
             className="object-cover object-center"
             priority
             unoptimized={bypassImageOptimizer}
+            referrerPolicy="no-referrer"
             onError={() => setFailed(true)}
           />
           {/* Darken only when a photo is present — otherwise keep plain slate-900 */}

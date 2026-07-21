@@ -70,6 +70,7 @@ function BusinessImage({
       className={className}
       priority={priority}
       unoptimized={bypassImageOptimizer}
+      referrerPolicy="no-referrer"
       onError={() => setFailed(true)}
     />
   );
