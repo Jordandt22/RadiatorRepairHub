@@ -1,1 +1,11 @@
 APP_OVERVIEW.md
+
+.agents/
+
+skills-lock.json
+
+.cursor/
+
+.env
+
+/node_modules

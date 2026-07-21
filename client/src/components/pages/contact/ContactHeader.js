@@ -7,9 +7,9 @@ function ContactHeader() {
     { name: "Contact", url: "/contact" },
   ];
 
-  const pageTitle = "Contact Us";
+  const pageTitle = "Contact RadiatorRepairHub";
   const pageDescription =
-    "Have a question about radiator repair services? Need help finding a repair shop? We're here to help connect you with trusted professionals in your area.";
+    "Questions about our directory, a listing, partnerships, or the website? Reach the RadiatorRepairHub team here.";
 
   return (
     <PageHeader

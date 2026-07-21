@@ -372,3 +372,180 @@ export const getPrimaryCategoryBySlug = async (slug) => {
 
   return { data, error };
 };
+
+export const insertContactMessage = async (payload) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .insert(payload)
+    .select("contact_message_id")
+    .single();
+
+  return { data, error };
+};
+
+export const getContactMessages = async (
+  page,
+  limit,
+  status = null,
+  archived = false
+) => {
+  let query = supabase
+    .from("contact_messages")
+    .select("*, business:businesses(*)", { count: "exact" })
+    .eq("archived", archived)
+    .order("created_at", { ascending: false });
+
+  if (status === "result") {
+    query = query.in("status", ["responded", "declined", "no_response"]);
+  } else if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};
+
+export const updateContactMessagesStatus = async (ids, status) => {
+  const payload = { status };
+  if (status === "sent") {
+    payload.send_method = "manual";
+    payload.sent_at = new Date().toISOString();
+  }
+
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update(payload)
+    .in("contact_message_id", ids)
+    .neq("status", "sent")
+    .select("contact_message_id");
+
+  return { data, error };
+};
+
+export const updateContactMessagesArchived = async (ids, archived) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({ archived })
+    .in("contact_message_id", ids)
+    .select("contact_message_id");
+
+  return { data, error };
+};
+
+export const markContactMessagesConfirmed = async (ids) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({
+      confirmation_sent: true,
+      confirmation_sent_at: new Date().toISOString(),
+    })
+    .in("contact_message_id", ids)
+    .or("confirmation_sent.eq.false,confirmation_sent.is.null")
+    .select("contact_message_id, confirmation_sent_at");
+
+  return { data, error };
+};
+
+export const getContactMessagesByIds = async (ids) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .select(
+      "*, business:businesses(id, email, title, slug, address, city_id, postal_code_id)"
+    )
+    .in("contact_message_id", ids);
+
+  return { data, error };
+};
+
+export const getNearbyBusinessRecommendations = async ({
+  excludeBusinessId,
+  cityId,
+  postalCodeId,
+  limit = 3,
+}) => {
+  if (!cityId && !postalCodeId) {
+    return { data: [], error: null };
+  }
+
+  const orFilters = [];
+  if (postalCodeId) {
+    orFilters.push(`postal_code_id.eq.${postalCodeId}`);
+  }
+  if (cityId) {
+    orFilters.push(`city_id.eq.${cityId}`);
+  }
+
+  let query = supabase
+    .from("businesses")
+    .select("id, title, address, total_score, slug")
+    .or(orFilters.join(","))
+    .order("total_score", { ascending: false })
+    .limit(limit);
+
+  if (excludeBusinessId) {
+    query = query.neq("id", excludeBusinessId);
+  }
+
+  const { data, error } = await query;
+  return { data, error };
+};
+
+export const markContactMessagesDeclined = async (ids) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({
+      status: "declined",
+      declined_at: new Date().toISOString(),
+    })
+    .in("contact_message_id", ids)
+    .eq("status", "sent")
+    .eq("confirmation_sent", true)
+    .select("contact_message_id, declined_at");
+
+  return { data, error };
+};
+
+export const markContactMessagesResponded = async (ids) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({
+      status: "responded",
+      responded_at: new Date().toISOString(),
+    })
+    .in("contact_message_id", ids)
+    .eq("status", "sent")
+    .eq("confirmation_sent", true)
+    .select("contact_message_id, responded_at");
+
+  return { data, error };
+};
+
+export const markContactMessagesNoResponse = async (ids) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({ status: "no_response" })
+    .in("contact_message_id", ids)
+    .eq("status", "sent")
+    .eq("confirmation_sent", true)
+    .select("contact_message_id");
+
+  return { data, error };
+};
+
+export const markContactMessagesSent = async (ids) => {
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({
+      status: "sent",
+      send_method: "auto",
+      sent_at: new Date().toISOString(),
+    })
+    .in("contact_message_id", ids)
+    .select("contact_message_id");
+
+  return { data, error };
+};

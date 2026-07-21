@@ -1,0 +1,28 @@
+{
+  "name": "radiatorrepairhub",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "supabase-dev": "node scripts/supabase-link.mjs dev",
+    "supabase-prod": "node scripts/supabase-link.mjs prod",
+    "supabase-dump": "supabase db dump > branchbound_schema.sql",
+    "supabase-push": "supabase db push",
+    "supabase-pull": "supabase db pull"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jordandt22/RadiatorRepairHub.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Jordandt22/RadiatorRepairHub/issues"
+  },
+  "homepage": "https://github.com/Jordandt22/RadiatorRepairHub#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
+}

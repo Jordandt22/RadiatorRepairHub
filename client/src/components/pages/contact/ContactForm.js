@@ -10,11 +10,12 @@ import { useToast } from "@/contexts/ToastProvider";
 const ContactForm = ({
   prefilledSubject = "",
   lockSubject = false,
-  formTitle = "Send Us a Message",
-  messagePlaceholder = "Tell us how we can help you...",
+  formTitle = "Message RadiatorRepairHub",
+  messagePlaceholder = "Tell us about your directory question, listing issue, partnership idea, or website feedback...",
   namePlaceholder = "Enter your full name",
   nameLabel = "Full Name",
   showSubjectInput = true,
+  className = "",
 }) => {
   const { showCustomSuccess, showCustomError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,10 +30,10 @@ const ContactForm = ({
 
   const subjectOptions = [
     "General Inquiry",
-    "Feedback / Suggestions",
-    "Report a Problem",
+    "Website Feedback / Suggestions",
+    "Report a Listing Problem",
     "Advertising / Partnerships",
-    "Business Listing Request",
+    "Business Listing Help",
     "Other",
   ];
 
@@ -49,16 +50,24 @@ const ContactForm = ({
     // Email validation
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (
+      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/.test(
+        formData.email.trim()
+      )
+    ) {
       newErrors.email = "Please enter a valid email address";
     }
 
-    // Phone validation (optional but if provided, should be valid)
-    if (
-      formData.phone.trim() &&
-      !/^[\+]?[1-9][\d]{0,15}$/.test(formData.phone.replace(/[\s\-\(\)]/g, ""))
-    ) {
-      newErrors.phone = "Please enter a valid phone number";
+    // Phone validation (optional; US/Canada 10-digit when provided)
+    if (formData.phone.trim()) {
+      const digits = formData.phone.replace(/\D/g, "");
+      const local =
+        digits.length === 11 && digits.startsWith("1")
+          ? digits.slice(1)
+          : digits;
+      if (!/^[2-9]\d{2}[2-9]\d{6}$/.test(local)) {
+        newErrors.phone = "Please enter a valid phone number";
+      }
     }
 
     // Subject validation
@@ -175,7 +184,9 @@ const ContactForm = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300 hover:border-blue-500 transition-all duration-300">
+    <div
+      className={`bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300 hover:border-blue-500 transition-all duration-300 ${className}`}
+    >
       <h2 className="text-2xl font-bold text-gray-900 mb-6 font-heading">
         {formTitle}
       </h2>
