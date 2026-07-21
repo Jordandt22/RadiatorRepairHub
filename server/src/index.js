@@ -16,14 +16,14 @@ import adminRouter from "./routes/admin/admin.routes.js";
 const app = express();
 
 // Middleware
-const { NODE_ENV, API_VERSION, PORT, WEB_URL } = process.env;
+const { NODE_ENV, API_VERSION, PORT, WEB_URL, INTERNAL_CLIENT_URL } = process.env;
 const notProduction = NODE_ENV !== "production";
 app.use(helmet());
 app.use(
   cors({
     origin: notProduction
       ? ["http://localhost:3000", "http://localhost:3001"]
-      : WEB_URL,
+      : [WEB_URL, INTERNAL_CLIENT_URL],
   })
 );
 app.use(express.urlencoded({ extended: false }));
