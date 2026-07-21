@@ -5,3 +5,7 @@ APP_OVERVIEW.md
 skills-lock.json
 
 .cursor/
+
+.env
+
+/node_modules
