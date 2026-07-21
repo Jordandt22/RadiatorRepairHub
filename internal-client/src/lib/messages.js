@@ -23,7 +23,6 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
   html: (
     businessName,
     { name, phone, email, vehicle, issue, urgency, additionalDetails },
-    claimLink
   ) => `
   <p>Hi ${displayValue(businessName ?? "There")},</p>
 
@@ -62,34 +61,13 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
 
   <p>We're passing this along for free, no strings attached.</p>
 
-  <p>If you'd like to make sure you never miss inquiries like this (and want more control over your listing: photos, hours, direct contact info, and priority visibility), you can 
-    <a href="${escapeHtml(claimLink ?? getWebBaseUrl())}" style="color: #1a73e8;">claim your free business listing here</a>.
-  </p>
-
-  <p>Otherwise, feel free to reach out to this person directly using the info above.</p>
+  <p>Feel free to reach out to this person directly using the info above.</p>
 
   <p>If you have any questions, please feel free to reply to this email or contact us anytime.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `,
 });
-
-export function getWebBaseUrl() {
-  if (process.env.NODE_ENV === "development") {
-    return (
-      process.env.NEXT_PUBLIC_WEB_URL || "http://localhost:3000"
-    ).replace(/\/$/, "");
-  }
-  return (
-    process.env.NEXT_PUBLIC_WEB_URL || "https://radiatorrepairhub.com"
-  ).replace(/\/$/, "");
-}
-
-export function buildBusinessClaimLink(businessSlug) {
-  const baseUrl = getWebBaseUrl();
-  if (!businessSlug) return baseUrl;
-  return `${baseUrl}/business/${businessSlug}`;
-}
 
 // Keep in sync with server/src/lib/constants/messages.js
 export const MESSAGE_ON_ITS_WAY = Object.freeze({
@@ -154,19 +132,15 @@ export const MESSAGE_NO_RESPONSE = Object.freeze({
 export function buildFreeLeadClaimOfferPreview(message) {
   return {
     subject: FREE_LEAD_CLAIM_OFFER_MESSAGE.subject,
-    html: FREE_LEAD_CLAIM_OFFER_MESSAGE.html(
-      message?.business?.title,
-      {
-        name: message?.name,
-        phone: message?.phone,
-        email: message?.email,
-        vehicle: message?.vehicle,
-        issue: message?.issue,
-        urgency: message?.urgency,
-        additionalDetails: message?.additional_details,
-      },
-      buildBusinessClaimLink(message?.business?.slug)
-    ),
+    html: FREE_LEAD_CLAIM_OFFER_MESSAGE.html(message?.business?.title, {
+      name: message?.name,
+      phone: message?.phone,
+      email: message?.email,
+      vehicle: message?.vehicle,
+      issue: message?.issue,
+      urgency: message?.urgency,
+      additionalDetails: message?.additional_details,
+    }),
   };
 }
 

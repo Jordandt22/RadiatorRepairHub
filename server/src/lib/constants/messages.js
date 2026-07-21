@@ -37,13 +37,12 @@ export const buildBusinessClaimLink = (businessSlug) => {
   return `${baseUrl}/business/${businessSlug}`;
 };
 
-// Free Lead + Claim Offer
+// Free lead inquiry forwarded to business
 export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
   subject: "New Customer Inquiry from RadiatorRepairHub",
   html: (
     businessName,
     { name, phone, email, vehicle, issue, urgency, additionalDetails },
-    claimLink
   ) => `
   <p>Hi ${businessName ?? "There"},</p>
 
@@ -82,11 +81,7 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
 
   <p>We're passing this along for free, no strings attached.</p>
 
-  <p>If you'd like to make sure you never miss inquiries like this (and want more control over your listing: photos, hours, direct contact info, and priority visibility), you can 
-    <a href="${claimLink ?? getWebBaseUrl()}" style="color: #1a73e8;">claim your free business listing here</a>.
-  </p>
-
-  <p>Otherwise, feel free to reach out to this person directly using the info above.</p>
+  <p>Feel free to reach out to this person directly using the info above.</p>
 
   <p>If you have any questions, please feel free to reply to this email or contact us anytime.</p>
 
