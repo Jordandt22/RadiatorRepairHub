@@ -34,6 +34,8 @@
     "cleanup-bad-emails-prod": "cross-env NODE_ENV=production node src/scripts/cleanupBadEmails.js",
     "sync-emails-dev": "cross-env NODE_ENV=development node src/scripts/syncEmails.js",
     "sync-emails-prod": "cross-env NODE_ENV=production node src/scripts/syncEmails.js",
+    "sync-all-emails-dev": "cross-env NODE_ENV=development node src/scripts/syncAllEmails.js",
+    "sync-all-emails-prod": "cross-env NODE_ENV=production node src/scripts/syncAllEmails.js",
     "encrypt-admin-password": "node src/scripts/encryptAdminPassword.js"
   },
   "keywords": [],
