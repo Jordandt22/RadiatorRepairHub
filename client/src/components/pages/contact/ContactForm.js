@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import emailjs from "@emailjs/browser";
 import { Send } from "lucide-react";
 
@@ -395,6 +396,15 @@ const ContactForm = ({
             </p>
           )}
         </div>
+
+        <p className="text-xs text-gray-500 leading-relaxed">
+          By submitting this form, you agree to our{" "}
+          <Link href="/privacy" className="text-blue-600 hover:text-blue-800 underline">
+            Privacy Policy
+          </Link>{" "}
+          and consent to us processing your name, email, optional phone number,
+          and message so we can respond to your inquiry.
+        </p>
 
         {/* Submit Button */}
         <div className="pt-4">

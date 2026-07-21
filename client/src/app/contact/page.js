@@ -65,7 +65,7 @@ const Page = () => {
     "@type": "ContactPage",
     name: "Contact RadiatorRepairHub",
     description:
-      "Contact the RadiatorRepairHub team for directory support, listing help, and partnerships",
+      "Contact the RadiatorRepairHub team for directory support, listing help, and partnerships. Use Quick Contact on a business page to reach a repair shop.",
     url: "https://radiatorrepairhub.com/contact",
     mainEntity: {
       "@id": "https://radiatorrepairhub.com/#organization",
@@ -80,7 +80,7 @@ const Page = () => {
           __html: JSON.stringify(contactPageSchema),
         }}
       />
-      <div className="min-h-screen bg-gray-5 pb-32">
+      <div className="min-h-screen bg-gray-50 pb-32">
         <ContactHeader />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-8">
@@ -102,7 +102,9 @@ const Page = () => {
                 <p className="text-sm md:text-base mb-4 leading-relaxed">
                   To message a business, open their listing and use{" "}
                   <strong>Quick Contact</strong> on the business page or call
-                  them using the phone number listed there.
+                  them using the phone number listed there. Quick Contact
+                  messages are reviewed by our team before they may be forwarded
+                  to the shop.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Link
@@ -153,7 +155,8 @@ const Page = () => {
                         Email the Team
                       </h3>
                       <p className="text-sm text-gray-600 mb-2">
-                        For RadiatorRepairHub support and inquiries
+                        Submit the form or email us directly for RadiatorRepairHub
+                        support and inquiries.
                       </p>
                       <a
                         href={`mailto:${process.env.BUSINESS_EMAIL}`}
@@ -209,7 +212,8 @@ const Page = () => {
                       </h3>
                       <p className="text-sm text-gray-600">
                         Use <strong>Quick Contact</strong> (or the phone number)
-                        on that business&apos;s page — not this form.
+                        on that business&apos;s page — not this form. Include your
+                        vehicle and issue details so the shop can respond.
                       </p>
                     </div>
                   </div>
@@ -251,7 +255,14 @@ const Page = () => {
                     <p className="text-sm text-blue-800">
                       Messages sent here go to RadiatorRepairHub staff. For
                       repairs, quotes, or appointments, contact the shop on their
-                      business page.
+                      business page. See our{" "}
+                      <Link
+                        href="/privacy"
+                        className="font-medium underline hover:text-blue-900"
+                      >
+                        Privacy Policy
+                      </Link>{" "}
+                      for how we handle form submissions.
                     </p>
                   </div>
                 </div>

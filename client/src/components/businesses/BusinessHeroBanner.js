@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { bypassImageOptimizer } from "@/lib/images";
 
 export default function BusinessHeroBanner({
   src,
@@ -23,6 +24,7 @@ export default function BusinessHeroBanner({
             sizes={sizes}
             className="object-cover object-center"
             priority
+            unoptimized={bypassImageOptimizer}
             onError={() => setFailed(true)}
           />
           {/* Darken only when a photo is present — otherwise keep plain slate-900 */}

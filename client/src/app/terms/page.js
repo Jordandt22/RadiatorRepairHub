@@ -38,7 +38,7 @@ function TermsPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date("2026-06-13").toLocaleDateString("en-US", {
+  const lastUpdated = new Date("2026-07-21").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -48,7 +48,18 @@ function TermsPage() {
     "A searchable database of radiator repair shops and service providers",
     "Business contact information, locations, and service details",
     "Search and filtering capabilities",
-    "Contact forms and communication tools",
+    "General contact forms for directory questions, listing help, and feedback",
+    "Quick Contact, a tool to submit service inquiries to listed businesses",
+  ];
+
+  const quickContactTermsPoints = [
+    "You agree to provide accurate and complete information when submitting a contact form or Quick Contact message.",
+    "Submitting a form constitutes your consent to our Privacy Policy and the processing of the information you provide.",
+    "Quick Contact messages are reviewed before they may be forwarded to a listed business; delivery is not guaranteed and may take additional time.",
+    "We may decline, flag, archive, or not forward messages that appear fraudulent, abusive, incomplete, undeliverable, or otherwise inappropriate.",
+    "We may verify the email address you provide before accepting a Quick Contact submission.",
+    "We facilitate communication between you and listed businesses but do not guarantee a response, appointment, quote, or repair outcome.",
+    "Your repair or service relationship, if any, is solely between you and the listed business.",
   ];
 
   const capacityRequirements = [
@@ -61,6 +72,8 @@ function TermsPage() {
     "Search for radiator repair businesses in your area",
     "View business contact information and details",
     "Contact businesses through provided information",
+    "Submit general inquiries through our site contact forms",
+    "Submit service inquiries to listed businesses through Quick Contact, subject to review",
     "Access publicly available information about listed businesses",
   ];
 
@@ -82,6 +95,7 @@ function TermsPage() {
     "Providing false, misleading, or inaccurate information",
     "Impersonating another person, business, or entity",
     "Using the Service for spam, phishing, or other deceptive practices",
+    "Submitting fraudulent, abusive, or repetitive contact form or Quick Contact messages",
     "Posting defamatory, abusive, or inappropriate content",
     "Engaging in any illegal activities or encouraging others to do so",
   ];
@@ -148,6 +162,7 @@ function TermsPage() {
     "Property damage or personal injury",
     "Breach of contract by service providers",
     "Fraudulent or deceptive business practices",
+    "Failure of a business to respond to a Quick Contact or other inquiry",
   ];
 
   const indemnificationPoints = [
@@ -409,6 +424,39 @@ function TermsPage() {
 
         <section className="mb-12">
           <h2 className="text-3xl font-heading font-bold mt-6">
+            Contact Forms and Quick Contact
+          </h2>
+          <p className="mt-4 text-gray-700 leading-relaxed">
+            Our Service includes general contact forms for directory questions,
+            listing help, and website feedback, as well as Quick Contact on
+            business listing pages for service-related inquiries. By using these
+            forms, you agree to the following:
+          </p>
+          <ul className="mt-4 text-gray-700 space-y-2">
+            {quickContactTermsPoints.map((point, index) => (
+              <li key={index} className="mb-2 ml-6">
+                • {point}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-gray-700 leading-relaxed">
+            General contact form submissions are delivered to our team through
+            EmailJS. Quick Contact submissions are stored in our systems,
+            processed through our API, and may trigger transactional emails
+            through Resend. Details about the information collected and how it
+            is used are described in our{" "}
+            <a
+              href="/privacy"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Privacy Policy
+            </a>
+            .
+          </p>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="text-3xl font-heading font-bold mt-6">
             Intellectual Property Rights
           </h2>
 
@@ -478,6 +526,21 @@ function TermsPage() {
             <li className="mb-2 ml-6">
               • <strong>Cloudflare</strong> — content delivery, DNS, security,
               and bot protection
+            </li>
+            <li className="mb-2 ml-6">
+              • <strong>EmailJS</strong> — general contact form delivery
+            </li>
+            <li className="mb-2 ml-6">
+              • <strong>Resend</strong> — transactional email for Quick Contact
+              and related communications
+            </li>
+            <li className="mb-2 ml-6">
+              • <strong>Supabase</strong> — database storage for directory and
+              contact message records
+            </li>
+            <li className="mb-2 ml-6">
+              • <strong>Abstract API</strong> — email address verification for
+              Quick Contact submissions
             </li>
           </ul>
           <p className="mt-4 text-gray-700 leading-relaxed">

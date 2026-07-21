@@ -37,7 +37,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date("2026-06-13").toLocaleDateString("en-US", {
+  const lastUpdated = new Date("2026-07-21").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -48,9 +48,19 @@ function PrivacyPage() {
       title: "Personal Information You Provide",
       bulletPoints: [
         {
+          label: "General Contact Form Submissions:",
+          description:
+            "When you use our site contact form (for example on the Contact or Get Listed pages), we collect your name, email address, optional phone number, inquiry subject, and message. Submissions are processed through EmailJS to deliver your message to our team.",
+        },
+        {
+          label: "Quick Contact Submissions:",
+          description:
+            "When you use Quick Contact on a business listing, we collect your name, email address, phone number, optional vehicle model, issue type, urgency preference, optional additional details, and the business you selected. We store this information in our database, verify your email address, send you a status email, and may review the message before forwarding it to the listed business.",
+        },
+        {
           label: "Contact Information:",
           description:
-            "Name, email address, phone number, and mailing address when you contact us through forms, email, or phone.",
+            "Name, email address, phone number, and mailing address when you contact us directly by email or phone outside of our online forms.",
         },
         {
           label: "Business Information:",
@@ -60,7 +70,7 @@ function PrivacyPage() {
         {
           label: "Communication Records:",
           description:
-            "Content of messages, emails, or other communications you send to us.",
+            "Content of messages, emails, or other communications you send to us, including general contact form messages and Quick Contact inquiry details.",
         },
         {
           label: "Feedback and Reviews:",
@@ -197,6 +207,98 @@ function PrivacyPage() {
         },
       ],
     },
+    {
+      title: "EmailJS",
+      bulletPoints: [
+        {
+          label: "Provider:",
+          description: "EmailJS (Pidigo LLC)",
+        },
+        {
+          label: "Purpose:",
+          description:
+            "Deliver general site contact form submissions to our team by email.",
+        },
+        {
+          label: "Data Collected:",
+          description:
+            "Name, email address, optional phone number, inquiry subject, and message content you submit through our general contact form.",
+        },
+        {
+          label: "Privacy Policy:",
+          description: "https://www.emailjs.com/legal/privacy-policy/",
+        },
+      ],
+    },
+    {
+      title: "Resend",
+      bulletPoints: [
+        {
+          label: "Provider:",
+          description: "Resend, Inc.",
+        },
+        {
+          label: "Purpose:",
+          description:
+            "Send transactional emails related to Quick Contact submissions, including acknowledgments, status updates, and forwarding inquiries to listed businesses.",
+        },
+        {
+          label: "Data Collected:",
+          description:
+            "Name, email address, phone number, vehicle information, issue details, urgency, and message content needed to process and deliver inquiry-related emails.",
+        },
+        {
+          label: "Privacy Policy:",
+          description: "https://resend.com/legal/privacy-policy",
+        },
+      ],
+    },
+    {
+      title: "Supabase",
+      bulletPoints: [
+        {
+          label: "Provider:",
+          description: "Supabase, Inc.",
+        },
+        {
+          label: "Purpose:",
+          description:
+            "Database hosting and backend data storage for our directory and Quick Contact message records.",
+        },
+        {
+          label: "Data Collected:",
+          description:
+            "Quick Contact submission data (including name, email, phone, vehicle, issue, urgency, and message details), associated business identifiers, and related operational metadata such as submission timestamps and processing status.",
+        },
+        {
+          label: "Privacy Policy:",
+          description: "https://supabase.com/privacy",
+        },
+      ],
+    },
+    {
+      title: "Abstract API (Email Reputation)",
+      bulletPoints: [
+        {
+          label: "Provider:",
+          description: "Abstract API, Inc.",
+        },
+        {
+          label: "Purpose:",
+          description:
+            "Verify that email addresses submitted through Quick Contact appear deliverable before we accept and store the submission.",
+        },
+        {
+          label: "Data Collected:",
+          description:
+            "The email address you submit on a Quick Contact form.",
+        },
+        {
+          label: "Privacy Policy:",
+          description: "https://www.abstractapi.com/legal/privacy-policy",
+        },
+      ],
+    },
   ];
 
   const howWeUseYourInformationContent = [
@@ -209,7 +311,13 @@ function PrivacyPage() {
         },
         {
           label: "Communication:",
-          description: "Respond to inquiries, support requests, and feedback.",
+          description:
+            "Respond to inquiries, support requests, and feedback submitted through our contact forms or direct communications.",
+        },
+        {
+          label: "Inquiry Facilitation:",
+          description:
+            "Review, process, and forward Quick Contact messages to listed businesses when appropriate.",
         },
         {
           label: "Directory Management:",
@@ -258,7 +366,8 @@ function PrivacyPage() {
         },
         {
           label: "Security:",
-          description: "Protect against fraud, abuse, and security threats.",
+          description:
+            "Protect against fraud, abuse, and security threats, including verifying email addresses submitted through Quick Contact.",
         },
         {
           label: "Legal Proceedings:",
@@ -271,7 +380,7 @@ function PrivacyPage() {
 
   const serviceProviderBulletPoints = [
     {
-      label: "Web hosting and cloud storage",
+      label: "Web hosting, application infrastructure, and database storage (Supabase, Vercel, Heroku)",
     },
     {
       label: "Content delivery, DNS, and security (Cloudflare)",
@@ -280,10 +389,13 @@ function PrivacyPage() {
       label: "Website analytics (Google Analytics, PostHog)",
     },
     {
-      label: "Email communication services",
+      label: "General contact form delivery (EmailJS)",
     },
     {
-      label: "Customer support platforms",
+      label: "Transactional email delivery (Resend)",
+    },
+    {
+      label: "Email address verification (Abstract API)",
     },
     {
       label: "Security and fraud prevention",
@@ -327,7 +439,8 @@ function PrivacyPage() {
   const dataRetentionBulletPoints = [
     {
       label: "Contact Inquiries:",
-      description: "Retained for up to 3 years after resolution.",
+      description:
+        "General contact form and Quick Contact submissions are retained for up to 3 years after resolution or last related activity.",
     },
     {
       label: "Business Listings:",
@@ -415,7 +528,7 @@ function PrivacyPage() {
     {
       title: "Third-Party Links and Services",
       content:
-        "Our directory contains links to third-party websites and businesses. This Privacy Policy does not apply to those third-party sites or services. We are not responsible for the privacy practices or content of third-party websites. We encourage you to review the privacy policies of any third-party sites you visit. For third-party services we use to operate our website (such as Google Analytics, PostHog, and Cloudflare), see the Third-Party Services section above.",
+        "Our directory contains links to third-party websites and businesses. This Privacy Policy does not apply to those third-party sites or services. We are not responsible for the privacy practices or content of third-party websites. We encourage you to review the privacy policies of any third-party sites you visit. For third-party services we use to operate our website (such as Google Analytics, PostHog, Cloudflare, EmailJS, Resend, Supabase, and Abstract API), see the Third-Party Services section above.",
     },
     {
       title: "International Data Transfers",
