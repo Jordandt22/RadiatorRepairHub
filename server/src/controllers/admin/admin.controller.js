@@ -32,7 +32,6 @@ import {
   buildDeclinedRecommendationsHtml,
   buildNearbyRecommendationsHtml,
   DECLINED_RECOMMENDATIONS_FALLBACK,
-  buildBusinessClaimLink,
   SENDER_NAME,
 } from "../../lib/constants/messages.js";
 
@@ -365,19 +364,15 @@ export const sendContactMessages = async (req, res) => {
         : businessEmail,
     ],
     subject: FREE_LEAD_CLAIM_OFFER_MESSAGE.subject,
-    html: FREE_LEAD_CLAIM_OFFER_MESSAGE.html(
-      message.business?.title,
-      {
-        name: message.name,
-        phone: message.phone,
-        email: message.email,
-        vehicle: message.vehicle,
-        issue: message.issue,
-        urgency: message.urgency,
-        additionalDetails: message.additional_details,
-      },
-      buildBusinessClaimLink(message.business?.slug)
-    ),
+    html: FREE_LEAD_CLAIM_OFFER_MESSAGE.html(message.business?.title, {
+      name: message.name,
+      phone: message.phone,
+      email: message.email,
+      vehicle: message.vehicle,
+      issue: message.issue,
+      urgency: message.urgency,
+      additionalDetails: message.additional_details,
+    }),
   }));
 
   const { data: batchData, error: batchError } =
