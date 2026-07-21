@@ -12,12 +12,14 @@ export const errorCodes = {
 };
 
 export const customErrorHandler = (code, message, error) => {
-  if (process.env.NODE_ENV === "development") {
-    console.error(error);
+  console.error(`${code}: ${message}`);
+  if (error) {
+    console.error(
+      error.message ?? error,
+      error.code ? `(code: ${error.code})` : "",
+      error.details ? `details: ${error.details}` : "",
+    );
   }
-
-  console.error(`${code}:`);
-  console.log(message);
 
   return {
     data: null,

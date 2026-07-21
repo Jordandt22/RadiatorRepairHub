@@ -246,7 +246,8 @@ export const markContactMessagesConfirmed = async (req, res) => {
       .json(
         customErrorHandler(
           SUPABASE_ERROR,
-          "There was an error marking contact messages as confirmed.",
+          error.message ||
+            "There was an error marking contact messages as confirmed.",
           error
         )
       );

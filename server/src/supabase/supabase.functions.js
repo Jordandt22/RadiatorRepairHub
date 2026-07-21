@@ -444,7 +444,7 @@ export const markContactMessagesConfirmed = async (ids) => {
       confirmation_sent_at: new Date().toISOString(),
     })
     .in("contact_message_id", ids)
-    .or("confirmation_sent.eq.false,confirmation_sent.is.null")
+    .eq("confirmation_sent", false)
     .select("contact_message_id, confirmation_sent_at");
 
   return { data, error };

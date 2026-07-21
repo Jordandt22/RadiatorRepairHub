@@ -31,8 +31,8 @@ function MobileBusinessCard({ business }) {
                 <svg
                   key={business.title + "-" + i}
                   className={`w-4 h-4 ${i < Math.floor(business.total_score)
-                      ? "text-yellow-400"
-                      : "text-gray-300"
+                    ? "text-yellow-400"
+                    : "text-gray-300"
                     }`}
                   fill="currentColor"
                   viewBox="0 0 20 20"
