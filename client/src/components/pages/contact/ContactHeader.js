@@ -9,7 +9,7 @@ function ContactHeader() {
 
   const pageTitle = "Contact RadiatorRepairHub";
   const pageDescription =
-    "Questions about our directory, a listing, partnerships, or the website? Reach the RadiatorRepairHub team here.";
+    "Questions about our directory, a listing, partnerships, or the website? Message the RadiatorRepairHub team here. To reach a repair shop, use Quick Contact on that business's page.";
 
   return (
     <PageHeader

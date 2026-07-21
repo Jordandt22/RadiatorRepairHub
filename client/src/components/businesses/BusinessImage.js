@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { CircleAlert } from "lucide-react";
+import { bypassImageOptimizer } from "@/lib/images";
 
 function BusinessImage({
   src,
@@ -68,6 +69,7 @@ function BusinessImage({
       sizes={sizes}
       className={className}
       priority={priority}
+      unoptimized={bypassImageOptimizer}
       onError={() => setFailed(true)}
     />
   );
