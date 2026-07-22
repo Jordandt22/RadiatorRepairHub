@@ -39,6 +39,8 @@
     "upload-place-photos": "npm run upload-place-photos-dev",
     "upload-place-photos-dev": "cross-env NODE_ENV=development node src/scripts/uploadPlacePhotos.js",
     "upload-place-photos-prod": "cross-env NODE_ENV=production node src/scripts/uploadPlacePhotos.js",
+    "sync-cdn-stored-dev": "cross-env NODE_ENV=development node src/scripts/syncCdnStored.js",
+    "sync-cdn-stored-prod": "cross-env NODE_ENV=production node src/scripts/syncCdnStored.js",
     "encrypt-admin-password": "node src/scripts/encryptAdminPassword.js"
   },
   "keywords": [],

@@ -1,11 +1,11 @@
 /**
- * Download Place Photos (New) locally, then upload each image to Cloudinary.
+ * Fetch Place Photos (New) into memory and upload each image to Cloudinary.
  * On successful upload, sets businesses.cdn_stored = true in Supabase (by place_id).
+ * Does not write image files to disk — only photos/batch-N/photos.json manifests.
  *
  * Rerunnable per step — each business only runs what it still needs:
- *   1) Places download  → skip if local file already exists
- *   2) Cloudinary upload → skip if cloudinary_url already set
- *   3) Supabase flag    → skip if cdn_stored already true
+ *   1) Places → Cloudinary  → skip if cloudinary_url already set
+ *   2) Supabase flag        → skip if cdn_stored already true
  *
  * Requires in RRH-Helper/.env:
  *   GOOGLE_PLACES_API_KEY  — Places API (New) enabled on that Google Cloud project
@@ -18,8 +18,8 @@
  *
  * Edit LIMIT at top — how many pending businesses to process this run.
  * Skips anything already complete (across all photos/batch-* manifests),
- * then takes the next LIMIT that still need Places / Cloudinary / cdn_stored.
- * Writes into photos/batch-{N}/ where N is one past the highest existing batch folder.
+ * then takes the next LIMIT that still need Cloudinary / cdn_stored.
+ * Writes into photos/batch-{N}/photos.json where N is one past the highest existing batch folder.
  *
  * Flags:
  *   --dry-run  Log planned steps; no Places / Cloudinary / Supabase writes
@@ -55,7 +55,6 @@ const MAX_WIDTH_PX = 800;
 const MAX_HEIGHT_PX = 544;
 const DELAY_MIN_MS = 400;
 const DELAY_MAX_MS = 600;
-const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
 
 const dryRun = process.argv.includes("--dry-run");
 const force = process.argv.includes("--force");
@@ -83,14 +82,6 @@ function randomDelay() {
   );
 }
 
-function extensionFromContentType(contentType) {
-  const type = (contentType || "").split(";")[0].trim().toLowerCase();
-  if (type === "image/png") return ".png";
-  if (type === "image/webp") return ".webp";
-  if (type === "image/gif") return ".gif";
-  return ".jpg";
-}
-
 function getPlacesApiKey() {
   const key = process.env.GOOGLE_PLACES_API_KEY?.trim();
   if (!key) {
@@ -113,10 +104,6 @@ function configureCloudinary() {
   }
 
   cloudinary.config({ cloud_name, api_key, api_secret, secure: true });
-}
-
-function toRelativePhotoPath(filename) {
-  return path.join("photos", `batch-${BATCH}`, filename).replace(/\\/g, "/");
 }
 
 function listPhotoBatchDirs() {
@@ -145,7 +132,6 @@ function entryCompleteness(entry) {
   if (entry.status === "no_photos") score += 8;
   if (entry.cdn_stored) score += 4;
   if (entry.cloudinary_url && entry.cloudinary_url !== "(dry-run)") score += 2;
-  if (entry.local_path) score += 1;
   return score;
 }
 
@@ -164,46 +150,12 @@ function loadMergedManifestBySlug() {
   return map;
 }
 
-/** Resolve an existing local image for this slug (manifest path or any batch folder). */
-function findExistingLocalFile(slug, existingEntry) {
-  if (existingEntry?.local_path) {
-    const fromManifest = path.join(SRC_ROOT, existingEntry.local_path);
-    if (fs.existsSync(fromManifest)) {
-      return {
-        absolutePath: fromManifest,
-        relativePath: existingEntry.local_path.replace(/\\/g, "/"),
-      };
-    }
-  }
-
-  for (const batch of listPhotoBatchDirs()) {
-    const match = fs.readdirSync(batch.path).find((name) => {
-      const ext = path.extname(name).toLowerCase();
-      return (
-        IMAGE_EXTENSIONS.has(ext) && path.basename(name, ext) === slug
-      );
-    });
-
-    if (!match) continue;
-
-    return {
-      absolutePath: path.join(batch.path, match),
-      relativePath: path
-        .join("photos", batch.name, match)
-        .replace(/\\/g, "/"),
-    };
-  }
-
-  return null;
-}
-
 function baseEntry(business, existingEntry = null) {
   return {
     slug: business.slug,
     place_id: business.place_id,
     title: business.title,
     photo_name: existingEntry?.photo_name ?? null,
-    local_path: existingEntry?.local_path ?? null,
     cloudinary_url: existingEntry?.cloudinary_url ?? null,
     cdn_stored: Boolean(existingEntry?.cdn_stored),
     author_attributions: existingEntry?.author_attributions ?? [],
@@ -212,38 +164,31 @@ function baseEntry(business, existingEntry = null) {
   };
 }
 
-function stepsNeeded(entry, localFile) {
+function stepsNeeded(entry) {
   if (force) {
-    return { places: true, cloudinary: true, supabase: true };
+    return { upload: true, supabase: true };
   }
 
-  const hasLocal = Boolean(localFile);
   const hasCloudinary =
     Boolean(entry.cloudinary_url) &&
     entry.cloudinary_url !== "(dry-run)";
   const hasCdnFlag = Boolean(entry.cdn_stored);
 
   if (entry.status === "no_photos") {
-    return { places: false, cloudinary: false, supabase: false };
+    return { upload: false, supabase: false };
   }
 
   return {
-    places: !hasLocal,
-    cloudinary: hasLocal && !hasCloudinary,
+    upload: !hasCloudinary,
     supabase: hasCloudinary && !hasCdnFlag,
   };
 }
 
 function needsProcessing(business, manifestBySlug) {
   const existing = manifestBySlug.get(business.slug) || null;
-  const localFile = findExistingLocalFile(business.slug, existing);
   const entry = baseEntry(business, existing);
-  if (localFile) {
-    entry.local_path = localFile.relativePath;
-    if (entry.status !== "no_photos") entry.status = "ok";
-  }
-  const steps = stepsNeeded(entry, localFile);
-  return steps.places || steps.cloudinary || steps.supabase;
+  const steps = stepsNeeded(entry);
+  return steps.upload || steps.supabase;
 }
 
 async function fetchPlacePhotos(placeId, apiKey) {
@@ -270,7 +215,7 @@ async function fetchPlacePhotos(placeId, apiKey) {
   return Array.isArray(body.photos) ? body.photos : [];
 }
 
-async function downloadPhotoMedia(photoName, apiKey) {
+async function fetchPhotoMediaBuffer(photoName, apiKey) {
   const mediaUrl = new URL(
     `https://places.googleapis.com/v1/${photoName}/media`
   );
@@ -298,46 +243,51 @@ async function downloadPhotoMedia(photoName, apiKey) {
   return { buffer, contentType };
 }
 
-async function downloadFromPlaces(business, apiKey) {
+function uploadBufferToCloudinary(buffer, placeId) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        public_id: `business/${placeId}`,
+        overwrite: true,
+        resource_type: "image",
+      },
+      (err, result) => {
+        if (err) reject(err);
+        else resolve(result.secure_url);
+      }
+    );
+    stream.end(buffer);
+  });
+}
+
+/** Places photo → memory → Cloudinary (no local image files). */
+async function uploadPlacePhotoToCloudinary(business, apiKey) {
   const photos = await fetchPlacePhotos(business.place_id, apiKey);
 
   if (photos.length === 0) {
     return {
       photo_name: null,
-      local_path: null,
-      absolute_path: null,
+      cloudinary_url: null,
       author_attributions: [],
       status: "no_photos",
     };
   }
 
   const first = photos[0];
-  const { buffer, contentType } = await downloadPhotoMedia(first.name, apiKey);
-  const ext = extensionFromContentType(contentType);
-  const filename = `${business.slug}${ext}`;
-  const absolutePath = path.join(BATCH_DIR, filename);
-  const relativePath = toRelativePhotoPath(filename);
-
-  fs.writeFileSync(absolutePath, buffer);
+  const { buffer } = await fetchPhotoMediaBuffer(first.name, apiKey);
+  const cloudinary_url = await uploadBufferToCloudinary(
+    buffer,
+    business.place_id
+  );
 
   return {
     photo_name: first.name,
-    local_path: relativePath,
-    absolute_path: absolutePath,
+    cloudinary_url,
     author_attributions: Array.isArray(first.authorAttributions)
       ? first.authorAttributions
       : [],
     status: "ok",
   };
-}
-
-async function uploadToCloudinary(absolutePath, placeId) {
-  const result = await cloudinary.uploader.upload(absolutePath, {
-    public_id: `business/${placeId}`,
-    overwrite: true,
-    resource_type: "image",
-  });
-  return result.secure_url;
 }
 
 async function markCdnStored(placeId) {
@@ -358,7 +308,7 @@ async function markCdnStored(placeId) {
 }
 
 function upsertManifest(manifest, entry) {
-  const { absolute_path: _abs, steps: _steps, ...stored } = entry;
+  const { steps: _steps, ...stored } = entry;
   const existingIndex = manifest.findIndex((e) => e.slug === stored.slug);
   if (existingIndex >= 0) {
     manifest[existingIndex] = stored;
@@ -370,80 +320,51 @@ function upsertManifest(manifest, entry) {
 
 async function processBusiness(business, apiKey, existingEntry) {
   const entry = baseEntry(business, existingEntry);
-  const ran = { places: false, cloudinary: false, supabase: false };
-  const skipped = { places: false, cloudinary: false, supabase: false };
+  const ran = { upload: false, supabase: false };
+  const skipped = { upload: false, supabase: false };
 
-  let localFile = force ? null : findExistingLocalFile(business.slug, existingEntry);
-  if (localFile) {
-    entry.local_path = localFile.relativePath;
-    if (entry.status !== "no_photos") entry.status = "ok";
-  }
-
-  let steps = stepsNeeded(entry, localFile);
+  let steps = stepsNeeded(entry);
 
   if (dryRun) {
     return {
       ...entry,
-      local_path:
-        entry.local_path ||
-        `(dry-run) photos/batch-${BATCH}/${business.slug}.jpg`,
       cloudinary_url: entry.cloudinary_url || "(dry-run)",
       steps: { would_run: steps },
       error: null,
     };
   }
 
-  // Step 1: Places → local file
-  if (steps.places) {
-    ran.places = true;
-    const downloaded = await downloadFromPlaces(business, apiKey);
-    entry.photo_name = downloaded.photo_name;
-    entry.local_path = downloaded.local_path;
-    entry.author_attributions = downloaded.author_attributions;
-    entry.status = downloaded.status;
-
-    if (downloaded.status === "no_photos") {
-      entry.cloudinary_url = null;
-      entry.cdn_stored = false;
-      entry.steps = { ran, skipped };
-      return entry;
-    }
-
-    localFile = {
-      absolutePath: downloaded.absolute_path,
-      relativePath: downloaded.local_path,
-    };
-    // Recompute remaining steps after download
-    steps = stepsNeeded(entry, localFile);
-  } else if (localFile) {
-    skipped.places = true;
-  }
-
-  // Step 2: Cloudinary upload
-  if (steps.cloudinary) {
-    if (!localFile) {
-      throw new Error("Cannot upload to Cloudinary without a local file");
-    }
-    ran.cloudinary = true;
+  // Step 1: Places media → Cloudinary (in memory)
+  if (steps.upload) {
+    ran.upload = true;
     try {
-      entry.cloudinary_url = await uploadToCloudinary(
-        localFile.absolutePath,
-        business.place_id
-      );
+      const uploaded = await uploadPlacePhotoToCloudinary(business, apiKey);
+      entry.photo_name = uploaded.photo_name;
+      entry.author_attributions = uploaded.author_attributions;
+      entry.status = uploaded.status;
+      entry.cloudinary_url = uploaded.cloudinary_url;
+
+      if (uploaded.status === "no_photos") {
+        entry.cdn_stored = false;
+        entry.steps = { ran, skipped };
+        return entry;
+      }
+
       entry.error = null;
-      steps = stepsNeeded(entry, localFile);
+      steps = stepsNeeded(entry);
     } catch (err) {
       entry.cloudinary_url = null;
       entry.cdn_stored = false;
-      entry.error = `Cloudinary upload failed: ${err.message}`;
+      entry.status = "error";
+      entry.error = `Upload failed: ${err.message}`;
       entry.steps = { ran, skipped };
       return entry;
     }
   } else if (entry.cloudinary_url) {
-    skipped.cloudinary = true;
+    skipped.upload = true;
   }
 
-  // Step 3: Supabase cdn_stored
+  // Step 2: Supabase cdn_stored
   if (steps.supabase) {
     ran.supabase = true;
     try {
@@ -466,10 +387,8 @@ function formatStepSummary(entry) {
   const ran = entry.steps?.ran || {};
   const skipped = entry.steps?.skipped || {};
   const parts = [];
-  if (ran.places) parts.push("places:downloaded");
-  else if (skipped.places) parts.push("places:skipped");
-  if (ran.cloudinary) parts.push("cloudinary:uploaded");
-  else if (skipped.cloudinary) parts.push("cloudinary:skipped");
+  if (ran.upload) parts.push("cloudinary:uploaded");
+  else if (skipped.upload) parts.push("cloudinary:skipped");
   if (ran.supabase) parts.push("cdn_stored:updated");
   else if (skipped.supabase) parts.push("cdn_stored:skipped");
   return parts.length ? parts.join(", ") : "no-op";
@@ -544,8 +463,7 @@ async function main() {
         const would = entry.steps?.would_run || {};
         console.log(
           `🔎 ${label} would run →` +
-            ` places:${would.places ? "yes" : "no"}` +
-            ` cloudinary:${would.cloudinary ? "yes" : "no"}` +
+            ` upload:${would.upload ? "yes" : "no"}` +
             ` supabase:${would.supabase ? "yes" : "no"}`
         );
         ok++;
@@ -567,6 +485,11 @@ async function main() {
       } else if (entry.status === "no_photos") {
         noPhotos++;
         console.log(`⚠️  ${label} → no photos (${formatStepSummary(entry)})`);
+      } else if (entry.status === "error") {
+        uploadFailed++;
+        console.error(
+          `⚠️  ${label} → ${formatStepSummary(entry)} → ${entry.error}`
+        );
       }
     } catch (err) {
       failed++;
@@ -575,7 +498,6 @@ async function main() {
         place_id: business.place_id,
         title: business.title,
         photo_name: null,
-        local_path: existing?.local_path ?? null,
         cloudinary_url: existing?.cloudinary_url ?? null,
         cdn_stored: Boolean(existing?.cdn_stored),
         author_attributions: existing?.author_attributions ?? [],
