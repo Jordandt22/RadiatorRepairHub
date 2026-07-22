@@ -31,6 +31,7 @@ import {
   INDEX_ROBOTS,
 } from "@/lib/seo/metadata";
 import { fetchBusinessBySlug } from "@/lib/api/businesses";
+import { getBusinessDisplayImage } from "@/lib/images";
 
 function getGoogleMapsQuery(business) {
   if (business.place_id) {
@@ -73,6 +74,7 @@ export async function generateMetadata({ params }) {
         ? `Call ${business.phone} for radiator repair today!`
         : "Contact us for quality radiator repair.")
       }`;
+    const displayImage = getBusinessDisplayImage(business);
 
     return {
       title,
@@ -88,10 +90,10 @@ export async function generateMetadata({ params }) {
         description,
         type: "website",
         locale: "en_US",
-        images: business.image_url
+        images: displayImage
           ? [
             {
-              url: business.image_url,
+              url: displayImage,
               width: 1200,
               height: 630,
               alt: business.title,
@@ -270,7 +272,7 @@ async function Page({ params }) {
             longitude: business.longitude,
           }
           : undefined,
-      image: business.image_url,
+      image: getBusinessDisplayImage(business),
       ...(business.reviews_count > 0 &&
         business.total_score > 0 && {
         aggregateRating: {
@@ -364,6 +366,8 @@ async function Page({ params }) {
           {/* Hero Section with Business Image */}
           <BusinessHeroBanner
             src={business.image_url}
+            placeId={business.place_id}
+            cdnStored={Boolean(business.cdn_stored)}
             alt={`${business.title} - Radiator Repair Services in ${business.city.name}, ${business.state.name}`}
           >
             <div className="w-full p-3 sm:p-4 md:p-6 text-white max-w-7xl mx-auto hidden md:block">
@@ -416,6 +420,8 @@ async function Page({ params }) {
                     <div className="relative w-full h-48 md:h-64 bg-gray-200 rounded-lg overflow-hidden">
                       <BusinessImage
                         src={business.image_url}
+                        placeId={business.place_id}
+                        cdnStored={Boolean(business.cdn_stored)}
                         alt={`${business.title} - ${business.keywords && business.keywords.length > 0
                           ? business.keywords[0]
                           : "radiator repair services"

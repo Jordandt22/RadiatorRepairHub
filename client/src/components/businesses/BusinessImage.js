@@ -2,11 +2,17 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { CldImage } from "next-cloudinary";
 import { CircleAlert } from "lucide-react";
-import { bypassImageOptimizer } from "@/lib/images";
+import {
+  bypassImageOptimizer,
+  getCloudinaryPublicId,
+} from "@/lib/images";
 
 function BusinessImage({
   src,
+  placeId,
+  cdnStored = false,
   alt,
   fill = true,
   sizes,
@@ -18,9 +24,16 @@ function BusinessImage({
   fallback = "message",
   fallbackClassName = "bg-slate-900",
 }) {
-  const [failed, setFailed] = useState(false);
+  const publicId = getCloudinaryPublicId(placeId);
+  const canUseCloudinary = Boolean(cdnStored && publicId);
+  const hasRemote = Boolean(src);
 
-  if (!src || failed) {
+  // Prefer Cloudinary when available; otherwise start on remote image_url
+  const [source, setSource] = useState(() =>
+    canUseCloudinary ? "cloudinary" : hasRemote ? "remote" : "none"
+  );
+
+  if (source === "none") {
     if (fallback === "solid") {
       return (
         <div
@@ -61,6 +74,22 @@ function BusinessImage({
     );
   }
 
+  if (source === "cloudinary") {
+    return (
+      <CldImage
+        src={publicId}
+        alt={alt}
+        fill={fill}
+        sizes={sizes}
+        className={className}
+        priority={priority}
+        crop="fill"
+        gravity="auto"
+        onError={() => setSource(hasRemote ? "remote" : "none")}
+      />
+    );
+  }
+
   return (
     <Image
       src={src}
@@ -71,7 +100,7 @@ function BusinessImage({
       priority={priority}
       unoptimized={bypassImageOptimizer}
       referrerPolicy="no-referrer"
-      onError={() => setFailed(true)}
+      onError={() => setSource("none")}
     />
   );
 }
