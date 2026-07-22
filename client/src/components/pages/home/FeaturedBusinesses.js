@@ -4,23 +4,18 @@ import Link from "next/link";
 // Components
 import DetailedBusinessCard from "@/components/businesses/cards/DetailedBusinessCard";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
+import { fetchFeaturedBusinesses } from "@/lib/api/businesses";
 
 async function FeaturedBusinesses() {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URI}/businesses/featured`,
-      {
-        next: { revalidate: 300 }, // Revalidate every 5 minutes
-      }
-    );
-    const data = await res.json();
+    const { data: businesses, error, status } = await fetchFeaturedBusinesses();
 
-    if (!res.ok || data.error) {
+    if (error) {
       return (
         <ErrorDisplay
-          status={res.status}
-          code={data?.error?.code}
-          message={data?.error?.message}
+          status={status || 500}
+          code={error?.code}
+          message={error?.message}
           link={{
             path: "/featured",
             text: "Go to featured businesses page",
@@ -29,7 +24,7 @@ async function FeaturedBusinesses() {
       );
     }
 
-    const businesses = data?.data || [];
+    const list = businesses || [];
 
     return (
       <section className="py-20 bg-white">
@@ -43,9 +38,9 @@ async function FeaturedBusinesses() {
             </p>
           </div>
 
-          {Array.isArray(businesses) && businesses.length > 0 ? (
+          {Array.isArray(list) && list.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {businesses.slice(0, 3).map((business) => (
+              {list.slice(0, 3).map((business) => (
                 <DetailedBusinessCard key={business.id} business={business} />
               ))}
             </div>
@@ -66,8 +61,7 @@ async function FeaturedBusinesses() {
         </div>
       </section>
     );
-  } catch (error) {
-    // Return empty section if API fails
+  } catch {
     return (
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
