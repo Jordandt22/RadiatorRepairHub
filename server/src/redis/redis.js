@@ -107,7 +107,7 @@ export const flushDBCache = async () => {
 // --- Businesses ----
 export const getFeaturedBusinessesKey = () => ({
   key: `FEATURED_BUSINESSES`,
-  interval: 60 * 60 * 24 * 2,
+  interval: 60 * 60,
 });
 
 export const getBusinessByIdKey = (business_id) => ({
