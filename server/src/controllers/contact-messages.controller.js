@@ -10,7 +10,11 @@ import {
 import { deleteCacheDataByPrefix } from "../redis/redis.js";
 import { verifyEmailReputation } from "../abstract/emailReputation.js";
 import { resendClient } from "../resend/resend.js";
-import { UNDER_REVIEW_MESSAGE, SENDER_NAME } from "../lib/constants/messages.js";
+import {
+  UNDER_REVIEW_MESSAGE,
+  ADMIN_NEW_CONTACT_MESSAGE,
+  SENDER_NAME,
+} from "../lib/constants/messages.js";
 
 const { SUPABASE_ERROR, ROUTE_NOT_FOUND, YUP_ERROR, SERVER_ERROR } = errorCodes;
 
@@ -104,10 +108,21 @@ export const createContactMessage = async (req, res) => {
 
   await deleteCacheDataByPrefix("CONTACT_MESSAGES");
 
-  // Send Under Review Email
-  const { SENDER_EMAIL, RESEND_API_KEY } = process.env;
+  // Send Under Review Email + Admin Notification
+  const { SENDER_EMAIL, RESEND_API_KEY, ADMIN_EMAIL } = process.env;
 
   if (RESEND_API_KEY && SENDER_EMAIL) {
+    const urgencyValue = URGENCY_MAP[urgency];
+    const inquiry = {
+      name: name.trim(),
+      phone: phone?.trim() || "",
+      email: trimmedEmail,
+      vehicle: vehicleModel?.trim() || null,
+      issue,
+      urgency: urgencyValue,
+      additionalDetails: additionalDetails?.trim() || null,
+    };
+
     const { error: sendError } = await resendClient().emails.send({
       from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
       to: [trimmedEmail],
@@ -117,6 +132,19 @@ export const createContactMessage = async (req, res) => {
 
     if (sendError && process.env.NODE_ENV === "development") {
       console.error("Failed to send under-review email:", sendError);
+    }
+
+    if (ADMIN_EMAIL) {
+      const { error: adminSendError } = await resendClient().emails.send({
+        from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+        to: [ADMIN_EMAIL],
+        subject: ADMIN_NEW_CONTACT_MESSAGE.subject(businessName),
+        html: ADMIN_NEW_CONTACT_MESSAGE.html(businessName, inquiry),
+      });
+
+      if (adminSendError && process.env.NODE_ENV === "development") {
+        console.error("Failed to send admin notification email:", adminSendError);
+      }
     }
   }
 

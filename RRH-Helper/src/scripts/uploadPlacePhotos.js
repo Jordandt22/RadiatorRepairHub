@@ -16,10 +16,10 @@
  *
  * @see https://developers.google.com/maps/documentation/places/web-service/place-photos
  *
- * Edit LIMIT / BATCH at top like scrapeEmails.js:
- * e.g. LIMIT=10, BATCH=1 → items 0–9; BATCH=2 → items 10–19.
- *
- * Output: photos/batch-{BATCH}/{slug}.{ext} + photos/batch-{BATCH}/photos.json
+ * Edit LIMIT at top — how many pending businesses to process this run.
+ * Skips anything already complete (across all photos/batch-* manifests),
+ * then takes the next LIMIT that still need Places / Cloudinary / cdn_stored.
+ * Writes into photos/batch-{N}/ where N is one past the highest existing batch folder.
  *
  * Flags:
  *   --dry-run  Log planned steps; no Places / Cloudinary / Supabase writes
@@ -43,12 +43,13 @@ const SRC_ROOT = path.join(__dirname, "..");
 const BUSINESSES_FILE = path.join(SRC_ROOT, "supabase", "businesses.json");
 const PHOTOS_DIR = path.join(SRC_ROOT, "photos");
 
-// Edit these to run a slice of businesses-with-place_id (1-based batch).
-const LIMIT = 100;
-const BATCH = 6;
+// How many businesses that still need work to process this run.
+const LIMIT = 500;
 
-const BATCH_DIR = path.join(PHOTOS_DIR, `batch-${BATCH}`);
-const PHOTOS_FILE = path.join(BATCH_DIR, "photos.json");
+// Set in main() after choosing the next batch folder.
+let BATCH = 1;
+let BATCH_DIR = path.join(PHOTOS_DIR, `batch-${BATCH}`);
+let PHOTOS_FILE = path.join(BATCH_DIR, "photos.json");
 
 const MAX_WIDTH_PX = 800;
 const MAX_HEIGHT_PX = 544;
@@ -118,7 +119,52 @@ function toRelativePhotoPath(filename) {
   return path.join("photos", `batch-${BATCH}`, filename).replace(/\\/g, "/");
 }
 
-/** Resolve an existing local image for this slug (manifest path or disk scan). */
+function listPhotoBatchDirs() {
+  if (!fs.existsSync(PHOTOS_DIR)) return [];
+  return fs
+    .readdirSync(PHOTOS_DIR, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && /^batch-\d+$/.test(d.name))
+    .map((d) => ({
+      name: d.name,
+      num: Number(d.name.slice("batch-".length)),
+      path: path.join(PHOTOS_DIR, d.name),
+    }))
+    .sort((a, b) => a.num - b.num);
+}
+
+function getNextBatchNumber() {
+  const batches = listPhotoBatchDirs();
+  if (batches.length === 0) return 1;
+  return batches[batches.length - 1].num + 1;
+}
+
+/** Prefer the most complete manifest row when a slug appears in multiple batches. */
+function entryCompleteness(entry) {
+  if (!entry) return -1;
+  let score = 0;
+  if (entry.status === "no_photos") score += 8;
+  if (entry.cdn_stored) score += 4;
+  if (entry.cloudinary_url && entry.cloudinary_url !== "(dry-run)") score += 2;
+  if (entry.local_path) score += 1;
+  return score;
+}
+
+function loadMergedManifestBySlug() {
+  const map = new Map();
+  for (const batch of listPhotoBatchDirs()) {
+    const entries = loadJson(path.join(batch.path, "photos.json"), []);
+    for (const entry of entries) {
+      if (!entry?.slug) continue;
+      const prev = map.get(entry.slug);
+      if (!prev || entryCompleteness(entry) >= entryCompleteness(prev)) {
+        map.set(entry.slug, entry);
+      }
+    }
+  }
+  return map;
+}
+
+/** Resolve an existing local image for this slug (manifest path or any batch folder). */
 function findExistingLocalFile(slug, existingEntry) {
   if (existingEntry?.local_path) {
     const fromManifest = path.join(SRC_ROOT, existingEntry.local_path);
@@ -130,24 +176,25 @@ function findExistingLocalFile(slug, existingEntry) {
     }
   }
 
-  if (!fs.existsSync(BATCH_DIR)) return null;
-
-  const match = fs
-    .readdirSync(BATCH_DIR)
-    .find((name) => {
+  for (const batch of listPhotoBatchDirs()) {
+    const match = fs.readdirSync(batch.path).find((name) => {
       const ext = path.extname(name).toLowerCase();
       return (
-        IMAGE_EXTENSIONS.has(ext) &&
-        path.basename(name, ext) === slug
+        IMAGE_EXTENSIONS.has(ext) && path.basename(name, ext) === slug
       );
     });
 
-  if (!match) return null;
+    if (!match) continue;
 
-  return {
-    absolutePath: path.join(BATCH_DIR, match),
-    relativePath: toRelativePhotoPath(match),
-  };
+    return {
+      absolutePath: path.join(batch.path, match),
+      relativePath: path
+        .join("photos", batch.name, match)
+        .replace(/\\/g, "/"),
+    };
+  }
+
+  return null;
 }
 
 function baseEntry(business, existingEntry = null) {
@@ -437,43 +484,46 @@ async function main() {
     throw new Error(`Businesses file not found: ${BUSINESSES_FILE}`);
   }
 
-  if (!Number.isFinite(LIMIT) || LIMIT < 1 || !Number.isFinite(BATCH) || BATCH < 1) {
-    throw new Error("LIMIT and BATCH must be integers >= 1");
+  if (!Number.isFinite(LIMIT) || LIMIT < 1) {
+    throw new Error("LIMIT must be an integer >= 1");
   }
 
-  fs.mkdirSync(BATCH_DIR, { recursive: true });
-
   const businesses = loadJson(BUSINESSES_FILE, []);
-  const manifest = loadJson(PHOTOS_FILE, []);
-  const manifestBySlug = new Map(
-    manifest.filter((e) => e.slug).map((e) => [e.slug, e])
-  );
+  const manifestBySlug = loadMergedManifestBySlug();
 
   const withPlaceId = businesses.filter(
     (b) => b.place_id && String(b.place_id).trim() && b.slug
   );
 
-  const start = (BATCH - 1) * LIMIT;
-  const end = start + LIMIT;
-  const batchSlice = withPlaceId.slice(start, end);
-  const pending = batchSlice.filter((b) =>
+  const allPending = withPlaceId.filter((b) =>
     needsProcessing(b, manifestBySlug)
   );
-  const totalBatches = Math.ceil(withPlaceId.length / LIMIT) || 1;
+  const pending = allPending.slice(0, LIMIT);
+  const alreadyComplete = withPlaceId.length - allPending.length;
+
+  if (pending.length === 0) {
+    console.log(
+      `Businesses with place_id: ${withPlaceId.length} | complete: ${alreadyComplete} | pending: 0\n` +
+        "Nothing to process — all steps complete."
+    );
+    return;
+  }
+
+  BATCH = getNextBatchNumber();
+  BATCH_DIR = path.join(PHOTOS_DIR, `batch-${BATCH}`);
+  PHOTOS_FILE = path.join(BATCH_DIR, "photos.json");
+  fs.mkdirSync(BATCH_DIR, { recursive: true });
+
+  const manifest = [];
 
   console.log(
     `Photos → ${PHOTOS_FILE}\n` +
       (dryRun ? "Mode: DRY RUN\n" : "") +
       (force ? "Mode: FORCE (re-run all steps)\n" : "") +
-      `Businesses with place_id: ${withPlaceId.length} | batch ${BATCH}/${totalBatches} ` +
-      `(index ${start}–${Math.min(end, withPlaceId.length) - 1}, size ${batchSlice.length}) | ` +
-      `complete: ${batchSlice.length - pending.length} | pending steps: ${pending.length}`
+      `Businesses with place_id: ${withPlaceId.length} | complete: ${alreadyComplete} | ` +
+      `pending total: ${allPending.length} | this run: ${pending.length} (LIMIT=${LIMIT}) | ` +
+      `output batch-${BATCH}`
   );
-
-  if (pending.length === 0) {
-    console.log("Nothing to process — all steps complete for this batch slice.");
-    return;
-  }
 
   let ok = 0;
   let noPhotos = 0;
