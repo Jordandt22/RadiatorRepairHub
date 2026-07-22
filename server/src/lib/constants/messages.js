@@ -105,6 +105,55 @@ export const UNDER_REVIEW_MESSAGE = Object.freeze({
   `,
 });
 
+// Admin notification when a new contact message is submitted
+export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `New contact message${businessName ? ` for ${businessName}` : ""}`,
+  html: (
+    businessName,
+    { name, phone, email, vehicle, issue, urgency, additionalDetails },
+  ) => `
+  <p>A new contact message was submitted on RadiatorRepairHub.</p>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 140px;">Business:</td>
+      <td style="padding: 8px 0;">${businessName ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Name:</td>
+      <td style="padding: 8px 0;">${name ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Email:</td>
+      <td style="padding: 8px 0;">${email ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Phone:</td>
+      <td style="padding: 8px 0;">${phone ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Vehicle:</td>
+      <td style="padding: 8px 0;">${vehicle ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Issue:</td>
+      <td style="padding: 8px 0;">${formatIssueLabel(issue)}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Urgency:</td>
+      <td style="padding: 8px 0;">${formatUrgencyLabel(urgency)}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Additional Details:</td>
+      <td style="padding: 8px 0;">${additionalDetails ?? "N/A"}</td>
+    </tr>
+  </table>
+
+  <p>Review it in the admin dashboard under Pending.</p>
+  `,
+});
+
 // Confirmation: message forwarded to business
 export const MESSAGE_ON_ITS_WAY = Object.freeze({
   subject: (businessName) =>
