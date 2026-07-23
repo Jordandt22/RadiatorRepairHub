@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js";
+import { supabase, adminAuthClient } from "./supabase.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
 const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories!inner(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*)`;
@@ -398,11 +398,33 @@ export const getBusinessClaimInfo = async (business_id) => {
 export const getPendingClaimRequest = async (business_id) => {
   const { data, error } = await supabase
     .from("claim_requests")
-    .select("claim_request_id")
+    .select("claim_request_id, last_attempted_at")
     .eq("business_id", business_id)
     .eq("status", "pending")
     .limit(1)
     .maybeSingle();
+
+  return { data, error };
+};
+
+export const getPendingClaimRequestsForBusiness = async (business_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .select("claim_request_id, last_attempted_at")
+    .eq("business_id", business_id)
+    .eq("status", "pending");
+
+  return { data, error };
+};
+
+export const expireClaimRequestsByIds = async (claim_request_ids) => {
+  if (!claim_request_ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .update({ status: "expired" })
+    .in("claim_request_id", claim_request_ids)
+    .select("claim_request_id");
 
   return { data, error };
 };
@@ -425,6 +447,87 @@ export const updateClaimRequestStatus = async (claim_request_id, status) => {
     .select("claim_request_id")
     .single();
 
+  return { data, error };
+};
+
+export const getClaimRequestWithBusiness = async (claim_request_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .select(
+      "claim_request_id, business_id, status, attempts, last_attempted_at, business:businesses(id, title, slug, email, is_claimed)"
+    )
+    .eq("claim_request_id", claim_request_id)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const deleteClaimRequest = async (claim_request_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .delete()
+    .eq("claim_request_id", claim_request_id)
+    .select("claim_request_id")
+    .single();
+
+  return { data, error };
+};
+
+export const resetClaimAttempts = async (claim_request_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .update({
+      attempts: 0,
+      last_attempted_at: new Date().toISOString(),
+    })
+    .eq("claim_request_id", claim_request_id)
+    .select("claim_request_id, attempts, last_attempted_at")
+    .single();
+
+  return { data, error };
+};
+
+export const incrementClaimAttempts = async (claim_request_id, currentAttempts) => {
+  const nextAttempts = Number(currentAttempts || 0) + 1;
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .update({
+      attempts: nextAttempts,
+      last_attempted_at: new Date().toISOString(),
+    })
+    .eq("claim_request_id", claim_request_id)
+    .select("claim_request_id, attempts, last_attempted_at")
+    .single();
+
+  return { data, error };
+};
+
+export const completeBusinessClaimRpc = async (
+  claim_request_id,
+  business_id,
+  uid
+) => {
+  const { data, error } = await supabase.rpc("complete_business_claim", {
+    p_claim_request_id: claim_request_id,
+    p_business_id: business_id,
+    p_uid: uid,
+  });
+
+  return { data, error };
+};
+
+export const createAuthUser = async ({ email, password }) => {
+  const { data, error } = await adminAuthClient.createUser({
+    email,
+    password,
+    email_confirm: true,
+  });
+
+  return { data, error };
+};
+
+export const deleteAuthUser = async (uid) => {
+  const { data, error } = await adminAuthClient.deleteUser(uid);
   return { data, error };
 };
 

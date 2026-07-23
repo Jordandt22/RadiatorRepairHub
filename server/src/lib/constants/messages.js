@@ -63,16 +63,16 @@ export const CLAIM_VERIFICATION_MESSAGE = Object.freeze({
 
   <p>Someone requested to claim <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub.</p>
 
-  <p>View the listing here:<br>
-  <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
-
   <p>Your verification code is:</p>
   <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">${code}</p>
 
   <p>Click the link below to complete your claim (this code expires in 1 hour):</p>
   <p><a href="${verifyUrl}" style="color: #1a73e8;">${verifyUrl}</a></p>
 
-  <p>If you did not request this, you can ignore this email.</p>
+  <p>If you did not request this, you can ignore this email and no action is required.</p>
+
+  <p>View the listing here:<br>
+  <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `,

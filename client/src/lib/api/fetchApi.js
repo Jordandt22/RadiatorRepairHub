@@ -68,7 +68,7 @@ export async function fetchApi(path, options = {}) {
     const { json } = parsed;
     if (!response.ok || json.error) {
       return {
-        data: null,
+        data: json.data ?? null,
         error: json.error ?? { message: "API request failed" },
         status: response.status,
       };
