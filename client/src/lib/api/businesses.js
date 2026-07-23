@@ -30,3 +30,12 @@ export async function fetchBusinessesByCategory(
     ...options,
   });
 }
+
+export async function claimBusiness(businessId) {
+  return fetchApi("/businesses/claim", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ businessId }),
+    cache: "no-store",
+  });
+}

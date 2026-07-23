@@ -37,6 +37,47 @@ export const buildBusinessClaimLink = (businessSlug) => {
   return `${baseUrl}/business/${businessSlug}`;
 };
 
+export const buildClaimVerifyLink = (claimRequestId) => {
+  const baseUrl = getWebBaseUrl();
+  return `${baseUrl}/claim/verify/${claimRequestId}`;
+};
+
+export const maskEmail = (email) => {
+  if (!email || typeof email !== "string") return "";
+  const trimmed = email.trim();
+  const atIndex = trimmed.indexOf("@");
+  if (atIndex <= 0) return "***";
+
+  const local = trimmed.slice(0, atIndex);
+  const domain = trimmed.slice(atIndex + 1);
+  const firstChar = local[0] ?? "";
+  return `${firstChar}***@${domain}`;
+};
+
+// Business ownership claim verification
+export const CLAIM_VERIFICATION_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Verify your claim for ${businessName ?? "your business"}`,
+  html: (businessName, code, verifyUrl, businessPageUrl) => `
+  <p>Hi there,</p>
+
+  <p>Someone requested to claim <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub.</p>
+
+  <p>View the listing here:<br>
+  <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
+
+  <p>Your verification code is:</p>
+  <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">${code}</p>
+
+  <p>Click the link below to complete your claim (this code expires in 1 hour):</p>
+  <p><a href="${verifyUrl}" style="color: #1a73e8;">${verifyUrl}</a></p>
+
+  <p>If you did not request this, you can ignore this email.</p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
 // Free lead inquiry forwarded to business
 export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
   subject: "New Customer Inquiry from RadiatorRepairHub",

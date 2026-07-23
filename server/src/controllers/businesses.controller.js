@@ -9,28 +9,225 @@ import {
   getCacheData,
   getBusinessBySlugKey,
   getBusinessSlugsForSitemapKey,
-  // getBusinessesByStateKey,
-  // getCountBusinessesByStateKey,
-  // getCountBusinessesByCityKey,
-  // getBusinessesByCityKey,
-  // getCityBySlugKey,
   getSearchedBusinessesKey,
   getCountBusinessesBySearchKey,
+  getClaimRequestCodeKey,
+  getBusinessByIdKey,
+  setWithExactTtl,
+  deleteCacheData,
 } from "../redis/redis.js";
 import {
   getTopRatedBusinesses,
-  // getBusinessesByState,
-  // countBusinessesByState,
-  // countBusinessesByCity,
-  // getBusinessesByCity,
-  // getCityBySlug,
   searchBusinesses,
   getBusinessBySlug,
   getBusinessSlugsForSitemap,
+  getBusinessClaimInfo,
+  getPendingClaimRequest,
+  insertClaimRequest,
+  updateClaimRequestStatus,
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
+import { resendClient } from "../resend/resend.js";
+import {
+  CLAIM_VERIFICATION_MESSAGE,
+  SENDER_NAME,
+  buildClaimVerifyLink,
+  buildBusinessClaimLink,
+  maskEmail,
+} from "../lib/constants/messages.js";
+import crypto from "crypto";
 
-const { SUPABASE_ERROR } = errorCodes;
+const { SUPABASE_ERROR, ROUTE_NOT_FOUND, YUP_ERROR, SERVER_ERROR, ACCESS_DENIED } =
+  errorCodes;
+
+const CLAIM_CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+const generateClaimCode = (length = 6) => {
+  const bytes = crypto.randomBytes(length);
+  let code = "";
+  for (let i = 0; i < length; i++) {
+    code += CLAIM_CODE_CHARS[bytes[i] % CLAIM_CODE_CHARS.length];
+  }
+  return code;
+};
+
+export const claimBusiness = async (req, res) => {
+  const { businessId } = req.body;
+
+  const { data: business, error: businessError } =
+    await getBusinessClaimInfo(businessId);
+
+  if (businessError || !business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The selected business could not be found.",
+          businessError
+        )
+      );
+  }
+
+  const email =
+    typeof business.email === "string" ? business.email.trim() : "";
+
+  if (!email) {
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "This business cannot be claimed because it has no email on file."
+        )
+      );
+  }
+
+  if (business.is_claimed) {
+    return res
+      .status(409)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "This business has already been claimed."
+        )
+      );
+  }
+
+  const { data: pendingClaim, error: pendingError } =
+    await getPendingClaimRequest(businessId);
+
+  if (pendingError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error checking existing claim requests.",
+          pendingError
+        )
+      );
+  }
+
+  if (pendingClaim) {
+    return res
+      .status(409)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "A claim request for this business is already in progress."
+        )
+      );
+  }
+
+  const { data: claimRequest, error: insertError } =
+    await insertClaimRequest(businessId);
+
+  if (insertError || !claimRequest) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error creating your claim request.",
+          insertError
+        )
+      );
+  }
+
+  const claimRequestId = claimRequest.claim_request_id;
+  const code = generateClaimCode(6);
+  const { key, interval } = getClaimRequestCodeKey(claimRequestId);
+
+  try {
+    await setWithExactTtl(key, interval, code);
+  } catch (redisError) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "There was an error storing the verification code.",
+          redisError
+        )
+      );
+  }
+
+  const { SENDER_EMAIL, RESEND_API_KEY, TEST_RECIPIENT_EMAIL } = process.env;
+  const isDev = process.env.NODE_ENV === "development";
+
+  if (!RESEND_API_KEY || !SENDER_EMAIL) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "Email is not configured. Unable to send the verification code."
+        )
+      );
+  }
+
+  if (isDev && !TEST_RECIPIENT_EMAIL) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "TEST_RECIPIENT_EMAIL is required in development."
+        )
+      );
+  }
+
+  const recipientEmail = isDev ? TEST_RECIPIENT_EMAIL : email;
+  const verifyUrl = buildClaimVerifyLink(claimRequestId);
+  const businessPageUrl = buildBusinessClaimLink(business.slug);
+  const { error: sendError } = await resendClient().emails.send({
+    from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+    to: [recipientEmail],
+    subject: CLAIM_VERIFICATION_MESSAGE.subject(business.title),
+    html: CLAIM_VERIFICATION_MESSAGE.html(
+      business.title,
+      code,
+      verifyUrl,
+      businessPageUrl
+    ),
+  });
+
+  if (sendError) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    try {
+      await deleteCacheData(key);
+    } catch {
+      // best-effort cleanup
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "There was an error sending the verification email.",
+          sendError
+        )
+      );
+  }
+
+  const { key: businessIdCacheKey } = getBusinessByIdKey(business.id);
+  await deleteCacheData(businessIdCacheKey);
+  if (business.slug) {
+    const { key: businessSlugCacheKey } = getBusinessBySlugKey(business.slug);
+    await deleteCacheData(businessSlugCacheKey);
+  }
+
+  return res.status(201).json(
+    successHandler({
+      maskedEmail: maskEmail(email),
+      claimRequestId,
+    })
+  );
+};
 
 export const getFeaturedBusinesses = async (req, res) => {
   // Get Data from Cache

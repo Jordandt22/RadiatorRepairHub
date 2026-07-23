@@ -8,6 +8,10 @@ export const BusinessSlugSchema = Yup.object({
 });
 
 // ---- Body Request ----
+export const ClaimBusinessSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+});
+
 export const SearchBusinessesSchema = Yup.object({
   title: Yup.string().trim().max(150),
   state_id: Yup.string().trim().max(150),

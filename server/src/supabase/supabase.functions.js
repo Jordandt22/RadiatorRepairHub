@@ -50,6 +50,8 @@ const formatFullBusiness = (business) => {
     });
   }
 
+  business.is_claimed = Boolean(business?.is_claimed);
+
   return business;
 };
 // ---- Database ----
@@ -378,6 +380,49 @@ export const insertContactMessage = async (payload) => {
     .from("contact_messages")
     .insert(payload)
     .select("contact_message_id")
+    .single();
+
+  return { data, error };
+};
+
+export const getBusinessClaimInfo = async (business_id) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, title, slug, email, is_claimed")
+    .eq("id", business_id)
+    .single();
+
+  return { data, error };
+};
+
+export const getPendingClaimRequest = async (business_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .select("claim_request_id")
+    .eq("business_id", business_id)
+    .eq("status", "pending")
+    .limit(1)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const insertClaimRequest = async (business_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .insert({ business_id })
+    .select("claim_request_id")
+    .single();
+
+  return { data, error };
+};
+
+export const updateClaimRequestStatus = async (claim_request_id, status) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .update({ status })
+    .eq("claim_request_id", claim_request_id)
+    .select("claim_request_id")
     .single();
 
   return { data, error };

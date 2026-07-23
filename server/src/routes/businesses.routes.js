@@ -4,11 +4,13 @@ import {
   getBusiness,
   getSearchedBusinesses,
   getBusinessSlugsForSitemapHandler,
+  claimBusiness,
 } from "../controllers/businesses.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
   BusinessSlugSchema,
   SearchBusinessesSchema,
+  ClaimBusinessSchema,
 } from "../schemas/businesses.schemas.js";
 import { paginationSchema } from "../schemas/query.schemas.js";
 import {
@@ -29,6 +31,13 @@ businessesRouter.get(
 businessesRouter.get(
   "/sitemap-slugs",
   serverErrorCatcherWrapper(getBusinessSlugsForSitemapHandler)
+);
+
+// Claim a business (must be before /:business_slug)
+businessesRouter.post(
+  "/claim",
+  bodyValidator(ClaimBusinessSchema),
+  serverErrorCatcherWrapper(claimBusiness)
 );
 
 // Get Business by Slug

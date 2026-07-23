@@ -20,6 +20,7 @@ import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import BusinessHeroBanner from "@/components/businesses/BusinessHeroBanner";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
+import ClaimBusinessButton from "@/components/businesses/ClaimBusinessButton";
 import BusinessContactLinks from "@/components/businesses/BusinessContactLinks";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
@@ -595,6 +596,12 @@ async function Page({ params }) {
                         <ExternalLink className="size-4" />
                       </Link>
                     )}
+
+                    <ClaimBusinessButton
+                      businessId={business.id}
+                      email={business.email}
+                      isClaimed={Boolean(business.is_claimed)}
+                    />
                   </div>
                 </div>
 
