@@ -7,6 +7,9 @@ export const errorCodes = {
   ACCESS_DENIED: "access-denied",
   ROUTE_NOT_FOUND: "route-not-found",
   CLAIM_UNAVAILABLE: "claim-unavailable",
+  NO_ACCESS_TOKEN: "no-access-token",
+  USER_NOT_FOUND: "user-not-found",
+  INVALID_ACCESS_TOKEN: "invalid-access-token",
 
   // Supabase
   SUPABASE_ERROR: "supabase-error",

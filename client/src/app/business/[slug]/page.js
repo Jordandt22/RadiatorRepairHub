@@ -620,13 +620,19 @@ async function Page({ params }) {
                     website={business.website}
                   />
 
-                  <div className="mt-4 md:mt-5">
+                  <div className="mt-4 md:mt-5 space-y-3">
                     <QuickContactDialog
                       businessId={business.id}
                       businessName={business.title}
                       email={business.email}
                       phone={business.phone}
                     />
+                    <Link
+                      href="/contact"
+                      className="inline-flex w-full items-center justify-center rounded-full border-2 border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                      Report Info
+                    </Link>
                   </div>
                 </div>
 

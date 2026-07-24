@@ -12,6 +12,7 @@ import locationRouter from "./routes/location.routes.js";
 import categoriesRouter from "./routes/categories.routes.js";
 import contactMessagesRouter from "./routes/contact-messages.routes.js";
 import adminRouter from "./routes/admin/admin.routes.js";
+import authRouter from "./routes/auth.routes.js";
 
 const app = express();
 
@@ -59,6 +60,9 @@ app.use(`/v${API_VERSION}/api/contact-messages`, contactMessagesRouter);
 
 // Routes for Admin
 app.use(`/v${API_VERSION}/api/admin`, adminRouter);
+
+// Routes for Owner Auth
+app.use(`/v${API_VERSION}/api/auth`, authRouter);
 
 // PORT and Sever
 const server = http.createServer(app);

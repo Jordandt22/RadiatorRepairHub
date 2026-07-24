@@ -17,6 +17,7 @@ import {
   completeClaimRequest,
   resendClaimCode,
 } from "@/lib/api/businesses";
+import { persistSession } from "@/lib/auth/session";
 
 function ClaimVerifyFormContent({ claimRequestId, business }) {
   const router = useRouter();
@@ -148,6 +149,30 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
             ? error.message
             : "Unable to complete your claim. Please try again."
         );
+        return;
+      }
+
+      if (data?.session) {
+        const { error: sessionError } = await persistSession(data.session);
+        if (sessionError) {
+          showCustomSuccess(
+            "Your business has been claimed. Please sign in to continue."
+          );
+          router.push("/signin");
+          return;
+        }
+        showCustomSuccess("Your business has been claimed successfully.");
+        goToBusinessPage(data?.slug || business.slug);
+        return;
+      }
+
+      if (data?.requiresLogin) {
+        showCustomSuccess(
+          typeof data.message === "string"
+            ? data.message
+            : "Your business has been claimed. Please sign in to continue."
+        );
+        router.push("/signin");
         return;
       }
 

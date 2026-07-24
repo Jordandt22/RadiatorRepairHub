@@ -1,4 +1,4 @@
-import { supabase, adminAuthClient } from "./supabase.js";
+import { supabase, adminAuthClient, supabaseAnon } from "./supabase.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
 const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories!inner(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*)`;
@@ -552,6 +552,50 @@ export const createAuthUser = async ({ email, password }) => {
 export const deleteAuthUser = async (uid) => {
   const { data, error } = await adminAuthClient.deleteUser(uid);
   return { data, error };
+};
+
+export const signInWithPassword = async ({ email, password }) => {
+  const { data, error } = await supabaseAnon.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  return { data, error };
+};
+
+export const getAuthUserByAccessToken = async (accessToken) => {
+  const { data, error } = await supabaseAnon.auth.getUser(accessToken);
+  return { data, error };
+};
+
+export const getClaimedBusinessByEmail = async (email) => {
+  const trimmed = typeof email === "string" ? email.trim() : "";
+  if (!trimmed) {
+    return { data: null, error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, slug, title, email, updated_at")
+    .eq("email", trimmed)
+    .eq("is_claimed", true)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const formatAuthSession = (session) => {
+  if (!session?.access_token || !session?.refresh_token) {
+    return null;
+  }
+
+  return {
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+    expires_at: session.expires_at ?? null,
+  };
 };
 
 export const getContactMessages = async (

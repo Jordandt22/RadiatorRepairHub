@@ -31,6 +31,8 @@ import {
   completeBusinessClaimRpc,
   createAuthUser,
   deleteAuthUser,
+  signInWithPassword,
+  formatAuthSession,
   resetClaimAttempts,
   incrementClaimAttempts,
 } from "../supabase/supabase.functions.js";
@@ -639,9 +641,29 @@ export const completeClaim = async (req, res) => {
 
   await invalidateBusinessCache(business);
 
+  const { data: signInData, error: signInError } = await signInWithPassword({
+    email,
+    password,
+  });
+
+  const session = formatAuthSession(signInData?.session);
+
+  if (signInError || !session) {
+    return res.status(201).json(
+      successHandler({
+        slug: business.slug,
+        session: null,
+        requiresLogin: true,
+        message:
+          "Your business was claimed, but we couldn't sign you in automatically. Please sign in to continue.",
+      })
+    );
+  }
+
   return res.status(201).json(
     successHandler({
       slug: business.slug,
+      session,
     })
   );
 };

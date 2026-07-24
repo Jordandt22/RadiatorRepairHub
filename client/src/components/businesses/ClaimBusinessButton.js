@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,12 +16,20 @@ import {
 import { ToastProvider, useToast } from "@/contexts/ToastProvider";
 import { claimBusiness } from "@/lib/api/businesses";
 
-function ClaimStatusLabel({ children, reason }) {
+function ClaimStatusLabel({ children, reason, showHowToClaim = false }) {
   return (
     <div className="mt-3 text-center">
       <p className="text-sm font-medium text-gray-500">{children}</p>
       {reason ? (
         <p className="mt-0.5 text-xs text-gray-400">{reason}</p>
+      ) : null}
+      {showHowToClaim ? (
+        <Link
+          href="/how-to-claim"
+          className="mt-1.5 inline-block text-xs text-blue-600 hover:underline"
+        >
+          Why can&apos;t I claim?
+        </Link>
       ) : null}
     </div>
   );
@@ -107,12 +116,19 @@ export default function ClaimBusinessButton({
     typeof email === "string" ? Boolean(email.trim()) : Boolean(email);
 
   if (!hasEmail) {
-    return <ClaimStatusLabel reason="No Email">Unclaimable</ClaimStatusLabel>;
+    return (
+      <ClaimStatusLabel reason="No Email" showHowToClaim>
+        Unclaimable
+      </ClaimStatusLabel>
+    );
   }
 
   if (hasDuplicateEmail) {
     return (
-      <ClaimStatusLabel reason="Multiple Businesses have this Email">
+      <ClaimStatusLabel
+        reason="Multiple Businesses have this Email"
+        showHowToClaim
+      >
         Unclaimable
       </ClaimStatusLabel>
     );

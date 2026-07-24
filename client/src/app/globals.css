@@ -188,9 +188,10 @@
   overflow: hidden;
 }
 
-/* Smooth scrolling */
+/* Smooth scrolling; keep scrollbar space so overlays don't shift layout */
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 /* Custom focus styles */
