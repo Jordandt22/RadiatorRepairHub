@@ -586,6 +586,40 @@ export const getClaimedBusinessByEmail = async (email) => {
   return { data, error };
 };
 
+export const getOwnedBusinesses = async (ownerUid) => {
+  const { data, error } = await supabase
+    .from("business_profiles")
+    .select(
+      `
+      last_edited_at,
+      business:businesses (
+        id,
+        title,
+        slug,
+        address,
+        image_url,
+        place_id,
+        cdn_stored
+      )
+    `
+    )
+    .eq("owner_uid", ownerUid)
+    .order("last_edited_at", { ascending: false, nullsFirst: false });
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  const businesses = (data ?? [])
+    .filter((row) => row?.business)
+    .map((row) => ({
+      ...row.business,
+      last_edited_at: row.last_edited_at ?? null,
+    }));
+
+  return { data: businesses, error: null };
+};
+
 export const formatAuthSession = (session) => {
   if (!session?.access_token || !session?.refresh_token) {
     return null;

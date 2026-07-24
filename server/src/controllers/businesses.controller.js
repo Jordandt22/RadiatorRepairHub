@@ -35,6 +35,7 @@ import {
   formatAuthSession,
   resetClaimAttempts,
   incrementClaimAttempts,
+  getOwnedBusinesses,
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
 import { resendClient } from "../resend/resend.js";
@@ -864,6 +865,30 @@ export const resendClaim = async (req, res) => {
       maskedEmail: maskEmail(email),
     })
   );
+};
+
+export const getOwnedBusinessesHandler = async (req, res) => {
+  const ownerUid = req.user?.id;
+  if (!ownerUid) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { data, error } = await getOwnedBusinesses(ownerUid);
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching your businesses.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(successHandler(data ?? []));
 };
 
 export const getFeaturedBusinesses = async (req, res) => {

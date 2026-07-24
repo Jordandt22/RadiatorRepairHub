@@ -9,6 +9,7 @@ import {
   cancelClaim,
   completeClaim,
   resendClaim,
+  getOwnedBusinessesHandler,
 } from "../controllers/businesses.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
@@ -26,6 +27,7 @@ import {
   bodyValidator,
 } from "../middleware/validators.js";
 import { expireStaleClaimsOnBusinessFetch } from "../middleware/claim.mw.js";
+import { authUser } from "../middleware/auth.mw.js";
 
 const businessesRouter = Router();
 
@@ -33,6 +35,13 @@ const businessesRouter = Router();
 businessesRouter.get(
   "/featured",
   serverErrorCatcherWrapper(getFeaturedBusinesses)
+);
+
+// Owner-owned businesses (must be before /:business_slug)
+businessesRouter.get(
+  "/owned",
+  authUser,
+  serverErrorCatcherWrapper(getOwnedBusinessesHandler)
 );
 
 // Get all business slugs for sitemap generation

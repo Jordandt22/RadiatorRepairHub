@@ -49,7 +49,7 @@ export default function UserAccountMenu({
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger
-        className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${triggerClassName}`}
+        className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full outline-none ${triggerClassName}`}
         aria-label="Account menu"
       >
         <Avatar size="lg" className="cursor-pointer hover:scale-90 hover:opacity-75 transition-all duration-300">

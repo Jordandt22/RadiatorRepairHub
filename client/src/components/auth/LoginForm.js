@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,17 @@ import { loginOwner } from "@/lib/api/auth";
 import { persistSession } from "@/lib/auth/session";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
+function safeRedirectPath(value) {
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) {
+    return null;
+  }
+  return value;
+}
+
 function LoginFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = safeRedirectPath(searchParams.get("redirect")) || "/dashboard";
   const { showCustomError, showCustomSuccess } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +40,7 @@ function LoginFormContent() {
         if (!mounted) return;
 
         if (data.session) {
-          router.replace("/settings");
+          router.replace(redirectTo);
           return;
         }
       } catch {
@@ -48,7 +57,7 @@ function LoginFormContent() {
     return () => {
       mounted = false;
     };
-  }, [router]);
+  }, [redirectTo, router]);
 
   const validate = () => {
     const next = {};
@@ -106,7 +115,7 @@ function LoginFormContent() {
       if (data.slug) {
         router.push(`/business/${data.slug}`);
       } else {
-        router.push("/settings");
+        router.push(redirectTo);
       }
     } catch {
       showCustomError("Unable to sign in. Please try again.");
@@ -231,7 +240,15 @@ function LoginFormContent() {
 export default function LoginForm() {
   return (
     <ToastProvider>
-      <LoginFormContent />
+      <Suspense
+        fallback={
+          <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300">
+            <p className="text-sm text-gray-500">Loading…</p>
+          </div>
+        }
+      >
+        <LoginFormContent />
+      </Suspense>
     </ToastProvider>
   );
 }
