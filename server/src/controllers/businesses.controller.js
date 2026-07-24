@@ -23,6 +23,7 @@ import {
   getBusinessBySlug,
   getBusinessSlugsForSitemap,
   getBusinessClaimInfo,
+  isBusinessEmailShared,
   insertClaimRequest,
   updateClaimRequestStatus,
   getClaimRequestWithBusiness,
@@ -94,6 +95,32 @@ export const claimBusiness = async (req, res) => {
         customErrorHandler(
           YUP_ERROR,
           "This business cannot be claimed because it has no email on file."
+        )
+      );
+  }
+
+  const { isShared, error: sharedEmailError } =
+    await isBusinessEmailShared(email);
+
+  if (sharedEmailError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error checking whether this business can be claimed.",
+          sharedEmailError
+        )
+      );
+  }
+
+  if (isShared) {
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "This business cannot be claimed because its email is shared with other listings."
         )
       );
   }
@@ -874,27 +901,51 @@ export const getBusiness = async (req, res) => {
   // Get Cache Data
   const { key, interval } = getBusinessBySlugKey(business_slug);
   const cachedData = await getCacheData(key);
-  if (cachedData) {
-    return res.status(200).json(successHandler(cachedData.data));
+  let business = cachedData?.data ?? null;
+
+  if (!business) {
+    // Get Business by Slug
+    const { data, error } = await getBusinessBySlug(business_slug);
+    if (error) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            `There was an error fetching business by Slug (${business_slug}).`,
+            error
+          )
+        );
+    }
+
+    business = data;
+    await cacheData(key, interval, business);
   }
 
-  // Get Business by Slug
-  const { data, error } = await getBusinessBySlug(business_slug);
-  if (error) {
+  // Always compute at response time so claimability stays correct if emails change
+  // while a listing is still cached.
+  const { isShared, error: sharedEmailError } = await isBusinessEmailShared(
+    business?.email
+  );
+
+  if (sharedEmailError) {
     return res
       .status(500)
       .json(
         customErrorHandler(
           SUPABASE_ERROR,
-          `There was an error fetching business by Slug (${business_slug}).`,
-          error
+          `There was an error checking claim eligibility for business (${business_slug}).`,
+          sharedEmailError
         )
       );
   }
 
-  // Cache Data
-  await cacheData(key, interval, data);
-  res.status(200).json(successHandler(data));
+  res.status(200).json(
+    successHandler({
+      ...business,
+      has_duplicate_email: isShared,
+    })
+  );
 };
 
 // ! DEPRECATED

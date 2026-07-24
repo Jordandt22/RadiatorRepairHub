@@ -395,6 +395,29 @@ export const getBusinessClaimInfo = async (business_id) => {
   return { data, error };
 };
 
+/**
+ * True when the same email appears on 2+ businesses.
+ * Shared corporate inboxes cannot be used for self-serve claim until phone
+ * verification exists.
+ */
+export const isBusinessEmailShared = async (email) => {
+  const trimmed = typeof email === "string" ? email.trim() : "";
+  if (!trimmed) {
+    return { isShared: false, error: null };
+  }
+
+  const { count, error } = await supabase
+    .from("businesses")
+    .select("id", { count: "exact", head: true })
+    .eq("email", trimmed);
+
+  if (error) {
+    return { isShared: false, error };
+  }
+
+  return { isShared: (count ?? 0) > 1, error: null };
+};
+
 export const getPendingClaimRequest = async (business_id) => {
   const { data, error } = await supabase
     .from("claim_requests")

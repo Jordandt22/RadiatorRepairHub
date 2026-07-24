@@ -15,11 +15,14 @@ import {
 import { ToastProvider, useToast } from "@/contexts/ToastProvider";
 import { claimBusiness } from "@/lib/api/businesses";
 
-function ClaimStatusLabel({ children }) {
+function ClaimStatusLabel({ children, reason }) {
   return (
-    <p className="mt-3 text-center text-sm font-medium text-gray-500">
-      {children}
-    </p>
+    <div className="mt-3 text-center">
+      <p className="text-sm font-medium text-gray-500">{children}</p>
+      {reason ? (
+        <p className="mt-0.5 text-xs text-gray-400">{reason}</p>
+      ) : null}
+    </div>
   );
 }
 
@@ -94,6 +97,7 @@ export default function ClaimBusinessButton({
   businessId,
   email,
   isClaimed = false,
+  hasDuplicateEmail = false,
 }) {
   if (isClaimed) {
     return <ClaimStatusLabel>Claimed</ClaimStatusLabel>;
@@ -103,7 +107,15 @@ export default function ClaimBusinessButton({
     typeof email === "string" ? Boolean(email.trim()) : Boolean(email);
 
   if (!hasEmail) {
-    return <ClaimStatusLabel>Unclaimable</ClaimStatusLabel>;
+    return <ClaimStatusLabel reason="No Email">Unclaimable</ClaimStatusLabel>;
+  }
+
+  if (hasDuplicateEmail) {
+    return (
+      <ClaimStatusLabel reason="Multiple Businesses have this Email">
+        Unclaimable
+      </ClaimStatusLabel>
+    );
   }
 
   return (

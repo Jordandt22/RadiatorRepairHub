@@ -601,6 +601,7 @@ async function Page({ params }) {
                       businessId={business.id}
                       email={business.email}
                       isClaimed={Boolean(business.is_claimed)}
+                      hasDuplicateEmail={Boolean(business.has_duplicate_email)}
                     />
                   </div>
                 </div>
