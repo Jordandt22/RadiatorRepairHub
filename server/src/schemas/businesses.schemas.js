@@ -89,6 +89,26 @@ export const UpdateBusinessContactSchema = Yup.object({
     }),
 });
 
+export const UpdateBusinessCategoriesSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  primaryCategoryId: Yup.string()
+    .trim()
+    .uuid("Invalid primary category ID")
+    .required("Primary category is required"),
+  secondaryCategoryIds: Yup.array()
+    .of(Yup.string().trim().uuid("Invalid secondary category ID"))
+    .max(10, "You can select up to 10 secondary categories")
+    .default([])
+    .test(
+      "unique-secondary",
+      "Secondary categories must be unique",
+      (value) => {
+        if (!value?.length) return true;
+        return new Set(value).size === value.length;
+      }
+    ),
+});
+
 export const SearchBusinessesSchema = Yup.object({
   title: Yup.string().trim().max(150),
   state_id: Yup.string().trim().max(150),

@@ -22,6 +22,7 @@ import BusinessHeroBanner from "@/components/businesses/BusinessHeroBanner";
 import ClaimBusinessButton from "@/components/businesses/ClaimBusinessButton";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import ContactInformationSection from "@/components/businesses/ContactInformationSection";
+import ServiceCategoriesSection from "@/components/businesses/ServiceCategoriesSection";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
@@ -437,51 +438,11 @@ async function Page({ params }) {
                 </div>
 
                 {/* Categories */}
-                <div className="order-5 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-2">
-                  <BusinessSectionHeader
-                    title="Service Categories"
-                    businessId={business.id}
-                  />
-                  <div className="space-y-3 md:space-y-4">
-                    <div>
-                      <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                        Primary Category
-                      </h3>
-                      {business.primary_category ? (
-                        <Link
-                          href={`/category/${business.primary_category.slug}`}
-                          className="inline-block px-3 py-1.5 md:px-4 md:py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-500 hover:text-white duration-300 font-medium transition-colors capitalize text-sm md:text-base"
-                        >
-                          {business.primary_category.name}
-                        </Link>
-                      ) : (
-                        <p className="text-sm md:text-base text-gray-600">None</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                        Secondary Categories
-                      </h3>
-                      {business.secondary_categories &&
-                        business.secondary_categories.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {business.secondary_categories.map((category) => (
-                            <Link
-                              href={`/search?secondary_categories=${category.id}`}
-                              key={category.id}
-                              className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 duration-300 hover:scale-95 capitalize"
-                            >
-                              {category.name}
-                            </Link>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-gray-600">None</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <ServiceCategoriesSection
+                  businessId={business.id}
+                  primaryCategory={business.primary_category}
+                  secondaryCategories={business.secondary_categories || []}
+                />
 
                 {/* Map Section */}
                 <div className="order-6 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-3">

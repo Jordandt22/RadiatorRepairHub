@@ -1,7 +1,7 @@
-import { supabase, adminAuthClient, supabaseAnon } from "./supabase.js";
+import { supabase, adminAuthClient, supabaseAnon, createUserSupabaseClient } from "./supabase.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
-const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories!inner(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_profiles(phone, email, website)`;
+const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_profiles(phone, email, website)`;
 
 const formatBusinessListings = (data) => {
   data.map((business) => delete business.additional_info);
@@ -51,11 +51,11 @@ const formatFullBusiness = (business) => {
   if (!business) return business;
 
   if (business?.secondary_categories) {
-    business.secondary_categories = business.secondary_categories.map(
-      (item) => ({
-        ...item.secondary_categories,
-      })
-    );
+    business.secondary_categories = business.secondary_categories
+      .map((item) => item?.secondary_categories)
+      .filter(Boolean);
+  } else {
+    business.secondary_categories = [];
   }
 
   if (business?.features) {
@@ -611,8 +611,9 @@ export const getClaimedBusinessByEmail = async (email) => {
   return { data, error };
 };
 
-export const getOwnedBusinesses = async (ownerUid) => {
-  const { data, error } = await supabase
+export const getOwnedBusinesses = async (ownerUid, accessToken) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
     .from("business_profiles")
     .select(
       `
@@ -645,8 +646,13 @@ export const getOwnedBusinesses = async (ownerUid) => {
   return { data: businesses, error: null };
 };
 
-export const getOwnedBusinessProfile = async (businessId, ownerUid) => {
-  const { data, error } = await supabase
+export const getOwnedBusinessProfile = async (
+  businessId,
+  ownerUid,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
     .from("business_profiles")
     .select("business_profile_id, business_id, owner_uid, phone, email, website")
     .eq("business_id", businessId)
@@ -659,9 +665,11 @@ export const getOwnedBusinessProfile = async (businessId, ownerUid) => {
 export const updateOwnedBusinessContact = async (
   businessId,
   ownerUid,
-  { phone, email, website }
+  { phone, email, website },
+  accessToken
 ) => {
-  const { data, error } = await supabase
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
     .from("business_profiles")
     .update({
       phone,
@@ -671,7 +679,146 @@ export const updateOwnedBusinessContact = async (
     })
     .eq("business_id", businessId)
     .eq("owner_uid", ownerUid)
-    .select("business_profile_id, business_id, phone, email, website, last_edited_at")
+    .select(
+      "business_profile_id, business_id, phone, email, website, last_edited_at"
+    )
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const updateOwnedBusinessPrimaryCategory = async (
+  businessId,
+  primaryCategoryId,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("businesses")
+    .update({
+      primary_category_id: primaryCategoryId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", businessId)
+    .select("id, primary_category_id")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const getOwnedBusinessSecondaryCategoryIds = async (
+  businessId,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("business_secondary_categories")
+    .select("secondary_category_id")
+    .eq("business_id", businessId);
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  return {
+    data: (data ?? []).map((row) => row.secondary_category_id),
+    error: null,
+  };
+};
+
+export const syncOwnedBusinessSecondaryCategories = async (
+  businessId,
+  nextIds,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const uniqueNext = [...new Set(nextIds ?? [])];
+
+  const { data: currentIds, error: currentError } =
+    await getOwnedBusinessSecondaryCategoryIds(businessId, accessToken);
+
+  if (currentError) {
+    return { data: null, error: currentError };
+  }
+
+  const currentSet = new Set(currentIds ?? []);
+  const nextSet = new Set(uniqueNext);
+
+  const toDelete = [...currentSet].filter((id) => !nextSet.has(id));
+  const toInsert = [...nextSet].filter((id) => !currentSet.has(id));
+
+  if (toDelete.length > 0) {
+    const { data: deletedRows, error: deleteError } = await client
+      .from("business_secondary_categories")
+      .delete()
+      .eq("business_id", businessId)
+      .in("secondary_category_id", toDelete)
+      .select("secondary_category_id");
+
+    if (deleteError) {
+      return { data: null, error: deleteError };
+    }
+
+    // RLS can return success with 0 rows deleted when DELETE is not allowed.
+    if ((deletedRows?.length ?? 0) !== toDelete.length) {
+      return {
+        data: null,
+        error: {
+          message:
+            "Unable to remove one or more secondary categories. Check ownership permissions.",
+        },
+      };
+    }
+  }
+
+  if (toInsert.length > 0) {
+    const { data: insertedRows, error: insertError } = await client
+      .from("business_secondary_categories")
+      .insert(
+        toInsert.map((secondary_category_id) => ({
+          business_id: businessId,
+          secondary_category_id,
+        }))
+      )
+      .select("secondary_category_id");
+
+    if (insertError) {
+      return { data: null, error: insertError };
+    }
+
+    if ((insertedRows?.length ?? 0) !== toInsert.length) {
+      return {
+        data: null,
+        error: {
+          message:
+            "Unable to add one or more secondary categories. Check ownership permissions.",
+        },
+      };
+    }
+  }
+
+  return {
+    data: {
+      secondaryCategoryIds: uniqueNext,
+      added: toInsert.length,
+      removed: toDelete.length,
+    },
+    error: null,
+  };
+};
+
+export const touchOwnedBusinessProfileEditedAt = async (
+  businessId,
+  ownerUid,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("business_profiles")
+    .update({ last_edited_at: new Date().toISOString() })
+    .eq("business_id", businessId)
+    .eq("owner_uid", ownerUid)
+    .select("business_profile_id, last_edited_at")
     .maybeSingle();
 
   return { data, error };

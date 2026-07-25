@@ -35,12 +35,14 @@ const authClientOptions = {
   },
 };
 
+/** Service-role client — bypasses RLS. Use for public reads, admin, and claim RPCs. */
 export const supabase = createClient(
   supabaseUrl,
   supabaseServiceRoleKey,
   authClientOptions,
 );
 
+/** Shared anon client (no user JWT). Used for auth.getUser(accessToken), etc. */
 export const supabaseAnon = createClient(
   supabaseUrl,
   supabaseAnonKey,
@@ -48,3 +50,22 @@ export const supabaseAnon = createClient(
 );
 
 export const adminAuthClient = supabase.auth.admin;
+
+/**
+ * Anon-key client scoped to a user's access token so RLS policies apply.
+ * Create per-request; do not reuse across users.
+ */
+export function createUserSupabaseClient(accessToken) {
+  if (!accessToken) {
+    throw new Error("Missing access token for user Supabase client.");
+  }
+
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    ...authClientOptions,
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  });
+}

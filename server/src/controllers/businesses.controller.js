@@ -38,6 +38,10 @@ import {
   getOwnedBusinesses,
   getOwnedBusinessProfile,
   updateOwnedBusinessContact,
+  updateOwnedBusinessPrimaryCategory,
+  getOwnedBusinessSecondaryCategoryIds,
+  syncOwnedBusinessSecondaryCategories,
+  touchOwnedBusinessProfileEditedAt,
   getBusinessById,
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
@@ -875,13 +879,14 @@ export const resendClaim = async (req, res) => {
 
 export const getOwnedBusinessesHandler = async (req, res) => {
   const ownerUid = req.user?.id;
-  if (!ownerUid) {
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
     return res
       .status(401)
       .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
   }
 
-  const { data, error } = await getOwnedBusinesses(ownerUid);
+  const { data, error } = await getOwnedBusinesses(ownerUid, accessToken);
   if (error) {
     return res
       .status(500)
@@ -899,7 +904,8 @@ export const getOwnedBusinessesHandler = async (req, res) => {
 
 export const updateBusinessContact = async (req, res) => {
   const ownerUid = req.user?.id;
-  if (!ownerUid) {
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
     return res
       .status(401)
       .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
@@ -914,7 +920,8 @@ export const updateBusinessContact = async (req, res) => {
 
   const { data: profile, error: profileError } = await getOwnedBusinessProfile(
     businessId,
-    ownerUid
+    ownerUid,
+    accessToken
   );
 
   if (profileError) {
@@ -1025,7 +1032,8 @@ export const updateBusinessContact = async (req, res) => {
       phone: normalizedPhone,
       email: normalizedEmail,
       website: savedWebsite,
-    }
+    },
+    accessToken
   );
 
   if (updateError || !updated) {
@@ -1051,6 +1059,149 @@ export const updateBusinessContact = async (req, res) => {
       email: updated.email,
       website: updated.website,
       last_edited_at: updated.last_edited_at,
+    })
+  );
+};
+
+export const updateBusinessCategories = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId, primaryCategoryId, secondaryCategoryIds = [] } = req.body;
+  const nextSecondaryIds = [...new Set(secondaryCategoryIds ?? [])];
+
+  const { data: profile, error: profileError } = await getOwnedBusinessProfile(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const { data: business, error: businessError } =
+    await getBusinessById(businessId);
+
+  if (businessError || !business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The selected business could not be found.",
+          businessError
+        )
+      );
+  }
+
+  const currentPrimaryId = business.primary_category_id ?? business.primary_category?.id;
+  const primaryChanged = currentPrimaryId !== primaryCategoryId;
+
+  const { data: currentSecondaryIds, error: secondaryReadError } =
+    await getOwnedBusinessSecondaryCategoryIds(businessId, accessToken);
+
+  if (secondaryReadError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error loading secondary categories.",
+          secondaryReadError
+        )
+      );
+  }
+
+  const currentSorted = [...(currentSecondaryIds ?? [])].sort().join(",");
+  const nextSorted = [...nextSecondaryIds].sort().join(",");
+  const secondaryChanged = currentSorted !== nextSorted;
+
+  if (!primaryChanged && !secondaryChanged) {
+    return res.status(200).json(
+      successHandler({
+        primaryCategoryId: currentPrimaryId,
+        secondaryCategoryIds: currentSecondaryIds ?? [],
+      })
+    );
+  }
+
+  if (primaryChanged) {
+    const { data: updatedPrimary, error: primaryError } =
+      await updateOwnedBusinessPrimaryCategory(
+        businessId,
+        primaryCategoryId,
+        accessToken
+      );
+
+    if (primaryError || !updatedPrimary) {
+      return res.status(422).json(
+        customErrorHandler(
+          YUP_ERROR,
+          {
+            primaryCategoryId:
+              primaryError?.message ||
+              "Unable to update primary category.",
+          },
+          primaryError
+        )
+      );
+    }
+  }
+
+  if (secondaryChanged) {
+    const { error: syncError } = await syncOwnedBusinessSecondaryCategories(
+      businessId,
+      nextSecondaryIds,
+      accessToken
+    );
+
+    if (syncError) {
+      return res.status(422).json(
+        customErrorHandler(
+          YUP_ERROR,
+          {
+            secondaryCategoryIds:
+              syncError?.message ||
+              "Unable to update secondary categories.",
+          },
+          syncError
+        )
+      );
+    }
+  }
+
+  await touchOwnedBusinessProfileEditedAt(businessId, ownerUid, accessToken);
+  await invalidateBusinessCache(business);
+
+  return res.status(200).json(
+    successHandler({
+      primaryCategoryId,
+      secondaryCategoryIds: nextSecondaryIds,
     })
   );
 };

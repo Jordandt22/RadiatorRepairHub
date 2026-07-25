@@ -11,6 +11,7 @@ import {
   resendClaim,
   getOwnedBusinessesHandler,
   updateBusinessContact,
+  updateBusinessCategories,
 } from "../controllers/businesses.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
@@ -21,6 +22,7 @@ import {
   CancelClaimSchema,
   CompleteClaimSchema,
   UpdateBusinessContactSchema,
+  UpdateBusinessCategoriesSchema,
 } from "../schemas/businesses.schemas.js";
 import { paginationSchema } from "../schemas/query.schemas.js";
 import {
@@ -52,6 +54,14 @@ businessesRouter.patch(
   authUser,
   bodyValidator(UpdateBusinessContactSchema),
   serverErrorCatcherWrapper(updateBusinessContact)
+);
+
+// Owner categories update (must be before /:business_slug)
+businessesRouter.patch(
+  "/categories",
+  authUser,
+  bodyValidator(UpdateBusinessCategoriesSchema),
+  serverErrorCatcherWrapper(updateBusinessCategories)
 );
 
 // Get all business slugs for sitemap generation
