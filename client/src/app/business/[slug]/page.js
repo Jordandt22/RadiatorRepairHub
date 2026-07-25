@@ -5,14 +5,6 @@ import {
   MapPin,
   Star,
   ExternalLink,
-  CalendarDays,
-  CreditCard,
-  Wrench,
-  Nfc,
-  Car,
-  Store,
-  Toilet,
-  Accessibility,
 } from "lucide-react";
 
 // Components
@@ -23,6 +15,7 @@ import ClaimBusinessButton from "@/components/businesses/ClaimBusinessButton";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import ContactInformationSection from "@/components/businesses/ContactInformationSection";
 import ServiceCategoriesSection from "@/components/businesses/ServiceCategoriesSection";
+import AmenitiesSection from "@/components/businesses/AmenitiesSection";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
@@ -118,19 +111,6 @@ export async function generateMetadata({ params }) {
   }
 }
 
-// Feature icons mapping
-const featureIcons = {
-  appointments_recommended: CalendarDays,
-  credit_cards: CreditCard,
-  debit_cards: CreditCard,
-  mechanic: Wrench,
-  nfc_mobile_payments: Nfc,
-  oil_change: Car,
-  onsite_services: Store,
-  restroom: Toilet,
-  wheelchair_accessible: Accessibility,
-};
-
 async function Page({ params }) {
   const { slug } = await params;
 
@@ -152,49 +132,6 @@ async function Page({ params }) {
     }
 
     const mapsQuery = getGoogleMapsQuery(business);
-
-    // Get available features
-    const paymentFeatures = [];
-    const accessibilityFeatures = [];
-    const otherFeatures = [];
-    Object.keys(business.features).forEach((key) => {
-      if (business.features[key] === true) {
-        switch (key) {
-          case "nfc_mobile_payments":
-          case "credit_cards":
-          case "debit_cards":
-            paymentFeatures.push({
-              icon: featureIcons[key],
-              value:
-                key === "nfc_mobile_payments"
-                  ? "NFC Mobile Payments"
-                  : key.replace(/_/g, " "),
-            });
-            break;
-
-          case "wheelchair_accessible":
-          case "restroom":
-            accessibilityFeatures.push({
-              icon: featureIcons[key],
-              value: key.replace(/_/g, " "),
-            });
-            break;
-
-          case "oil_change":
-          case "onsite_services":
-          case "mechanic":
-          case "appointments_recommended":
-            otherFeatures.push({
-              icon: featureIcons[key],
-              value: key.replace(/_/g, " "),
-            });
-            break;
-
-          default:
-            break;
-        }
-      }
-    });
 
     // Format business hours for display (using opening_hours format)
     const formatBusinessHours = (hours) => {
@@ -601,81 +538,11 @@ async function Page({ params }) {
                   </div>
                 </div>
 
-                {/* Features */}
-                {(paymentFeatures.length > 0 ||
-                  accessibilityFeatures.length > 0 ||
-                  otherFeatures.length > 0) && (
-                    <div className="order-7 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-4">
-                      <BusinessSectionHeader
-                        title="Features"
-                        businessId={business.id}
-                      />
-                      <div className="space-y-3 md:space-y-4">
-                        {paymentFeatures.length > 0 && (
-                          <div>
-                            <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                              Payment Methods
-                            </h3>
-                            <div className="flex flex-col gap-2">
-                              {paymentFeatures.map((feature, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-2 md:gap-3"
-                                >
-                                  <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                  <span className="text-gray-700 capitalize text-sm">
-                                    {feature.value}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {accessibilityFeatures.length > 0 && (
-                          <div>
-                            <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                              Accessibility
-                            </h3>
-                            <div className="flex flex-col gap-2">
-                              {accessibilityFeatures.map((feature, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-2 md:gap-3"
-                                >
-                                  <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                  <span className="text-gray-700 capitalize text-sm">
-                                    {feature.value}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {otherFeatures.length > 0 && (
-                          <div>
-                            <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                              Other
-                            </h3>
-                            <div className="flex flex-col gap-2">
-                              {otherFeatures.map((feature, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-2 md:gap-3"
-                                >
-                                  <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                  <span className="text-gray-700 capitalize text-sm">
-                                    {feature.value}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                {/* Amenities */}
+                <AmenitiesSection
+                  businessId={business.id}
+                  features={business.features || {}}
+                />
               </div>
             </div>
           </div>

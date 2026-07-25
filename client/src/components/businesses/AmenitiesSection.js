@@ -1,0 +1,237 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  CalendarDays,
+  CreditCard,
+  Wrench,
+  Nfc,
+  Car,
+  Store,
+  Toilet,
+  Accessibility,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
+import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
+import {
+  AMENITY_GROUPS,
+  amenityFlagsEqual,
+  normalizeAmenityFlags,
+} from "@/lib/data/amenityGroups";
+import { updateBusinessAmenities } from "@/lib/api/businessAmenities";
+
+const FEATURE_ICONS = {
+  appointments_recommended: CalendarDays,
+  credit_cards: CreditCard,
+  debit_cards: CreditCard,
+  mechanic: Wrench,
+  nfc_mobile_payments: Nfc,
+  oil_change: Car,
+  onsite_services: Store,
+  restroom: Toilet,
+  wheelchair_accessible: Accessibility,
+};
+
+function AmenityRow({ icon: Icon, label }) {
+  return (
+    <div className="flex items-center gap-2 md:gap-3">
+      {Icon ? (
+        <Icon className="h-4 w-4 shrink-0 text-blue-600" aria-hidden />
+      ) : null}
+      <span className="text-sm capitalize text-gray-700">{label}</span>
+    </div>
+  );
+}
+
+function AmenitiesSectionContent({ businessId, features = {} }) {
+  const router = useRouter();
+  const { showCustomSuccess } = useToast();
+  const { isOwner } = useIsBusinessOwner(businessId);
+  const initialFlags = useMemo(
+    () => normalizeAmenityFlags(features),
+    [features]
+  );
+
+  const [open, setOpen] = useState(false);
+  const [flags, setFlags] = useState(initialFlags);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setFlags(initialFlags);
+    setErrors({});
+  }, [open, initialFlags]);
+
+  const hasAnyAmenity = AMENITY_GROUPS.some((group) =>
+    group.options.some((option) => initialFlags[option.key])
+  );
+
+  if (!isOwner && !hasAnyAmenity) {
+    return null;
+  }
+
+  const hasChanges = !amenityFlagsEqual(flags, initialFlags);
+  const saveDisabled = isSubmitting || !hasChanges;
+
+  const toggleFlag = (key) => {
+    setFlags((prev) => ({ ...prev, [key]: !prev[key] }));
+    setErrors((prev) => {
+      if (!prev.form) return prev;
+      const next = { ...prev };
+      delete next.form;
+      return next;
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isSubmitting || !hasChanges) return;
+
+    setIsSubmitting(true);
+    setErrors({});
+    try {
+      const { error } = await updateBusinessAmenities({
+        businessId,
+        features: flags,
+      });
+
+      if (error) {
+        setErrors({
+          form:
+            typeof error.message === "string"
+              ? error.message
+              : "Unable to update amenities.",
+        });
+        return;
+      }
+
+      showCustomSuccess("Amenities updated.");
+      setOpen(false);
+      router.refresh();
+    } catch {
+      setErrors({ form: "Unable to update amenities." });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="order-7 rounded-xl bg-white p-4 shadow-lg md:p-6 lg:order-4">
+      <BusinessSectionHeader
+        title="Amenities"
+        businessId={businessId}
+        onEdit={() => setOpen(true)}
+      />
+
+      <div className="space-y-3 md:space-y-4">
+        {AMENITY_GROUPS.map((group) => {
+          const active = group.options.filter(
+            (option) => initialFlags[option.key]
+          );
+
+          return (
+            <div key={group.id}>
+              <h3 className="mb-2 text-base font-semibold text-gray-800 md:text-lg">
+                {group.title}
+              </h3>
+              {active.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {active.map((option) => (
+                    <AmenityRow
+                      key={option.key}
+                      icon={FEATURE_ICONS[option.key]}
+                      label={option.label}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600">None</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit amenities</DialogTitle>
+            <DialogDescription>
+              Choose payment methods, accessibility options, and other amenities
+              for this shop.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {AMENITY_GROUPS.map((group) => (
+              <fieldset key={group.id} className="space-y-2">
+                <legend className="text-sm font-medium text-gray-800">
+                  {group.title}
+                </legend>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {group.options.map((option) => (
+                    <label
+                      key={option.key}
+                      className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={Boolean(flags[option.key])}
+                        onChange={() => toggleFlag(option.key)}
+                        disabled={isSubmitting}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            ))}
+
+            {errors.form ? (
+              <p className="text-xs text-red-600">{errors.form}</p>
+            ) : null}
+
+            <DialogFooter className="gap-2 sm:gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={saveDisabled}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isSubmitting ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+export default function AmenitiesSection(props) {
+  return (
+    <ToastProvider>
+      <AmenitiesSectionContent {...props} />
+    </ToastProvider>
+  );
+}

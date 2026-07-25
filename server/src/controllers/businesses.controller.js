@@ -39,6 +39,7 @@ import {
   getOwnedBusinessProfile,
   updateOwnedBusinessContact,
   updateOwnedBusinessPrimaryCategory,
+  updateOwnedBusinessAmenities,
   getOwnedBusinessSecondaryCategoryIds,
   syncOwnedBusinessSecondaryCategories,
   touchOwnedBusinessProfileEditedAt,
@@ -1202,6 +1203,114 @@ export const updateBusinessCategories = async (req, res) => {
     successHandler({
       primaryCategoryId,
       secondaryCategoryIds: nextSecondaryIds,
+    })
+  );
+};
+
+export const updateBusinessAmenities = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId, features } = req.body;
+
+  const { data: profile, error: profileError } = await getOwnedBusinessProfile(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const { data: business, error: businessError } =
+    await getBusinessById(businessId);
+
+  if (businessError || !business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The selected business could not be found.",
+          businessError
+        )
+      );
+  }
+
+  const current = business.features || {};
+  const amenityKeys = [
+    "appointments_recommended",
+    "credit_cards",
+    "debit_cards",
+    "mechanic",
+    "nfc_mobile_payments",
+    "oil_change",
+    "onsite_services",
+    "restroom",
+    "wheelchair_accessible",
+  ];
+  const hasChanges = amenityKeys.some(
+    (key) => Boolean(current[key]) !== Boolean(features[key])
+  );
+
+  if (!hasChanges) {
+    return res.status(200).json(
+      successHandler({
+        features: Object.fromEntries(
+          amenityKeys.map((key) => [key, Boolean(current[key])])
+        ),
+      })
+    );
+  }
+
+  const { data: updated, error: updateError } =
+    await updateOwnedBusinessAmenities(businessId, features, accessToken);
+
+  if (updateError || !updated) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating amenities.",
+          updateError
+        )
+      );
+  }
+
+  await touchOwnedBusinessProfileEditedAt(businessId, ownerUid, accessToken);
+  await invalidateBusinessCache(business);
+
+  return res.status(200).json(
+    successHandler({
+      features: Object.fromEntries(
+        amenityKeys.map((key) => [key, Boolean(updated[key])])
+      ),
     })
   );
 };

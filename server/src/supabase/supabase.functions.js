@@ -706,6 +706,34 @@ export const updateOwnedBusinessPrimaryCategory = async (
   return { data, error };
 };
 
+export const updateOwnedBusinessAmenities = async (
+  businessId,
+  features,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("business_features")
+    .update({
+      appointments_recommended: Boolean(features.appointments_recommended),
+      credit_cards: Boolean(features.credit_cards),
+      debit_cards: Boolean(features.debit_cards),
+      mechanic: Boolean(features.mechanic),
+      nfc_mobile_payments: Boolean(features.nfc_mobile_payments),
+      oil_change: Boolean(features.oil_change),
+      onsite_services: Boolean(features.onsite_services),
+      restroom: Boolean(features.restroom),
+      wheelchair_accessible: Boolean(features.wheelchair_accessible),
+    })
+    .eq("business_id", businessId)
+    .select(
+      "business_id, appointments_recommended, credit_cards, debit_cards, mechanic, nfc_mobile_payments, oil_change, onsite_services, restroom, wheelchair_accessible"
+    )
+    .maybeSingle();
+
+  return { data, error };
+};
+
 export const getOwnedBusinessSecondaryCategoryIds = async (
   businessId,
   accessToken

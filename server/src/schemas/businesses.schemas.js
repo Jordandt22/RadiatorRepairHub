@@ -109,6 +109,25 @@ export const UpdateBusinessCategoriesSchema = Yup.object({
     ),
 });
 
+const amenityBoolean = Yup.boolean().required();
+
+export const UpdateBusinessAmenitiesSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  features: Yup.object({
+    appointments_recommended: amenityBoolean,
+    credit_cards: amenityBoolean,
+    debit_cards: amenityBoolean,
+    mechanic: amenityBoolean,
+    nfc_mobile_payments: amenityBoolean,
+    oil_change: amenityBoolean,
+    onsite_services: amenityBoolean,
+    restroom: amenityBoolean,
+    wheelchair_accessible: amenityBoolean,
+  })
+    .required("Amenities are required")
+    .noUnknown(true, "Unknown amenity field"),
+});
+
 export const SearchBusinessesSchema = Yup.object({
   title: Yup.string().trim().max(150),
   state_id: Yup.string().trim().max(150),
