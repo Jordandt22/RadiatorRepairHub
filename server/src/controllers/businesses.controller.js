@@ -36,6 +36,9 @@ import {
   resetClaimAttempts,
   incrementClaimAttempts,
   getOwnedBusinesses,
+  getOwnedBusinessProfile,
+  updateOwnedBusinessContact,
+  getBusinessById,
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
 import { resendClient } from "../resend/resend.js";
@@ -54,6 +57,9 @@ import {
   failClaimForMaxAttempts,
   expireStalePendingClaimsForBusiness,
 } from "../lib/claimHelpers.js";
+import { verifyEmailReputation } from "../abstract/emailReputation.js";
+import { verifyPhoneNumber } from "../abstract/phoneValidation.js";
+import { verifyWebsiteReachable } from "../lib/websiteReachability.js";
 import crypto from "crypto";
 
 const { SUPABASE_ERROR, ROUTE_NOT_FOUND, YUP_ERROR, SERVER_ERROR, ACCESS_DENIED } =
@@ -889,6 +895,164 @@ export const getOwnedBusinessesHandler = async (req, res) => {
   }
 
   return res.status(200).json(successHandler(data ?? []));
+};
+
+export const updateBusinessContact = async (req, res) => {
+  const ownerUid = req.user?.id;
+  if (!ownerUid) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId, phone, email, website } = req.body;
+  const normalizedEmail =
+    typeof email === "string" && email.trim() ? email.trim() : null;
+  const normalizedWebsite =
+    typeof website === "string" && website.trim() ? website.trim() : null;
+  const normalizedPhone = typeof phone === "string" ? phone.trim() : "";
+
+  const { data: profile, error: profileError } = await getOwnedBusinessProfile(
+    businessId,
+    ownerUid
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const existingPhone = typeof profile.phone === "string" ? profile.phone.trim() : "";
+  const existingEmail =
+    typeof profile.email === "string" && profile.email.trim()
+      ? profile.email.trim()
+      : null;
+  const existingWebsite =
+    typeof profile.website === "string" && profile.website.trim()
+      ? profile.website.trim()
+      : null;
+
+  const phoneDigits = (value) => String(value ?? "").replace(/\D/g, "");
+  const phoneChanged = phoneDigits(normalizedPhone) !== phoneDigits(existingPhone);
+  const emailChanged = (normalizedEmail || null) !== (existingEmail || null);
+  const websiteChanged = (normalizedWebsite || null) !== (existingWebsite || null);
+
+  if (phoneChanged) {
+    const phoneResult = await verifyPhoneNumber(normalizedPhone);
+    if (!phoneResult.ok) {
+      const status =
+        phoneResult.error?.type === "config" || phoneResult.error?.type === "api"
+          ? 503
+          : 422;
+      return res.status(status).json(
+        customErrorHandler(
+          YUP_ERROR,
+          {
+            phone:
+              phoneResult.error?.message ||
+              "Please enter a valid phone number.",
+          },
+          phoneResult.error
+        )
+      );
+    }
+  }
+
+  if (normalizedEmail && emailChanged) {
+    const emailResult = await verifyEmailReputation(normalizedEmail);
+    if (!emailResult.ok) {
+      const status =
+        emailResult.error?.type === "config" || emailResult.error?.type === "api"
+          ? 503
+          : 422;
+      return res.status(status).json(
+        customErrorHandler(
+          YUP_ERROR,
+          {
+            email:
+              emailResult.error?.message ||
+              "Please enter a valid email address.",
+          },
+          emailResult.error
+        )
+      );
+    }
+  }
+
+  let savedWebsite = normalizedWebsite;
+  if (normalizedWebsite && websiteChanged) {
+    const websiteResult = await verifyWebsiteReachable(normalizedWebsite);
+    if (!websiteResult.ok) {
+      return res.status(422).json(
+        customErrorHandler(
+          YUP_ERROR,
+          {
+            website:
+              websiteResult.error?.message ||
+              "This website does not appear to be reachable.",
+          },
+          websiteResult.error
+        )
+      );
+    }
+    savedWebsite = websiteResult.url || normalizedWebsite;
+  } else if (!websiteChanged && existingWebsite) {
+    savedWebsite = existingWebsite;
+  }
+
+  const { data: updated, error: updateError } = await updateOwnedBusinessContact(
+    businessId,
+    ownerUid,
+    {
+      phone: normalizedPhone,
+      email: normalizedEmail,
+      website: savedWebsite,
+    }
+  );
+
+  if (updateError || !updated) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating contact information.",
+          updateError
+        )
+      );
+  }
+
+  const { data: business } = await getBusinessById(businessId);
+  if (business) {
+    await invalidateBusinessCache(business);
+  }
+
+  return res.status(200).json(
+    successHandler({
+      phone: updated.phone,
+      email: updated.email,
+      website: updated.website,
+      last_edited_at: updated.last_edited_at,
+    })
+  );
 };
 
 export const getFeaturedBusinesses = async (req, res) => {

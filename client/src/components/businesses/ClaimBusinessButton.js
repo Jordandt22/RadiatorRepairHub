@@ -109,7 +109,12 @@ export default function ClaimBusinessButton({
   hasDuplicateEmail = false,
 }) {
   if (isClaimed) {
-    return <ClaimStatusLabel>Claimed</ClaimStatusLabel>;
+    return (
+      <div className="mt-3 flex items-center justify-center gap-1.5 bg-green-500 text-white p-2 rounded-full">
+        <BadgeCheck className="size-5 shrink-0" aria-hidden="true" />
+        <p className="text-sm font-medium">Verified Business</p>
+      </div>
+    );
   }
 
   const hasEmail =

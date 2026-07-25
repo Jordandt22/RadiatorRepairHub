@@ -1,4 +1,5 @@
 import * as Yup from "yup";
+import { normalizeWebsiteUrl } from "../lib/websiteReachability.js";
 
 // ---- Params Request ----
 
@@ -42,6 +43,50 @@ export const CompleteClaimSchema = Yup.object({
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password")], "Passwords must match")
     .required("Please confirm your password"),
+});
+
+const isValidPhone = (value) => {
+  if (!value?.trim()) return false;
+
+  const digits = value.replace(/\D/g, "");
+  const local =
+    digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+
+  return /^[2-9]\d{2}[2-9]\d{6}$/.test(local);
+};
+
+export const UpdateBusinessContactSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  phone: Yup.string()
+    .trim()
+    .required("Phone number is required")
+    .test("valid-phone", "Please enter a valid phone number", isValidPhone),
+  email: Yup.string()
+    .trim()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .notRequired()
+    .test("valid-email", "Please enter a valid email address", (value) => {
+      if (value == null || value === "") return true;
+      return Yup.string().email().isValidSync(value);
+    }),
+  website: Yup.string()
+    .trim()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return normalizeWebsiteUrl(value);
+    })
+    .nullable()
+    .notRequired()
+    .test("valid-website", "Please enter a valid website URL", (value) => {
+      if (value == null || value === "") return true;
+      try {
+        const parsed = new URL(value);
+        return ["http:", "https:"].includes(parsed.protocol);
+      } catch {
+        return false;
+      }
+    }),
 });
 
 export const SearchBusinessesSchema = Yup.object({

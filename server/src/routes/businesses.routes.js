@@ -10,6 +10,7 @@ import {
   completeClaim,
   resendClaim,
   getOwnedBusinessesHandler,
+  updateBusinessContact,
 } from "../controllers/businesses.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
@@ -19,6 +20,7 @@ import {
   ClaimRequestIdSchema,
   CancelClaimSchema,
   CompleteClaimSchema,
+  UpdateBusinessContactSchema,
 } from "../schemas/businesses.schemas.js";
 import { paginationSchema } from "../schemas/query.schemas.js";
 import {
@@ -42,6 +44,14 @@ businessesRouter.get(
   "/owned",
   authUser,
   serverErrorCatcherWrapper(getOwnedBusinessesHandler)
+);
+
+// Owner contact update (must be before /:business_slug)
+businessesRouter.patch(
+  "/contact",
+  authUser,
+  bodyValidator(UpdateBusinessContactSchema),
+  serverErrorCatcherWrapper(updateBusinessContact)
 );
 
 // Get all business slugs for sitemap generation

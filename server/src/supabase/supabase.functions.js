@@ -1,7 +1,7 @@
 import { supabase, adminAuthClient, supabaseAnon } from "./supabase.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
-const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories!inner(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*)`;
+const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories!inner(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_profiles(phone, email, website)`;
 
 const formatBusinessListings = (data) => {
   data.map((business) => delete business.additional_info);
@@ -25,7 +25,31 @@ const formatBusinessListings = (data) => {
   return data;
 };
 
+const applyBusinessProfileContact = (business) => {
+  if (!business) return business;
+
+  const raw = business.business_profiles;
+  const profile = Array.isArray(raw) ? raw[0] : raw;
+  delete business.business_profiles;
+
+  if (!profile) return business;
+
+  if (typeof profile.phone === "string" && profile.phone.trim()) {
+    business.phone = profile.phone.trim();
+  }
+  if (typeof profile.email === "string" && profile.email.trim()) {
+    business.email = profile.email.trim();
+  }
+  if (typeof profile.website === "string" && profile.website.trim()) {
+    business.website = profile.website.trim();
+  }
+
+  return business;
+};
+
 const formatFullBusiness = (business) => {
+  if (!business) return business;
+
   if (business?.secondary_categories) {
     business.secondary_categories = business.secondary_categories.map(
       (item) => ({
@@ -51,6 +75,7 @@ const formatFullBusiness = (business) => {
   }
 
   business.is_claimed = Boolean(business?.is_claimed);
+  applyBusinessProfileContact(business);
 
   return business;
 };
@@ -618,6 +643,38 @@ export const getOwnedBusinesses = async (ownerUid) => {
     }));
 
   return { data: businesses, error: null };
+};
+
+export const getOwnedBusinessProfile = async (businessId, ownerUid) => {
+  const { data, error } = await supabase
+    .from("business_profiles")
+    .select("business_profile_id, business_id, owner_uid, phone, email, website")
+    .eq("business_id", businessId)
+    .eq("owner_uid", ownerUid)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const updateOwnedBusinessContact = async (
+  businessId,
+  ownerUid,
+  { phone, email, website }
+) => {
+  const { data, error } = await supabase
+    .from("business_profiles")
+    .update({
+      phone,
+      email,
+      website,
+      last_edited_at: new Date().toISOString(),
+    })
+    .eq("business_id", businessId)
+    .eq("owner_uid", ownerUid)
+    .select("business_profile_id, business_id, phone, email, website, last_edited_at")
+    .maybeSingle();
+
+  return { data, error };
 };
 
 export const formatAuthSession = (session) => {
