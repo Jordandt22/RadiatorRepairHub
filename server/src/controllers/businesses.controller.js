@@ -24,6 +24,7 @@ import {
   getBusinessSlugsForSitemap,
   getBusinessClaimInfo,
   isBusinessEmailShared,
+  getBusinessProfileLastEditedAt,
   insertClaimRequest,
   updateClaimRequestStatus,
   getClaimRequestWithBusiness,
@@ -41,12 +42,21 @@ import {
   updateOwnedBusinessPrimaryCategory,
   updateOwnedBusinessAmenities,
   updateOwnedBusinessAbout,
+  updateOwnedBusinessHours,
+  updateOwnedBusinessHoursConfirmation,
   getOwnedBusinessSecondaryCategoryIds,
   syncOwnedBusinessSecondaryCategories,
   touchOwnedBusinessProfileEditedAt,
   getBusinessById,
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
+import {
+  buildOpeningHoursConfirmation,
+  daysEqual,
+  normalizeDayHours,
+  normalizeIncomingHours,
+  WEEKDAYS,
+} from "../lib/businessHoursFormat.js";
 import { resendClient } from "../resend/resend.js";
 import {
   CLAIM_VERIFICATION_MESSAGE,
@@ -1421,6 +1431,134 @@ export const updateBusinessAbout = async (req, res) => {
   );
 };
 
+export const updateBusinessHours = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId, days } = req.body;
+
+  const { data: profile, error: profileError } = await getOwnedBusinessProfile(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const { data: business, error: businessError } =
+    await getBusinessById(businessId);
+
+  if (businessError || !business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The selected business could not be found.",
+          businessError
+        )
+      );
+  }
+
+  const normalizedDays = WEEKDAYS.map((dayOfWeek) => {
+    const match = (days || []).find((day) => day.day_of_week === dayOfWeek);
+    return normalizeDayHours({
+      day_of_week: dayOfWeek,
+      is_closed: Boolean(match?.is_closed),
+      hours: match?.is_closed ? [] : match?.hours || [],
+    });
+  });
+
+  const currentDays = normalizeIncomingHours(business.hours || []).map(
+    (day) => normalizeDayHours(day)
+  );
+
+  if (daysEqual(normalizedDays, currentDays)) {
+    return res.status(200).json(
+      successHandler({
+        days: currentDays,
+        opening_hours_confirmation: business.opening_hours_confirmation,
+      })
+    );
+  }
+
+  const { data: updatedDays, error: hoursError } =
+    await updateOwnedBusinessHours(businessId, normalizedDays, accessToken);
+
+  if (hoursError || !updatedDays) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating business hours.",
+          hoursError
+        )
+      );
+  }
+
+  const confirmation = buildOpeningHoursConfirmation();
+  const { data: confirmationRow, error: confirmationError } =
+    await updateOwnedBusinessHoursConfirmation(
+      businessId,
+      confirmation,
+      accessToken
+    );
+
+  if (confirmationError || !confirmationRow) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating hours confirmation.",
+          confirmationError
+        )
+      );
+  }
+
+  await touchOwnedBusinessProfileEditedAt(businessId, ownerUid, accessToken);
+  await invalidateBusinessCache(business);
+
+  return res.status(200).json(
+    successHandler({
+      days: updatedDays.map((day) => ({
+        day_of_week: day.day_of_week,
+        is_closed: day.is_closed,
+        hours: day.hours,
+        hours_text: day.hours_text,
+      })),
+      opening_hours_confirmation: confirmationRow.opening_hours_confirmation,
+    })
+  );
+};
+
 export const getFeaturedBusinesses = async (req, res) => {
   // Get Data from Cache
   const { key, interval } = getFeaturedBusinessesKey();
@@ -1517,9 +1655,21 @@ export const getBusiness = async (req, res) => {
       );
   }
 
+  // Always refresh last_edited_at for claimed listings so stale Redis payloads
+  // still show the profile edit date under the verified badge.
+  let lastEditedAt = business?.last_edited_at ?? null;
+  if (business?.is_claimed && business?.id) {
+    const { data: profileEditedAt, error: profileEditedError } =
+      await getBusinessProfileLastEditedAt(business.id);
+    if (!profileEditedError) {
+      lastEditedAt = profileEditedAt;
+    }
+  }
+
   res.status(200).json(
     successHandler({
       ...business,
+      last_edited_at: lastEditedAt,
       has_duplicate_email: isShared,
     })
   );

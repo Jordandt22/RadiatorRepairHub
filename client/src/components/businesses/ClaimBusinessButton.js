@@ -107,12 +107,33 @@ export default function ClaimBusinessButton({
   email,
   isClaimed = false,
   hasDuplicateEmail = false,
+  lastEditedAt = null,
 }) {
   if (isClaimed) {
+    let editedDate = null;
+    if (lastEditedAt) {
+      try {
+        editedDate = new Intl.DateTimeFormat("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }).format(new Date(lastEditedAt));
+      } catch {
+        editedDate = null;
+      }
+    }
+
     return (
-      <div className="mt-3 flex items-center justify-center gap-1.5 bg-green-500 text-white p-2 rounded-full">
-        <BadgeCheck className="size-5 shrink-0" aria-hidden="true" />
-        <p className="text-sm font-medium">Verified Business</p>
+      <div className="mt-3 flex flex-col items-center gap-1.5">
+        <div className="flex w-full items-center justify-center gap-1.5 rounded-full bg-green-500 p-2 text-white">
+          <BadgeCheck className="size-5 shrink-0" aria-hidden="true" />
+          <p className="text-sm font-medium">Verified Business</p>
+        </div>
+        {editedDate ? (
+          <p className="mt-2 text-center text-xs font-medium text-gray-600">
+            Last Updated {editedDate}
+          </p>
+        ) : null}
       </div>
     );
   }

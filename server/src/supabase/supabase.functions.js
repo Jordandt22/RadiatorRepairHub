@@ -1,7 +1,7 @@
 import { supabase, adminAuthClient, supabaseAnon, createUserSupabaseClient } from "./supabase.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
-const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_profiles(phone, email, website, description)`;
+const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_profiles(phone, email, website, description, last_edited_at)`;
 
 const formatBusinessListings = (data) => {
   data.map((business) => delete business.additional_info);
@@ -33,7 +33,10 @@ const applyBusinessProfileOverrides = (business) => {
   const profile = Array.isArray(raw) ? raw[0] : raw;
   delete business.business_profiles;
 
-  if (!profile) return business;
+  if (!profile) {
+    business.last_edited_at = business.last_edited_at ?? null;
+    return business;
+  }
 
   if (typeof profile.phone === "string" && profile.phone.trim()) {
     business.phone = profile.phone.trim();
@@ -47,6 +50,7 @@ const applyBusinessProfileOverrides = (business) => {
   if (typeof profile.description === "string" && profile.description.trim()) {
     business.description = profile.description.trim();
   }
+  business.last_edited_at = profile.last_edited_at ?? null;
 
   return business;
 };
@@ -122,6 +126,20 @@ export const getBusinessBySlug = async (business_slug) => {
     .single();
 
   return { data: formatFullBusiness(data), error };
+};
+
+export const getBusinessProfileLastEditedAt = async (business_id) => {
+  const { data, error } = await supabase
+    .from("business_profiles")
+    .select("last_edited_at")
+    .eq("business_id", business_id)
+    .maybeSingle();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  return { data: data?.last_edited_at ?? null, error: null };
 };
 
 export const getBusinessSlugsForSitemap = async () => {
@@ -759,6 +777,65 @@ export const updateOwnedBusinessAbout = async (
   return { data, error };
 };
 
+export const updateOwnedBusinessHours = async (
+  businessId,
+  days,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const updatedDays = [];
+
+  for (const day of days) {
+    const { data, error } = await client
+      .from("business_hours")
+      .update({
+        is_closed: day.is_closed,
+        hours: day.hours,
+        hours_text: day.hours_text,
+      })
+      .eq("business_id", businessId)
+      .eq("day_of_week", day.day_of_week)
+      .select("id, business_id, day_of_week, is_closed, hours, hours_text")
+      .maybeSingle();
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    if (!data) {
+      return {
+        data: null,
+        error: {
+          message: `Hours row for ${day.day_of_week} was not found.`,
+        },
+      };
+    }
+
+    updatedDays.push(data);
+  }
+
+  return { data: updatedDays, error: null };
+};
+
+export const updateOwnedBusinessHoursConfirmation = async (
+  businessId,
+  confirmation,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("businesses")
+    .update({
+      opening_hours_confirmation: confirmation,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", businessId)
+    .select("id, opening_hours_confirmation")
+    .maybeSingle();
+
+  return { data, error };
+};
+
 export const getOwnedBusinessSecondaryCategoryIds = async (
   businessId,
   accessToken
@@ -960,7 +1037,7 @@ export const getContactMessagesByIds = async (ids) => {
   const { data, error } = await supabase
     .from("contact_messages")
     .select(
-      "*, business:businesses(id, email, title, slug, address, city_id, postal_code_id)"
+      "*, business:businesses(id, email, title, slug, address, city_id, postal_code_id, is_claimed)"
     )
     .in("contact_message_id", ids);
 

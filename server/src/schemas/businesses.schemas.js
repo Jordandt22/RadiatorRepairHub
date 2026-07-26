@@ -137,6 +137,77 @@ export const UpdateBusinessAboutSchema = Yup.object({
     .max(750, "About text must be 750 characters or fewer."),
 });
 
+const TIME_RE = /^([01]\d|2[0-3]):(00|15|30|45)$/;
+const WEEKDAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+
+const parseMinutes = (timeStr) => {
+  const [hours, minutes] = String(timeStr).split(":");
+  return Number(hours) * 60 + Number(minutes || 0);
+};
+
+const HoursPeriodSchema = Yup.object({
+  open: Yup.string()
+    .matches(TIME_RE, "Open time must be in 15-minute increments.")
+    .required("Open time is required."),
+  close: Yup.string()
+    .matches(TIME_RE, "Close time must be in 15-minute increments.")
+    .required("Close time is required."),
+}).test(
+  "close-after-open",
+  "Close time must be after open time.",
+  (period) => {
+    if (!period?.open || !period?.close) return true;
+    return parseMinutes(period.close) > parseMinutes(period.open);
+  }
+);
+
+const HoursDaySchema = Yup.object({
+  day_of_week: Yup.string()
+    .oneOf(WEEKDAYS, "Invalid day of week.")
+    .required("Day of week is required."),
+  is_closed: Yup.boolean().required(),
+  hours: Yup.array()
+    .of(HoursPeriodSchema)
+    .max(2, "You can set up to 2 time periods per day.")
+    .default([]),
+}).test(
+  "closed-or-hours",
+  "Open days need at least one valid time period.",
+  (day) => {
+    if (!day) return false;
+    if (day.is_closed) return !day.hours?.length;
+    return Array.isArray(day.hours) && day.hours.length >= 1;
+  }
+);
+
+export const UpdateBusinessHoursSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  days: Yup.array()
+    .of(HoursDaySchema)
+    .length(7, "Hours must include all 7 days of the week.")
+    .required("Hours are required.")
+    .test(
+      "unique-days",
+      "Each day of the week must appear exactly once.",
+      (days) => {
+        if (!days?.length) return false;
+        const names = days.map((day) => day.day_of_week);
+        return (
+          names.length === WEEKDAYS.length &&
+          WEEKDAYS.every((day) => names.includes(day))
+        );
+      }
+    ),
+});
+
 export const SearchBusinessesSchema = Yup.object({
   title: Yup.string().trim().max(150),
   state_id: Yup.string().trim().max(150),

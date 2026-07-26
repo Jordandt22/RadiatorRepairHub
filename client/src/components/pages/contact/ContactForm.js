@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import emailjs from "@emailjs/browser";
 import { Send } from "lucide-react";
 
 // Contexts
 import { useToast } from "@/contexts/ToastProvider";
+import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 
 const ContactForm = ({
   prefilledSubject = "",
@@ -19,6 +20,7 @@ const ContactForm = ({
   className = "",
 }) => {
   const { showCustomSuccess, showCustomError } = useToast();
+  const { user } = useIsSignedIn();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -28,6 +30,18 @@ const ContactForm = ({
     message: "",
   });
   const [errors, setErrors] = useState({});
+
+  const authEmail =
+    typeof user?.email === "string" && user.email.trim()
+      ? user.email.trim()
+      : "";
+
+  useEffect(() => {
+    if (!authEmail) return;
+    setFormData((prev) =>
+      prev.email.trim() ? prev : { ...prev, email: authEmail },
+    );
+  }, [authEmail]);
 
   const subjectOptions = [
     "General Inquiry",
@@ -162,7 +176,7 @@ const ContactForm = ({
       // Success - clear form and show success message
       setFormData({
         name: "",
-        email: "",
+        email: authEmail,
         phone: "",
         subject: "",
         message: "",

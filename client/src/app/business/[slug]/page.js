@@ -16,6 +16,7 @@ import ContactInformationSection from "@/components/businesses/ContactInformatio
 import ServiceCategoriesSection from "@/components/businesses/ServiceCategoriesSection";
 import AmenitiesSection from "@/components/businesses/AmenitiesSection";
 import AboutSection from "@/components/businesses/AboutSection";
+import BusinessHoursSection from "@/components/businesses/BusinessHoursSection";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
@@ -132,48 +133,6 @@ async function Page({ params }) {
     }
 
     const mapsQuery = getGoogleMapsQuery(business);
-
-    // Format business hours for display (using opening_hours format)
-    const formatBusinessHours = (hours) => {
-      if (!hours || !Array.isArray(hours)) {
-        return <p className="text-sm text-gray-600">Hours not available</p>;
-      }
-
-      return (
-        <div className="space-y-2">
-          {hours.map((day, index) => (
-            <div key={index} className="flex justify-between text-sm">
-              <span className="font-medium text-gray-700">{day.day_of_week}</span>
-              <div className="text-gray-600 text-right">
-                {day.is_closed ? (
-                  <span>Closed</span>
-                ) : (
-                  <div className="space-y-1">
-                    <>
-                      {
-                        day?.hours_text ? (
-                          <>
-                            {day?.hours_text?.split(",").map((timePeriod, timeIndex) => (
-                              <div key={timeIndex} className="text-sm">
-                                {timePeriod.trim()}
-                              </div>
-                            ))}
-                          </>
-                        ) : (
-                          <div key={business.id + " " + day.day_of_week} className="text-sm">
-                            Not Available
-                          </div>
-                        )
-                      }
-                    </>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    };
 
     // Generate structured data for LocalBusiness
     const structuredData = {
@@ -486,6 +445,7 @@ async function Page({ params }) {
                       email={business.email}
                       isClaimed={Boolean(business.is_claimed)}
                       hasDuplicateEmail={Boolean(business.has_duplicate_email)}
+                      lastEditedAt={business.last_edited_at}
                     />
                   </div>
                 </div>
@@ -500,26 +460,11 @@ async function Page({ params }) {
                 />
 
                 {/* Business Hours */}
-                <div className="order-4 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-3">
-                  <BusinessSectionHeader
-                    title="Business Hours"
-                    businessId={business.id}
-                    trailing={
-                      <OpenStatus
-                        hours={business.hours}
-                        timezone={business.timezone}
-                      />
-                    }
-                  />
-                  {business.hours ? (
-                    formatBusinessHours(business.hours)
-                  ) : (
-                    <p className="text-gray-600">No Business Hours Available</p>
-                  )}
-                  <div className="text-sm mt-4 text-center text-blue-600 font-medium">
-                    {business.opening_hours_confirmation}
-                  </div>
-                </div>
+                <BusinessHoursSection
+                  businessId={business.id}
+                  hours={business.hours || []}
+                  timezone={business.timezone}
+                />
 
                 {/* Amenities */}
                 <AmenitiesSection

@@ -372,6 +372,8 @@ export const sendContactMessages = async (req, res) => {
       issue: message.issue,
       urgency: message.urgency,
       additionalDetails: message.additional_details,
+      isClaimed: message.business?.is_claimed,
+      businessSlug: message.business?.slug,
     }),
   }));
 

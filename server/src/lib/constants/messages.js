@@ -78,12 +78,33 @@ export const CLAIM_VERIFICATION_MESSAGE = Object.freeze({
   `,
 });
 
+const buildFreeLeadClaimStatusHtml = (isClaimed, businessSlug) => {
+  if (isClaimed) {
+    return `<p>Thanks for being a verified business on RadiatorRepairHub, we appreciate you!</p>`;
+  }
+
+  const businessPageUrl = buildBusinessClaimLink(businessSlug);
+  const howToClaimUrl = `${getWebBaseUrl()}/how-to-claim`;
+
+  return `<p>Want to get more leads like this? Claim your business page here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a>. Not sure how? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>`;
+};
+
 // Free lead inquiry forwarded to business
 export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
   subject: "New Customer Inquiry from RadiatorRepairHub",
   html: (
     businessName,
-    { name, phone, email, vehicle, issue, urgency, additionalDetails },
+    {
+      name,
+      phone,
+      email,
+      vehicle,
+      issue,
+      urgency,
+      additionalDetails,
+      isClaimed,
+      businessSlug,
+    },
   ) => `
   <p>Hi ${businessName ?? "There"},</p>
 
@@ -123,6 +144,8 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
   <p>We're passing this along for free, no strings attached.</p>
 
   <p>Feel free to reach out to this person directly using the info above.</p>
+
+  ${buildFreeLeadClaimStatusHtml(Boolean(isClaimed), businessSlug)}
 
   <p>If you have any questions, please feel free to reply to this email or contact us anytime.</p>
 

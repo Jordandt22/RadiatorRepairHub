@@ -26,6 +26,7 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { usePostHog } from "posthog-js/react";
 import {
   ISSUE_LABEL_TO_ENUM,
@@ -90,12 +91,23 @@ function QuickContactDialogContent({
   children,
 }) {
   const { showCustomSuccess, showCustomError } = useToast();
+  const { user } = useIsSignedIn();
   const posthog = usePostHog();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const suppressCancelRef = useRef(false);
+
+  const authEmail =
+    typeof user?.email === "string" && user.email.trim()
+      ? user.email.trim()
+      : "";
+
+  useEffect(() => {
+    if (!authEmail) return;
+    setForm((prev) => (prev.email.trim() ? prev : { ...prev, email: authEmail }));
+  }, [authEmail]);
 
   const capture = (event, props = {}) => {
     posthog?.capture(event, {
@@ -149,7 +161,7 @@ function QuickContactDialogContent({
   };
 
   const resetForm = () => {
-    setForm(INITIAL_FORM);
+    setForm({ ...INITIAL_FORM, email: authEmail });
     setErrors({});
   };
 

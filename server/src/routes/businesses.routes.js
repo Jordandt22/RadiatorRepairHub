@@ -14,6 +14,7 @@ import {
   updateBusinessCategories,
   updateBusinessAmenities,
   updateBusinessAbout,
+  updateBusinessHours,
 } from "../controllers/businesses.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
@@ -27,6 +28,7 @@ import {
   UpdateBusinessCategoriesSchema,
   UpdateBusinessAmenitiesSchema,
   UpdateBusinessAboutSchema,
+  UpdateBusinessHoursSchema,
 } from "../schemas/businesses.schemas.js";
 import { paginationSchema } from "../schemas/query.schemas.js";
 import {
@@ -82,6 +84,14 @@ businessesRouter.patch(
   authUser,
   bodyValidator(UpdateBusinessAboutSchema),
   serverErrorCatcherWrapper(updateBusinessAbout)
+);
+
+// Owner hours update (must be before /:business_slug)
+businessesRouter.patch(
+  "/hours",
+  authUser,
+  bodyValidator(UpdateBusinessHoursSchema),
+  serverErrorCatcherWrapper(updateBusinessHours)
 );
 
 // Get all business slugs for sitemap generation
