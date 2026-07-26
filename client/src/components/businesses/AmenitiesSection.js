@@ -167,7 +167,7 @@ function AmenitiesSectionContent({ businessId, features = {} }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Edit amenities</DialogTitle>
+            <DialogTitle>Edit Amenities</DialogTitle>
             <DialogDescription>
               Choose payment methods, accessibility options, and other amenities
               for this shop.

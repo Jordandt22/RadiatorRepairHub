@@ -13,6 +13,7 @@ import {
   updateBusinessContact,
   updateBusinessCategories,
   updateBusinessAmenities,
+  updateBusinessAbout,
 } from "../controllers/businesses.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
@@ -25,6 +26,7 @@ import {
   UpdateBusinessContactSchema,
   UpdateBusinessCategoriesSchema,
   UpdateBusinessAmenitiesSchema,
+  UpdateBusinessAboutSchema,
 } from "../schemas/businesses.schemas.js";
 import { paginationSchema } from "../schemas/query.schemas.js";
 import {
@@ -72,6 +74,14 @@ businessesRouter.patch(
   authUser,
   bodyValidator(UpdateBusinessAmenitiesSchema),
   serverErrorCatcherWrapper(updateBusinessAmenities)
+);
+
+// Owner about update (must be before /:business_slug)
+businessesRouter.patch(
+  "/about",
+  authUser,
+  bodyValidator(UpdateBusinessAboutSchema),
+  serverErrorCatcherWrapper(updateBusinessAbout)
 );
 
 // Get all business slugs for sitemap generation

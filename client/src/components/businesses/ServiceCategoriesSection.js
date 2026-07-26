@@ -301,7 +301,7 @@ function ServiceCategoriesSectionContent({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Edit service categories</DialogTitle>
+            <DialogTitle>Edit Service Categories</DialogTitle>
             <DialogDescription>
               Choose one primary category and up to {MAX_SECONDARY} secondary
               categories.

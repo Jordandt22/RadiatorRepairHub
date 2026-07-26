@@ -195,7 +195,7 @@ function ContactInformationSectionContent({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit contact information</DialogTitle>
+            <DialogTitle>Edit Contact Information</DialogTitle>
             <DialogDescription>
               Update the phone, email, and website shown on your listing.
             </DialogDescription>

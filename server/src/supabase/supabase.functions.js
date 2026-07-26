@@ -1,7 +1,7 @@
 import { supabase, adminAuthClient, supabaseAnon, createUserSupabaseClient } from "./supabase.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
-const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_profiles(phone, email, website)`;
+const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_profiles(phone, email, website, description)`;
 
 const formatBusinessListings = (data) => {
   data.map((business) => delete business.additional_info);
@@ -10,6 +10,7 @@ const formatBusinessListings = (data) => {
     business.features = { ...business.features[0] };
     delete business.features.id;
     delete business.features.business_id;
+    business.is_claimed = Boolean(business?.is_claimed);
 
     if (business?.secondary_categories) {
       business.secondary_categories = business.secondary_categories.map(
@@ -25,7 +26,7 @@ const formatBusinessListings = (data) => {
   return data;
 };
 
-const applyBusinessProfileContact = (business) => {
+const applyBusinessProfileOverrides = (business) => {
   if (!business) return business;
 
   const raw = business.business_profiles;
@@ -42,6 +43,9 @@ const applyBusinessProfileContact = (business) => {
   }
   if (typeof profile.website === "string" && profile.website.trim()) {
     business.website = profile.website.trim();
+  }
+  if (typeof profile.description === "string" && profile.description.trim()) {
+    business.description = profile.description.trim();
   }
 
   return business;
@@ -75,7 +79,7 @@ const formatFullBusiness = (business) => {
   }
 
   business.is_claimed = Boolean(business?.is_claimed);
-  applyBusinessProfileContact(business);
+  applyBusinessProfileOverrides(business);
 
   return business;
 };
@@ -729,6 +733,27 @@ export const updateOwnedBusinessAmenities = async (
     .select(
       "business_id, appointments_recommended, credit_cards, debit_cards, mechanic, nfc_mobile_payments, oil_change, onsite_services, restroom, wheelchair_accessible"
     )
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const updateOwnedBusinessAbout = async (
+  businessId,
+  ownerUid,
+  description,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("business_profiles")
+    .update({
+      description,
+      last_edited_at: new Date().toISOString(),
+    })
+    .eq("business_id", businessId)
+    .eq("owner_uid", ownerUid)
+    .select("business_profile_id, business_id, description, last_edited_at")
     .maybeSingle();
 
   return { data, error };

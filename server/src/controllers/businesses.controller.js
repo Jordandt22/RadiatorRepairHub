@@ -40,6 +40,7 @@ import {
   updateOwnedBusinessContact,
   updateOwnedBusinessPrimaryCategory,
   updateOwnedBusinessAmenities,
+  updateOwnedBusinessAbout,
   getOwnedBusinessSecondaryCategoryIds,
   syncOwnedBusinessSecondaryCategories,
   touchOwnedBusinessProfileEditedAt,
@@ -1311,6 +1312,111 @@ export const updateBusinessAmenities = async (req, res) => {
       features: Object.fromEntries(
         amenityKeys.map((key) => [key, Boolean(updated[key])])
       ),
+    })
+  );
+};
+
+export const updateBusinessAbout = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId } = req.body;
+  const description = String(req.body.description ?? "").trim();
+
+  if (!description) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        description: "About text is required.",
+      })
+    );
+  }
+
+  if (description.length > 750) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        description: "About text must be 750 characters or fewer.",
+      })
+    );
+  }
+
+  const { data: profile, error: profileError } = await getOwnedBusinessProfile(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const { data: business, error: businessError } =
+    await getBusinessById(businessId);
+
+  if (businessError || !business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The selected business could not be found.",
+          businessError
+        )
+      );
+  }
+
+  const currentDescription = String(business.description ?? "").trim();
+  if (currentDescription === description) {
+    return res.status(200).json(successHandler({ description }));
+  }
+
+  const { data: updated, error: updateError } = await updateOwnedBusinessAbout(
+    businessId,
+    ownerUid,
+    description,
+    accessToken
+  );
+
+  if (updateError || !updated) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating the about section.",
+          updateError
+        )
+      );
+  }
+
+  await invalidateBusinessCache(business);
+
+  return res.status(200).json(
+    successHandler({
+      description: updated.description,
     })
   );
 };

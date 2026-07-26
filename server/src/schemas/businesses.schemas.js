@@ -128,6 +128,15 @@ export const UpdateBusinessAmenitiesSchema = Yup.object({
     .noUnknown(true, "Unknown amenity field"),
 });
 
+export const UpdateBusinessAboutSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  description: Yup.string()
+    .transform((value) => (typeof value === "string" ? value.trim() : value))
+    .required("About text is required.")
+    .min(1, "About text is required.")
+    .max(750, "About text must be 750 characters or fewer."),
+});
+
 export const SearchBusinessesSchema = Yup.object({
   title: Yup.string().trim().max(150),
   state_id: Yup.string().trim().max(150),

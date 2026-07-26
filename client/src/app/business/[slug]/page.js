@@ -9,13 +9,13 @@ import {
 
 // Components
 import OpenStatus from "@/components/businesses/status/OpenStatus";
-import BusinessImage from "@/components/businesses/BusinessImage";
 import BusinessHeroBanner from "@/components/businesses/BusinessHeroBanner";
 import ClaimBusinessButton from "@/components/businesses/ClaimBusinessButton";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import ContactInformationSection from "@/components/businesses/ContactInformationSection";
 import ServiceCategoriesSection from "@/components/businesses/ServiceCategoriesSection";
 import AmenitiesSection from "@/components/businesses/AmenitiesSection";
+import AboutSection from "@/components/businesses/AboutSection";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
@@ -345,34 +345,17 @@ async function Page({ params }) {
               {/* Main Content — contents on mobile so cards can interleave with sidebar via order */}
               <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-8">
                 {/* Description */}
-                <div className="order-1 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-1">
-                  <BusinessSectionHeader
-                    title="About Our Business"
-                    businessId={business.id}
-                  />
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                    <div className="md:col-span-2 space-y-4">
-                      <p className="text-sm md:text-base text-gray-600 leading-relaxed">
-                        {business.description}
-                      </p>
-                    </div>
-
-                    <div className="relative w-full h-48 md:h-64 bg-gray-200 rounded-lg overflow-hidden">
-                      <BusinessImage
-                        src={business.image_url}
-                        placeId={business.place_id}
-                        cdnStored={Boolean(business.cdn_stored)}
-                        alt={`${business.title} - ${business.keywords && business.keywords.length > 0
-                          ? business.keywords[0]
-                          : "radiator repair services"
-                          } in ${business.city.name}, ${business.state.name}`}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover object-center"
-                        iconSize="sm"
-                      />
-                    </div>
-                  </div>
-                </div>
+                <AboutSection
+                  businessId={business.id}
+                  description={business.description || ""}
+                  imageUrl={business.image_url}
+                  placeId={business.place_id}
+                  cdnStored={Boolean(business.cdn_stored)}
+                  imageAlt={`${business.title} - ${business.keywords && business.keywords.length > 0
+                    ? business.keywords[0]
+                    : "radiator repair services"
+                    } in ${business.city.name}, ${business.state.name}`}
+                />
 
                 {/* Categories */}
                 <ServiceCategoriesSection
