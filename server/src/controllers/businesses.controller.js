@@ -24,7 +24,7 @@ import {
   getBusinessSlugsForSitemap,
   getBusinessClaimInfo,
   isBusinessEmailShared,
-  getBusinessProfileLastEditedAt,
+  getBusinessLastEditedAt,
   insertClaimRequest,
   updateClaimRequestStatus,
   getClaimRequestWithBusiness,
@@ -37,7 +37,7 @@ import {
   resetClaimAttempts,
   incrementClaimAttempts,
   getOwnedBusinesses,
-  getOwnedBusinessProfile,
+  getOwnedBusiness,
   updateOwnedBusinessContact,
   updateOwnedBusinessPrimaryCategory,
   updateOwnedBusinessAmenities,
@@ -46,7 +46,7 @@ import {
   updateOwnedBusinessHoursConfirmation,
   getOwnedBusinessSecondaryCategoryIds,
   syncOwnedBusinessSecondaryCategories,
-  touchOwnedBusinessProfileEditedAt,
+  touchOwnedBusinessEditedAt,
   getBusinessById,
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
@@ -952,7 +952,7 @@ export const updateBusinessContact = async (req, res) => {
     typeof website === "string" && website.trim() ? website.trim() : null;
   const normalizedPhone = typeof phone === "string" ? phone.trim() : "";
 
-  const { data: profile, error: profileError } = await getOwnedBusinessProfile(
+  const { data: profile, error: profileError } = await getOwnedBusiness(
     businessId,
     ownerUid,
     accessToken
@@ -1109,7 +1109,7 @@ export const updateBusinessCategories = async (req, res) => {
   const { businessId, primaryCategoryId, secondaryCategoryIds = [] } = req.body;
   const nextSecondaryIds = [...new Set(secondaryCategoryIds ?? [])];
 
-  const { data: profile, error: profileError } = await getOwnedBusinessProfile(
+  const { data: profile, error: profileError } = await getOwnedBusiness(
     businessId,
     ownerUid,
     accessToken
@@ -1229,7 +1229,7 @@ export const updateBusinessCategories = async (req, res) => {
     }
   }
 
-  await touchOwnedBusinessProfileEditedAt(businessId, ownerUid, accessToken);
+  await touchOwnedBusinessEditedAt(businessId, ownerUid, accessToken);
   await invalidateBusinessCache(business);
 
   return res.status(200).json(
@@ -1251,7 +1251,7 @@ export const updateBusinessAmenities = async (req, res) => {
 
   const { businessId, features } = req.body;
 
-  const { data: profile, error: profileError } = await getOwnedBusinessProfile(
+  const { data: profile, error: profileError } = await getOwnedBusiness(
     businessId,
     ownerUid,
     accessToken
@@ -1336,7 +1336,7 @@ export const updateBusinessAmenities = async (req, res) => {
       );
   }
 
-  await touchOwnedBusinessProfileEditedAt(businessId, ownerUid, accessToken);
+  await touchOwnedBusinessEditedAt(businessId, ownerUid, accessToken);
   await invalidateBusinessCache(business);
 
   return res.status(200).json(
@@ -1376,7 +1376,7 @@ export const updateBusinessAbout = async (req, res) => {
     );
   }
 
-  const { data: profile, error: profileError } = await getOwnedBusinessProfile(
+  const { data: profile, error: profileError } = await getOwnedBusiness(
     businessId,
     ownerUid,
     accessToken
@@ -1464,7 +1464,7 @@ export const updateBusinessHours = async (req, res) => {
 
   const { businessId, days } = req.body;
 
-  const { data: profile, error: profileError } = await getOwnedBusinessProfile(
+  const { data: profile, error: profileError } = await getOwnedBusiness(
     businessId,
     ownerUid,
     accessToken
@@ -1565,7 +1565,7 @@ export const updateBusinessHours = async (req, res) => {
       );
   }
 
-  await touchOwnedBusinessProfileEditedAt(businessId, ownerUid, accessToken);
+  await touchOwnedBusinessEditedAt(businessId, ownerUid, accessToken);
   await invalidateBusinessCache(business);
 
   return res.status(200).json(
@@ -1678,13 +1678,13 @@ export const getBusiness = async (req, res) => {
   }
 
   // Always refresh last_edited_at for claimed listings so stale Redis payloads
-  // still show the profile edit date under the verified badge.
+  // still show the edit date under the verified badge.
   let lastEditedAt = business?.last_edited_at ?? null;
   if (business?.is_claimed && business?.id) {
-    const { data: profileEditedAt, error: profileEditedError } =
-      await getBusinessProfileLastEditedAt(business.id);
-    if (!profileEditedError) {
-      lastEditedAt = profileEditedAt;
+    const { data: editedAt, error: editedAtError } =
+      await getBusinessLastEditedAt(business.id);
+    if (!editedAtError) {
+      lastEditedAt = editedAt;
     }
   }
 

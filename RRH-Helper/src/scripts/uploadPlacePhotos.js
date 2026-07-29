@@ -295,7 +295,6 @@ async function markCdnStored(placeId) {
     .from("businesses")
     .update({
       cdn_stored: true,
-      updated_at: new Date().toISOString(),
     })
     .eq("place_id", placeId)
     .select("id");

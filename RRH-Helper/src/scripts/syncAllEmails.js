@@ -170,7 +170,7 @@ async function resolveBusiness(slug) {
 async function updateEmail(id, email) {
   const { error } = await supabase
     .from("businesses")
-    .update({ email, updated_at: new Date().toISOString() })
+    .update({ email, last_edited_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) throw error;

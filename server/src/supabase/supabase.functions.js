@@ -8,7 +8,7 @@ import {
 } from "./supabase.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
-const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_profiles(phone, email, website, description, last_edited_at)`;
+const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*)`;
 
 const formatBusinessListings = (data) => {
   data.map((business) => delete business.additional_info);
@@ -31,35 +31,6 @@ const formatBusinessListings = (data) => {
   });
 
   return data;
-};
-
-const applyBusinessProfileOverrides = (business) => {
-  if (!business) return business;
-
-  const raw = business.business_profiles;
-  const profile = Array.isArray(raw) ? raw[0] : raw;
-  delete business.business_profiles;
-
-  if (!profile) {
-    business.last_edited_at = business.last_edited_at ?? null;
-    return business;
-  }
-
-  if (typeof profile.phone === "string" && profile.phone.trim()) {
-    business.phone = profile.phone.trim();
-  }
-  if (typeof profile.email === "string" && profile.email.trim()) {
-    business.email = profile.email.trim();
-  }
-  if (typeof profile.website === "string" && profile.website.trim()) {
-    business.website = profile.website.trim();
-  }
-  if (typeof profile.description === "string" && profile.description.trim()) {
-    business.description = profile.description.trim();
-  }
-  business.last_edited_at = profile.last_edited_at ?? null;
-
-  return business;
 };
 
 const formatFullBusiness = (business) => {
@@ -90,7 +61,7 @@ const formatFullBusiness = (business) => {
   }
 
   business.is_claimed = Boolean(business?.is_claimed);
-  applyBusinessProfileOverrides(business);
+  business.last_edited_at = business.last_edited_at ?? null;
 
   return business;
 };
@@ -135,11 +106,11 @@ export const getBusinessBySlug = async (business_slug) => {
   return { data: formatFullBusiness(data), error };
 };
 
-export const getBusinessProfileLastEditedAt = async (business_id) => {
+export const getBusinessLastEditedAt = async (business_id) => {
   const { data, error } = await supabase
-    .from("business_profiles")
+    .from("businesses")
     .select("last_edited_at")
-    .eq("business_id", business_id)
+    .eq("id", business_id)
     .maybeSingle();
 
   if (error) {
@@ -628,21 +599,10 @@ export const getClaimedBusinessByOwnerUid = async (ownerUid) => {
   }
 
   const { data, error } = await supabase
-    .from("business_profiles")
-    .select(
-      `
-      last_edited_at,
-      business:businesses (
-        id,
-        slug,
-        title,
-        email,
-        updated_at,
-        is_claimed
-      )
-    `
-    )
+    .from("businesses")
+    .select("id, slug, title, email, is_claimed, last_edited_at")
     .eq("owner_uid", ownerUid)
+    .eq("is_claimed", true)
     .order("last_edited_at", { ascending: false, nullsFirst: false })
     .limit(1)
     .maybeSingle();
@@ -651,18 +611,17 @@ export const getClaimedBusinessByOwnerUid = async (ownerUid) => {
     return { data: null, error };
   }
 
-  const business = data?.business ?? null;
-  if (!business?.slug || !business.is_claimed) {
+  if (!data?.slug) {
     return { data: null, error: null };
   }
 
   return {
     data: {
-      id: business.id,
-      slug: business.slug,
-      title: business.title,
-      email: business.email,
-      updated_at: business.updated_at,
+      id: data.id,
+      slug: data.slug,
+      title: data.title,
+      email: data.email,
+      last_edited_at: data.last_edited_at,
     },
     error: null,
   };
@@ -766,48 +725,29 @@ export const updateAuthUserPassword = async (
 export const getOwnedBusinesses = async (ownerUid, accessToken) => {
   const client = createUserSupabaseClient(accessToken);
   const { data, error } = await client
-    .from("business_profiles")
+    .from("businesses")
     .select(
-      `
-      last_edited_at,
-      business:businesses (
-        id,
-        title,
-        slug,
-        address,
-        image_url,
-        place_id,
-        cdn_stored
-      )
-    `
+      "id, title, slug, address, image_url, place_id, cdn_stored, last_edited_at"
     )
     .eq("owner_uid", ownerUid)
+    .eq("is_claimed", true)
     .order("last_edited_at", { ascending: false, nullsFirst: false });
 
   if (error) {
     return { data: null, error };
   }
 
-  const businesses = (data ?? [])
-    .filter((row) => row?.business)
-    .map((row) => ({
-      ...row.business,
-      last_edited_at: row.last_edited_at ?? null,
-    }));
-
-  return { data: businesses, error: null };
+  return { data: data ?? [], error: null };
 };
 
-export const getOwnedBusinessProfile = async (
-  businessId,
-  ownerUid,
-  accessToken
-) => {
+export const getOwnedBusiness = async (businessId, ownerUid, accessToken) => {
   const client = createUserSupabaseClient(accessToken);
   const { data, error } = await client
-    .from("business_profiles")
-    .select("business_profile_id, business_id, owner_uid, phone, email, website")
-    .eq("business_id", businessId)
+    .from("businesses")
+    .select(
+      "id, owner_uid, phone, email, website, description, last_edited_at, is_claimed"
+    )
+    .eq("id", businessId)
     .eq("owner_uid", ownerUid)
     .maybeSingle();
 
@@ -822,18 +762,16 @@ export const updateOwnedBusinessContact = async (
 ) => {
   const client = createUserSupabaseClient(accessToken);
   const { data, error } = await client
-    .from("business_profiles")
+    .from("businesses")
     .update({
       phone,
       email,
       website,
       last_edited_at: new Date().toISOString(),
     })
-    .eq("business_id", businessId)
+    .eq("id", businessId)
     .eq("owner_uid", ownerUid)
-    .select(
-      "business_profile_id, business_id, phone, email, website, last_edited_at"
-    )
+    .select("id, phone, email, website, last_edited_at")
     .maybeSingle();
 
   return { data, error };
@@ -849,10 +787,10 @@ export const updateOwnedBusinessPrimaryCategory = async (
     .from("businesses")
     .update({
       primary_category_id: primaryCategoryId,
-      updated_at: new Date().toISOString(),
+      last_edited_at: new Date().toISOString(),
     })
     .eq("id", businessId)
-    .select("id, primary_category_id")
+    .select("id, primary_category_id, last_edited_at")
     .maybeSingle();
 
   return { data, error };
@@ -894,14 +832,14 @@ export const updateOwnedBusinessAbout = async (
 ) => {
   const client = createUserSupabaseClient(accessToken);
   const { data, error } = await client
-    .from("business_profiles")
+    .from("businesses")
     .update({
       description,
       last_edited_at: new Date().toISOString(),
     })
-    .eq("business_id", businessId)
+    .eq("id", businessId)
     .eq("owner_uid", ownerUid)
-    .select("business_profile_id, business_id, description, last_edited_at")
+    .select("id, description, last_edited_at")
     .maybeSingle();
 
   return { data, error };
@@ -957,10 +895,10 @@ export const updateOwnedBusinessHoursConfirmation = async (
     .from("businesses")
     .update({
       opening_hours_confirmation: confirmation,
-      updated_at: new Date().toISOString(),
+      last_edited_at: new Date().toISOString(),
     })
     .eq("id", businessId)
-    .select("id, opening_hours_confirmation")
+    .select("id, opening_hours_confirmation, last_edited_at")
     .maybeSingle();
 
   return { data, error };
@@ -1067,18 +1005,20 @@ export const syncOwnedBusinessSecondaryCategories = async (
   };
 };
 
-export const touchOwnedBusinessProfileEditedAt = async (
+export const touchOwnedBusinessEditedAt = async (
   businessId,
   ownerUid,
   accessToken
 ) => {
   const client = createUserSupabaseClient(accessToken);
   const { data, error } = await client
-    .from("business_profiles")
-    .update({ last_edited_at: new Date().toISOString() })
-    .eq("business_id", businessId)
+    .from("businesses")
+    .update({
+      last_edited_at: new Date().toISOString(),
+    })
+    .eq("id", businessId)
     .eq("owner_uid", ownerUid)
-    .select("business_profile_id, last_edited_at")
+    .select("id, last_edited_at")
     .maybeSingle();
 
   return { data, error };
