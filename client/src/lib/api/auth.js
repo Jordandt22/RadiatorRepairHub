@@ -33,3 +33,10 @@ export async function updateOwnerPassword({
     }),
   });
 }
+
+export async function deleteOwnerAccount() {
+  return fetchAuthenticatedApi("/auth/account", {
+    method: "DELETE",
+    cache: "no-store",
+  });
+}

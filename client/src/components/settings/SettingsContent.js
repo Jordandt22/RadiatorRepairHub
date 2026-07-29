@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +17,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import OwnerEditButton from "@/components/businesses/OwnerEditButton";
 import { ToastProvider, useToast } from "@/contexts/ToastProvider";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
-import { updateOwnerEmail, updateOwnerPassword } from "@/lib/api/auth";
+import { signOut } from "@/lib/auth/session";
+import {
+  updateOwnerEmail,
+  updateOwnerPassword,
+  deleteOwnerAccount,
+} from "@/lib/api/auth";
 import {
   getPasswordStrengthError,
   PASSWORD_REQUIREMENTS_HINT,
@@ -134,7 +140,7 @@ function AccountEmailSection({
 
       showCustomSuccess(
         data?.message ||
-          "Confirmation emails sent. Check your current and new inbox to finish the change."
+        "Confirmation emails sent. Check your current and new inbox to finish the change."
       );
       setOpen(false);
       if (typeof onEmailChangeRequested === "function") {
@@ -443,6 +449,101 @@ function AccountPasswordSection() {
   );
 }
 
+function AccountDeleteSection() {
+  const router = useRouter();
+  const { showCustomSuccess } = useToast();
+  const [open, setOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleDelete = async () => {
+    if (isDeleting) return;
+    setIsDeleting(true);
+    setError("");
+    try {
+      const { data, error: apiError } = await deleteOwnerAccount();
+      if (apiError) {
+        setError(
+          typeof apiError.message === "string"
+            ? apiError.message
+            : "Unable to delete your account."
+        );
+        return;
+      }
+
+      await signOut();
+      showCustomSuccess(data?.message || "Your account has been deleted.");
+      setOpen(false);
+      router.replace("/");
+    } catch {
+      setError("Unable to delete your account.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <div className="pt-2">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => {
+          setError("");
+          setOpen(true);
+        }}
+        className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+      >
+        Delete Account
+      </Button>
+      <p className="mt-2 text-xs text-gray-500">
+        Deletes your login account only. Your business listing information stays
+        on RadiatorRepairHub, but listings you own become unclaimed.
+      </p>
+
+      <Dialog
+        open={open}
+        onOpenChange={(nextOpen) => {
+          if (isDeleting) return;
+          setOpen(nextOpen);
+          if (!nextOpen) setError("");
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Account Deletion</DialogTitle>
+            <DialogDescription>
+              This deletes your RadiatorRepairHub account only, not your
+              business listing information. Listings you own will become
+              unclaimed. This can NOT be reverted.
+            </DialogDescription>
+          </DialogHeader>
+
+          {error ? <p className="text-xs text-red-600">{error}</p> : null}
+
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting…" : "Delete Account"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 function AccountSettingsPanel({
   currentEmail,
   pendingEmail,
@@ -456,19 +557,7 @@ function AccountSettingsPanel({
         onEmailChangeRequested={onEmailChangeRequested}
       />
       <AccountPasswordSection />
-      <div className="pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          disabled
-          className="border-red-200 text-red-700 disabled:opacity-60"
-        >
-          Delete account
-        </Button>
-        <p className="mt-2 text-xs text-gray-500">
-          Account deletion is coming soon.
-        </p>
-      </div>
+      <AccountDeleteSection />
     </div>
   );
 }

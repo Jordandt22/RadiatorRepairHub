@@ -9,8 +9,16 @@ import {
   getClaimedBusinessByOwnerUid,
   updateAuthUserEmail,
   updateAuthUserPassword,
+  unclaimBusinessesByOwnerUid,
+  deleteAuthUser,
+  deletePublicUserByUid,
 } from "../supabase/supabase.functions.js";
 import { getWebBaseUrl } from "../lib/constants/messages.js";
+import {
+  deleteCacheData,
+  getBusinessByIdKey,
+  getBusinessBySlugKey,
+} from "../redis/redis.js";
 
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, ROUTE_NOT_FOUND, YUP_ERROR } =
   errorCodes;
@@ -177,6 +185,73 @@ export const updateOwnerPassword = async (req, res) => {
   return res.status(200).json(
     successHandler({
       message: "Your password has been updated.",
+    })
+  );
+};
+
+const invalidateBusinessCache = async (business) => {
+  if (!business?.id) return;
+  const { key: businessIdCacheKey } = getBusinessByIdKey(business.id);
+  await deleteCacheData(businessIdCacheKey);
+  if (business.slug) {
+    const { key: businessSlugCacheKey } = getBusinessBySlugKey(business.slug);
+    await deleteCacheData(businessSlugCacheKey);
+  }
+};
+
+export const deleteOwnerAccount = async (req, res) => {
+  const ownerUid = req.user?.id;
+  if (!ownerUid) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { data: unclaimed, error: unclaimError } =
+    await unclaimBusinessesByOwnerUid(ownerUid);
+
+  if (unclaimError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error releasing your business listings.",
+          unclaimError
+        )
+      );
+  }
+
+  for (const business of unclaimed ?? []) {
+    try {
+      await invalidateBusinessCache(business);
+    } catch {
+      // best-effort cache cleanup
+    }
+  }
+
+  const { error: deleteAuthError } = await deleteAuthUser(ownerUid);
+  if (deleteAuthError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error deleting your account.",
+          deleteAuthError
+        )
+      );
+  }
+
+  try {
+    await deletePublicUserByUid(ownerUid);
+  } catch {
+    // best-effort public.users cleanup
+  }
+
+  return res.status(200).json(
+    successHandler({
+      message: "Your account has been deleted.",
     })
   );
 };

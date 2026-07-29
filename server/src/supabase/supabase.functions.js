@@ -579,6 +579,42 @@ export const deleteAuthUser = async (uid) => {
   return { data, error };
 };
 
+export const unclaimBusinessesByOwnerUid = async (ownerUid) => {
+  if (!ownerUid || typeof ownerUid !== "string") {
+    return { data: [], error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({
+      owner_uid: null,
+      is_claimed: false,
+    })
+    .eq("owner_uid", ownerUid)
+    .select("id, slug");
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  return { data: data ?? [], error: null };
+};
+
+export const deletePublicUserByUid = async (uid) => {
+  if (!uid || typeof uid !== "string") {
+    return { data: null, error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("users")
+    .delete()
+    .eq("uid", uid)
+    .select("uid")
+    .maybeSingle();
+
+  return { data, error };
+};
+
 export const signInWithPassword = async ({ email, password }) => {
   const { data, error } = await supabaseAnon.auth.signInWithPassword({
     email,

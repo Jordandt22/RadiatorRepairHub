@@ -3,6 +3,7 @@ import {
   loginOwner,
   updateOwnerEmail,
   updateOwnerPassword,
+  deleteOwnerAccount,
 } from "../controllers/auth.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
@@ -33,6 +34,12 @@ authRouter.patch(
   authUser,
   bodyValidator(UpdateOwnerPasswordSchema),
   serverErrorCatcherWrapper(updateOwnerPassword)
+);
+
+authRouter.delete(
+  "/account",
+  authUser,
+  serverErrorCatcherWrapper(deleteOwnerAccount)
 );
 
 export default authRouter;
