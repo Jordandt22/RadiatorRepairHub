@@ -17,3 +17,19 @@ export async function updateOwnerEmail({ email }) {
     body: JSON.stringify({ email }),
   });
 }
+
+export async function updateOwnerPassword({
+  currentPassword,
+  password,
+  confirmPassword,
+}) {
+  return fetchAuthenticatedApi("/auth/password", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      currentPassword,
+      password,
+      confirmPassword,
+    }),
+  });
+}

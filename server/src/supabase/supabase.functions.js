@@ -715,6 +715,54 @@ export const updateAuthUserEmail = async (accessToken, email, emailRedirectTo) =
   }
 };
 
+export const updateAuthUserPassword = async (
+  accessToken,
+  { password, currentPassword }
+) => {
+  if (!accessToken) {
+    return { data: null, error: { message: "Missing access token." } };
+  }
+
+  const url = `${supabaseUrl}/auth/v1/user`;
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        apikey: supabaseAnonKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        password,
+        current_password: currentPassword,
+      }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const message =
+        payload?.msg ||
+        payload?.error_description ||
+        payload?.message ||
+        "Unable to update password.";
+      return {
+        data: null,
+        error: {
+          message,
+          status: response.status,
+          code: payload?.error_code || payload?.code,
+        },
+      };
+    }
+
+    return { data: { user: payload }, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
+};
+
 export const getOwnedBusinesses = async (ownerUid, accessToken) => {
   const client = createUserSupabaseClient(accessToken);
   const { data, error } = await client

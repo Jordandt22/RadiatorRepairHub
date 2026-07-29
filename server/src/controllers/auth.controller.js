@@ -8,6 +8,7 @@ import {
   formatAuthSession,
   getClaimedBusinessByOwnerUid,
   updateAuthUserEmail,
+  updateAuthUserPassword,
 } from "../supabase/supabase.functions.js";
 import { getWebBaseUrl } from "../lib/constants/messages.js";
 
@@ -133,6 +134,49 @@ export const updateOwnerEmail = async (req, res) => {
       newEmail: data?.user?.new_email ?? email,
       message:
         "Confirmation emails have been sent. Confirm the change from both your current and new inbox to finish updating your email.",
+    })
+  );
+};
+
+export const updateOwnerPassword = async (req, res) => {
+  const currentPassword = req.body.currentPassword;
+  const password = req.body.password;
+
+  const { error } = await updateAuthUserPassword(req.accessToken, {
+    password,
+    currentPassword,
+  });
+
+  if (error) {
+    const rawMessage =
+      typeof error.message === "string" ? error.message.toLowerCase() : "";
+    const isWrongPassword =
+      error.status === 401 ||
+      error.code === "invalid_credentials" ||
+      rawMessage.includes("current password") ||
+      rawMessage.includes("incorrect") ||
+      rawMessage.includes("invalid login");
+
+    const message = isWrongPassword
+      ? "Current password is incorrect."
+      : typeof error.message === "string" && error.message.trim()
+        ? error.message
+        : "Unable to update password. Please try again.";
+
+    return res
+      .status(isWrongPassword ? 401 : error.status === 422 ? 422 : 400)
+      .json(
+        customErrorHandler(
+          isWrongPassword ? ACCESS_DENIED : SUPABASE_ERROR,
+          message,
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      message: "Your password has been updated.",
     })
   );
 };

@@ -1,5 +1,6 @@
 import * as Yup from "yup";
 import { normalizeWebsiteUrl } from "../lib/websiteReachability.js";
+import { getPasswordStrengthError } from "../lib/password.js";
 
 // ---- Params Request ----
 
@@ -38,8 +39,12 @@ export const CompleteClaimSchema = Yup.object({
     .matches(/^[A-Z0-9]{6}$/, "Verification code must be 6 letters or numbers")
     .required(),
   password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .required("Password is required"),
+    .required("Password is required")
+    .test("password-strength", function (value) {
+      const message = getPasswordStrengthError(value ?? "");
+      if (!message) return true;
+      return this.createError({ message });
+    }),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password")], "Passwords must match")
     .required("Please confirm your password"),

@@ -18,6 +18,10 @@ import {
   resendClaimCode,
 } from "@/lib/api/businesses";
 import { persistSession } from "@/lib/auth/session";
+import {
+  getPasswordStrengthError,
+  PASSWORD_REQUIREMENTS_HINT,
+} from "@/lib/validation/password";
 
 function ClaimVerifyFormContent({ claimRequestId, business }) {
   const router = useRouter();
@@ -56,8 +60,9 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
     if (!code || code.length !== 6) {
       next.code = "Enter the 6-character verification code.";
     }
-    if (!password || password.length < 8) {
-      next.password = "Password must be at least 8 characters.";
+    const passwordError = getPasswordStrengthError(password);
+    if (passwordError) {
+      next.password = passwordError;
     }
     if (password !== confirmPassword) {
       next.confirmPassword = "Passwords must match.";
@@ -308,6 +313,9 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
               )}
             </button>
           </div>
+          <p className="text-xs text-muted-foreground">
+            {PASSWORD_REQUIREMENTS_HINT}
+          </p>
           {errors.password && (
             <p className="text-xs text-destructive">{errors.password}</p>
           )}

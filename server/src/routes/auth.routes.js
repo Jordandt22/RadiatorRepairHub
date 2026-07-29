@@ -1,9 +1,14 @@
 import { Router } from "express";
-import { loginOwner, updateOwnerEmail } from "../controllers/auth.controller.js";
+import {
+  loginOwner,
+  updateOwnerEmail,
+  updateOwnerPassword,
+} from "../controllers/auth.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
   OwnerLoginSchema,
   UpdateOwnerEmailSchema,
+  UpdateOwnerPasswordSchema,
 } from "../schemas/auth.schemas.js";
 import { bodyValidator } from "../middleware/validators.js";
 import { authUser } from "../middleware/auth.mw.js";
@@ -21,6 +26,13 @@ authRouter.patch(
   authUser,
   bodyValidator(UpdateOwnerEmailSchema),
   serverErrorCatcherWrapper(updateOwnerEmail)
+);
+
+authRouter.patch(
+  "/password",
+  authUser,
+  bodyValidator(UpdateOwnerPasswordSchema),
+  serverErrorCatcherWrapper(updateOwnerPassword)
 );
 
 export default authRouter;

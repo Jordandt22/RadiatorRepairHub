@@ -11,6 +11,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 export function useIsSignedIn() {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
     try {
@@ -28,6 +29,8 @@ export function useIsSignedIn() {
       setIsSignedIn(false);
       setUser(null);
       return null;
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -48,9 +51,10 @@ export function useIsSignedIn() {
         if (!mounted) return;
         if (error || !data.user) {
           applyUser(null);
-          return;
+        } else {
+          applyUser(data.user);
         }
-        applyUser(data.user);
+        setIsLoading(false);
       });
 
       const {
@@ -60,6 +64,7 @@ export function useIsSignedIn() {
 
         if (!session) {
           applyUser(null);
+          setIsLoading(false);
           return;
         }
 
@@ -74,14 +79,16 @@ export function useIsSignedIn() {
             if (!mounted) return;
             if (error || !data.user) {
               applyUser(session.user ?? null);
-              return;
+            } else {
+              applyUser(data.user);
             }
-            applyUser(data.user);
+            setIsLoading(false);
           });
           return;
         }
 
         applyUser(session.user ?? null);
+        setIsLoading(false);
       });
 
       unsubscribe = () => subscription.unsubscribe();
@@ -89,6 +96,7 @@ export function useIsSignedIn() {
       if (mounted) {
         setIsSignedIn(false);
         setUser(null);
+        setIsLoading(false);
       }
     }
 
@@ -98,5 +106,5 @@ export function useIsSignedIn() {
     };
   }, []);
 
-  return { isSignedIn, user, refreshUser };
+  return { isSignedIn, user, isLoading, refreshUser };
 }
