@@ -59,6 +59,7 @@ import {
 } from "../lib/businessHoursFormat.js";
 import { resendClient } from "../resend/resend.js";
 import {
+  ADMIN_BUSINESS_CLAIMED_MESSAGE,
   CLAIM_VERIFICATION_MESSAGE,
   SENDER_NAME,
   buildClaimVerifyLink,
@@ -663,6 +664,27 @@ export const completeClaim = async (req, res) => {
   }
 
   await invalidateBusinessCache(business);
+
+  const { SENDER_EMAIL, RESEND_API_KEY, ADMIN_EMAIL } = process.env;
+  if (RESEND_API_KEY && SENDER_EMAIL && ADMIN_EMAIL) {
+    const businessPageUrl = buildBusinessClaimLink(business.slug);
+    const { error: adminSendError } = await resendClient().emails.send({
+      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+      to: [ADMIN_EMAIL],
+      subject: ADMIN_BUSINESS_CLAIMED_MESSAGE.subject(business.title),
+      html: ADMIN_BUSINESS_CLAIMED_MESSAGE.html(business.title, {
+        email,
+        businessPageUrl,
+      }),
+    });
+
+    if (adminSendError && process.env.NODE_ENV === "development") {
+      console.error(
+        "Failed to send admin business-claimed email:",
+        adminSendError
+      );
+    }
+  }
 
   const { data: signInData, error: signInError } = await signInWithPassword({
     email,

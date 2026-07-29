@@ -218,6 +218,30 @@ export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
   `,
 });
 
+// Admin notification when a business is successfully claimed
+export const ADMIN_BUSINESS_CLAIMED_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Business claimed${businessName ? `: ${businessName}` : ""}`,
+  html: (businessName, { email, businessPageUrl }) => `
+  <p>A business was successfully claimed on RadiatorRepairHub.</p>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 140px;">Business:</td>
+      <td style="padding: 8px 0;">${businessName ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Owner email:</td>
+      <td style="padding: 8px 0;">${email ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Listing:</td>
+      <td style="padding: 8px 0;"><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></td>
+    </tr>
+  </table>
+  `,
+});
+
 // Confirmation: message forwarded to business
 export const MESSAGE_ON_ITS_WAY = Object.freeze({
   subject: (businessName) =>

@@ -6,10 +6,12 @@ import {
 import {
   signInWithPassword,
   formatAuthSession,
-  getClaimedBusinessByEmail,
+  getClaimedBusinessByOwnerUid,
+  updateAuthUserEmail,
 } from "../supabase/supabase.functions.js";
+import { getWebBaseUrl } from "../lib/constants/messages.js";
 
-const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, ROUTE_NOT_FOUND } =
+const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, ROUTE_NOT_FOUND, YUP_ERROR } =
   errorCodes;
 
 export const loginOwner = async (req, res) => {
@@ -46,13 +48,9 @@ export const loginOwner = async (req, res) => {
       );
   }
 
-  const userEmail =
-    typeof signInData.user?.email === "string"
-      ? signInData.user.email.trim()
-      : email;
-
+  const ownerUid = signInData.user?.id;
   const { data: business, error: businessError } =
-    await getClaimedBusinessByEmail(userEmail);
+    await getClaimedBusinessByOwnerUid(ownerUid);
 
   if (businessError) {
     return res
@@ -81,6 +79,60 @@ export const loginOwner = async (req, res) => {
     successHandler({
       slug: business.slug,
       session,
+    })
+  );
+};
+
+export const updateOwnerEmail = async (req, res) => {
+  const email =
+    typeof req.body.email === "string" ? req.body.email.trim().toLowerCase() : "";
+  const currentEmail =
+    typeof req.user?.email === "string" ? req.user.email.trim().toLowerCase() : "";
+
+  if (!email) {
+    return res
+      .status(422)
+      .json(customErrorHandler(YUP_ERROR, "Email is required."));
+  }
+
+  if (currentEmail && email === currentEmail) {
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "Enter a different email than your current one."
+        )
+      );
+  }
+
+  const emailRedirectTo = `${getWebBaseUrl()}/email-confirmed`;
+  const { data, error } = await updateAuthUserEmail(
+    req.accessToken,
+    email,
+    emailRedirectTo
+  );
+
+  if (error) {
+    const message =
+      typeof error.message === "string" && error.message.trim()
+        ? error.message
+        : "Unable to update email. Please try again.";
+
+    const status =
+      error.status === 422 || error.code === "email_exists" ? 409 : 400;
+
+    return res
+      .status(status)
+      .json(customErrorHandler(SUPABASE_ERROR, message, error));
+  }
+
+  return res.status(200).json(
+    successHandler({
+      email: data?.user?.email ?? currentEmail,
+      newEmail: data?.user?.new_email ?? email,
+      message:
+        "Confirmation emails have been sent. Confirm the change from both your current and new inbox to finish updating your email.",
     })
   );
 };

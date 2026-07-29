@@ -1,4 +1,11 @@
-import { supabase, adminAuthClient, supabaseAnon, createUserSupabaseClient } from "./supabase.js";
+import {
+  supabase,
+  adminAuthClient,
+  supabaseAnon,
+  createUserSupabaseClient,
+  supabaseUrl,
+  supabaseAnonKey,
+} from "./supabase.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
 const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_profiles(phone, email, website, description, last_edited_at)`;
@@ -615,22 +622,97 @@ export const getAuthUserByAccessToken = async (accessToken) => {
   return { data, error };
 };
 
-export const getClaimedBusinessByEmail = async (email) => {
-  const trimmed = typeof email === "string" ? email.trim() : "";
-  if (!trimmed) {
+export const getClaimedBusinessByOwnerUid = async (ownerUid) => {
+  if (!ownerUid || typeof ownerUid !== "string") {
     return { data: null, error: null };
   }
 
   const { data, error } = await supabase
-    .from("businesses")
-    .select("id, slug, title, email, updated_at")
-    .eq("email", trimmed)
-    .eq("is_claimed", true)
-    .order("updated_at", { ascending: false })
+    .from("business_profiles")
+    .select(
+      `
+      last_edited_at,
+      business:businesses (
+        id,
+        slug,
+        title,
+        email,
+        updated_at,
+        is_claimed
+      )
+    `
+    )
+    .eq("owner_uid", ownerUid)
+    .order("last_edited_at", { ascending: false, nullsFirst: false })
     .limit(1)
     .maybeSingle();
 
-  return { data, error };
+  if (error) {
+    return { data: null, error };
+  }
+
+  const business = data?.business ?? null;
+  if (!business?.slug || !business.is_claimed) {
+    return { data: null, error: null };
+  }
+
+  return {
+    data: {
+      id: business.id,
+      slug: business.slug,
+      title: business.title,
+      email: business.email,
+      updated_at: business.updated_at,
+    },
+    error: null,
+  };
+};
+
+export const updateAuthUserEmail = async (accessToken, email, emailRedirectTo) => {
+  if (!accessToken) {
+    return { data: null, error: { message: "Missing access token." } };
+  }
+
+  const params = new URLSearchParams();
+  if (emailRedirectTo) {
+    params.set("redirect_to", emailRedirectTo);
+  }
+  const query = params.toString();
+  const url = `${supabaseUrl}/auth/v1/user${query ? `?${query}` : ""}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        apikey: supabaseAnonKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const message =
+        payload?.msg ||
+        payload?.error_description ||
+        payload?.message ||
+        "Unable to update email.";
+      return {
+        data: null,
+        error: {
+          message,
+          status: response.status,
+          code: payload?.error_code || payload?.code,
+        },
+      };
+    }
+
+    return { data: { user: payload }, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
 };
 
 export const getOwnedBusinesses = async (ownerUid, accessToken) => {
