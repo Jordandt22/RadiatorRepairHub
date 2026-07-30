@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   BadgeCheck,
   Clock3,
+  Flag,
   ImageIcon,
   MapPinned,
   Phone,
@@ -56,7 +57,7 @@ const CLAIM_STEPS = [
   "Check the email on file for a verification code.",
   "Open the verify link or enter the code on the claim page.",
   "Create a password for your account.",
-  "You’re signed in and the listing is claimed.",
+  "You're signed in and the listing is claimed.",
 ];
 
 function buildClaimFaqs(supportEmail) {
@@ -67,15 +68,20 @@ function buildClaimFaqs(supportEmail) {
         "Check your spam or junk folder first. On the claim verification page, use Resend code to send a new verification email to the address on file for your listing.",
     },
     {
-      question: "What if my business info is wrong?",
+      question: "What if the email or phone on my listing is wrong?",
       answer:
-        "On your business page, use the Report Info button under Quick Contact to tell us what needs to be corrected. You can also reach us through the contact page and choose Report a Listing Problem.",
+        "If incorrect or missing contact info is blocking your claim, open your business listing and use the Report Info button under Contact Information. Choose the option for wrong claim contact info, tell us the correct details, and we'll review it so you can try claiming again.",
+    },
+    {
+      question: "What if other listing details are wrong?",
+      answer:
+        "Use the same Report Info button on the business page to report outdated or incorrect listing content, or reach us through the contact page and choose Report a Listing Problem.",
     },
     {
       question: "What if someone else already claimed my business by mistake?",
       answer: supportEmail
-        ? `Contact RadiatorRepairHub support right away at ${supportEmail} or through the contact page. We’ll help verify ownership and resolve mistaken claims.`
-        : "Contact RadiatorRepairHub support right away through the contact page. We’ll help verify ownership and resolve mistaken claims.",
+        ? `Contact RadiatorRepairHub support right away at ${supportEmail} or through the contact page. We'll help verify ownership and resolve mistaken claims.`
+        : "Contact RadiatorRepairHub support right away through the contact page. We'll help verify ownership and resolve mistaken claims.",
     },
     {
       question: "Is claiming free?",
@@ -137,6 +143,29 @@ export default function HowToClaimPage() {
                 Self-serve email claim is disabled so one account cannot lock
                 that inbox for every location.
               </p>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <div className="flex gap-3">
+              <Flag
+                className="mt-0.5 size-5 shrink-0 text-blue-600"
+                aria-hidden="true"
+              />
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  Wrong or outdated contact info?
+                </h3>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  If a missing or incorrect email is preventing you from
+                  claiming, open your listing and use the{" "}
+                  <strong>Report Info</strong> {" "}button under Contact Information.
+                  Choose the option for wrong claim contact info, share the
+                  correct phone and/or email if you have them, and we&apos;ll
+                  review the report so you can complete the claim once it&apos;s
+                  fixed.
+                </p>
+              </div>
             </div>
           </div>
         </section>

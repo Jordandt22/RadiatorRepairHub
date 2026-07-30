@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Flag } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +16,7 @@ import { ToastProvider, useToast } from "@/contexts/ToastProvider";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import BusinessContactLinks from "@/components/businesses/BusinessContactLinks";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
+import ReportInfoDialog from "@/components/businesses/ReportInfoDialog";
 import { updateBusinessContact } from "@/lib/api/businessContact";
 
 function isValidPhone(value) {
@@ -183,13 +182,10 @@ function ContactInformationSectionContent({
           email={initialEmail}
           phone={initialPhone}
         />
-        <Link
-          href="/contact"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-        >
-          <Flag className="size-4" />
-          Report Info
-        </Link>
+        <ReportInfoDialog
+          businessId={businessId}
+          businessName={businessName}
+        />
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>

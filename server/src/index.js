@@ -11,6 +11,7 @@ import businessesRouter from "./routes/businesses.routes.js";
 import locationRouter from "./routes/location.routes.js";
 import categoriesRouter from "./routes/categories.routes.js";
 import contactMessagesRouter from "./routes/contact-messages.routes.js";
+import listingReportsRouter from "./routes/listing-reports.routes.js";
 import adminRouter from "./routes/admin/admin.routes.js";
 import authRouter from "./routes/auth.routes.js";
 
@@ -57,6 +58,9 @@ app.use(`/v${API_VERSION}/api/categories`, categoriesRouter);
 
 // Routes for Contact Messages
 app.use(`/v${API_VERSION}/api/contact-messages`, contactMessagesRouter);
+
+// Routes for Listing Reports
+app.use(`/v${API_VERSION}/api/listing-reports`, listingReportsRouter);
 
 // Routes for Admin
 app.use(`/v${API_VERSION}/api/admin`, adminRouter);

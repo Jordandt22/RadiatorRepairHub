@@ -218,6 +218,91 @@ export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
   `,
 });
 
+const LISTING_REPORT_REASON_LABELS = {
+  wrong_claim_contact: "Wrong claim contact info",
+  inappropriate: "Inappropriate or misleading content",
+};
+
+export const formatListingReportReasonLabel = (reason) => {
+  return LISTING_REPORT_REASON_LABELS[reason] ?? reason ?? "N/A";
+};
+
+// Admin notification when a listing report is submitted
+export const ADMIN_NEW_LISTING_REPORT_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `New listing report${businessName ? ` for ${businessName}` : ""}`,
+  html: (
+    businessName,
+    {
+      reason,
+      details,
+      reporterName,
+      reporterEmail,
+      suggestedPhone,
+      suggestedEmail,
+      businessPageUrl,
+      adminQueueUrl,
+      listingPhone,
+      listingEmail,
+    },
+  ) => `
+  <p>A new listing report was submitted on RadiatorRepairHub.</p>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 160px;">Business:</td>
+      <td style="padding: 8px 0;">${businessName ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Reason:</td>
+      <td style="padding: 8px 0;">${formatListingReportReasonLabel(reason)}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Reporter name:</td>
+      <td style="padding: 8px 0;">${reporterName ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Reporter email:</td>
+      <td style="padding: 8px 0;">${reporterEmail ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Listed phone:</td>
+      <td style="padding: 8px 0;">${listingPhone ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Listed email:</td>
+      <td style="padding: 8px 0;">${listingEmail ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Suggested phone:</td>
+      <td style="padding: 8px 0;">${suggestedPhone ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Suggested email:</td>
+      <td style="padding: 8px 0;">${suggestedEmail ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Details:</td>
+      <td style="padding: 8px 0;">${details ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Listing:</td>
+      <td style="padding: 8px 0;">${
+        businessPageUrl
+          ? `<a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a>`
+          : "N/A"
+      }</td>
+    </tr>
+  </table>
+
+  <p>${
+    adminQueueUrl
+      ? `Review it in the <a href="${adminQueueUrl}" style="color: #1a73e8;">admin listing reports queue</a>.`
+      : "Review it in the admin listing reports queue."
+  }</p>
+  `,
+});
+
 // Admin notification when a business is successfully claimed
 export const ADMIN_BUSINESS_CLAIMED_MESSAGE = Object.freeze({
   subject: (businessName) =>

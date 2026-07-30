@@ -236,6 +236,11 @@ export const getClaimRequestsKey = (page, limit, status = null) => ({
   interval: 60 * 5,
 });
 
+export const getListingReportsKey = (page, limit, status = null) => ({
+  key: `LISTING_REPORTS?PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}`,
+  interval: 60 * 5,
+});
+
 /** Store a value with an exact TTL (does not use checkInterval). */
 export const setWithExactTtl = async (key, ttlSeconds, value) => {
   if (process.env.NODE_ENV === "development")

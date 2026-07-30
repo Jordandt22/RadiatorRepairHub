@@ -109,6 +109,28 @@ const data = {
       ],
     },
     {
+      title: "Listing Reports",
+      url: "/listing-reports?tab=pending",
+      icon: <FlagIcon />,
+      items: [
+        {
+          title: "Pending",
+          url: "/listing-reports?tab=pending",
+          icon: <ClockIcon />,
+        },
+        {
+          title: "Resolved",
+          url: "/listing-reports?tab=resolved",
+          icon: <CheckIcon />,
+        },
+        {
+          title: "Dismissed",
+          url: "/listing-reports?tab=dismissed",
+          icon: <XCircleIcon />,
+        },
+      ],
+    },
+    {
       title: "Businesses",
       url: "#",
       icon: <Building2Icon />,

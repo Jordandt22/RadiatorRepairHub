@@ -413,9 +413,69 @@ export const insertContactMessage = async (payload) => {
 export const getBusinessClaimInfo = async (business_id) => {
   const { data, error } = await supabase
     .from("businesses")
-    .select("id, title, slug, email, is_claimed")
+    .select("id, title, slug, email, phone, is_claimed")
     .eq("id", business_id)
     .single();
+
+  return { data, error };
+};
+
+export const insertListingReport = async (payload) => {
+  const { data, error } = await supabase
+    .from("listing_reports")
+    .insert(payload)
+    .select("listing_report_id")
+    .single();
+
+  return { data, error };
+};
+
+export const getListingReports = async (page, limit, status = null) => {
+  let query = supabase
+    .from("listing_reports")
+    .select(
+      "listing_report_id, business_id, reason, details, reporter_name, reporter_email, suggested_phone, suggested_email, status, created_at, resolved_at, resolved_by, business:businesses(id, title, slug, address, email, phone, is_claimed)",
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};
+
+export const updateListingReportsStatus = async (
+  ids,
+  status,
+  resolvedBy = "admin"
+) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const patch =
+    status === "pending"
+      ? {
+          status,
+          resolved_at: null,
+          resolved_by: null,
+        }
+      : {
+          status,
+          resolved_at: new Date().toISOString(),
+          resolved_by: resolvedBy,
+        };
+
+  const { data, error } = await supabase
+    .from("listing_reports")
+    .update(patch)
+    .in("listing_report_id", ids)
+    .select("listing_report_id");
 
   return { data, error };
 };

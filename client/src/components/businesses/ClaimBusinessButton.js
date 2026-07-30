@@ -71,7 +71,7 @@ function ClaimBusinessButtonContent({ businessId }) {
       <Button
         type="button"
         variant="outline"
-        className="mt-3 w-full rounded-full gap-2 text-sm font-medium border-2 border-amber-500 text-amber-600 hover:bg-amber-50 hover:text-amber-700"
+        className="mt-3 w-full rounded-full gap-2 text-sm font-medium border-2 border-amber-500 text-amber-600 hover:bg-amber-50 hover:scale-95 hover:text-amber-700"
         disabled={isSubmitting}
         onClick={handleClaim}
       >

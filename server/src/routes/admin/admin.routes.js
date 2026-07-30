@@ -14,6 +14,8 @@ import {
   sendContactNoResponse,
   getClaimRequests,
   updateClaimRequestsStatus,
+  getListingReports,
+  updateListingReportsStatus,
   invalidateCache,
 } from "../../controllers/admin/admin.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
@@ -32,6 +34,8 @@ import {
   GetContactMessagesQuerySchema,
   GetClaimRequestsQuerySchema,
   UpdateClaimRequestsStatusSchema,
+  GetListingReportsQuerySchema,
+  UpdateListingReportsStatusSchema,
   InvalidateCacheSchema,
 } from "../../schemas/admin.schemas.js";
 import { bodyValidator, queryValidator } from "../../middleware/validators.js";
@@ -64,6 +68,20 @@ adminRouter.patch(
   authAdmin,
   bodyValidator(UpdateClaimRequestsStatusSchema),
   serverErrorCatcherWrapper(updateClaimRequestsStatus)
+);
+
+adminRouter.get(
+  "/listing-reports",
+  authAdmin,
+  queryValidator(GetListingReportsQuerySchema),
+  serverErrorCatcherWrapper(getListingReports)
+);
+
+adminRouter.patch(
+  "/listing-reports/status",
+  authAdmin,
+  bodyValidator(UpdateListingReportsStatusSchema),
+  serverErrorCatcherWrapper(updateListingReportsStatus)
 );
 
 adminRouter.patch(

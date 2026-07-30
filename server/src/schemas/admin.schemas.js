@@ -143,9 +143,32 @@ export const UpdateClaimRequestsStatusSchema = Yup.object({
     .required("Claim request IDs are required"),
 });
 
+export const LISTING_REPORT_STATUSES = ["pending", "resolved", "dismissed"];
+
+export const GetListingReportsQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  status: Yup.string()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .oneOf([...LISTING_REPORT_STATUSES, null], "Invalid status")
+    .optional(),
+});
+
+export const UpdateListingReportsStatusSchema = Yup.object({
+  status: Yup.string()
+    .oneOf(LISTING_REPORT_STATUSES, "Invalid status")
+    .required("Status is required"),
+  listing_report_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid listing report ID").required())
+    .min(1, "At least one listing report ID is required")
+    .required("Listing report IDs are required"),
+});
+
 export const CACHE_INVALIDATE_RESOURCES = [
   "contact-messages",
   "claim-requests",
+  "listing-reports",
 ];
 
 export const InvalidateCacheSchema = Yup.object({

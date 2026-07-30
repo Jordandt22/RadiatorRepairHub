@@ -64,7 +64,7 @@ const states = [
 export async function addStates() {
   const { data, error } = await supabase
     .from("states")
-    .upsert(states, { onConflict: ["code"] }) // won’t insert duplicates
+    .upsert(states, { onConflict: ["code"] }) // won't insert duplicates
     .select();
 
   return { data, error };
