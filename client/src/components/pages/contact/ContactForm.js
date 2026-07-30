@@ -413,10 +413,14 @@ const ContactForm = ({
 
         <p className="text-xs text-gray-500 leading-relaxed">
           By submitting this form, you agree to our{" "}
+          <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
           <Link href="/privacy" className="text-blue-600 hover:text-blue-800 underline">
             Privacy Policy
-          </Link>{" "}
-          and consent to us processing your name, email, optional phone number,
+          </Link>
+          , and consent to us processing your name, email, optional phone number,
           and message so we can respond to your inquiry.
         </p>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import debounce from "lodash.debounce";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -504,6 +505,24 @@ function QuickContactDialogContent({
               </p>
             )}
           </div>
+
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            By sending this message, you agree to our{" "}
+            <Link
+              href="/terms"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </p>
 
           <DialogFooter className="pt-2">
             <DialogClose

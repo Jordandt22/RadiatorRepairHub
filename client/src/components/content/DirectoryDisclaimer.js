@@ -28,7 +28,7 @@ function DirectoryDisclaimer({ className = "mt-12" }) {
           </li>
         </ul>
         <p className="text-gray-700 leading-relaxed">
-          Feel free to contact us and we can help you find services near you!
+          Contact us if you need help finding shops near you.
         </p>
       </div>
     </section>

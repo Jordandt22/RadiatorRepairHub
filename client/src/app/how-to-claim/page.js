@@ -16,7 +16,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 
 const pageTitle = "How to Claim Your Business | RadiatorRepairHub";
 const pageDescription =
-  "Learn claim eligibility, the step-by-step email verification process, benefits of claiming, and answers to common claiming questions.";
+  "Claim eligibility, email verification steps, what claiming lets you edit, and answers to common claiming questions.";
 
 export const metadata = buildPageMetadata({
   title: pageTitle,
@@ -26,27 +26,27 @@ export const metadata = buildPageMetadata({
 
 const BENEFITS = [
   {
-    title: "Enhance your listing's appearance",
+    title: "Update how your listing looks",
     description:
-      "Add or update your About section, service categories, and photos to make a stronger first impression on potential customers.",
+      "Add or edit your About section, service categories, and photos so customers see current information.",
     icon: ImageIcon,
   },
   {
-    title: "Boost your leads",
+    title: "Keep contact details accurate",
     description:
-      "Keep your contact info accurate and up to date so customers can reach you without friction, and inquiries actually make it to the right place.",
+      "Update phone and email so customers can reach you, and inquiries go to the right place.",
     icon: BadgeCheck,
   },
   {
-    title: "Reduce customer confusion",
+    title: "Set accurate hours",
     description:
-      "Set accurate business hours so people know when you're open before they show up or call.",
+      "Show when you are open so people know when to call or stop by.",
     icon: Clock3,
   },
   {
-    title: "Improve discoverability",
+    title: "Add more listing details",
     description:
-      "Fill in extra details (payment methods, accessibility, other) so customers searching for something specific are more likely to find you.",
+      "Fill in payment methods, accessibility notes, and other details that help the right customers find you.",
     icon: Search,
   },
 ];
@@ -105,7 +105,7 @@ export default function HowToClaimPage() {
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         pageTitle="How to claim your business"
-        pageDescription="See whether your listing is eligible, follow the email claim steps, and learn what claiming unlocks."
+        pageDescription="Check eligibility, follow the email claim steps, and see what you can edit after claiming."
         headerLink={{
           href: "/signin",
           label: "Already claimed? Sign in",

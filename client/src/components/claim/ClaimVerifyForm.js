@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import { Eye, EyeOff } from "lucide-react";
@@ -365,6 +366,24 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
             <p className="text-xs text-destructive">{errors.confirmPassword}</p>
           )}
         </div>
+
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          By creating an account, you agree to our{" "}
+          <Link
+            href="/terms"
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/privacy"
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
+            Privacy Policy
+          </Link>
+          .
+        </p>
 
         <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end pt-2">
           <Button

@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { CheckCircle, Users, Search, Eye, TrendingUp } from "lucide-react";
 
 // Contexts
@@ -11,13 +12,13 @@ import GetListedHeader from "@/components/pages/get-listed/GetListedHeader";
 export const metadata = {
   title: "Get Listed | Add Your Radiator Repair Business - RadiatorRepairHub",
   description:
-    "List your radiator repair business on RadiatorRepairHub for free. Get discovered by customers searching for cooling system repair services. Boost your online visibility and attract more customers.",
+    "List your radiator repair business on RadiatorRepairHub for free. Show up when customers search by city or category for cooling system repair.",
   keywords:
     "get listed, radiator repair business listing, auto repair directory, business listing, radiator repair marketing, cooling system business",
   openGraph: {
     title: "Get Listed | Add Your Radiator Repair Business - RadiatorRepairHub",
     description:
-      "List your radiator repair business on RadiatorRepairHub for free. Get discovered by customers searching for cooling system repair services. Boost your online visibility and attract more customers.",
+      "List your radiator repair business on RadiatorRepairHub for free. Show up when customers search by city or category for cooling system repair.",
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
@@ -73,27 +74,27 @@ const Page = () => {
   const benefits = [
     {
       icon: Users,
-      title: "Get discovered by local customers",
+      title: "Reach local customers",
       description:
-        "Connect with customers actively searching for radiator repair services in your area.",
+        "Show up for people searching for radiator repair services in your area.",
     },
     {
       icon: Eye,
-      title: "Showcase services, reviews, and contact info",
+      title: "Show services, reviews, and contact info",
       description:
-        "Display your business details, services, and customer reviews in one place.",
+        "Put your business details, services, and reviews in one place.",
     },
     {
       icon: Search,
-      title: "Appear in search results by city and category",
+      title: "Appear in search by city and category",
       description:
-        "Be found when customers search by location or specific repair services.",
+        "Be found when customers search by location or repair type.",
     },
     {
       icon: TrendingUp,
-      title: "Boost your online visibility",
+      title: "Stay findable online",
       description:
-        "Increase your digital presence and attract more customers to your business.",
+        "Keep a public listing customers can use to call or message you.",
     },
   ];
 
@@ -117,8 +118,8 @@ const Page = () => {
                 Why List Your Business?
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Join our growing directory of trusted radiator repair
-                professionals and reach more customers in your area.
+                Add your shop to the RadiatorRepairHub directory so local
+                drivers can find you when they need cooling system repair.
               </p>
             </div>
 
@@ -155,6 +156,16 @@ const Page = () => {
                 <p className="text-lg text-gray-600">
                   Fill out the form below to get your business listed in our
                   directory.
+                </p>
+                <p className="text-base text-gray-600 mt-3 max-w-2xl mx-auto">
+                  Already in the directory?{" "}
+                  <Link
+                    href="/how-to-claim"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Claim your listing
+                  </Link>{" "}
+                  from the business page instead of submitting a duplicate.
                 </p>
               </div>
 

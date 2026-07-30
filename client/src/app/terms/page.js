@@ -4,14 +4,14 @@ import PageHeader from "@/components/layout/Header/PageHeader";
 export const metadata = {
   title: "Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
   description:
-    "Read RadiatorRepairHub's terms of service and user agreement. Understand your rights and responsibilities when using our radiator repair directory service.",
+    "RadiatorRepairHub terms of service: directory use, Quick Contact, business claims, listing reports, accounts, and user responsibilities.",
   keywords:
     "terms of service, user agreement, legal terms, terms and conditions, service agreement, user rights",
   openGraph: {
     title:
       "Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
     description:
-      "Read RadiatorRepairHub's terms of service and user agreement. Understand your rights and responsibilities when using our radiator repair directory service.",
+      "RadiatorRepairHub terms of service: directory use, Quick Contact, business claims, listing reports, accounts, and user responsibilities.",
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
@@ -38,7 +38,7 @@ function TermsPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date("2026-07-21").toLocaleDateString("en-US", {
+  const lastUpdated = new Date("2026-07-29").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -50,6 +50,8 @@ function TermsPage() {
     "Search and filtering capabilities",
     "General contact forms for directory questions, listing help, and feedback",
     "Quick Contact, a tool to submit service inquiries to listed businesses",
+    "Business claiming, so eligible owners can verify listing email access and create an account to manage their listing",
+    "Report Info, a tool to report incorrect claim contact details or inappropriate listing content",
   ];
 
   const quickContactTermsPoints = [
@@ -60,6 +62,24 @@ function TermsPage() {
     "We may verify the email address you provide before accepting a Quick Contact submission.",
     "We facilitate communication between you and listed businesses but do not guarantee a response, appointment, quote, or repair outcome.",
     "Your repair or service relationship, if any, is solely between you and the listed business.",
+  ];
+
+  const claimTermsPoints = [
+    "Claiming is available only for eligible listings, typically those with a unique email address on file that can receive a verification message.",
+    "By starting or completing a claim, you represent that you are an authorized owner or representative of the business and that the information you provide is accurate.",
+    "We may send a verification code or link to the email address associated with the listing. Access to that inbox is part of how we confirm eligibility.",
+    "We may deny, pause, expire, cancel, or reverse a claim if we cannot verify authorization, if eligibility requirements are not met, or if we suspect fraud or abuse.",
+    "Self-serve claiming may be unavailable when a listing has no email on file or when the same email is shared across multiple listings. In those cases, use Report Info or contact us for help.",
+    "After a successful claim, you may create or use an account to manage the claimed listing, subject to these Terms and our Privacy Policy.",
+    "Claiming does not transfer ownership of our directory data or grant you rights beyond managing your listing through the Service.",
+  ];
+
+  const listingReportTermsPoints = [
+    "You agree to provide accurate information when submitting a Report Info form or reporting a listing problem through our contact form.",
+    "We may verify the email address you provide and review reports before making any listing changes.",
+    "Submitting a report does not guarantee that we will change the listing, approve a claim, or respond within a specific timeframe.",
+    "We may decline, archive, or take no action on reports that appear incomplete, abusive, fraudulent, or unsupported.",
+    "Suggested phone numbers or emails you provide may be used to update listing contact details after review, when appropriate.",
   ];
 
   const capacityRequirements = [
@@ -74,6 +94,8 @@ function TermsPage() {
     "Contact businesses through provided information",
     "Submit general inquiries through our site contact forms",
     "Submit service inquiries to listed businesses through Quick Contact, subject to review",
+    "Claim an eligible business listing you are authorized to represent, and manage that listing through your account",
+    "Report incorrect claim contact information or inappropriate listing content through Report Info",
     "Access publicly available information about listed businesses",
   ];
 
@@ -94,6 +116,8 @@ function TermsPage() {
   const fraudulentActivitiesPoints = [
     "Providing false, misleading, or inaccurate information",
     "Impersonating another person, business, or entity",
+    "Claiming a business listing you do not own or are not authorized to represent",
+    "Submitting false, abusive, or repeated listing reports",
     "Using the Service for spam, phishing, or other deceptive practices",
     "Submitting fraudulent, abusive, or repetitive contact form or Quick Contact messages",
     "Posting defamatory, abusive, or inappropriate content",
@@ -139,6 +163,8 @@ function TermsPage() {
     "The quality, reliability, or availability of listed businesses",
     "The results you may obtain from using listed services",
     "The safety or legality of interactions with listed businesses",
+    "That a business claim will succeed, remain approved, or resolve ownership disputes",
+    "That a listing report will result in a specific correction or outcome",
   ];
 
   const technicalLimitationsPoints = [
@@ -154,6 +180,7 @@ function TermsPage() {
     "Damages arising from your use or inability to use the Service",
     "Damages resulting from your interactions with listed businesses",
     "Damages caused by errors, omissions, or inaccuracies in business listings",
+    "Damages arising from claim decisions, listing report reviews, or account actions",
   ];
 
   const businessInteractionPoints = [
@@ -163,6 +190,7 @@ function TermsPage() {
     "Breach of contract by service providers",
     "Fraudulent or deceptive business practices",
     "Failure of a business to respond to a Quick Contact or other inquiry",
+    "Disputes over business ownership or who may claim a listing",
   ];
 
   const indemnificationPoints = [
@@ -171,11 +199,14 @@ function TermsPage() {
     "Your violation of any third-party rights, including intellectual property rights",
     "Any content you submit to the Service",
     "Your interactions with businesses listed in our directory",
+    "Your business claim submissions, listing reports, or account activity",
   ];
 
   const terminationReasonsPoints = [
     "Breach of these Terms",
     "Fraudulent or illegal activities",
+    "Unauthorized or fraudulent business claims",
+    "Abuse of Report Info or other reporting tools",
     "Violation of intellectual property rights",
     "Abuse of the Service or other users",
     "Extended period of inactivity",
@@ -184,6 +215,7 @@ function TermsPage() {
   const terminationEffectsPoints = [
     "Your right to use the Service will cease immediately",
     "We may delete your account and associated data",
+    "Claimed listings associated with a deleted or terminated account may become unclaimed",
     "Provisions that should survive termination will remain in effect",
     "You remain liable for any obligations incurred prior to termination",
   ];
@@ -384,13 +416,27 @@ function TermsPage() {
           </p>
           <ul className="mt-4 text-gray-700 space-y-2">
             <li className="mb-2 ml-6">
-              • Provided by third parties or obtained from public sources
+              • Provided by third parties, obtained from public sources, or
+              submitted by users and business owners
             </li>
             <li className="mb-2 ml-6">• Subject to change without notice</li>
             <li className="mb-2 ml-6">
-              • Not verified by us unless specifically stated
+              • Not independently verified by us for every listing, even when a
+              listing shows as claimed
             </li>
           </ul>
+
+          <h3 className="text-xl font-heading font-semibold mt-6 mb-4">
+            Claimed Listings
+          </h3>
+          <p className="mt-2 text-gray-700 leading-relaxed">
+            Some listings may be claimed by a business owner or authorized
+            representative. Claiming helps owners manage listing details through
+            an account, but it does not mean we endorse the business or guarantee
+            the accuracy of every field. We may update, unclaim, or remove a
+            listing if we receive credible reports, detect abuse, or otherwise
+            need to maintain the directory.
+          </p>
 
           <h3 className="text-xl font-heading font-semibold mt-6 mb-4">
             No Endorsement
@@ -457,6 +503,72 @@ function TermsPage() {
 
         <section className="mb-12">
           <h2 className="text-3xl font-heading font-bold mt-6">
+            Business Claims and Accounts
+          </h2>
+          <p className="mt-4 text-gray-700 leading-relaxed">
+            Eligible business owners and authorized representatives may claim a
+            listing and create an account to manage it. By using claiming or
+            account features, you agree to the following:
+          </p>
+          <ul className="mt-4 text-gray-700 space-y-2">
+            {claimTermsPoints.map((point, index) => (
+              <li key={index} className="mb-2 ml-6">
+                • {point}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-gray-700 leading-relaxed">
+            More detail on eligibility and steps is available on our{" "}
+            <a
+              href="/how-to-claim"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              How to Claim
+            </a>{" "}
+            page. Account and claim-related data practices are described in our{" "}
+            <a
+              href="/privacy"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Privacy Policy
+            </a>
+            .
+          </p>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="text-3xl font-heading font-bold mt-6">
+            Listing Reports (Report Info)
+          </h2>
+          <p className="mt-4 text-gray-700 leading-relaxed">
+            Our Service includes Report Info on business listing pages so users
+            can report wrong claim contact information or inappropriate listing
+            content. You may also report listing problems through our contact
+            form. By submitting a report, you agree to the following:
+          </p>
+          <ul className="mt-4 text-gray-700 space-y-2">
+            {listingReportTermsPoints.map((point, index) => (
+              <li key={index} className="mb-2 ml-6">
+                • {point}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-gray-700 leading-relaxed">
+            Listing reports are stored in our systems and may trigger internal
+            admin notifications through Resend. Details about the information
+            collected and how it is used are described in our{" "}
+            <a
+              href="/privacy"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Privacy Policy
+            </a>
+            .
+          </p>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="text-3xl font-heading font-bold mt-6">
             Intellectual Property Rights
           </h2>
 
@@ -482,8 +594,10 @@ function TermsPage() {
           </h3>
           <p className="mt-2 text-gray-700 leading-relaxed">
             We grant you a limited, non-exclusive, non-transferable, revocable
-            license to access and use the Service for personal, non-commercial
-            purposes, subject to these Terms.
+            license to access and use the Service for personal purposes and, if
+            you are a claimed business owner or authorized representative, to
+            manage your claimed listing(s) through your account, subject to
+            these Terms.
           </p>
 
           <h3 className="text-xl font-heading font-semibold mt-6 mb-4">
@@ -516,31 +630,32 @@ function TermsPage() {
           </p>
           <ul className="mt-4 text-gray-700 space-y-2">
             <li className="mb-2 ml-6">
-              • <strong>Google Analytics</strong> — website traffic and usage
+              • <strong>Google Analytics</strong> - website traffic and usage
               analytics
             </li>
             <li className="mb-2 ml-6">
-              • <strong>PostHog</strong> — product analytics and page
+              • <strong>PostHog</strong> - product analytics and page
               interaction tracking
             </li>
             <li className="mb-2 ml-6">
-              • <strong>Cloudflare</strong> — content delivery, DNS, security,
+              • <strong>Cloudflare</strong> - content delivery, DNS, security,
               and bot protection
             </li>
             <li className="mb-2 ml-6">
-              • <strong>EmailJS</strong> — general contact form delivery
+              • <strong>EmailJS</strong> - general contact form delivery
             </li>
             <li className="mb-2 ml-6">
-              • <strong>Resend</strong> — transactional email for Quick Contact
-              and related communications
+              • <strong>Resend</strong> - transactional email for Quick Contact,
+              claim verification, listing report notifications, and related
+              communications
             </li>
             <li className="mb-2 ml-6">
-              • <strong>Supabase</strong> — database storage for directory and
-              contact message records
+              • <strong>Supabase</strong> - database storage for directory,
+              contact messages, accounts, claim requests, and listing reports
             </li>
             <li className="mb-2 ml-6">
-              • <strong>Abstract API</strong> — email address verification for
-              Quick Contact submissions
+              • <strong>Abstract API</strong> - email address verification for
+              Quick Contact and listing report submissions
             </li>
           </ul>
           <p className="mt-4 text-gray-700 leading-relaxed">
@@ -678,7 +793,9 @@ function TermsPage() {
           </h3>
           <p className="mt-2 text-gray-700 leading-relaxed">
             You may stop using the Service at any time. If you have an account
-            with us, you may delete your account by contacting us.
+            with us, you may delete your account through account settings or by
+            contacting us. Deleting your account may cause listings you own to
+            become unclaimed.
           </p>
 
           <h3 className="text-xl font-heading font-semibold mt-6 mb-4">

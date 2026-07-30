@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -368,6 +369,24 @@ function ReportInfoDialog({ businessId, businessName }) {
           {errors.form ? (
             <p className="text-xs text-red-600">{errors.form}</p>
           ) : null}
+
+          <p className="text-xs text-gray-500 leading-relaxed">
+            By submitting this report, you agree to our{" "}
+            <Link
+              href="/terms"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </p>
 
           <DialogFooter className="gap-2 sm:gap-2">
             <Button
