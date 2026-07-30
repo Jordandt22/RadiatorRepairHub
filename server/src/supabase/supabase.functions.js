@@ -477,6 +477,39 @@ export const expireClaimRequestsByIds = async (claim_request_ids) => {
   return { data, error };
 };
 
+export const getClaimRequests = async (page, limit, status = null) => {
+  let query = supabase
+    .from("claim_requests")
+    .select(
+      "claim_request_id, business_id, status, attempts, last_attempted_at, created_at, completed_by, completed_at, business:businesses(id, title, slug)",
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};
+
+export const updateClaimRequestsStatus = async (ids, status) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .update({ status })
+    .in("claim_request_id", ids)
+    .select("claim_request_id");
+
+  return { data, error };
+};
+
 export const insertClaimRequest = async (business_id) => {
   const { data, error } = await supabase
     .from("claim_requests")

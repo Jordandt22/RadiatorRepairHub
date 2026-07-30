@@ -12,6 +12,8 @@ import {
   sendContactConfirmations,
   sendContactDeclined,
   sendContactNoResponse,
+  getClaimRequests,
+  updateClaimRequestsStatus,
   invalidateCache,
 } from "../../controllers/admin/admin.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
@@ -28,6 +30,8 @@ import {
   SendContactDeclinedSchema,
   SendContactNoResponseSchema,
   GetContactMessagesQuerySchema,
+  GetClaimRequestsQuerySchema,
+  UpdateClaimRequestsStatusSchema,
   InvalidateCacheSchema,
 } from "../../schemas/admin.schemas.js";
 import { bodyValidator, queryValidator } from "../../middleware/validators.js";
@@ -46,6 +50,20 @@ adminRouter.get(
   authAdmin,
   queryValidator(GetContactMessagesQuerySchema),
   serverErrorCatcherWrapper(getContactMessages)
+);
+
+adminRouter.get(
+  "/claim-requests",
+  authAdmin,
+  queryValidator(GetClaimRequestsQuerySchema),
+  serverErrorCatcherWrapper(getClaimRequests)
+);
+
+adminRouter.patch(
+  "/claim-requests/status",
+  authAdmin,
+  bodyValidator(UpdateClaimRequestsStatusSchema),
+  serverErrorCatcherWrapper(updateClaimRequestsStatus)
 );
 
 adminRouter.patch(

@@ -19,10 +19,7 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { ChevronRightIcon } from "lucide-react";
-import {
-  replaceDashboardTab,
-  subscribeToDashboardTab,
-} from "@/lib/dashboardTab";
+import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
 
 function getTabFromUrl(url, pathname, search) {
   try {
@@ -70,17 +67,30 @@ export function NavMain({ items, label = "Messages" }) {
     if (tab === currentTab) return;
 
     setCurrentTab(tab);
-    replaceDashboardTab(tab);
+    replaceTab(tab, pathname);
   };
 
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{label}</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
+        {items.map((item) => {
+          const sectionActive =
+            item.isActive ||
+            item.items?.some((subItem) => {
+              try {
+                return (
+                  new URL(subItem.url, "http://localhost").pathname === pathname
+                );
+              } catch {
+                return false;
+              }
+            });
+
+          return (
           <Collapsible
             key={item.title}
-            defaultOpen={item.isActive}
+            defaultOpen={Boolean(sectionActive)}
             className="group/collapsible"
             render={<SidebarMenuItem />}
           >
@@ -123,7 +133,8 @@ export function NavMain({ items, label = "Messages" }) {
               </CollapsibleContent>
             ) : null}
           </Collapsible>
-        ))}
+          );
+        })}
       </SidebarMenu>
     </SidebarGroup>
   );

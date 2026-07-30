@@ -5,10 +5,18 @@ export function getTabFromLocation() {
   return new URLSearchParams(window.location.search).get("tab");
 }
 
-export function replaceDashboardTab(tab) {
-  const url = `/dashboard?tab=${tab}`;
+export function replaceTab(tab, pathname) {
+  const path =
+    pathname ??
+    (typeof window !== "undefined" ? window.location.pathname : "/dashboard");
+  const url = `${path}?tab=${tab}`;
   window.history.replaceState(window.history.state, "", url);
   window.dispatchEvent(new Event(TAB_CHANGE_EVENT));
+}
+
+/** @deprecated Prefer replaceTab — kept for callers that hardcode /dashboard */
+export function replaceDashboardTab(tab) {
+  replaceTab(tab, "/dashboard");
 }
 
 export function subscribeToDashboardTab(onChange) {

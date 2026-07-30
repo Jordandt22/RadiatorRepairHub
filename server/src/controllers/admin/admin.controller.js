@@ -16,13 +16,17 @@ import {
   markContactMessagesDeclined as markMessagesDeclined,
   markContactMessagesResponded as markMessagesResponded,
   markContactMessagesNoResponse as markMessagesNoResponse,
+  getClaimRequests as fetchClaimRequests,
+  updateClaimRequestsStatus as updateClaimsStatus,
 } from "../../supabase/supabase.functions.js";
 import {
   cacheData,
   getCacheData,
   getContactMessagesKey,
+  getClaimRequestsKey,
   deleteCacheDataByPrefix,
 } from "../../redis/redis.js";
+import { clearClaimCodeCache } from "../../lib/claimHelpers.js";
 import { resendClient } from "../../resend/resend.js";
 import {
   FREE_LEAD_CLAIM_OFFER_MESSAGE,
@@ -1193,8 +1197,88 @@ export const markContactMessagesNoResponse = async (req, res) => {
   );
 };
 
+export const getClaimRequests = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const status = req.query.status || null;
+
+  const { key, interval } = getClaimRequestsKey(page, limit, status);
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, count, error } = await fetchClaimRequests(page, limit, status);
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching claim requests.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  const compiledData = {
+    claimRequests: data ?? [],
+    total,
+    totalPages,
+    page,
+    limit,
+    status,
+  };
+
+  await cacheData(key, interval, compiledData);
+  return res.status(200).json(successHandler(compiledData));
+};
+
+export const updateClaimRequestsStatus = async (req, res) => {
+  const { status, claim_request_ids } = req.body;
+
+  const { data, error } = await updateClaimsStatus(claim_request_ids, status);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating claim request statuses.",
+          error
+        )
+      );
+  }
+
+  const claimRequestIds = (data ?? []).map((row) => row.claim_request_id);
+
+  if (status === "expired") {
+    await Promise.all(
+      claimRequestIds.map((id) => clearClaimCodeCache(id))
+    );
+  }
+
+  await deleteCacheDataByPrefix("CLAIM_REQUESTS");
+
+  return res.status(200).json(
+    successHandler({
+      updated: claimRequestIds.length,
+      claimRequestIds,
+      status,
+    })
+  );
+};
+
 const CACHE_RESOURCE_PREFIXES = {
   "contact-messages": "CONTACT_MESSAGES",
+  "claim-requests": "CLAIM_REQUESTS",
 };
 
 export const invalidateCache = async (req, res) => {

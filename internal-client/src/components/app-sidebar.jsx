@@ -12,6 +12,9 @@ import {
   SendIcon,
   ArchiveIcon,
   CircleCheckIcon,
+  BadgeCheckIcon,
+  XCircleIcon,
+  TimerOffIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -68,6 +71,33 @@ const data = {
           title: "Archived",
           url: "/dashboard?tab=archived",
           icon: <ArchiveIcon />,
+        },
+      ],
+    },
+    {
+      title: "Claim Requests",
+      url: "/claim-requests?tab=pending",
+      icon: <BadgeCheckIcon />,
+      items: [
+        {
+          title: "Pending",
+          url: "/claim-requests?tab=pending",
+          icon: <ClockIcon />,
+        },
+        {
+          title: "Success",
+          url: "/claim-requests?tab=success",
+          icon: <CheckIcon />,
+        },
+        {
+          title: "Failed",
+          url: "/claim-requests?tab=failed",
+          icon: <XCircleIcon />,
+        },
+        {
+          title: "Expired",
+          url: "/claim-requests?tab=expired",
+          icon: <TimerOffIcon />,
         },
       ],
     },
