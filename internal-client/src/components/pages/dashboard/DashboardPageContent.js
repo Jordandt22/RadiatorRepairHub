@@ -12,10 +12,7 @@ import { useAuth } from "@/contexts/Auth.context";
 import { useLoading } from "@/contexts/Loading.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { debounce } from "@/lib/debounce";
-import {
-  replaceDashboardTab,
-  subscribeToDashboardTab,
-} from "@/lib/dashboardTab";
+import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
 import StatusFilterTabs, {
   TAB_STATUS,
   VALID_TABS,
@@ -67,7 +64,7 @@ export default function DashboardPageContent() {
       window.history.replaceState(
         window.history.state,
         "",
-        "/dashboard?tab=pending",
+        "/contact-form?tab=pending",
       );
     }
   }, [searchParams]);
@@ -83,7 +80,7 @@ export default function DashboardPageContent() {
   const handleTabChange = (tab) => {
     const nextTab = resolveTab(tab);
     if (nextTab === activeTab) return;
-    replaceDashboardTab(nextTab);
+    replaceTab(nextTab, "/contact-form");
   };
 
   const handlePreviousPage = () => {

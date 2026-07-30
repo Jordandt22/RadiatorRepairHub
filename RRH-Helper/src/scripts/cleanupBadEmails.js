@@ -81,7 +81,7 @@ async function clearEmailBySlug(slug) {
 
   const { error } = await supabase
     .from("businesses")
-    .update({ email: null, updated_at: new Date().toISOString() })
+    .update({ email: null, last_edited_at: new Date().toISOString() })
     .eq("id", data.id);
 
   if (error) throw error;

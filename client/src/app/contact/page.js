@@ -212,7 +212,7 @@ const Page = () => {
                       </h3>
                       <p className="text-sm text-gray-600">
                         Use <strong>Quick Contact</strong> (or the phone number)
-                        on that business&apos;s page — not this form. Include your
+                        on that business&apos;s page, not this form. Include your
                         vehicle and issue details so the shop can respond.
                       </p>
                     </div>

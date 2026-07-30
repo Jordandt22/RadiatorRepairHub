@@ -55,7 +55,7 @@ export default function FAQPage() {
     {
       question: "Can I drive with a radiator problem?",
       answer:
-        "It's not recommended to drive with radiator problems as it can lead to engine damage. If your car is overheating, steaming, or losing coolant quickly, pull over safely, turn off the engine, and call for a tow. A very slow seep with a normal temperature gauge may allow a short trip to a nearby shop — only if you can monitor the gauge the entire way.",
+        "It's not recommended to drive with radiator problems as it can lead to engine damage. If your car is overheating, steaming, or losing coolant quickly, pull over safely, turn off the engine, and call for a tow. A very slow seep with a normal temperature gauge may allow a short trip to a nearby shop, but only if you can monitor the gauge the entire way.",
       relatedBlog: {
         title: "Can You Drive With a Radiator Leak?",
         href: "/blogs/can-you-drive-with-a-radiator-leak",
@@ -83,7 +83,7 @@ export default function FAQPage() {
     {
       question: "How often should I have my radiator serviced?",
       answer:
-        "Follow your vehicle manufacturer's schedule first — many older formulas call for service around every 30,000–50,000 miles, while some extended-life coolants last much longer. Typical service includes coolant flushes or drain-and-fills, leak checks, and verifying proper coolant levels.",
+        "Follow your vehicle manufacturer's schedule first. Many older formulas call for service around every 30,000–50,000 miles, while some extended-life coolants last much longer. Typical service includes coolant flushes or drain-and-fills, leak checks, and verifying proper coolant levels.",
       relatedBlog: {
         title: "Radiator Flush: What to Expect & Cost",
         href: "/blogs/radiator-flush-what-to-expect-and-cost",
@@ -101,7 +101,7 @@ export default function FAQPage() {
     {
       question: "Can I prevent radiator problems?",
       answer:
-        "Yes! Regular maintenance, using the correct coolant, checking coolant levels monthly, and addressing small issues promptly can prevent major radiator problems. Also, avoid driving with an overheating engine.",
+        "Regular maintenance helps: use the correct coolant, check levels monthly, and fix small issues early. Avoid driving with an overheating engine.",
       relatedBlog: {
         title: "How to Spot a Radiator Leak",
         href: "/blogs/how-to-spot-a-radiator-leak",
@@ -110,12 +110,27 @@ export default function FAQPage() {
     {
       question: "Do you verify the businesses listed on your site?",
       answer:
-        "Yes, we verify that all listed businesses offer genuine radiator repair services. We continuously update our directory to ensure accuracy and remove outdated information. However, we recommend calling ahead to confirm current services and hours.",
+        "We work to list genuine radiator repair businesses and keep the directory updated, including reviewing Get Listed submissions and Report Info tips. Claimed listings mean an owner verified access to the listing email and created an account, but we still recommend calling ahead to confirm current services and hours.",
     },
     {
       question: "How can I get my business listed on RadiatorRepairHub?",
       answer:
-        "Business owners can submit their information through our Get Listed page. We review all submissions to ensure they meet our quality standards for radiator repair services. Listings are currently free.",
+        "If your shop is not listed yet, submit your information through our Get Listed page. If you are already in the directory, claim your listing from the business page instead of submitting a duplicate. Listings are currently free.",
+    },
+    {
+      question: "How do I claim my business listing?",
+      answer:
+        "Open your business page and use Claim Business. We send a verification email to the address on file for that listing. After you verify, create your account password and sign in to manage the listing. Full steps and eligibility rules are on our How to Claim page.",
+    },
+    {
+      question: "Why can't I claim my business?",
+      answer:
+        "Self-serve claiming needs a unique email on the listing. If there is no email, or the same email is shared by multiple businesses, the listing may show as unclaimable. Use Report Info on the business page to send the correct contact details, or contact us for help. More detail is on How to Claim.",
+    },
+    {
+      question: "How do I report incorrect or inappropriate listing information?",
+      answer:
+        "On the business page, use Report Info under Contact Information. You can report wrong claim contact details (and suggest corrections) or inappropriate listing content. You can also reach us through the contact page and choose Report a Listing Problem.",
     },
     {
       question: "What's included in radiator servicing?",
@@ -163,11 +178,11 @@ export default function FAQPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 font-heading">
-              Still Need Help?
+              Still have questions?
             </h2>
             <p className="text-lg text-gray-600">
-              Can&apos;t find the answer you&apos;re looking for? We&apos;re
-              here to help you find the right radiator repair service.
+              Search the directory for a shop near you, or contact us if you
+              need help with a listing or the site.
             </p>
           </div>
 
@@ -239,7 +254,19 @@ export default function FAQPage() {
                 Featured Businesses
               </h3>
               <p className="text-gray-600 text-sm">
-                Discover top-rated radiator repair shops in your area
+                Top-rated radiator repair shops in your area
+              </p>
+            </Link>
+
+            <Link
+              href="/how-to-claim"
+              className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                How to Claim
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Claim an existing listing and manage it with a business account
               </p>
             </Link>
 

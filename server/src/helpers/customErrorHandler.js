@@ -6,6 +6,10 @@ export const errorCodes = {
   BOTS_DETECTED: "bots-detected",
   ACCESS_DENIED: "access-denied",
   ROUTE_NOT_FOUND: "route-not-found",
+  CLAIM_UNAVAILABLE: "claim-unavailable",
+  NO_ACCESS_TOKEN: "no-access-token",
+  USER_NOT_FOUND: "user-not-found",
+  INVALID_ACCESS_TOKEN: "invalid-access-token",
 
   // Supabase
   SUPABASE_ERROR: "supabase-error",
@@ -26,6 +30,18 @@ export const customErrorHandler = (code, message, error) => {
     error: {
       code,
       message,
+    },
+  };
+};
+
+export const claimUnavailableHandler = (message, business = null) => {
+  console.error(`claim-unavailable: ${message}`);
+  return {
+    data: business?.slug ? { slug: business.slug } : null,
+    error: {
+      code: errorCodes.CLAIM_UNAVAILABLE,
+      message,
+      slug: business?.slug ?? null,
     },
   };
 };

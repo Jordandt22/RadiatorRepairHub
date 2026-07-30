@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import debounce from "lodash.debounce";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { usePostHog } from "posthog-js/react";
 import {
   ISSUE_LABEL_TO_ENUM,
@@ -90,12 +92,23 @@ function QuickContactDialogContent({
   children,
 }) {
   const { showCustomSuccess, showCustomError } = useToast();
+  const { user } = useIsSignedIn();
   const posthog = usePostHog();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const suppressCancelRef = useRef(false);
+
+  const authEmail =
+    typeof user?.email === "string" && user.email.trim()
+      ? user.email.trim()
+      : "";
+
+  useEffect(() => {
+    if (!authEmail) return;
+    setForm((prev) => (prev.email.trim() ? prev : { ...prev, email: authEmail }));
+  }, [authEmail]);
 
   const capture = (event, props = {}) => {
     posthog?.capture(event, {
@@ -149,7 +162,7 @@ function QuickContactDialogContent({
   };
 
   const resetForm = () => {
-    setForm(INITIAL_FORM);
+    setForm({ ...INITIAL_FORM, email: authEmail });
     setErrors({});
   };
 
@@ -492,6 +505,24 @@ function QuickContactDialogContent({
               </p>
             )}
           </div>
+
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            By sending this message, you agree to our{" "}
+            <Link
+              href="/terms"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </p>
 
           <DialogFooter className="pt-2">
             <DialogClose

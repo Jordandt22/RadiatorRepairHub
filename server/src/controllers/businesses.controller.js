@@ -2,6 +2,7 @@ import {
   errorCodes,
   customErrorHandler,
   successHandler,
+  claimUnavailableHandler,
 } from "../helpers/customErrorHandler.js";
 import {
   cacheData,
@@ -9,28 +10,1576 @@ import {
   getCacheData,
   getBusinessBySlugKey,
   getBusinessSlugsForSitemapKey,
-  // getBusinessesByStateKey,
-  // getCountBusinessesByStateKey,
-  // getCountBusinessesByCityKey,
-  // getBusinessesByCityKey,
-  // getCityBySlugKey,
   getSearchedBusinessesKey,
   getCountBusinessesBySearchKey,
+  getClaimRequestCodeKey,
+  getBusinessByIdKey,
+  setWithExactTtl,
+  deleteCacheData,
 } from "../redis/redis.js";
 import {
   getTopRatedBusinesses,
-  // getBusinessesByState,
-  // countBusinessesByState,
-  // countBusinessesByCity,
-  // getBusinessesByCity,
-  // getCityBySlug,
   searchBusinesses,
   getBusinessBySlug,
   getBusinessSlugsForSitemap,
+  getBusinessClaimInfo,
+  isBusinessEmailShared,
+  getBusinessLastEditedAt,
+  insertClaimRequest,
+  updateClaimRequestStatus,
+  getClaimRequestWithBusiness,
+  deleteClaimRequest,
+  completeBusinessClaimRpc,
+  createAuthUser,
+  deleteAuthUser,
+  signInWithPassword,
+  formatAuthSession,
+  resetClaimAttempts,
+  incrementClaimAttempts,
+  getOwnedBusinesses,
+  getOwnedBusiness,
+  updateOwnedBusinessContact,
+  updateOwnedBusinessPrimaryCategory,
+  updateOwnedBusinessAmenities,
+  updateOwnedBusinessAbout,
+  updateOwnedBusinessHours,
+  updateOwnedBusinessHoursConfirmation,
+  getOwnedBusinessSecondaryCategoryIds,
+  syncOwnedBusinessSecondaryCategories,
+  touchOwnedBusinessEditedAt,
+  getBusinessById,
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
+import {
+  buildOpeningHoursConfirmation,
+  daysEqual,
+  normalizeDayHours,
+  normalizeIncomingHours,
+  WEEKDAYS,
+} from "../lib/businessHoursFormat.js";
+import { resendClient } from "../resend/resend.js";
+import {
+  ADMIN_BUSINESS_CLAIMED_MESSAGE,
+  CLAIM_VERIFICATION_MESSAGE,
+  SENDER_NAME,
+  buildClaimVerifyLink,
+  buildBusinessClaimLink,
+  maskEmail,
+} from "../lib/constants/messages.js";
+import {
+  MAX_CLAIM_ATTEMPTS,
+  CLAIM_RESTART_MESSAGE,
+  CLAIM_MAX_ATTEMPTS_MESSAGE,
+  expireStaleClaimIfNeeded,
+  failClaimForMaxAttempts,
+  expireStalePendingClaimsForBusiness,
+} from "../lib/claimHelpers.js";
+import { verifyEmailReputation } from "../abstract/emailReputation.js";
+import { verifyPhoneNumber } from "../abstract/phoneValidation.js";
+import { verifyWebsiteReachable } from "../lib/websiteReachability.js";
+import crypto from "crypto";
 
-const { SUPABASE_ERROR } = errorCodes;
+const { SUPABASE_ERROR, ROUTE_NOT_FOUND, YUP_ERROR, SERVER_ERROR, ACCESS_DENIED } =
+  errorCodes;
+
+const CLAIM_CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+const generateClaimCode = (length = 6) => {
+  const bytes = crypto.randomBytes(length);
+  let code = "";
+  for (let i = 0; i < length; i++) {
+    code += CLAIM_CODE_CHARS[bytes[i] % CLAIM_CODE_CHARS.length];
+  }
+  return code;
+};
+
+export const claimBusiness = async (req, res) => {
+  const { businessId } = req.body;
+
+  const { data: business, error: businessError } =
+    await getBusinessClaimInfo(businessId);
+
+  if (businessError || !business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The selected business could not be found.",
+          businessError
+        )
+      );
+  }
+
+  const email =
+    typeof business.email === "string" ? business.email.trim() : "";
+
+  if (!email) {
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "This business cannot be claimed because it has no email on file."
+        )
+      );
+  }
+
+  const { isShared, error: sharedEmailError } =
+    await isBusinessEmailShared(email);
+
+  if (sharedEmailError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error checking whether this business can be claimed.",
+          sharedEmailError
+        )
+      );
+  }
+
+  if (isShared) {
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "This business cannot be claimed because its email is shared with other listings."
+        )
+      );
+  }
+
+  if (business.is_claimed) {
+    return res
+      .status(409)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "This business has already been claimed."
+        )
+      );
+  }
+
+  const { error: expireError, remainingPending } =
+    await expireStalePendingClaimsForBusiness(business.id);
+
+  if (expireError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error checking existing claim requests.",
+          expireError
+        )
+      );
+  }
+
+  if (remainingPending.length > 0) {
+    return res
+      .status(409)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "A claim request for this business is already in progress."
+        )
+      );
+  }
+
+  const { data: claimRequest, error: insertError } =
+    await insertClaimRequest(business.id);
+
+  if (insertError || !claimRequest) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error creating your claim request.",
+          insertError
+        )
+      );
+  }
+
+  const claimRequestId = claimRequest.claim_request_id;
+  const code = generateClaimCode(6);
+  const { key, interval } = getClaimRequestCodeKey(claimRequestId);
+
+  try {
+    await setWithExactTtl(key, interval, code);
+  } catch (redisError) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "There was an error storing the verification code.",
+          redisError
+        )
+      );
+  }
+
+  const { SENDER_EMAIL, RESEND_API_KEY, TEST_RECIPIENT_EMAIL } = process.env;
+  const isDev = process.env.NODE_ENV === "development";
+
+  if (!RESEND_API_KEY || !SENDER_EMAIL) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "Email is not configured. Unable to send the verification code."
+        )
+      );
+  }
+
+  if (isDev && !TEST_RECIPIENT_EMAIL) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "TEST_RECIPIENT_EMAIL is required in development."
+        )
+      );
+  }
+
+  const recipientEmail = isDev ? TEST_RECIPIENT_EMAIL : email;
+  const verifyUrl = buildClaimVerifyLink(claimRequestId);
+  const businessPageUrl = buildBusinessClaimLink(business.slug);
+  const { error: sendError } = await resendClient().emails.send({
+    from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+    to: [recipientEmail],
+    subject: CLAIM_VERIFICATION_MESSAGE.subject(business.title),
+    html: CLAIM_VERIFICATION_MESSAGE.html(
+      business.title,
+      code,
+      verifyUrl,
+      businessPageUrl
+    ),
+  });
+
+  if (sendError) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    try {
+      await deleteCacheData(key);
+    } catch {
+      // best-effort cleanup
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "There was an error sending the verification email.",
+          sendError
+        )
+      );
+  }
+
+  await invalidateBusinessCache(business);
+
+  return res.status(201).json(
+    successHandler({
+      maskedEmail: maskEmail(email),
+      claimRequestId,
+    })
+  );
+};
+
+const invalidateBusinessCache = async (business) => {
+  if (!business?.id) return;
+  const { key: businessIdCacheKey } = getBusinessByIdKey(business.id);
+  await deleteCacheData(businessIdCacheKey);
+  if (business.slug) {
+    const { key: businessSlugCacheKey } = getBusinessBySlugKey(business.slug);
+    await deleteCacheData(businessSlugCacheKey);
+  }
+};
+
+export const getClaimRequest = async (req, res) => {
+  const { claim_request_id } = req.params;
+
+  const { data: claim, error } =
+    await getClaimRequestWithBusiness(claim_request_id);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the claim request.",
+          error
+        )
+      );
+  }
+
+  if (!claim) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(ROUTE_NOT_FOUND, "Claim request could not be found.")
+      );
+  }
+
+  const business = claim.business;
+  if (!business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The business for this claim request could not be found."
+        )
+      );
+  }
+
+  if (claim.status !== "pending") {
+    return res
+      .status(409)
+      .json(
+        claimUnavailableHandler(
+          "This claim request is no longer available.",
+          business
+        )
+      );
+  }
+
+  if (await expireStaleClaimIfNeeded(claim)) {
+    return res
+      .status(422)
+      .json(claimUnavailableHandler(CLAIM_RESTART_MESSAGE, business));
+  }
+
+  if (business.is_claimed) {
+    return res
+      .status(409)
+      .json(
+        claimUnavailableHandler(
+          "This business has already been claimed.",
+          business
+        )
+      );
+  }
+
+  const email =
+    typeof business.email === "string" ? business.email.trim() : "";
+  if (!email) {
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "This business cannot be claimed because it has no email on file."
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      claimRequestId: claim.claim_request_id,
+      business: {
+        id: business.id,
+        title: business.title,
+        slug: business.slug,
+        email,
+      },
+    })
+  );
+};
+
+export const cancelClaim = async (req, res) => {
+  const { claimRequestId } = req.body;
+
+  const { data: claim, error } =
+    await getClaimRequestWithBusiness(claimRequestId);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the claim request.",
+          error
+        )
+      );
+  }
+
+  if (!claim) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(ROUTE_NOT_FOUND, "Claim request could not be found.")
+      );
+  }
+
+  const business = claim.business;
+  const { key: codeKey } = getClaimRequestCodeKey(claimRequestId);
+
+  const { error: deleteError } = await deleteClaimRequest(claimRequestId);
+  if (deleteError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error canceling the claim request.",
+          deleteError
+        )
+      );
+  }
+
+  try {
+    await deleteCacheData(codeKey);
+  } catch {
+    // best-effort cleanup
+  }
+
+  if (business) {
+    await invalidateBusinessCache(business);
+  }
+
+  return res.status(200).json(
+    successHandler({
+      slug: business?.slug ?? null,
+    })
+  );
+};
+
+export const completeClaim = async (req, res) => {
+  const { claimRequestId, code, password } = req.body;
+  const normalizedCode = String(code).trim().toUpperCase();
+
+  const { data: claim, error } =
+    await getClaimRequestWithBusiness(claimRequestId);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the claim request.",
+          error
+        )
+      );
+  }
+
+  if (!claim) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(ROUTE_NOT_FOUND, "Claim request could not be found.")
+      );
+  }
+
+  const business = claim.business;
+  if (!business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The business for this claim request could not be found."
+        )
+      );
+  }
+
+  if (claim.status !== "pending") {
+    return res
+      .status(409)
+      .json(
+        claimUnavailableHandler(
+          "This claim request is no longer available.",
+          business
+        )
+      );
+  }
+
+  if (await expireStaleClaimIfNeeded(claim)) {
+    return res
+      .status(422)
+      .json(claimUnavailableHandler(CLAIM_RESTART_MESSAGE, business));
+  }
+
+  if (business.is_claimed) {
+    return res
+      .status(409)
+      .json(
+        claimUnavailableHandler(
+          "This business has already been claimed.",
+          business
+        )
+      );
+  }
+
+  const email =
+    typeof business.email === "string" ? business.email.trim() : "";
+  if (!email) {
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "This business cannot be claimed because it has no email on file."
+        )
+      );
+  }
+
+  const { key: codeKey } = getClaimRequestCodeKey(claimRequestId);
+
+  if (Number(claim.attempts || 0) >= MAX_CLAIM_ATTEMPTS) {
+    await failClaimForMaxAttempts(claimRequestId);
+    return res
+      .status(422)
+      .json(claimUnavailableHandler(CLAIM_MAX_ATTEMPTS_MESSAGE, business));
+  }
+
+  const { data: attemptData, error: attemptError } = await incrementClaimAttempts(
+    claimRequestId,
+    claim.attempts
+  );
+  if (attemptError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error recording the claim attempt.",
+          attemptError
+        )
+      );
+  }
+
+  const attempts = Number(attemptData?.attempts || Number(claim.attempts || 0) + 1);
+
+  let cachedCode = null;
+  try {
+    cachedCode = await getCacheData(codeKey);
+  } catch (redisError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "There was an error checking the verification code.",
+          redisError
+        )
+      );
+  }
+
+  if (!cachedCode?.data) {
+    if (attempts >= MAX_CLAIM_ATTEMPTS) {
+      await failClaimForMaxAttempts(claimRequestId);
+      return res
+        .status(422)
+        .json(claimUnavailableHandler(CLAIM_MAX_ATTEMPTS_MESSAGE, business));
+    }
+
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "Verification code expired. Please resend a new verification code."
+        )
+      );
+  }
+
+  const storedCode = String(cachedCode.data).trim().toUpperCase();
+  if (storedCode !== normalizedCode) {
+    if (attempts >= MAX_CLAIM_ATTEMPTS) {
+      await failClaimForMaxAttempts(claimRequestId);
+      return res
+        .status(422)
+        .json(claimUnavailableHandler(CLAIM_MAX_ATTEMPTS_MESSAGE, business));
+    }
+
+    return res
+      .status(422)
+      .json(customErrorHandler(YUP_ERROR, "Incorrect verification code."));
+  }
+
+  const { data: authData, error: authError } = await createAuthUser({
+    email,
+    password,
+  });
+
+  if (authError || !authData?.user?.id) {
+    const message =
+      authError?.message?.toLowerCase?.().includes("already") ||
+      authError?.status === 422
+        ? "An account with this email already exists."
+        : "There was an error creating your account.";
+
+    return res
+      .status(authError?.message?.toLowerCase?.().includes("already") ? 409 : 500)
+      .json(
+        customErrorHandler(
+          authError?.message?.toLowerCase?.().includes("already")
+            ? ACCESS_DENIED
+            : SERVER_ERROR,
+          message,
+          authError
+        )
+      );
+  }
+
+  const uid = authData.user.id;
+  const { error: rpcError } = await completeBusinessClaimRpc(
+    claimRequestId,
+    business.id,
+    uid
+  );
+
+  if (rpcError) {
+    try {
+      await deleteAuthUser(uid);
+    } catch {
+      // best-effort cleanup
+    }
+
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error completing the business claim.",
+          rpcError
+        )
+      );
+  }
+
+  try {
+    await deleteCacheData(codeKey);
+  } catch {
+    // best-effort cleanup
+  }
+
+  await invalidateBusinessCache(business);
+
+  const { SENDER_EMAIL, RESEND_API_KEY, ADMIN_EMAIL } = process.env;
+  if (RESEND_API_KEY && SENDER_EMAIL && ADMIN_EMAIL) {
+    const businessPageUrl = buildBusinessClaimLink(business.slug);
+    const { error: adminSendError } = await resendClient().emails.send({
+      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+      to: [ADMIN_EMAIL],
+      subject: ADMIN_BUSINESS_CLAIMED_MESSAGE.subject(business.title),
+      html: ADMIN_BUSINESS_CLAIMED_MESSAGE.html(business.title, {
+        email,
+        businessPageUrl,
+      }),
+    });
+
+    if (adminSendError && process.env.NODE_ENV === "development") {
+      console.error(
+        "Failed to send admin business-claimed email:",
+        adminSendError
+      );
+    }
+  }
+
+  const { data: signInData, error: signInError } = await signInWithPassword({
+    email,
+    password,
+  });
+
+  const session = formatAuthSession(signInData?.session);
+
+  if (signInError || !session) {
+    return res.status(201).json(
+      successHandler({
+        slug: business.slug,
+        session: null,
+        requiresLogin: true,
+        message:
+          "Your business was claimed, but we couldn't sign you in automatically. Please sign in to continue.",
+      })
+    );
+  }
+
+  return res.status(201).json(
+    successHandler({
+      slug: business.slug,
+      session,
+    })
+  );
+};
+
+export const resendClaim = async (req, res) => {
+  const { claimRequestId } = req.body;
+
+  const { data: claim, error } =
+    await getClaimRequestWithBusiness(claimRequestId);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the claim request.",
+          error
+        )
+      );
+  }
+
+  if (!claim) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(ROUTE_NOT_FOUND, "Claim request could not be found.")
+      );
+  }
+
+  const business = claim.business;
+  if (!business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The business for this claim request could not be found."
+        )
+      );
+  }
+
+  if (claim.status !== "pending") {
+    return res
+      .status(409)
+      .json(
+        claimUnavailableHandler(
+          "This claim request is no longer available.",
+          business
+        )
+      );
+  }
+
+  if (await expireStaleClaimIfNeeded(claim)) {
+    return res
+      .status(422)
+      .json(claimUnavailableHandler(CLAIM_RESTART_MESSAGE, business));
+  }
+
+  if (business.is_claimed) {
+    return res
+      .status(409)
+      .json(
+        claimUnavailableHandler(
+          "This business has already been claimed.",
+          business
+        )
+      );
+  }
+
+  const email =
+    typeof business.email === "string" ? business.email.trim() : "";
+  if (!email) {
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "This business cannot be claimed because it has no email on file."
+        )
+      );
+  }
+
+  const { key, interval } = getClaimRequestCodeKey(claimRequestId);
+
+  try {
+    await deleteCacheData(key);
+  } catch {
+    // best-effort cleanup of old code
+  }
+
+  const code = generateClaimCode(6);
+
+  try {
+    await setWithExactTtl(key, interval, code);
+  } catch (redisError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "There was an error storing the verification code.",
+          redisError
+        )
+      );
+  }
+
+  const { error: resetError } = await resetClaimAttempts(claimRequestId);
+  if (resetError) {
+    try {
+      await deleteCacheData(key);
+    } catch {
+      // best-effort cleanup
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error resetting claim attempts.",
+          resetError
+        )
+      );
+  }
+
+  const { SENDER_EMAIL, RESEND_API_KEY, TEST_RECIPIENT_EMAIL } = process.env;
+  const isDev = process.env.NODE_ENV === "development";
+
+  if (!RESEND_API_KEY || !SENDER_EMAIL) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    try {
+      await deleteCacheData(key);
+    } catch {
+      // best-effort cleanup
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "Email is not configured. Unable to send the verification code."
+        )
+      );
+  }
+
+  if (isDev && !TEST_RECIPIENT_EMAIL) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    try {
+      await deleteCacheData(key);
+    } catch {
+      // best-effort cleanup
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "TEST_RECIPIENT_EMAIL is required in development."
+        )
+      );
+  }
+
+  const recipientEmail = isDev ? TEST_RECIPIENT_EMAIL : email;
+  const verifyUrl = buildClaimVerifyLink(claimRequestId);
+  const businessPageUrl = buildBusinessClaimLink(business.slug);
+  const { error: sendError } = await resendClient().emails.send({
+    from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+    to: [recipientEmail],
+    subject: CLAIM_VERIFICATION_MESSAGE.subject(business.title),
+    html: CLAIM_VERIFICATION_MESSAGE.html(
+      business.title,
+      code,
+      verifyUrl,
+      businessPageUrl
+    ),
+  });
+
+  if (sendError) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    try {
+      await deleteCacheData(key);
+    } catch {
+      // best-effort cleanup
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "There was an error sending the verification email.",
+          sendError
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      maskedEmail: maskEmail(email),
+    })
+  );
+};
+
+export const getOwnedBusinessesHandler = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { data, error } = await getOwnedBusinesses(ownerUid, accessToken);
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching your businesses.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(successHandler(data ?? []));
+};
+
+export const updateBusinessContact = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId, phone, email, website } = req.body;
+  const normalizedEmail =
+    typeof email === "string" && email.trim() ? email.trim() : null;
+  const normalizedWebsite =
+    typeof website === "string" && website.trim() ? website.trim() : null;
+  const normalizedPhone = typeof phone === "string" ? phone.trim() : "";
+
+  const { data: profile, error: profileError } = await getOwnedBusiness(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const existingPhone = typeof profile.phone === "string" ? profile.phone.trim() : "";
+  const existingEmail =
+    typeof profile.email === "string" && profile.email.trim()
+      ? profile.email.trim()
+      : null;
+  const existingWebsite =
+    typeof profile.website === "string" && profile.website.trim()
+      ? profile.website.trim()
+      : null;
+
+  const phoneDigits = (value) => String(value ?? "").replace(/\D/g, "");
+  const phoneChanged = phoneDigits(normalizedPhone) !== phoneDigits(existingPhone);
+  const emailChanged = (normalizedEmail || null) !== (existingEmail || null);
+  const websiteChanged = (normalizedWebsite || null) !== (existingWebsite || null);
+
+  if (phoneChanged) {
+    const phoneResult = await verifyPhoneNumber(normalizedPhone);
+    if (!phoneResult.ok) {
+      const status =
+        phoneResult.error?.type === "config" || phoneResult.error?.type === "api"
+          ? 503
+          : 422;
+      return res.status(status).json(
+        customErrorHandler(
+          YUP_ERROR,
+          {
+            phone:
+              phoneResult.error?.message ||
+              "Please enter a valid phone number.",
+          },
+          phoneResult.error
+        )
+      );
+    }
+  }
+
+  if (normalizedEmail && emailChanged) {
+    const emailResult = await verifyEmailReputation(normalizedEmail);
+    if (!emailResult.ok) {
+      const status =
+        emailResult.error?.type === "config" || emailResult.error?.type === "api"
+          ? 503
+          : 422;
+      return res.status(status).json(
+        customErrorHandler(
+          YUP_ERROR,
+          {
+            email:
+              emailResult.error?.message ||
+              "Please enter a valid email address.",
+          },
+          emailResult.error
+        )
+      );
+    }
+  }
+
+  let savedWebsite = normalizedWebsite;
+  if (normalizedWebsite && websiteChanged) {
+    const websiteResult = await verifyWebsiteReachable(normalizedWebsite);
+    if (!websiteResult.ok) {
+      return res.status(422).json(
+        customErrorHandler(
+          YUP_ERROR,
+          {
+            website:
+              websiteResult.error?.message ||
+              "This website does not appear to be reachable.",
+          },
+          websiteResult.error
+        )
+      );
+    }
+    savedWebsite = websiteResult.url || normalizedWebsite;
+  } else if (!websiteChanged && existingWebsite) {
+    savedWebsite = existingWebsite;
+  }
+
+  const { data: updated, error: updateError } = await updateOwnedBusinessContact(
+    businessId,
+    ownerUid,
+    {
+      phone: normalizedPhone,
+      email: normalizedEmail,
+      website: savedWebsite,
+    },
+    accessToken
+  );
+
+  if (updateError || !updated) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating contact information.",
+          updateError
+        )
+      );
+  }
+
+  const { data: business } = await getBusinessById(businessId);
+  if (business) {
+    await invalidateBusinessCache(business);
+  }
+
+  return res.status(200).json(
+    successHandler({
+      phone: updated.phone,
+      email: updated.email,
+      website: updated.website,
+      last_edited_at: updated.last_edited_at,
+    })
+  );
+};
+
+export const updateBusinessCategories = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId, primaryCategoryId, secondaryCategoryIds = [] } = req.body;
+  const nextSecondaryIds = [...new Set(secondaryCategoryIds ?? [])];
+
+  const { data: profile, error: profileError } = await getOwnedBusiness(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const { data: business, error: businessError } =
+    await getBusinessById(businessId);
+
+  if (businessError || !business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The selected business could not be found.",
+          businessError
+        )
+      );
+  }
+
+  const currentPrimaryId = business.primary_category_id ?? business.primary_category?.id;
+  const primaryChanged = currentPrimaryId !== primaryCategoryId;
+
+  const { data: currentSecondaryIds, error: secondaryReadError } =
+    await getOwnedBusinessSecondaryCategoryIds(businessId, accessToken);
+
+  if (secondaryReadError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error loading secondary categories.",
+          secondaryReadError
+        )
+      );
+  }
+
+  const currentSorted = [...(currentSecondaryIds ?? [])].sort().join(",");
+  const nextSorted = [...nextSecondaryIds].sort().join(",");
+  const secondaryChanged = currentSorted !== nextSorted;
+
+  if (!primaryChanged && !secondaryChanged) {
+    return res.status(200).json(
+      successHandler({
+        primaryCategoryId: currentPrimaryId,
+        secondaryCategoryIds: currentSecondaryIds ?? [],
+      })
+    );
+  }
+
+  if (primaryChanged) {
+    const { data: updatedPrimary, error: primaryError } =
+      await updateOwnedBusinessPrimaryCategory(
+        businessId,
+        primaryCategoryId,
+        accessToken
+      );
+
+    if (primaryError || !updatedPrimary) {
+      return res.status(422).json(
+        customErrorHandler(
+          YUP_ERROR,
+          {
+            primaryCategoryId:
+              primaryError?.message ||
+              "Unable to update primary category.",
+          },
+          primaryError
+        )
+      );
+    }
+  }
+
+  if (secondaryChanged) {
+    const { error: syncError } = await syncOwnedBusinessSecondaryCategories(
+      businessId,
+      nextSecondaryIds,
+      accessToken
+    );
+
+    if (syncError) {
+      return res.status(422).json(
+        customErrorHandler(
+          YUP_ERROR,
+          {
+            secondaryCategoryIds:
+              syncError?.message ||
+              "Unable to update secondary categories.",
+          },
+          syncError
+        )
+      );
+    }
+  }
+
+  await touchOwnedBusinessEditedAt(businessId, ownerUid, accessToken);
+  await invalidateBusinessCache(business);
+
+  return res.status(200).json(
+    successHandler({
+      primaryCategoryId,
+      secondaryCategoryIds: nextSecondaryIds,
+    })
+  );
+};
+
+export const updateBusinessAmenities = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId, features } = req.body;
+
+  const { data: profile, error: profileError } = await getOwnedBusiness(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const { data: business, error: businessError } =
+    await getBusinessById(businessId);
+
+  if (businessError || !business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The selected business could not be found.",
+          businessError
+        )
+      );
+  }
+
+  const current = business.features || {};
+  const amenityKeys = [
+    "appointments_recommended",
+    "credit_cards",
+    "debit_cards",
+    "mechanic",
+    "nfc_mobile_payments",
+    "oil_change",
+    "onsite_services",
+    "restroom",
+    "wheelchair_accessible",
+  ];
+  const hasChanges = amenityKeys.some(
+    (key) => Boolean(current[key]) !== Boolean(features[key])
+  );
+
+  if (!hasChanges) {
+    return res.status(200).json(
+      successHandler({
+        features: Object.fromEntries(
+          amenityKeys.map((key) => [key, Boolean(current[key])])
+        ),
+      })
+    );
+  }
+
+  const { data: updated, error: updateError } =
+    await updateOwnedBusinessAmenities(businessId, features, accessToken);
+
+  if (updateError || !updated) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating amenities.",
+          updateError
+        )
+      );
+  }
+
+  await touchOwnedBusinessEditedAt(businessId, ownerUid, accessToken);
+  await invalidateBusinessCache(business);
+
+  return res.status(200).json(
+    successHandler({
+      features: Object.fromEntries(
+        amenityKeys.map((key) => [key, Boolean(updated[key])])
+      ),
+    })
+  );
+};
+
+export const updateBusinessAbout = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId } = req.body;
+  const description = String(req.body.description ?? "").trim();
+
+  if (!description) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        description: "About text is required.",
+      })
+    );
+  }
+
+  if (description.length > 750) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        description: "About text must be 750 characters or fewer.",
+      })
+    );
+  }
+
+  const { data: profile, error: profileError } = await getOwnedBusiness(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const { data: business, error: businessError } =
+    await getBusinessById(businessId);
+
+  if (businessError || !business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The selected business could not be found.",
+          businessError
+        )
+      );
+  }
+
+  const currentDescription = String(business.description ?? "").trim();
+  if (currentDescription === description) {
+    return res.status(200).json(successHandler({ description }));
+  }
+
+  const { data: updated, error: updateError } = await updateOwnedBusinessAbout(
+    businessId,
+    ownerUid,
+    description,
+    accessToken
+  );
+
+  if (updateError || !updated) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating the about section.",
+          updateError
+        )
+      );
+  }
+
+  await invalidateBusinessCache(business);
+
+  return res.status(200).json(
+    successHandler({
+      description: updated.description,
+    })
+  );
+};
+
+export const updateBusinessHours = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId, days } = req.body;
+
+  const { data: profile, error: profileError } = await getOwnedBusiness(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const { data: business, error: businessError } =
+    await getBusinessById(businessId);
+
+  if (businessError || !business) {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(
+          ROUTE_NOT_FOUND,
+          "The selected business could not be found.",
+          businessError
+        )
+      );
+  }
+
+  const normalizedDays = WEEKDAYS.map((dayOfWeek) => {
+    const match = (days || []).find((day) => day.day_of_week === dayOfWeek);
+    return normalizeDayHours({
+      day_of_week: dayOfWeek,
+      is_closed: Boolean(match?.is_closed),
+      hours: match?.is_closed ? [] : match?.hours || [],
+    });
+  });
+
+  const currentDays = normalizeIncomingHours(business.hours || []).map(
+    (day) => normalizeDayHours(day)
+  );
+
+  if (daysEqual(normalizedDays, currentDays)) {
+    return res.status(200).json(
+      successHandler({
+        days: currentDays,
+        opening_hours_confirmation: business.opening_hours_confirmation,
+      })
+    );
+  }
+
+  const { data: updatedDays, error: hoursError } =
+    await updateOwnedBusinessHours(businessId, normalizedDays, accessToken);
+
+  if (hoursError || !updatedDays) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating business hours.",
+          hoursError
+        )
+      );
+  }
+
+  const confirmation = buildOpeningHoursConfirmation();
+  const { data: confirmationRow, error: confirmationError } =
+    await updateOwnedBusinessHoursConfirmation(
+      businessId,
+      confirmation,
+      accessToken
+    );
+
+  if (confirmationError || !confirmationRow) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating hours confirmation.",
+          confirmationError
+        )
+      );
+  }
+
+  await touchOwnedBusinessEditedAt(businessId, ownerUid, accessToken);
+  await invalidateBusinessCache(business);
+
+  return res.status(200).json(
+    successHandler({
+      days: updatedDays.map((day) => ({
+        day_of_week: day.day_of_week,
+        is_closed: day.is_closed,
+        hours: day.hours,
+        hours_text: day.hours_text,
+      })),
+      opening_hours_confirmation: confirmationRow.opening_hours_confirmation,
+    })
+  );
+};
 
 export const getFeaturedBusinesses = async (req, res) => {
   // Get Data from Cache
@@ -89,27 +1638,63 @@ export const getBusiness = async (req, res) => {
   // Get Cache Data
   const { key, interval } = getBusinessBySlugKey(business_slug);
   const cachedData = await getCacheData(key);
-  if (cachedData) {
-    return res.status(200).json(successHandler(cachedData.data));
+  let business = cachedData?.data ?? null;
+
+  if (!business) {
+    // Get Business by Slug
+    const { data, error } = await getBusinessBySlug(business_slug);
+    if (error) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            `There was an error fetching business by Slug (${business_slug}).`,
+            error
+          )
+        );
+    }
+
+    business = data;
+    await cacheData(key, interval, business);
   }
 
-  // Get Business by Slug
-  const { data, error } = await getBusinessBySlug(business_slug);
-  if (error) {
+  // Always compute at response time so claimability stays correct if emails change
+  // while a listing is still cached.
+  const { isShared, error: sharedEmailError } = await isBusinessEmailShared(
+    business?.email
+  );
+
+  if (sharedEmailError) {
     return res
       .status(500)
       .json(
         customErrorHandler(
           SUPABASE_ERROR,
-          `There was an error fetching business by Slug (${business_slug}).`,
-          error
+          `There was an error checking claim eligibility for business (${business_slug}).`,
+          sharedEmailError
         )
       );
   }
 
-  // Cache Data
-  await cacheData(key, interval, data);
-  res.status(200).json(successHandler(data));
+  // Always refresh last_edited_at for claimed listings so stale Redis payloads
+  // still show the edit date under the verified badge.
+  let lastEditedAt = business?.last_edited_at ?? null;
+  if (business?.is_claimed && business?.id) {
+    const { data: editedAt, error: editedAtError } =
+      await getBusinessLastEditedAt(business.id);
+    if (!editedAtError) {
+      lastEditedAt = editedAt;
+    }
+  }
+
+  res.status(200).json(
+    successHandler({
+      ...business,
+      last_edited_at: lastEditedAt,
+      has_duplicate_email: isShared,
+    })
+  );
 };
 
 // ! DEPRECATED

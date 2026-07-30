@@ -116,7 +116,60 @@ export const GetContactMessagesQuerySchema = Yup.object({
     .optional(),
 });
 
-export const CACHE_INVALIDATE_RESOURCES = ["contact-messages"];
+export const CLAIM_REQUEST_STATUSES = [
+  "pending",
+  "success",
+  "failed",
+  "expired",
+];
+
+export const GetClaimRequestsQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  status: Yup.string()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .oneOf([...CLAIM_REQUEST_STATUSES, null], "Invalid status")
+    .optional(),
+});
+
+export const UpdateClaimRequestsStatusSchema = Yup.object({
+  status: Yup.string()
+    .oneOf(CLAIM_REQUEST_STATUSES, "Invalid status")
+    .required("Status is required"),
+  claim_request_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid claim request ID").required())
+    .min(1, "At least one claim request ID is required")
+    .required("Claim request IDs are required"),
+});
+
+export const LISTING_REPORT_STATUSES = ["pending", "resolved", "dismissed"];
+
+export const GetListingReportsQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  status: Yup.string()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .oneOf([...LISTING_REPORT_STATUSES, null], "Invalid status")
+    .optional(),
+});
+
+export const UpdateListingReportsStatusSchema = Yup.object({
+  status: Yup.string()
+    .oneOf(LISTING_REPORT_STATUSES, "Invalid status")
+    .required("Status is required"),
+  listing_report_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid listing report ID").required())
+    .min(1, "At least one listing report ID is required")
+    .required("Listing report IDs are required"),
+});
+
+export const CACHE_INVALIDATE_RESOURCES = [
+  "contact-messages",
+  "claim-requests",
+  "listing-reports",
+];
 
 export const InvalidateCacheSchema = Yup.object({
   resource: Yup.string()

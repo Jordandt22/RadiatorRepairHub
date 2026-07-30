@@ -5,22 +5,18 @@ import {
   MapPin,
   Star,
   ExternalLink,
-  CalendarDays,
-  CreditCard,
-  Wrench,
-  Nfc,
-  Car,
-  Store,
-  Toilet,
-  Accessibility,
 } from "lucide-react";
 
 // Components
 import OpenStatus from "@/components/businesses/status/OpenStatus";
-import BusinessImage from "@/components/businesses/BusinessImage";
 import BusinessHeroBanner from "@/components/businesses/BusinessHeroBanner";
-import QuickContactDialog from "@/components/businesses/QuickContactDialog";
-import BusinessContactLinks from "@/components/businesses/BusinessContactLinks";
+import ClaimBusinessButton from "@/components/businesses/ClaimBusinessButton";
+import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
+import ContactInformationSection from "@/components/businesses/ContactInformationSection";
+import ServiceCategoriesSection from "@/components/businesses/ServiceCategoriesSection";
+import AmenitiesSection from "@/components/businesses/AmenitiesSection";
+import AboutSection from "@/components/businesses/AboutSection";
+import BusinessHoursSection from "@/components/businesses/BusinessHoursSection";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
@@ -116,19 +112,6 @@ export async function generateMetadata({ params }) {
   }
 }
 
-// Feature icons mapping
-const featureIcons = {
-  appointments_recommended: CalendarDays,
-  credit_cards: CreditCard,
-  debit_cards: CreditCard,
-  mechanic: Wrench,
-  nfc_mobile_payments: Nfc,
-  oil_change: Car,
-  onsite_services: Store,
-  restroom: Toilet,
-  wheelchair_accessible: Accessibility,
-};
-
 async function Page({ params }) {
   const { slug } = await params;
 
@@ -150,91 +133,6 @@ async function Page({ params }) {
     }
 
     const mapsQuery = getGoogleMapsQuery(business);
-
-    // Get available features
-    const paymentFeatures = [];
-    const accessibilityFeatures = [];
-    const otherFeatures = [];
-    Object.keys(business.features).forEach((key) => {
-      if (business.features[key] === true) {
-        switch (key) {
-          case "nfc_mobile_payments":
-          case "credit_cards":
-          case "debit_cards":
-            paymentFeatures.push({
-              icon: featureIcons[key],
-              value:
-                key === "nfc_mobile_payments"
-                  ? "NFC Mobile Payments"
-                  : key.replace(/_/g, " "),
-            });
-            break;
-
-          case "wheelchair_accessible":
-          case "restroom":
-            accessibilityFeatures.push({
-              icon: featureIcons[key],
-              value: key.replace(/_/g, " "),
-            });
-            break;
-
-          case "oil_change":
-          case "onsite_services":
-          case "mechanic":
-          case "appointments_recommended":
-            otherFeatures.push({
-              icon: featureIcons[key],
-              value: key.replace(/_/g, " "),
-            });
-            break;
-
-          default:
-            break;
-        }
-      }
-    });
-
-    // Format business hours for display (using opening_hours format)
-    const formatBusinessHours = (hours) => {
-      if (!hours || !Array.isArray(hours)) {
-        return <p className="text-sm text-gray-600">Hours not available</p>;
-      }
-
-      return (
-        <div className="space-y-2">
-          {hours.map((day, index) => (
-            <div key={index} className="flex justify-between text-sm">
-              <span className="font-medium text-gray-700">{day.day_of_week}</span>
-              <div className="text-gray-600 text-right">
-                {day.is_closed ? (
-                  <span>Closed</span>
-                ) : (
-                  <div className="space-y-1">
-                    <>
-                      {
-                        day?.hours_text ? (
-                          <>
-                            {day?.hours_text?.split(",").map((timePeriod, timeIndex) => (
-                              <div key={timeIndex} className="text-sm">
-                                {timePeriod.trim()}
-                              </div>
-                            ))}
-                          </>
-                        ) : (
-                          <div key={business.id + " " + day.day_of_week} className="text-sm">
-                            Not Available
-                          </div>
-                        )
-                      }
-                    </>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    };
 
     // Generate structured data for LocalBusiness
     const structuredData = {
@@ -406,85 +304,31 @@ async function Page({ params }) {
               {/* Main Content — contents on mobile so cards can interleave with sidebar via order */}
               <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-8">
                 {/* Description */}
-                <div className="order-1 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-1">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
-                    About Our Business
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                    <div className="md:col-span-2 space-y-4">
-                      <p className="text-sm md:text-base text-gray-600 leading-relaxed">
-                        {business.description}
-                      </p>
-                    </div>
-
-                    <div className="relative w-full h-48 md:h-64 bg-gray-200 rounded-lg overflow-hidden">
-                      <BusinessImage
-                        src={business.image_url}
-                        placeId={business.place_id}
-                        cdnStored={Boolean(business.cdn_stored)}
-                        alt={`${business.title} - ${business.keywords && business.keywords.length > 0
-                          ? business.keywords[0]
-                          : "radiator repair services"
-                          } in ${business.city.name}, ${business.state.name}`}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover object-center"
-                        iconSize="sm"
-                      />
-                    </div>
-                  </div>
-                </div>
+                <AboutSection
+                  businessId={business.id}
+                  description={business.description || ""}
+                  imageUrl={business.image_url}
+                  placeId={business.place_id}
+                  cdnStored={Boolean(business.cdn_stored)}
+                  imageAlt={`${business.title} - ${business.keywords && business.keywords.length > 0
+                    ? business.keywords[0]
+                    : "radiator repair services"
+                    } in ${business.city.name}, ${business.state.name}`}
+                />
 
                 {/* Categories */}
-                <div className="order-5 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-2">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
-                    Service Categories
-                  </h2>
-                  <div className="space-y-3 md:space-y-4">
-                    <div>
-                      <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                        Primary Category
-                      </h3>
-                      {business.primary_category ? (
-                        <Link
-                          href={`/category/${business.primary_category.slug}`}
-                          className="inline-block px-3 py-1.5 md:px-4 md:py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-500 hover:text-white duration-300 font-medium transition-colors capitalize text-sm md:text-base"
-                        >
-                          {business.primary_category.name}
-                        </Link>
-                      ) : (
-                        <p className="text-sm md:text-base text-gray-600">None</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                        Secondary Categories
-                      </h3>
-                      {business.secondary_categories &&
-                        business.secondary_categories.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {business.secondary_categories.map((category) => (
-                            <Link
-                              href={`/search?secondary_categories=${category.id}`}
-                              key={category.id}
-                              className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 duration-300 hover:scale-95 capitalize"
-                            >
-                              {category.name}
-                            </Link>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-gray-600">None</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <ServiceCategoriesSection
+                  businessId={business.id}
+                  primaryCategory={business.primary_category}
+                  secondaryCategories={business.secondary_categories || []}
+                />
 
                 {/* Map Section */}
                 <div className="order-6 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-3">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
-                    Business Location
-                  </h2>
+                  <BusinessSectionHeader
+                    title="Business Location"
+                    businessId={business.id}
+                  />
                   <div className="space-y-3 md:space-y-4">
                     <div className="flex items-start gap-2 md:gap-3">
                       <MapPin className="w-4 h-4 md:w-5 md:h-5 text-gray-600 mt-1 flex-shrink-0" />
@@ -595,122 +439,38 @@ async function Page({ params }) {
                         <ExternalLink className="size-4" />
                       </Link>
                     )}
-                  </div>
-                </div>
 
-                {/* Contact Information */}
-                <div className="order-3 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-2">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
-                    Contact Information
-                  </h2>
-
-                  <BusinessContactLinks
-                    businessId={business.id}
-                    businessName={business.title}
-                    phone={business.phone}
-                    email={business.email}
-                    website={business.website}
-                  />
-
-                  <div className="mt-4 md:mt-5">
-                    <QuickContactDialog
+                    <ClaimBusinessButton
                       businessId={business.id}
-                      businessName={business.title}
                       email={business.email}
-                      phone={business.phone}
+                      isClaimed={Boolean(business.is_claimed)}
+                      hasDuplicateEmail={Boolean(business.has_duplicate_email)}
+                      lastEditedAt={business.last_edited_at}
                     />
                   </div>
                 </div>
 
+                {/* Contact Information */}
+                <ContactInformationSection
+                  businessId={business.id}
+                  businessName={business.title}
+                  phone={business.phone}
+                  email={business.email}
+                  website={business.website}
+                />
+
                 {/* Business Hours */}
-                <div className="order-4 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-3">
-                  <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 font-heading">
-                      Business Hours
-                    </h2>
-                    <OpenStatus hours={business.hours} timezone={business.timezone} />
-                  </div>
-                  {business.hours ? (
-                    formatBusinessHours(business.hours)
-                  ) : (
-                    <p className="text-gray-600">No Business Hours Available</p>
-                  )}
-                  <div className="text-sm mt-4 text-center text-blue-600 font-medium">
-                    {business.opening_hours_confirmation}
-                  </div>
-                </div>
+                <BusinessHoursSection
+                  businessId={business.id}
+                  hours={business.hours || []}
+                  timezone={business.timezone}
+                />
 
-                {/* Features */}
-                {(paymentFeatures.length > 0 ||
-                  accessibilityFeatures.length > 0 ||
-                  otherFeatures.length > 0) && (
-                    <div className="order-7 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-4">
-                      <div className="space-y-3 md:space-y-4">
-                        {paymentFeatures.length > 0 && (
-                          <div>
-                            <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                              Payment Methods
-                            </h3>
-                            <div className="flex flex-col gap-2">
-                              {paymentFeatures.map((feature, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-2 md:gap-3"
-                                >
-                                  <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                  <span className="text-gray-700 capitalize text-sm">
-                                    {feature.value}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {accessibilityFeatures.length > 0 && (
-                          <div>
-                            <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                              Accessibility
-                            </h3>
-                            <div className="flex flex-col gap-2">
-                              {accessibilityFeatures.map((feature, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-2 md:gap-3"
-                                >
-                                  <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                  <span className="text-gray-700 capitalize text-sm">
-                                    {feature.value}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {otherFeatures.length > 0 && (
-                          <div>
-                            <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">
-                              Other
-                            </h3>
-                            <div className="flex flex-col gap-2">
-                              {otherFeatures.map((feature, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-2 md:gap-3"
-                                >
-                                  <feature.icon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                  <span className="text-gray-700 capitalize text-sm">
-                                    {feature.value}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                {/* Amenities */}
+                <AmenitiesSection
+                  businessId={business.id}
+                  features={business.features || {}}
+                />
               </div>
             </div>
           </div>

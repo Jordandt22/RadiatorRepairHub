@@ -10,6 +10,7 @@ import { Info, Clock } from "lucide-react";
 // Components
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
+import VerifiedBadge from "@/components/businesses/VerifiedBadge";
 
 function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
   const router = useRouter();
@@ -77,8 +78,9 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
           >
             {business.primary_category.name}
           </Link>
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1.5">
             <OpenStatus hours={business.hours} timezone={business.timezone} />
+            {business.is_claimed ? <VerifiedBadge /> : null}
           </div>
         </div>
       </div>

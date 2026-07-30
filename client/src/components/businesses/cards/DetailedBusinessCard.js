@@ -4,6 +4,7 @@ import { MapPin, Star, Send, MoveRight } from "lucide-react";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
+import VerifiedBadge from "@/components/businesses/VerifiedBadge";
 import { Button } from "@/components/ui/button";
 
 function DetailedBusinessCard({ business }) {
@@ -18,6 +19,11 @@ function DetailedBusinessCard({ business }) {
           alt={business.title}
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
         />
+        {business.is_claimed ? (
+          <div className="absolute top-3 left-3 z-10">
+            <VerifiedBadge size="md" />
+          </div>
+        ) : null}
       </div>
 
       <div className="p-6">

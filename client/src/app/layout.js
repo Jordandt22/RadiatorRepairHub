@@ -5,9 +5,7 @@ import "./globals.css";
 import { PostHogProvider } from "./providers";
 
 // Components
-import Navbar from "@/components/layout/Navbar/Navbar";
-import Footer from "@/components/layout/Footer/Footer";
-import BackToTop from "@/components/layout/BackToTop/BackToTop";
+import SiteChrome from "@/components/layout/SiteChrome";
 import { ALL_KEYWORDS } from "@/lib/seo/keywords";
 import { DEFAULT_OG_IMAGE, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
@@ -201,13 +199,7 @@ export default function RootLayout({ children }) {
         )}
 
         <PostHogProvider>
-          <Navbar />
-
-          {children}
-
-          <Footer />
-
-          <BackToTop />
+          <SiteChrome>{children}</SiteChrome>
 
           <Toaster
             toastOptions={{

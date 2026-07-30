@@ -17,12 +17,49 @@ function displayValue(value) {
   return escapeHtml(text);
 }
 
+function getWebBaseUrl() {
+  if (process.env.NODE_ENV === "development") {
+    return (process.env.NEXT_PUBLIC_WEB_URL || "http://localhost:3000").replace(
+      /\/$/,
+      "",
+    );
+  }
+  return "https://radiatorrepairhub.com";
+}
+
+function buildBusinessClaimLink(businessSlug) {
+  const baseUrl = getWebBaseUrl();
+  if (!businessSlug) return baseUrl;
+  return `${baseUrl}/business/${escapeHtml(businessSlug)}`;
+}
+
+function buildFreeLeadClaimStatusHtml(isClaimed, businessSlug) {
+  if (isClaimed) {
+    return `<p>Thanks for being a verified business on RadiatorRepairHub, we appreciate you!</p>`;
+  }
+
+  const businessPageUrl = buildBusinessClaimLink(businessSlug);
+  const howToClaimUrl = `${getWebBaseUrl()}/how-to-claim`;
+
+  return `<p>Want to get more leads like this? Claim your business page here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a>. Not sure how? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>`;
+}
+
 // Keep in sync with server/src/lib/constants/messages.js
 export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
   subject: "New Customer Inquiry from RadiatorRepairHub",
   html: (
     businessName,
-    { name, phone, email, vehicle, issue, urgency, additionalDetails },
+    {
+      name,
+      phone,
+      email,
+      vehicle,
+      issue,
+      urgency,
+      additionalDetails,
+      isClaimed,
+      businessSlug,
+    },
   ) => `
   <p>Hi ${displayValue(businessName ?? "There")},</p>
 
@@ -62,6 +99,8 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
   <p>We're passing this along for free, no strings attached.</p>
 
   <p>Feel free to reach out to this person directly using the info above.</p>
+
+  ${buildFreeLeadClaimStatusHtml(Boolean(isClaimed), businessSlug)}
 
   <p>If you have any questions, please feel free to reply to this email or contact us anytime.</p>
 
@@ -140,6 +179,8 @@ export function buildFreeLeadClaimOfferPreview(message) {
       issue: message?.issue,
       urgency: message?.urgency,
       additionalDetails: message?.additional_details,
+      isClaimed: message?.business?.is_claimed,
+      businessSlug: message?.business?.slug,
     }),
   };
 }

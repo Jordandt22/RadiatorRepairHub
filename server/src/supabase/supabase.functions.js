@@ -1,7 +1,14 @@
-import { supabase } from "./supabase.js";
+import {
+  supabase,
+  adminAuthClient,
+  supabaseAnon,
+  createUserSupabaseClient,
+  supabaseUrl,
+  supabaseAnonKey,
+} from "./supabase.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
-const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories!inner(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*)`;
+const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*)`;
 
 const formatBusinessListings = (data) => {
   data.map((business) => delete business.additional_info);
@@ -10,6 +17,7 @@ const formatBusinessListings = (data) => {
     business.features = { ...business.features[0] };
     delete business.features.id;
     delete business.features.business_id;
+    business.is_claimed = Boolean(business?.is_claimed);
 
     if (business?.secondary_categories) {
       business.secondary_categories = business.secondary_categories.map(
@@ -26,12 +34,14 @@ const formatBusinessListings = (data) => {
 };
 
 const formatFullBusiness = (business) => {
+  if (!business) return business;
+
   if (business?.secondary_categories) {
-    business.secondary_categories = business.secondary_categories.map(
-      (item) => ({
-        ...item.secondary_categories,
-      })
-    );
+    business.secondary_categories = business.secondary_categories
+      .map((item) => item?.secondary_categories)
+      .filter(Boolean);
+  } else {
+    business.secondary_categories = [];
   }
 
   if (business?.features) {
@@ -49,6 +59,9 @@ const formatFullBusiness = (business) => {
       };
     });
   }
+
+  business.is_claimed = Boolean(business?.is_claimed);
+  business.last_edited_at = business.last_edited_at ?? null;
 
   return business;
 };
@@ -91,6 +104,20 @@ export const getBusinessBySlug = async (business_slug) => {
     .single();
 
   return { data: formatFullBusiness(data), error };
+};
+
+export const getBusinessLastEditedAt = async (business_id) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("last_edited_at")
+    .eq("id", business_id)
+    .maybeSingle();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  return { data: data?.last_edited_at ?? null, error: null };
 };
 
 export const getBusinessSlugsForSitemap = async () => {
@@ -383,6 +410,761 @@ export const insertContactMessage = async (payload) => {
   return { data, error };
 };
 
+export const getBusinessClaimInfo = async (business_id) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, title, slug, email, phone, is_claimed")
+    .eq("id", business_id)
+    .single();
+
+  return { data, error };
+};
+
+export const insertListingReport = async (payload) => {
+  const { data, error } = await supabase
+    .from("listing_reports")
+    .insert(payload)
+    .select("listing_report_id")
+    .single();
+
+  return { data, error };
+};
+
+export const getListingReports = async (page, limit, status = null) => {
+  let query = supabase
+    .from("listing_reports")
+    .select(
+      "listing_report_id, business_id, reason, details, reporter_name, reporter_email, suggested_phone, suggested_email, status, created_at, resolved_at, resolved_by, business:businesses(id, title, slug, address, email, phone, is_claimed)",
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};
+
+export const updateListingReportsStatus = async (
+  ids,
+  status,
+  resolvedBy = "admin"
+) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const patch =
+    status === "pending"
+      ? {
+          status,
+          resolved_at: null,
+          resolved_by: null,
+        }
+      : {
+          status,
+          resolved_at: new Date().toISOString(),
+          resolved_by: resolvedBy,
+        };
+
+  const { data, error } = await supabase
+    .from("listing_reports")
+    .update(patch)
+    .in("listing_report_id", ids)
+    .select("listing_report_id");
+
+  return { data, error };
+};
+
+/**
+ * True when the same email appears on 2+ businesses.
+ * Shared corporate inboxes cannot be used for self-serve claim until phone
+ * verification exists.
+ */
+export const isBusinessEmailShared = async (email) => {
+  const trimmed = typeof email === "string" ? email.trim() : "";
+  if (!trimmed) {
+    return { isShared: false, error: null };
+  }
+
+  const { count, error } = await supabase
+    .from("businesses")
+    .select("id", { count: "exact", head: true })
+    .eq("email", trimmed);
+
+  if (error) {
+    return { isShared: false, error };
+  }
+
+  return { isShared: (count ?? 0) > 1, error: null };
+};
+
+export const getPendingClaimRequest = async (business_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .select("claim_request_id, last_attempted_at")
+    .eq("business_id", business_id)
+    .eq("status", "pending")
+    .limit(1)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const getPendingClaimRequestsForBusiness = async (business_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .select("claim_request_id, last_attempted_at")
+    .eq("business_id", business_id)
+    .eq("status", "pending");
+
+  return { data, error };
+};
+
+export const expireClaimRequestsByIds = async (claim_request_ids) => {
+  if (!claim_request_ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .update({ status: "expired" })
+    .in("claim_request_id", claim_request_ids)
+    .select("claim_request_id");
+
+  return { data, error };
+};
+
+export const getClaimRequests = async (page, limit, status = null) => {
+  let query = supabase
+    .from("claim_requests")
+    .select(
+      "claim_request_id, business_id, status, attempts, last_attempted_at, created_at, completed_by, completed_at, business:businesses(id, title, slug)",
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};
+
+export const updateClaimRequestsStatus = async (ids, status) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .update({ status })
+    .in("claim_request_id", ids)
+    .select("claim_request_id");
+
+  return { data, error };
+};
+
+export const insertClaimRequest = async (business_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .insert({ business_id })
+    .select("claim_request_id")
+    .single();
+
+  return { data, error };
+};
+
+export const updateClaimRequestStatus = async (claim_request_id, status) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .update({ status })
+    .eq("claim_request_id", claim_request_id)
+    .select("claim_request_id")
+    .single();
+
+  return { data, error };
+};
+
+export const getClaimRequestWithBusiness = async (claim_request_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .select(
+      "claim_request_id, business_id, status, attempts, last_attempted_at, business:businesses(id, title, slug, email, is_claimed)"
+    )
+    .eq("claim_request_id", claim_request_id)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const deleteClaimRequest = async (claim_request_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .delete()
+    .eq("claim_request_id", claim_request_id)
+    .select("claim_request_id")
+    .single();
+
+  return { data, error };
+};
+
+export const resetClaimAttempts = async (claim_request_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .update({
+      attempts: 0,
+      last_attempted_at: new Date().toISOString(),
+    })
+    .eq("claim_request_id", claim_request_id)
+    .select("claim_request_id, attempts, last_attempted_at")
+    .single();
+
+  return { data, error };
+};
+
+export const incrementClaimAttempts = async (claim_request_id, currentAttempts) => {
+  const nextAttempts = Number(currentAttempts || 0) + 1;
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .update({
+      attempts: nextAttempts,
+      last_attempted_at: new Date().toISOString(),
+    })
+    .eq("claim_request_id", claim_request_id)
+    .select("claim_request_id, attempts, last_attempted_at")
+    .single();
+
+  return { data, error };
+};
+
+export const completeBusinessClaimRpc = async (
+  claim_request_id,
+  business_id,
+  uid
+) => {
+  const { data, error } = await supabase.rpc("complete_business_claim", {
+    p_claim_request_id: claim_request_id,
+    p_business_id: business_id,
+    p_uid: uid,
+  });
+
+  return { data, error };
+};
+
+export const createAuthUser = async ({ email, password }) => {
+  const { data, error } = await adminAuthClient.createUser({
+    email,
+    password,
+    email_confirm: true,
+  });
+
+  return { data, error };
+};
+
+export const deleteAuthUser = async (uid) => {
+  const { data, error } = await adminAuthClient.deleteUser(uid);
+  return { data, error };
+};
+
+export const unclaimBusinessesByOwnerUid = async (ownerUid) => {
+  if (!ownerUid || typeof ownerUid !== "string") {
+    return { data: [], error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({
+      owner_uid: null,
+      is_claimed: false,
+    })
+    .eq("owner_uid", ownerUid)
+    .select("id, slug");
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  return { data: data ?? [], error: null };
+};
+
+export const deletePublicUserByUid = async (uid) => {
+  if (!uid || typeof uid !== "string") {
+    return { data: null, error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("users")
+    .delete()
+    .eq("uid", uid)
+    .select("uid")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const signInWithPassword = async ({ email, password }) => {
+  const { data, error } = await supabaseAnon.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  return { data, error };
+};
+
+export const getAuthUserByAccessToken = async (accessToken) => {
+  const { data, error } = await supabaseAnon.auth.getUser(accessToken);
+  return { data, error };
+};
+
+export const getClaimedBusinessByOwnerUid = async (ownerUid) => {
+  if (!ownerUid || typeof ownerUid !== "string") {
+    return { data: null, error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, slug, title, email, is_claimed, last_edited_at")
+    .eq("owner_uid", ownerUid)
+    .eq("is_claimed", true)
+    .order("last_edited_at", { ascending: false, nullsFirst: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  if (!data?.slug) {
+    return { data: null, error: null };
+  }
+
+  return {
+    data: {
+      id: data.id,
+      slug: data.slug,
+      title: data.title,
+      email: data.email,
+      last_edited_at: data.last_edited_at,
+    },
+    error: null,
+  };
+};
+
+export const updateAuthUserEmail = async (accessToken, email, emailRedirectTo) => {
+  if (!accessToken) {
+    return { data: null, error: { message: "Missing access token." } };
+  }
+
+  const params = new URLSearchParams();
+  if (emailRedirectTo) {
+    params.set("redirect_to", emailRedirectTo);
+  }
+  const query = params.toString();
+  const url = `${supabaseUrl}/auth/v1/user${query ? `?${query}` : ""}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        apikey: supabaseAnonKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const message =
+        payload?.msg ||
+        payload?.error_description ||
+        payload?.message ||
+        "Unable to update email.";
+      return {
+        data: null,
+        error: {
+          message,
+          status: response.status,
+          code: payload?.error_code || payload?.code,
+        },
+      };
+    }
+
+    return { data: { user: payload }, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
+};
+
+export const updateAuthUserPassword = async (
+  accessToken,
+  { password, currentPassword }
+) => {
+  if (!accessToken) {
+    return { data: null, error: { message: "Missing access token." } };
+  }
+
+  const url = `${supabaseUrl}/auth/v1/user`;
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        apikey: supabaseAnonKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        password,
+        current_password: currentPassword,
+      }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const message =
+        payload?.msg ||
+        payload?.error_description ||
+        payload?.message ||
+        "Unable to update password.";
+      return {
+        data: null,
+        error: {
+          message,
+          status: response.status,
+          code: payload?.error_code || payload?.code,
+        },
+      };
+    }
+
+    return { data: { user: payload }, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
+};
+
+export const getOwnedBusinesses = async (ownerUid, accessToken) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("businesses")
+    .select(
+      "id, title, slug, address, image_url, place_id, cdn_stored, last_edited_at"
+    )
+    .eq("owner_uid", ownerUid)
+    .eq("is_claimed", true)
+    .order("last_edited_at", { ascending: false, nullsFirst: false });
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  return { data: data ?? [], error: null };
+};
+
+export const getOwnedBusiness = async (businessId, ownerUid, accessToken) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("businesses")
+    .select(
+      "id, owner_uid, phone, email, website, description, last_edited_at, is_claimed"
+    )
+    .eq("id", businessId)
+    .eq("owner_uid", ownerUid)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const updateOwnedBusinessContact = async (
+  businessId,
+  ownerUid,
+  { phone, email, website },
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("businesses")
+    .update({
+      phone,
+      email,
+      website,
+      last_edited_at: new Date().toISOString(),
+    })
+    .eq("id", businessId)
+    .eq("owner_uid", ownerUid)
+    .select("id, phone, email, website, last_edited_at")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const updateOwnedBusinessPrimaryCategory = async (
+  businessId,
+  primaryCategoryId,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("businesses")
+    .update({
+      primary_category_id: primaryCategoryId,
+      last_edited_at: new Date().toISOString(),
+    })
+    .eq("id", businessId)
+    .select("id, primary_category_id, last_edited_at")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const updateOwnedBusinessAmenities = async (
+  businessId,
+  features,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("business_features")
+    .update({
+      appointments_recommended: Boolean(features.appointments_recommended),
+      credit_cards: Boolean(features.credit_cards),
+      debit_cards: Boolean(features.debit_cards),
+      mechanic: Boolean(features.mechanic),
+      nfc_mobile_payments: Boolean(features.nfc_mobile_payments),
+      oil_change: Boolean(features.oil_change),
+      onsite_services: Boolean(features.onsite_services),
+      restroom: Boolean(features.restroom),
+      wheelchair_accessible: Boolean(features.wheelchair_accessible),
+    })
+    .eq("business_id", businessId)
+    .select(
+      "business_id, appointments_recommended, credit_cards, debit_cards, mechanic, nfc_mobile_payments, oil_change, onsite_services, restroom, wheelchair_accessible"
+    )
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const updateOwnedBusinessAbout = async (
+  businessId,
+  ownerUid,
+  description,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("businesses")
+    .update({
+      description,
+      last_edited_at: new Date().toISOString(),
+    })
+    .eq("id", businessId)
+    .eq("owner_uid", ownerUid)
+    .select("id, description, last_edited_at")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const updateOwnedBusinessHours = async (
+  businessId,
+  days,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const updatedDays = [];
+
+  for (const day of days) {
+    const { data, error } = await client
+      .from("business_hours")
+      .update({
+        is_closed: day.is_closed,
+        hours: day.hours,
+        hours_text: day.hours_text,
+      })
+      .eq("business_id", businessId)
+      .eq("day_of_week", day.day_of_week)
+      .select("id, business_id, day_of_week, is_closed, hours, hours_text")
+      .maybeSingle();
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    if (!data) {
+      return {
+        data: null,
+        error: {
+          message: `Hours row for ${day.day_of_week} was not found.`,
+        },
+      };
+    }
+
+    updatedDays.push(data);
+  }
+
+  return { data: updatedDays, error: null };
+};
+
+export const updateOwnedBusinessHoursConfirmation = async (
+  businessId,
+  confirmation,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("businesses")
+    .update({
+      opening_hours_confirmation: confirmation,
+      last_edited_at: new Date().toISOString(),
+    })
+    .eq("id", businessId)
+    .select("id, opening_hours_confirmation, last_edited_at")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const getOwnedBusinessSecondaryCategoryIds = async (
+  businessId,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("business_secondary_categories")
+    .select("secondary_category_id")
+    .eq("business_id", businessId);
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  return {
+    data: (data ?? []).map((row) => row.secondary_category_id),
+    error: null,
+  };
+};
+
+export const syncOwnedBusinessSecondaryCategories = async (
+  businessId,
+  nextIds,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const uniqueNext = [...new Set(nextIds ?? [])];
+
+  const { data: currentIds, error: currentError } =
+    await getOwnedBusinessSecondaryCategoryIds(businessId, accessToken);
+
+  if (currentError) {
+    return { data: null, error: currentError };
+  }
+
+  const currentSet = new Set(currentIds ?? []);
+  const nextSet = new Set(uniqueNext);
+
+  const toDelete = [...currentSet].filter((id) => !nextSet.has(id));
+  const toInsert = [...nextSet].filter((id) => !currentSet.has(id));
+
+  if (toDelete.length > 0) {
+    const { data: deletedRows, error: deleteError } = await client
+      .from("business_secondary_categories")
+      .delete()
+      .eq("business_id", businessId)
+      .in("secondary_category_id", toDelete)
+      .select("secondary_category_id");
+
+    if (deleteError) {
+      return { data: null, error: deleteError };
+    }
+
+    // RLS can return success with 0 rows deleted when DELETE is not allowed.
+    if ((deletedRows?.length ?? 0) !== toDelete.length) {
+      return {
+        data: null,
+        error: {
+          message:
+            "Unable to remove one or more secondary categories. Check ownership permissions.",
+        },
+      };
+    }
+  }
+
+  if (toInsert.length > 0) {
+    const { data: insertedRows, error: insertError } = await client
+      .from("business_secondary_categories")
+      .insert(
+        toInsert.map((secondary_category_id) => ({
+          business_id: businessId,
+          secondary_category_id,
+        }))
+      )
+      .select("secondary_category_id");
+
+    if (insertError) {
+      return { data: null, error: insertError };
+    }
+
+    if ((insertedRows?.length ?? 0) !== toInsert.length) {
+      return {
+        data: null,
+        error: {
+          message:
+            "Unable to add one or more secondary categories. Check ownership permissions.",
+        },
+      };
+    }
+  }
+
+  return {
+    data: {
+      secondaryCategoryIds: uniqueNext,
+      added: toInsert.length,
+      removed: toDelete.length,
+    },
+    error: null,
+  };
+};
+
+export const touchOwnedBusinessEditedAt = async (
+  businessId,
+  ownerUid,
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const { data, error } = await client
+    .from("businesses")
+    .update({
+      last_edited_at: new Date().toISOString(),
+    })
+    .eq("id", businessId)
+    .eq("owner_uid", ownerUid)
+    .select("id, last_edited_at")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const formatAuthSession = (session) => {
+  if (!session?.access_token || !session?.refresh_token) {
+    return null;
+  }
+
+  return {
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+    expires_at: session.expires_at ?? null,
+  };
+};
+
 export const getContactMessages = async (
   page,
   limit,
@@ -454,7 +1236,7 @@ export const getContactMessagesByIds = async (ids) => {
   const { data, error } = await supabase
     .from("contact_messages")
     .select(
-      "*, business:businesses(id, email, title, slug, address, city_id, postal_code_id)"
+      "*, business:businesses(id, email, title, slug, address, city_id, postal_code_id, is_claimed)"
     )
     .in("contact_message_id", ids);
 

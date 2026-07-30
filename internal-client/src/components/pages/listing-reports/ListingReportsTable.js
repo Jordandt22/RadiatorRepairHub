@@ -1,0 +1,237 @@
+import { EyeIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { formatDate } from "@/components/pages/dashboard/formatDate";
+import ListingReportStatusBadge from "@/components/pages/listing-reports/ListingReportStatusBadge";
+import ListingReportsEmptyState from "@/components/pages/listing-reports/ListingReportsEmptyState";
+
+const REASON_LABELS = {
+  wrong_claim_contact: "Wrong claim contact",
+  inappropriate: "Inappropriate",
+};
+
+function reasonLabel(reason) {
+  return REASON_LABELS[reason] ?? reason ?? "—";
+}
+
+function ListingReportsTableView({
+  listingReports,
+  selectedIds,
+  onToggleId,
+  onToggleAll,
+  onViewClick,
+}) {
+  const allSelected =
+    listingReports.length > 0 &&
+    listingReports.every((row) => selectedIds.has(row.listing_report_id));
+  const someSelected =
+    !allSelected &&
+    listingReports.some((row) => selectedIds.has(row.listing_report_id));
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-10">
+              <Checkbox
+                checked={allSelected}
+                indeterminate={someSelected}
+                disabled={listingReports.length === 0}
+                onCheckedChange={(checked) => onToggleAll(checked === true)}
+                aria-label="Select all listing reports"
+              />
+            </TableHead>
+            <TableHead>Business</TableHead>
+            <TableHead>Reason</TableHead>
+            <TableHead>Reporter</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead className="w-24 text-right">
+              <span className="sr-only">Actions</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {listingReports.map((row) => {
+            const id = row.listing_report_id;
+            const checked = selectedIds.has(id);
+            return (
+              <TableRow
+                key={id}
+                className="group"
+                data-state={checked ? "selected" : undefined}
+              >
+                <TableCell>
+                  <Checkbox
+                    checked={checked}
+                    onCheckedChange={(next) => onToggleId(id, next === true)}
+                    aria-label={`Select report for ${row.business?.title ?? "business"}`}
+                  />
+                </TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex flex-col gap-0.5">
+                    <span>{row.business?.title ?? "—"}</span>
+                    {row.business?.slug ? (
+                      <span className="text-xs font-normal text-muted-foreground">
+                        /business/{row.business.slug}
+                      </span>
+                    ) : null}
+                  </div>
+                </TableCell>
+                <TableCell>{reasonLabel(row.reason)}</TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm">{row.reporter_email ?? "—"}</span>
+                    {row.reporter_name ? (
+                      <span className="text-xs text-muted-foreground">
+                        {row.reporter_name}
+                      </span>
+                    ) : null}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <ListingReportStatusBadge status={row.status} />
+                </TableCell>
+                <TableCell>{formatDate(row.created_at)}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="opacity-0 transition-all duration-200 group-hover:opacity-100 cursor-pointer hover:scale-95 focus-visible:opacity-100 focus-visible:scale-95"
+                    onClick={() => onViewClick(row)}
+                  >
+                    <EyeIcon />
+                    View
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function ListingReportsCardList({
+  listingReports,
+  selectedIds,
+  onToggleId,
+  onToggleAll,
+  onViewClick,
+}) {
+  const allSelected =
+    listingReports.length > 0 &&
+    listingReports.every((row) => selectedIds.has(row.listing_report_id));
+  const someSelected =
+    !allSelected &&
+    listingReports.some((row) => selectedIds.has(row.listing_report_id));
+
+  return (
+    <div className="flex flex-col gap-3 md:hidden">
+      <div className="flex items-center gap-2 px-1">
+        <Checkbox
+          checked={allSelected}
+          indeterminate={someSelected}
+          disabled={listingReports.length === 0}
+          onCheckedChange={(checked) => onToggleAll(checked === true)}
+          aria-label="Select all listing reports"
+        />
+        <span className="text-sm text-muted-foreground">
+          {listingReports.length}{" "}
+          {listingReports.length === 1 ? "report" : "reports"}
+        </span>
+      </div>
+      {listingReports.map((row) => {
+        const id = row.listing_report_id;
+        const checked = selectedIds.has(id);
+        return (
+          <div
+            key={id}
+            className="flex flex-col gap-2 rounded-lg border border-border bg-background p-4"
+          >
+            <div className="flex items-start gap-3">
+              <Checkbox
+                checked={checked}
+                onCheckedChange={(next) => onToggleId(id, next === true)}
+                aria-label={`Select report for ${row.business?.title ?? "business"}`}
+                className="mt-0.5"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium">
+                  {row.business?.title ?? "—"}
+                </p>
+                <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                  <ListingReportStatusBadge status={row.status} />
+                  <span className="text-xs text-muted-foreground">
+                    {reasonLabel(row.reason)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 pl-8 text-sm">
+              <dt className="text-muted-foreground">Reporter</dt>
+              <dd className="truncate">{row.reporter_email ?? "—"}</dd>
+              <dt className="text-muted-foreground">Created</dt>
+              <dd>{formatDate(row.created_at)}</dd>
+            </dl>
+            <div className="pl-8">
+              <Button
+                variant="outline"
+                size="sm"
+                className="cursor-pointer"
+                onClick={() => onViewClick(row)}
+              >
+                <EyeIcon />
+                View
+              </Button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function ListingReportsTable({
+  listingReports,
+  selectedIds,
+  onToggleId,
+  onToggleAll,
+  onViewClick,
+  activeTab,
+}) {
+  if (!listingReports.length) {
+    return <ListingReportsEmptyState activeTab={activeTab} />;
+  }
+
+  return (
+    <>
+      <ListingReportsCardList
+        listingReports={listingReports}
+        selectedIds={selectedIds}
+        onToggleId={onToggleId}
+        onToggleAll={onToggleAll}
+        onViewClick={onViewClick}
+      />
+      <div className="hidden md:block">
+        <ListingReportsTableView
+          listingReports={listingReports}
+          selectedIds={selectedIds}
+          onToggleId={onToggleId}
+          onToggleAll={onToggleAll}
+          onViewClick={onViewClick}
+        />
+      </div>
+    </>
+  );
+}

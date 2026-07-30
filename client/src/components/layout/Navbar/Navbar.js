@@ -3,13 +3,19 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { Search, X, Menu } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Search, X, Menu, LogOut } from "lucide-react";
+import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
+import UserAccountMenu from "@/components/auth/UserAccountMenu";
+import { signOut } from "@/lib/auth/session";
 
 function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { isSignedIn, user } = useIsSignedIn();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHomePage, setIsHomePage] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Check if on homepage after component mounts to avoid hydration mismatch
   useEffect(() => {
@@ -37,10 +43,6 @@ function Navbar() {
     {
       label: "Blogs",
       path: "/blogs",
-    },
-    {
-      label: "FAQ",
-      path: "/faq",
     },
     {
       label: "Contact",
@@ -71,12 +73,19 @@ function Navbar() {
       path: "/blogs",
     },
     {
-      label: "FAQ",
-      path: "/faq",
-    },
-    {
       label: "Contact",
       path: "/contact",
+    },
+  ];
+
+  const signedInMobileLinks = [
+    {
+      label: "Settings",
+      path: "/settings",
+    },
+    {
+      label: "Dashboard",
+      path: "/dashboard",
     },
   ];
 
@@ -87,6 +96,47 @@ function Navbar() {
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
+
+  const handleMobileLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+      closeMobileMenu();
+      router.push("/");
+      router.refresh();
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  const accountControl = isSignedIn ? (
+    <UserAccountMenu
+      user={user}
+      triggerClassName={
+        isHomePage ? "ring-offset-transparent" : "ring-offset-white"
+      }
+    />
+  ) : (
+    <Link
+      href="/signin"
+      className={`px-4 py-1 rounded-full font-medium transition-all duration-300 ${
+        isHomePage
+          ? "border-2 border-white/80 text-white hover:bg-white/20"
+          : "border-2 border-blue-600 text-blue-600 hover:bg-blue-100"
+      }`}
+      aria-label="Sign in to your business account"
+    >
+      Sign In
+    </Link>
+  );
+
+  const linkClassName = (path) =>
+    `block px-4 py-3 text-lg font-medium rounded-lg transition-colors duration-200 ${
+      pathname === path
+        ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
+        : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+    }`;
 
   return (
     <nav
@@ -131,22 +181,22 @@ function Navbar() {
                   href={link.path}
                   className={`${
                     isHomePage
-                      ? "text-white hover:bg-blue-500 hover:text-white rounded-md px-3 py-2"
+                      ? "text-white hover:bg-blue-500 hover:text-white"
                       : "text-gray-600 hover:text-blue-600"
-                  } px-3 py-2 text-sm font-medium transition-colors duration-300`}
+                  } rounded-full px-3 py-2 text-sm font-medium transition-colors duration-300`}
                 >
                   {link.label}
                 </Link>
               ))}
-
               <Link
                 href="/search?page=1&sort=most_reviews"
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white hover:scale-105"
+                className="flex items-center space-x-2 px-4 py-1 rounded-full font-medium transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white hover:scale-105"
                 aria-label="Search for radiator repair services"
               >
                 <Search className="w-4 h-4" aria-hidden="true" />
                 <span>Search</span>
               </Link>
+              {accountControl}
             </div>
           </div>
           <div className="md:hidden">
@@ -222,7 +272,7 @@ function Navbar() {
           </div>
 
           {/* Mobile Search Button */}
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-6 border-b border-gray-200 space-y-3">
             <Link
               href="/search?page=1&sort=most_reviews"
               onClick={closeMobileMenu}
@@ -232,10 +282,20 @@ function Navbar() {
               <Search className="w-5 h-5" aria-hidden="true" />
               <span>Search Businesses</span>
             </Link>
+            {!isSignedIn ? (
+              <Link
+                href="/signin"
+                onClick={closeMobileMenu}
+                className="flex items-center justify-center w-full px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-blue-600 text-blue-600 hover:bg-blue-50"
+                aria-label="Sign in to your business account"
+              >
+                Sign In
+              </Link>
+            ) : null}
           </div>
 
           {/* Mobile Sidebar Navigation */}
-          <div className="flex-1 px-6 py-6">
+          <div className="flex-1 px-6 py-6 overflow-y-auto">
             <nav
               className="space-y-4"
               role="navigation"
@@ -246,17 +306,44 @@ function Navbar() {
                   key={link.label}
                   href={link.path}
                   onClick={closeMobileMenu}
-                  className={`block px-4 py-3 text-lg font-medium rounded-lg transition-colors duration-200 ${
-                    pathname === link.path
-                      ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
-                  }`}
+                  className={linkClassName(link.path)}
                 >
                   {link.label}
                 </Link>
               ))}
+
+              {isSignedIn ? (
+                <>
+                  <div className="border-t border-gray-200 pt-4 space-y-4">
+                    {signedInMobileLinks.map((link) => (
+                      <Link
+                        key={link.label}
+                        href={link.path}
+                        onClick={closeMobileMenu}
+                        className={linkClassName(link.path)}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              ) : null}
             </nav>
           </div>
+
+          {isSignedIn ? (
+            <div className="p-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={handleMobileLogout}
+                disabled={isLoggingOut}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-3 text-base font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
+              >
+                <LogOut className="size-5" aria-hidden="true" />
+                {isLoggingOut ? "Signing out…" : "Log out"}
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </nav>

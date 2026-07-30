@@ -5,7 +5,7 @@ const EMAIL_REPUTATION_URL = "https://emailreputation.abstractapi.com/v1/";
  * @see https://docs.abstractapi.com/api/email-reputation
  */
 export async function verifyEmailReputation(email) {
-  const apiKey = process.env.ABSTRACT_API_KEY;
+  const apiKey = process.env.ABSTRACT_API_EMAIL_KEY;
 
   if (!apiKey) {
     return {

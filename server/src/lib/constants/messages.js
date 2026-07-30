@@ -37,12 +37,74 @@ export const buildBusinessClaimLink = (businessSlug) => {
   return `${baseUrl}/business/${businessSlug}`;
 };
 
+export const buildClaimVerifyLink = (claimRequestId) => {
+  const baseUrl = getWebBaseUrl();
+  return `${baseUrl}/claim/verify/${claimRequestId}`;
+};
+
+export const maskEmail = (email) => {
+  if (!email || typeof email !== "string") return "";
+  const trimmed = email.trim();
+  const atIndex = trimmed.indexOf("@");
+  if (atIndex <= 0) return "***";
+
+  const local = trimmed.slice(0, atIndex);
+  const domain = trimmed.slice(atIndex + 1);
+  const firstChar = local[0] ?? "";
+  return `${firstChar}***@${domain}`;
+};
+
+// Business ownership claim verification
+export const CLAIM_VERIFICATION_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Verify your claim for ${businessName ?? "your business"}`,
+  html: (businessName, code, verifyUrl, businessPageUrl) => `
+  <p>Hi there,</p>
+
+  <p>Someone requested to claim <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub.</p>
+
+  <p>Your verification code is:</p>
+  <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">${code}</p>
+
+  <p>Click the link below to complete your claim (this code expires in 1 hour):</p>
+  <p><a href="${verifyUrl}" style="color: #1a73e8;">${verifyUrl}</a></p>
+
+  <p>If you did not request this, you can ignore this email and no action is required.</p>
+
+  <p>View the listing here:<br>
+  <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
+const buildFreeLeadClaimStatusHtml = (isClaimed, businessSlug) => {
+  if (isClaimed) {
+    return `<p>Thanks for being a verified business on RadiatorRepairHub, we appreciate you!</p>`;
+  }
+
+  const businessPageUrl = buildBusinessClaimLink(businessSlug);
+  const howToClaimUrl = `${getWebBaseUrl()}/how-to-claim`;
+
+  return `<p>Want to get more leads like this? Claim your business page here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a>. Not sure how? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>`;
+};
+
 // Free lead inquiry forwarded to business
 export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
   subject: "New Customer Inquiry from RadiatorRepairHub",
   html: (
     businessName,
-    { name, phone, email, vehicle, issue, urgency, additionalDetails },
+    {
+      name,
+      phone,
+      email,
+      vehicle,
+      issue,
+      urgency,
+      additionalDetails,
+      isClaimed,
+      businessSlug,
+    },
   ) => `
   <p>Hi ${businessName ?? "There"},</p>
 
@@ -82,6 +144,8 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
   <p>We're passing this along for free, no strings attached.</p>
 
   <p>Feel free to reach out to this person directly using the info above.</p>
+
+  ${buildFreeLeadClaimStatusHtml(Boolean(isClaimed), businessSlug)}
 
   <p>If you have any questions, please feel free to reply to this email or contact us anytime.</p>
 
@@ -151,6 +215,115 @@ export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
   </table>
 
   <p>Review it in the admin dashboard under Pending.</p>
+  `,
+});
+
+const LISTING_REPORT_REASON_LABELS = {
+  wrong_claim_contact: "Wrong claim contact info",
+  inappropriate: "Inappropriate or misleading content",
+};
+
+export const formatListingReportReasonLabel = (reason) => {
+  return LISTING_REPORT_REASON_LABELS[reason] ?? reason ?? "N/A";
+};
+
+// Admin notification when a listing report is submitted
+export const ADMIN_NEW_LISTING_REPORT_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `New listing report${businessName ? ` for ${businessName}` : ""}`,
+  html: (
+    businessName,
+    {
+      reason,
+      details,
+      reporterName,
+      reporterEmail,
+      suggestedPhone,
+      suggestedEmail,
+      businessPageUrl,
+      adminQueueUrl,
+      listingPhone,
+      listingEmail,
+    },
+  ) => `
+  <p>A new listing report was submitted on RadiatorRepairHub.</p>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 160px;">Business:</td>
+      <td style="padding: 8px 0;">${businessName ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Reason:</td>
+      <td style="padding: 8px 0;">${formatListingReportReasonLabel(reason)}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Reporter name:</td>
+      <td style="padding: 8px 0;">${reporterName ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Reporter email:</td>
+      <td style="padding: 8px 0;">${reporterEmail ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Listed phone:</td>
+      <td style="padding: 8px 0;">${listingPhone ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Listed email:</td>
+      <td style="padding: 8px 0;">${listingEmail ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Suggested phone:</td>
+      <td style="padding: 8px 0;">${suggestedPhone ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Suggested email:</td>
+      <td style="padding: 8px 0;">${suggestedEmail ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Details:</td>
+      <td style="padding: 8px 0;">${details ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Listing:</td>
+      <td style="padding: 8px 0;">${
+        businessPageUrl
+          ? `<a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a>`
+          : "N/A"
+      }</td>
+    </tr>
+  </table>
+
+  <p>${
+    adminQueueUrl
+      ? `Review it in the <a href="${adminQueueUrl}" style="color: #1a73e8;">admin listing reports queue</a>.`
+      : "Review it in the admin listing reports queue."
+  }</p>
+  `,
+});
+
+// Admin notification when a business is successfully claimed
+export const ADMIN_BUSINESS_CLAIMED_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Business claimed${businessName ? `: ${businessName}` : ""}`,
+  html: (businessName, { email, businessPageUrl }) => `
+  <p>A business was successfully claimed on RadiatorRepairHub.</p>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 140px;">Business:</td>
+      <td style="padding: 8px 0;">${businessName ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Owner email:</td>
+      <td style="padding: 8px 0;">${email ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Listing:</td>
+      <td style="padding: 8px 0;"><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></td>
+    </tr>
+  </table>
   `,
 });
 

@@ -4,15 +4,15 @@ import PageHeader from "@/components/layout/Header/PageHeader";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 
 export const metadata = {
-  title: "About RadiatorRepairHub | Your Trusted Radiator Repair Directory",
+  title: "About RadiatorRepairHub | Radiator Repair Directory",
   description:
-    "Learn about RadiatorRepairHub, your trusted directory for finding reliable radiator repair shops across the U.S. We connect drivers with verified cooling system experts.",
+    "Learn about RadiatorRepairHub, a directory for finding radiator repair shops across the U.S. Search by location, compare listings, and contact shops directly.",
   keywords:
     "about radiator repair hub, radiator repair directory, cooling system experts, auto repair directory, radiator specialists",
   openGraph: {
-    title: "About RadiatorRepairHub | Your Trusted Radiator Repair Directory",
+    title: "About RadiatorRepairHub | Radiator Repair Directory",
     description:
-      "Learn about RadiatorRepairHub, your trusted directory for finding reliable radiator repair shops across the U.S. We connect drivers with verified cooling system experts.",
+      "Learn about RadiatorRepairHub, a directory for finding radiator repair shops across the U.S. Search by location, compare listings, and contact shops directly.",
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
@@ -43,13 +43,12 @@ export const metadata = {
 };
 
 function AboutPage() {
-  // AboutPage Schema
   const aboutPageSchema = {
     "@context": "https://schema.org",
     "@type": "AboutPage",
     name: "About RadiatorRepairHub",
     description:
-      "Learn about RadiatorRepairHub, your trusted directory for finding reliable radiator repair shops",
+      "Learn about RadiatorRepairHub, a directory for finding radiator repair shops across the U.S.",
     url: "https://radiatorrepairhub.com/about",
     mainEntity: {
       "@id": "https://radiatorrepairhub.com/#organization",
@@ -58,58 +57,57 @@ function AboutPage() {
 
   const bulletPointContent = [
     {
-      title: "How We Make It Simple",
+      title: "What You Can Do",
       bulletPoints: [
         {
-          label: "Smart Local Search:",
+          label: "Search by location:",
           description:
-            "Enter your location and instantly see radiator specialists in your area, organized by proximity and relevance.",
+            "Enter a city, state, or ZIP and browse shops near you.",
         },
         {
-          label: "Verified Expertise: ",
+          label: "Filter results:",
           description:
-            "Every listed business has been confirmed to offer genuine radiator repair services, not just general automotive work.",
+            "Narrow by rating, review count, open hours, categories, and features. Sort by reviews or rating.",
         },
         {
-          label: "Real Customer Insights: ",
+          label: "Business profiles:",
           description:
-            "Browse authentic reviews and ratings from drivers who've actually used these services for radiator repairs.",
+            "See address, phone, hours, services, photos, and reviews on each listing.",
         },
         {
-          label: "Complete Business Profiles: ",
+          label: "Quick Contact:",
           description:
-            "Get everything you need at a glance — location, phone numbers, addresses, hours of operation, services offered, etc.",
+            "Message a shop from its page, or call using the number listed there.",
         },
-
         {
-          label: "Filter Your Way: ",
+          label: "Browse by area or category:",
           description:
-            "Narrow your search by location, customer ratings, operating hours, services, etc.",
+            "Explore by state, city, or service category when you are not searching for a specific place.",
         },
       ],
     },
     {
-      title: "Our Commitment to Drivers",
+      title: "How We Keep Listings Honest",
       bulletPoints: [
         {
-          label: "Accuracy First: ",
+          label: "Listing quality:",
           description:
-            "We continuously verify and update every listing to ensure you're never calling a disconnected number or driving to a closed shop.",
+            "We work to list genuine radiator repair businesses and keep the directory updated, including reviewing Get Listed submissions and Report Info tips.",
         },
         {
-          label: "Transparency Always: ",
+          label: "Claimed listings:",
           description:
-            "We are upfront about how our directory works and how we handle visitor information. See our Privacy Policy for details on data collection and your rights.",
+            "A claimed listing means the owner verified access to the listing email and created an account. It does not replace calling ahead to confirm current services and hours.",
         },
         {
-          label: "Community-Driven: ",
+          label: "Report problems:",
           description:
-            "Real reviews from real customers help you make informed decisions about where to trust your vehicle.",
+            "Use Report Info on a business page if contact details are wrong or content looks off.",
         },
         {
-          label: "Always Improving: ",
+          label: "Privacy:",
           description:
-            "We actively seek feedback from both drivers and shop owners to enhance the platform and add new features that matter to our community.",
+            "We are clear about how the directory works and how we handle visitor information. See our Privacy Policy for details.",
         },
       ],
     },
@@ -117,20 +115,23 @@ function AboutPage() {
 
   const links = [
     {
-      label: "Ready to find your local radiator expert? Start your search now",
+      label: "Search the directory",
       href: "/search",
     },
     {
-      label: "Read our blog for radiator repair tips and maintenance guides",
+      label: "Radiator repair tips on the blog",
       href: "/blogs",
     },
     {
-      label: "Own a radiator repair business? Learn about getting listed",
+      label: "Get your shop listed",
       href: "/get-listed",
     },
     {
-      label:
-        "Have suggestions or feedback? Contact our team — we read every message and genuinely appreciate your input.",
+      label: "Claim an existing listing",
+      href: "/how-to-claim",
+    },
+    {
+      label: "Contact us",
       href: "/contact",
     },
   ];
@@ -142,7 +143,7 @@ function AboutPage() {
 
   const pageTitle = "About RadiatorRepairHub";
   const pageDescription =
-    "Your trusted directory for finding reliable radiator repair shops across the U.S.";
+    "A directory for finding radiator repair shops across the U.S.";
 
   return (
     <>
@@ -153,50 +154,38 @@ function AboutPage() {
         }}
       />
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
         <PageHeader
           breadcrumbItems={breadcrumbItems}
           pageTitle={pageTitle}
           pageDescription={pageDescription}
         />
 
-        {/* Content Sections */}
         <div className="max-w-3xl mx-auto px-6 py-12">
           <section className="mb-12">
             <h2 className="text-3xl font-heading font-bold text-gray-900 mb-6">
-              Your Engine&apos;s Lifeline Deserves Expert Care
+              Find Radiator Repair Shops Near You
             </h2>
             <p className="text-lg text-gray-700 leading-relaxed">
-              When your temperature gauge starts climbing or steam begins
-              billowing from under your hood, every minute counts.
-              RadiatorRepairHub connects you with skilled radiator specialists
-              who understand the urgency of cooling system problems and have the
-              expertise to get you back on the road safely.
+              RadiatorRepairHub is a business directory focused on radiator and
+              cooling system repair. Search by location, compare listings, and
+              contact shops directly when you need help.
             </p>
           </section>
 
           <section className="mb-12">
             <h2 className="text-3xl font-heading font-bold text-gray-900 mb-6">
-              The Problem We Solved
+              Why We Built It
             </h2>
-            <p className="text-lg text-gray-700 leading-relaxed mb-4">
-              We&apos;ve all been there — frantically searching online for a
-              radiator repair shop while your car sits disabled, only to find
-              outdated phone numbers, closed businesses, or shops that
-              don&apos;t actually specialize in cooling systems. Generic auto
-              repair directories are cluttered with irrelevant results, and
-              it&apos;s nearly impossible to tell which shops have real radiator
-              expertise versus those who just claim they do.
-            </p>
             <p className="text-lg text-gray-700 leading-relaxed">
-              RadiatorRepairHub was born from this frustration. We recognized
-              that radiator problems require specialized knowledge, and drivers
-              deserve a dedicated resource that connects them specifically with
-              cooling system experts.
+              Generic auto repair directories mix in shops that barely touch
+              radiators, and listings often go stale. We built a directory aimed
+              at cooling system work so you can browse shops that actually do
+              radiator repair, with filters and profiles that show services,
+              hours, reviews, and contact details.
             </p>
           </section>
 
-          {bulletPointContent.map((item, index) => (
+          {bulletPointContent.map((item) => (
             <section
               className="mb-12"
               key={"about-page-bullet-point-section-" + item.title}
@@ -223,33 +212,24 @@ function AboutPage() {
             </section>
           ))}
 
-          {/* Get In Touch */}
           <section className="mb-16">
             <h2 className="text-3xl font-heading font-bold text-gray-900 mb-6">
-              Join Our Growing Network
+              For Drivers and Shop Owners
             </h2>
             <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              Whether you&apos;re a driver who&apos;s found value in our
-              directory or a radiator repair professional looking to connect
-              with more customers, we want to hear from you. Your feedback helps
-              us build a better resource for everyone who depends on reliable
-              cooling system repairs.
+              Whether you are looking for a shop or managing a listing, your
+              feedback helps us keep the directory useful.
             </p>
             {links.map((link) => (
               <Link
                 href={link.href}
                 key={"about-page-link-" + link.label}
-                className="inline-block mb-4 text-gray-500 hover:text-blue-500 hover:underline duration-200"
+                className="block mb-4 text-gray-500 hover:text-blue-500 hover:underline duration-200"
               >
                 • {link.label}
               </Link>
             ))}
           </section>
-
-          <p className="text-lg text-blue-500 leading-relaxed italic text-center font-heading mb-8">
-            RadiatorRepairHub: Where overheated drivers meet cooling system
-            experts.
-          </p>
 
           <DirectoryDisclaimer className="mb-16" />
         </div>

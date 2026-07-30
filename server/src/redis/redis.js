@@ -224,3 +224,32 @@ export const getPrimaryCategoryBySlugKey = (slug) => ({
   key: `PRIMARY_CATEGORY?SLUG:${slug}`,
   interval: 60 * 60,
 });
+
+// --- Claim Requests ----
+export const getClaimRequestCodeKey = (claim_request_id) => ({
+  key: `CLAIM_REQUEST?ID:${claim_request_id}`,
+  interval: 60 * 60,
+});
+
+export const getClaimRequestsKey = (page, limit, status = null) => ({
+  key: `CLAIM_REQUESTS?PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}`,
+  interval: 60 * 5,
+});
+
+export const getListingReportsKey = (page, limit, status = null) => ({
+  key: `LISTING_REPORTS?PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}`,
+  interval: 60 * 5,
+});
+
+/** Store a value with an exact TTL (does not use checkInterval). */
+export const setWithExactTtl = async (key, ttlSeconds, value) => {
+  if (process.env.NODE_ENV === "development")
+    console.log(`REDIS: Set Data with Exact TTL [${key}] EX ${ttlSeconds}`);
+
+  await redisClient.set(
+    checkKey(key),
+    JSON.stringify({ data: value }),
+    "EX",
+    ttlSeconds
+  );
+};

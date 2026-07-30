@@ -4,13 +4,13 @@ import PageHeader from "@/components/layout/Header/PageHeader";
 export const metadata = {
   title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
   description:
-    "Learn how RadiatorRepairHub protects your privacy and handles your personal information. Our comprehensive privacy policy covers data collection, usage, and your rights.",
+    "How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing reports, and accounts.",
   keywords:
     "privacy policy, data protection, personal information, GDPR, CCPA, privacy rights, data security",
   openGraph: {
     title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
     description:
-      "Learn how RadiatorRepairHub protects your privacy and handles your personal information. Our comprehensive privacy policy covers data collection, usage, and your rights.",
+      "How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing reports, and accounts.",
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
@@ -37,7 +37,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date("2026-07-21").toLocaleDateString("en-US", {
+  const lastUpdated = new Date("2026-07-29").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -68,9 +68,19 @@ function PrivacyPage() {
             "If you're a business owner requesting to be listed, we may collect business name, address, contact details, business description, hours of operation, and services offered.",
         },
         {
+          label: "Business Claim Information:",
+          description:
+            "When you claim a listing, we collect the business you selected, the listing email used for verification, verification codes and related claim-request records, and the email and password you create for your account. We send a verification email to the address on file for that listing so we can confirm access before completing the claim.",
+        },
+        {
+          label: "Listing Report (Report Info) Submissions:",
+          description:
+            "When you use Report Info on a business listing, we collect your name (optional), email address, report reason, details you provide, the business you selected, and (when reporting wrong claim contact info) any suggested phone number or email you submit so we can review and update listing contact details.",
+        },
+        {
           label: "Communication Records:",
           description:
-            "Content of messages, emails, or other communications you send to us, including general contact form messages and Quick Contact inquiry details.",
+            "Content of messages, emails, or other communications you send to us, including general contact form messages, Quick Contact inquiry details, claim-related emails, and listing report details.",
         },
         {
           label: "Feedback and Reviews:",
@@ -80,7 +90,7 @@ function PrivacyPage() {
         {
           label: "Account Information:",
           description:
-            "If we implement user accounts in the future, username, password, and profile information.",
+            "Email address, password (stored in hashed form), and account profile details for business owners who create an account through the claim process or sign in to manage claimed listings. We may also store which businesses your account owns or manages.",
         },
       ],
     },
@@ -240,12 +250,12 @@ function PrivacyPage() {
         {
           label: "Purpose:",
           description:
-            "Send transactional emails related to Quick Contact submissions, including acknowledgments, status updates, and forwarding inquiries to listed businesses.",
+            "Send transactional emails, including Quick Contact acknowledgments and status updates, forwarding inquiries to listed businesses, business claim verification emails and codes, and internal admin notifications for listing reports and completed claims.",
         },
         {
           label: "Data Collected:",
           description:
-            "Name, email address, phone number, vehicle information, issue details, urgency, and message content needed to process and deliver inquiry-related emails.",
+            "Name, email address, phone number, vehicle information, issue details, urgency, message content, claim verification details, and listing report details needed to process and deliver those emails.",
         },
         {
           label: "Privacy Policy:",
@@ -263,12 +273,12 @@ function PrivacyPage() {
         {
           label: "Purpose:",
           description:
-            "Database hosting and backend data storage for our directory and Quick Contact message records.",
+            "Database hosting and backend data storage for our directory, Quick Contact messages, user accounts, business claim requests, listing reports, and related operational records.",
         },
         {
           label: "Data Collected:",
           description:
-            "Quick Contact submission data (including name, email, phone, vehicle, issue, urgency, and message details), associated business identifiers, and related operational metadata such as submission timestamps and processing status.",
+            "Quick Contact submission data; account credentials and ownership links; claim-request records; listing report data (including reporter contact details and suggested corrections); associated business identifiers; and operational metadata such as timestamps and processing status.",
         },
         {
           label: "Privacy Policy:",
@@ -286,12 +296,12 @@ function PrivacyPage() {
         {
           label: "Purpose:",
           description:
-            "Verify that email addresses submitted through Quick Contact appear deliverable before we accept and store the submission.",
+            "Verify that email addresses submitted through Quick Contact and listing reports appear deliverable before we accept and store the submission.",
         },
         {
           label: "Data Collected:",
           description:
-            "The email address you submit on a Quick Contact form.",
+            "The email address you submit on a Quick Contact form or listing report.",
         },
         {
           label: "Privacy Policy:",
@@ -320,8 +330,23 @@ function PrivacyPage() {
             "Review, process, and forward Quick Contact messages to listed businesses when appropriate.",
         },
         {
+          label: "Business Claims:",
+          description:
+            "Verify listing email access, complete ownership claims, create and authenticate business owner accounts, and help resolve claim eligibility issues.",
+        },
+        {
+          label: "Listing Reports:",
+          description:
+            "Review Report Info submissions, update incorrect listing or claim contact information when appropriate, and investigate inappropriate or misleading listing content.",
+        },
+        {
           label: "Directory Management:",
           description: "Add, update, or remove business listings.",
+        },
+        {
+          label: "Account Management:",
+          description:
+            "Allow claimed business owners to sign in, manage listing information, and maintain their accounts.",
         },
         {
           label: "User Experience:",
@@ -367,7 +392,7 @@ function PrivacyPage() {
         {
           label: "Security:",
           description:
-            "Protect against fraud, abuse, and security threats, including verifying email addresses submitted through Quick Contact.",
+            "Protect against fraud, abuse, and security threats, including verifying email addresses submitted through Quick Contact and listing reports, and reviewing disputed or fraudulent business claims.",
         },
         {
           label: "Legal Proceedings:",
@@ -441,6 +466,21 @@ function PrivacyPage() {
       label: "Contact Inquiries:",
       description:
         "General contact form and Quick Contact submissions are retained for up to 3 years after resolution or last related activity.",
+    },
+    {
+      label: "Business Claims:",
+      description:
+        "Claim-request records and related verification metadata are retained for up to 3 years after the claim is completed, expired, failed, cancelled, or otherwise closed.",
+    },
+    {
+      label: "Listing Reports:",
+      description:
+        "Report Info submissions are retained for up to 3 years after resolution or last related activity.",
+    },
+    {
+      label: "Account Information:",
+      description:
+        "Account credentials and ownership records are retained while your account remains active. If you delete your account, we remove or anonymize account data except where we must retain limited records for security, dispute resolution, or legal obligations.",
     },
     {
       label: "Business Listings:",
@@ -751,8 +791,8 @@ function PrivacyPage() {
             Service Providers
           </h3>
           <p className="mt-2 text-gray-700">
-            We may share information with trusted third-party service providers
-            who assist us in:
+            We may share information with third-party service providers who
+            assist us in:
           </p>
 
           <ul className="mt-4 text-gray-700 space-y-2">

@@ -39,5 +39,6 @@ export const authUser = serverErrorCatcherWrapper(async (req, res, next) => {
       .json(customErrorHandler(USER_NOT_FOUND, "User not found."));
 
   req.user = userData.user;
+  req.accessToken = accessToken;
   return next();
 });

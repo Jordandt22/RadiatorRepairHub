@@ -15,6 +15,8 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "RRH Internal",
   description: "RadiatorRepairHub internal admin tools",
+  applicationName: "RRH Internal",
+  manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -24,6 +26,12 @@ export const metadata = {
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
+  },
+  other: {
+    "apple-mobile-web-app-title": "RRH Internal",
+    "apple-mobile-web-app-capable": "yes",
+    "mobile-web-app-capable": "yes",
+    "theme-color": "#2563eb",
   },
 };
 

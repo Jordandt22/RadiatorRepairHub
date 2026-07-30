@@ -19,12 +19,9 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { ChevronRightIcon } from "lucide-react";
-import {
-  replaceDashboardTab,
-  subscribeToDashboardTab,
-} from "@/lib/dashboardTab";
+import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
 
-function getTabFromUrl(url, pathname, search) {
+function getTabFromUrl(url, pathname) {
   try {
     const target = new URL(url, "http://localhost");
     if (target.pathname !== pathname) return null;
@@ -40,7 +37,16 @@ function isSubItemActive(url, pathname, currentTab) {
   return (currentTab ?? "pending") === tab;
 }
 
-export function NavMain({ items, label = "Messages" }) {
+function isLeafItemActive(url, pathname) {
+  try {
+    const target = new URL(url, "http://localhost");
+    return target.pathname === pathname;
+  } catch {
+    return false;
+  }
+}
+
+export function NavMain({ items, label = "Platform" }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [currentTab, setCurrentTab] = useState(
@@ -70,30 +76,65 @@ export function NavMain({ items, label = "Messages" }) {
     if (tab === currentTab) return;
 
     setCurrentTab(tab);
-    replaceDashboardTab(tab);
+    replaceTab(tab, pathname);
   };
 
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{label}</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
-          <Collapsible
-            key={item.title}
-            defaultOpen={item.isActive}
-            className="group/collapsible"
-            render={<SidebarMenuItem />}
-          >
-            <CollapsibleTrigger
-              render={<SidebarMenuButton tooltip={item.title} />}
+        {items.map((item) => {
+          const hasChildren = Boolean(item.items?.length);
+          const isPlaceholder = !item.url || item.url === "#";
+
+          if (!hasChildren) {
+            return (
+              <SidebarMenuItem key={item.title}>
+                {isPlaceholder ? (
+                  <SidebarMenuButton tooltip={item.title} disabled>
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                ) : (
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    isActive={isLeafItemActive(item.url, pathname)}
+                    render={<Link href={item.url} scroll={false} />}
+                  >
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                )}
+              </SidebarMenuItem>
+            );
+          }
+
+          const sectionActive =
+            item.isActive ||
+            item.items.some((subItem) => {
+              try {
+                return (
+                  new URL(subItem.url, "http://localhost").pathname === pathname
+                );
+              } catch {
+                return false;
+              }
+            });
+
+          return (
+            <Collapsible
+              key={item.title}
+              defaultOpen={Boolean(sectionActive)}
+              className="group/collapsible"
+              render={<SidebarMenuItem />}
             >
-              {item.icon}
-              <span>{item.title}</span>
-              {item.items?.length ? (
+              <CollapsibleTrigger
+                render={<SidebarMenuButton tooltip={item.title} />}
+              >
+                {item.icon}
+                <span>{item.title}</span>
                 <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
-              ) : null}
-            </CollapsibleTrigger>
-            {item.items?.length ? (
+              </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub>
                   {item.items.map((subItem) => (
@@ -121,9 +162,9 @@ export function NavMain({ items, label = "Messages" }) {
                   ))}
                 </SidebarMenuSub>
               </CollapsibleContent>
-            ) : null}
-          </Collapsible>
-        ))}
+            </Collapsible>
+          );
+        })}
       </SidebarMenu>
     </SidebarGroup>
   );

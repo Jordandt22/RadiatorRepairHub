@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
+import VerifiedBadge from "@/components/businesses/VerifiedBadge";
 
 function MobileBusinessCard({ business }) {
   return (
@@ -20,6 +21,11 @@ function MobileBusinessCard({ business }) {
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
             showIcon={false}
           />
+          {business.is_claimed ? (
+            <div className="absolute top-3 left-3 z-10">
+              <VerifiedBadge />
+            </div>
+          ) : null}
         </div>
 
         <div className="p-5">

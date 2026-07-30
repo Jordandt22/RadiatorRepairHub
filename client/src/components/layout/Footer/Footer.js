@@ -18,6 +18,7 @@ function Footer() {
     { label: "FAQ", path: "/faq" },
     { label: "Contact", path: "/contact" },
     { label: "Get Listed", path: "/get-listed" },
+    { label: "How to Claim", path: "/how-to-claim" },
   ];
 
   const topStates = [
