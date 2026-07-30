@@ -17,6 +17,7 @@ import {
   getListingReports,
   updateListingReportsStatus,
   getBusinesses,
+  getLocations,
   invalidateCache,
 } from "../../controllers/admin/admin.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
@@ -38,6 +39,7 @@ import {
   GetListingReportsQuerySchema,
   UpdateListingReportsStatusSchema,
   GetAdminBusinessesQuerySchema,
+  GetAdminLocationsQuerySchema,
   InvalidateCacheSchema,
 } from "../../schemas/admin.schemas.js";
 import { bodyValidator, queryValidator } from "../../middleware/validators.js";
@@ -91,6 +93,13 @@ adminRouter.get(
   authAdmin,
   queryValidator(GetAdminBusinessesQuerySchema),
   serverErrorCatcherWrapper(getBusinesses)
+);
+
+adminRouter.get(
+  "/locations",
+  authAdmin,
+  queryValidator(GetAdminLocationsQuerySchema),
+  serverErrorCatcherWrapper(getLocations)
 );
 
 adminRouter.patch(

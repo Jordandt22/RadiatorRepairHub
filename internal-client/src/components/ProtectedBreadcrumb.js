@@ -18,16 +18,47 @@ const SEGMENT_LABELS = {
   "claim-requests": "Claim Requests",
   "listing-reports": "Listing Reports",
   businesses: "Businesses",
+  locations: "Locations",
+  states: "States",
+  cities: "Cities",
+  "postal-codes": "Postal Codes",
 };
 
-function formatSegment(segment) {
-  return (
-    SEGMENT_LABELS[segment] ??
-    segment
+const LOCATION_PARENT_HREF = {
+  states: "/locations?tab=states",
+  cities: "/locations?tab=cities",
+  "postal-codes": "/locations?tab=postal-codes",
+};
+
+function formatSegment(segment, index, segments) {
+  if (SEGMENT_LABELS[segment]) return SEGMENT_LABELS[segment];
+
+  const parent = segments[0];
+  if (index === 1 && parent === "states") {
+    return segment.toUpperCase();
+  }
+  if (index === 1 && parent === "postal-codes") {
+    return decodeURIComponent(segment);
+  }
+  if (index === 1 && parent === "cities") {
+    return decodeURIComponent(segment)
       .split("-")
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ")
-  );
+      .join(" ");
+  }
+
+  return segment
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function hrefForSegment(segments, index) {
+  const segment = segments[index];
+  if (index === 0 && LOCATION_PARENT_HREF[segment]) {
+    return LOCATION_PARENT_HREF[segment];
+  }
+  return `/${segments.slice(0, index + 1).join("/")}`;
 }
 
 export default function ProtectedBreadcrumb() {
@@ -42,8 +73,8 @@ export default function ProtectedBreadcrumb() {
     <Breadcrumb>
       <BreadcrumbList className="bg-sky-500/10 rounded-md px-2 py-0.5">
         {segments.map((segment, index) => {
-          const href = `/${segments.slice(0, index + 1).join("/")}`;
-          const label = formatSegment(segment);
+          const href = hrefForSegment(segments, index);
+          const label = formatSegment(segment, index, segments);
           const isLast = index === segments.length - 1;
 
           return (

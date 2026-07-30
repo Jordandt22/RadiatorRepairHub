@@ -245,11 +245,40 @@ export const getAdminBusinessesKey = (
   page,
   limit,
   claimed = null,
-  q = null
+  q = null,
+  stateCode = null,
+  citySlug = null,
+  postalCode = null,
+  scoreTier = null,
+  reviewsTier = null,
+  emailFilter = null
 ) => ({
-  key: `ADMIN_BUSINESSES?PAGE:${page}&LIMIT:${limit}&CLAIMED:${
+  key: `ADMIN_BUSINESSES?V:7&PAGE:${page}&LIMIT:${limit}&CLAIMED:${
     claimed === true ? "true" : "all"
-  }&Q:${q ?? ""}`,
+  }&Q:${q ?? ""}&STATE:${stateCode ?? ""}&CITY:${citySlug ?? ""}&POSTAL:${
+    postalCode ?? ""
+  }&SCORE:${scoreTier ?? ""}&REVIEWS:${reviewsTier ?? ""}&EMAIL:${
+    emailFilter ?? ""
+  }`,
+  interval: 60 * 5,
+});
+
+export const getAdminLocationsKey = (
+  tab,
+  page,
+  limit,
+  q = null,
+  stateId = null,
+  cityId = null
+) => ({
+  key: `ADMIN_LOCATIONS?V:4&TAB:${tab}&PAGE:${page}&LIMIT:${limit}&Q:${
+    q ?? ""
+  }&STATE:${stateId ?? "all"}&CITY:${cityId ?? "all"}`,
+  interval: 60 * 5,
+});
+
+export const getAdminLocationAggregatesKey = (tab) => ({
+  key: `ADMIN_LOCATIONS?TAB:${tab}&AGGREGATES`,
   interval: 60 * 5,
 });
 

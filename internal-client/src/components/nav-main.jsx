@@ -21,20 +21,41 @@ import {
 import { ChevronRightIcon } from "lucide-react";
 import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
 
-function getTabFromUrl(url, pathname) {
+function isSubItemActive(url, pathname, currentTab, siblingUrls = []) {
   try {
     const target = new URL(url, "http://localhost");
-    if (target.pathname !== pathname) return null;
-    return target.searchParams.get("tab");
-  } catch {
-    return null;
-  }
-}
+    if (target.pathname !== pathname) return false;
 
-function isSubItemActive(url, pathname, currentTab) {
-  const tab = getTabFromUrl(url, pathname);
-  if (tab == null) return false;
-  return (currentTab ?? "pending") === tab;
+    // Locations page: one sidebar item covers States/Cities/Postal Codes;
+    // Data Issues is its own entry for the same path.
+    if (pathname === "/locations") {
+      const targetTab = target.searchParams.get("tab");
+      const tab = currentTab ?? "states";
+      if (targetTab === "data-issues") {
+        return tab === "data-issues";
+      }
+      return tab !== "data-issues";
+    }
+
+    const samePathSiblings = siblingUrls.filter((siblingUrl) => {
+      try {
+        return (
+          new URL(siblingUrl, "http://localhost").pathname === pathname
+        );
+      } catch {
+        return false;
+      }
+    });
+
+    // Single link for this path — active for any tab on that page.
+    if (samePathSiblings.length <= 1) return true;
+
+    const tab = target.searchParams.get("tab");
+    if (tab == null) return true;
+    return (currentTab ?? "pending") === tab;
+  } catch {
+    return false;
+  }
 }
 
 function isLeafItemActive(url, pathname) {
@@ -84,6 +105,7 @@ function NavCollapsibleSection({
                   subItem.url,
                   pathname,
                   currentTab,
+                  item.items.map((sibling) => sibling.url),
                 )}
                 render={
                   <Link

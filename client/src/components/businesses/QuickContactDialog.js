@@ -74,12 +74,10 @@ function isValidEmail(value) {
   );
 }
 
-function hasBusinessContactInfo(email, phone) {
+function hasBusinessEmail(email) {
   const normalizedEmail =
     typeof email === "string" ? email.trim() : email;
-  const normalizedPhone =
-    typeof phone === "string" ? phone.trim() : phone;
-  return Boolean(normalizedEmail || normalizedPhone);
+  return Boolean(normalizedEmail);
 }
 
 function QuickContactDialogContent({
@@ -553,7 +551,7 @@ function QuickContactDialogContent({
 }
 
 export default function QuickContactDialog(props) {
-  if (!hasBusinessContactInfo(props.email, props.phone)) {
+  if (!hasBusinessEmail(props.email)) {
     return null;
   }
 

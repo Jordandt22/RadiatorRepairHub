@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/Auth.context";
 import { useLoading } from "@/contexts/Loading.context";
 import { fetchApi } from "@/lib/api/fetchApi";
+import PageFadeIn from "@/components/PageFadeIn";
 
 const loginSchema = Yup.object({
   password: Yup.string().trim().required("Password is required"),
@@ -58,7 +59,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center p-6">
+    <PageFadeIn className="flex flex-1 items-center justify-center p-6">
       <form
         onSubmit={formik.handleSubmit}
         className="flex w-full max-w-sm flex-col gap-4"
@@ -94,6 +95,6 @@ export default function Home() {
           {formik.isSubmitting ? "Signing in…" : "Sign in"}
         </Button>
       </form>
-    </div>
+    </PageFadeIn>
   );
 }

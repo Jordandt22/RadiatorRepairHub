@@ -40,12 +40,19 @@ export default function BusinessesPageContent() {
   );
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [scoreTier, setScoreTier] = useState(null);
+  const [reviewsTier, setReviewsTier] = useState(null);
+  const [emailFilter, setEmailFilter] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState(null);
 
   const claimedFilter = TAB_CLAIMED[activeTab] ?? null;
   const searchQuery = debouncedSearch.trim();
+  const scoreTierId = scoreTier?.id ?? null;
+  const reviewsTierId = reviewsTier?.id ?? null;
+  const emailFilterId = emailFilter?.id ?? null;
+  const showTierFilters = activeTab === "all";
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -67,6 +74,9 @@ export default function BusinessesPageContent() {
     return subscribeToDashboardTab((tab) => {
       setActiveTab(resolveTab(tab));
       setPage(1);
+      setScoreTier(null);
+      setReviewsTier(null);
+      setEmailFilter(null);
     });
   }, []);
 
@@ -91,7 +101,25 @@ export default function BusinessesPageContent() {
   const handleTabChange = (tab) => {
     const nextTab = resolveTab(tab);
     if (nextTab === activeTab) return;
+    setScoreTier(null);
+    setReviewsTier(null);
+    setEmailFilter(null);
     replaceTab(nextTab, "/businesses");
+  };
+
+  const handleScoreTierChange = (tier) => {
+    setScoreTier(tier);
+    setPage(1);
+  };
+
+  const handleReviewsTierChange = (tier) => {
+    setReviewsTier(tier);
+    setPage(1);
+  };
+
+  const handleEmailFilterChange = (filter) => {
+    setEmailFilter(filter);
+    setPage(1);
   };
 
   const handlePreviousPage = () => {
@@ -103,7 +131,15 @@ export default function BusinessesPageContent() {
   };
 
   const { data, error, isLoading, isFetching, isPlaceholderData } = useQuery({
-    queryKey: ["admin-businesses", page, activeTab, searchQuery],
+    queryKey: [
+      "admin-businesses",
+      page,
+      activeTab,
+      searchQuery,
+      scoreTierId,
+      reviewsTierId,
+      emailFilterId,
+    ],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
@@ -114,6 +150,15 @@ export default function BusinessesPageContent() {
       }
       if (searchQuery) {
         params.set("q", searchQuery);
+      }
+      if (showTierFilters && scoreTierId) {
+        params.set("score_tier", scoreTierId);
+      }
+      if (showTierFilters && reviewsTierId) {
+        params.set("reviews_tier", reviewsTierId);
+      }
+      if (showTierFilters && emailFilterId) {
+        params.set("email_filter", emailFilterId);
       }
 
       const result = await fetchApi(
@@ -181,7 +226,11 @@ export default function BusinessesPageContent() {
 
   const totalPages = data?.totalPages ?? 0;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
-  const hasSearch = Boolean(searchQuery);
+  const hasSearch = Boolean(
+    searchQuery ||
+      (showTierFilters &&
+        (scoreTierId || reviewsTierId || emailFilterId)),
+  );
 
   const handleViewClick = (business) => {
     setSelectedBusiness(business);
@@ -196,6 +245,13 @@ export default function BusinessesPageContent() {
         <BusinessActions
           searchValue={searchInput}
           onSearchChange={handleSearchChange}
+          showTierFilters={showTierFilters}
+          scoreTier={scoreTier}
+          onScoreTierChange={handleScoreTierChange}
+          reviewsTier={reviewsTier}
+          onReviewsTierChange={handleReviewsTierChange}
+          emailFilter={emailFilter}
+          onEmailFilterChange={handleEmailFilterChange}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
           refreshError={refreshError}
@@ -206,7 +262,7 @@ export default function BusinessesPageContent() {
         ) : null}
 
         {showInitialSkeleton ? (
-          <BusinessesTableSkeleton />
+          <BusinessesTableSkeleton activeTab={activeTab} />
         ) : !error || isPlaceholderData ? (
           <BusinessesTable
             businesses={businesses}
@@ -220,6 +276,7 @@ export default function BusinessesPageContent() {
           page={page}
           totalPages={totalPages}
           displayPage={data?.page ?? page}
+          total={data?.total}
           isFetching={isFetching}
           onPrevious={handlePreviousPage}
           onNext={handleNextPage}

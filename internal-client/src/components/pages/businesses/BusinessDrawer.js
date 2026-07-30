@@ -8,6 +8,8 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
+import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
+import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
 import { formatFullDate } from "@/components/pages/dashboard/formatDate";
 
 function DetailRow({ label, children }) {
@@ -89,6 +91,24 @@ export default function BusinessDrawer({ business, open, onOpenChange }) {
                 <BusinessClaimedBadge
                   isClaimed={Boolean(business.is_claimed)}
                 />
+              </DetailRow>
+              <DetailRow label="Score">
+                <BusinessScoreBadge score={business.total_score} />
+              </DetailRow>
+              <DetailRow label="Reviews">
+                <BusinessReviewsBadge count={business.reviews_count} />
+              </DetailRow>
+              <DetailRow label="Owner email">
+                {business.owner_email ? (
+                  <a
+                    href={`mailto:${business.owner_email}`}
+                    className="underline underline-offset-2"
+                  >
+                    {business.owner_email}
+                  </a>
+                ) : (
+                  "—"
+                )}
               </DetailRow>
               <DetailRow label="Owner UID">
                 {business.owner_uid ? (

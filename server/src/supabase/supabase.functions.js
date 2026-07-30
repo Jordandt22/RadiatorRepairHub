@@ -6,6 +6,10 @@ import {
   supabaseUrl,
   supabaseAnonKey,
 } from "./supabase.js";
+import {
+  getScoreTier,
+  getReviewTier,
+} from "../lib/adminBusinessTiers.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
 const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*)`;
@@ -452,7 +456,7 @@ export const getListingReports = async (page, limit, status = null) => {
 };
 
 const ADMIN_BUSINESS_SELECT =
-  "id, title, slug, email, phone, address, website, is_claimed, owner_uid, last_edited_at, created_at, image_url, place_id";
+  "id, title, slug, email, phone, address, website, is_claimed, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
 const sanitizeAdminBusinessSearch = (q) => {
   if (!q) return null;
@@ -463,18 +467,184 @@ const sanitizeAdminBusinessSearch = (q) => {
     .slice(0, 100);
 };
 
+const getAuthEmailsByUids = async (uids) => {
+  const unique = [...new Set((uids ?? []).filter(Boolean))];
+  const emailByUid = new Map();
+
+  await Promise.all(
+    unique.map(async (uid) => {
+      try {
+        const { data, error } = await adminAuthClient.getUserById(uid);
+        if (!error && data?.user?.email) {
+          emailByUid.set(uid, data.user.email);
+        }
+      } catch {
+        // skip missing/deleted auth users
+      }
+    })
+  );
+
+  return emailByUid;
+};
+
+const withOwnerEmails = async (businesses) => {
+  const rows = businesses ?? [];
+  if (!rows.length) return rows;
+
+  const emailByUid = await getAuthEmailsByUids(
+    rows.map((row) => row.owner_uid)
+  );
+
+  return rows.map((row) => ({
+    ...row,
+    owner_email: row.owner_uid
+      ? (emailByUid.get(row.owner_uid) ?? null)
+      : null,
+  }));
+};
+
 export const getAdminBusinesses = async (
   page,
   limit,
-  { claimed = null, q = null } = {}
+  {
+    claimed = null,
+    q = null,
+    stateCode = null,
+    citySlug = null,
+    postalCode = null,
+    scoreTier = null,
+    reviewsTier = null,
+    emailFilter = null,
+  } = {}
 ) => {
+  let location = null;
+
+  if (stateCode) {
+    const { data: state, error: stateError } = await supabase
+      .from("states")
+      .select("id, name, code")
+      .ilike("code", stateCode)
+      .maybeSingle();
+
+    if (stateError) return { data: null, count: null, location: null, error: stateError };
+    if (!state) {
+      return {
+        data: [],
+        count: 0,
+        location: null,
+        error: { code: "PGRST116", message: "State not found" },
+      };
+    }
+    location = {
+      type: "state",
+      id: state.id,
+      name: state.name,
+      code: state.code,
+      slug: String(state.code).toLowerCase(),
+    };
+  } else if (citySlug) {
+    const { data: city, error: cityError } = await supabase
+      .from("cities")
+      .select("id, name, slug, state_id, state:states(id, name, code)")
+      .eq("slug", citySlug)
+      .maybeSingle();
+
+    if (cityError) return { data: null, count: null, location: null, error: cityError };
+    if (!city) {
+      return {
+        data: [],
+        count: 0,
+        location: null,
+        error: { code: "PGRST116", message: "City not found" },
+      };
+    }
+    location = {
+      type: "city",
+      id: city.id,
+      name: city.name,
+      slug: city.slug,
+      state_id: city.state_id,
+      state_name: city.state?.name ?? null,
+      state_code: city.state?.code ?? null,
+    };
+  } else if (postalCode) {
+    const { data: postals, error: postalError } = await supabase
+      .from("postal_codes")
+      .select("id, code, city_id, city:cities(id, name, slug, state:states(id, name, code))")
+      .eq("code", postalCode);
+
+    if (postalError) {
+      return { data: null, count: null, location: null, error: postalError };
+    }
+    if (!postals?.length) {
+      return {
+        data: [],
+        count: 0,
+        location: null,
+        error: { code: "PGRST116", message: "Postal code not found" },
+      };
+    }
+
+    const primary = postals[0];
+    location = {
+      type: "postal-code",
+      id: primary.id,
+      code: primary.code,
+      ids: postals.map((p) => p.id),
+      city_name: primary.city?.name ?? null,
+      city_slug: primary.city?.slug ?? null,
+      state_name: primary.city?.state?.name ?? null,
+      state_code: primary.city?.state?.code ?? null,
+      city_count: new Set(postals.map((p) => p.city_id).filter(Boolean)).size,
+    };
+  }
+
   let query = supabase
     .from("businesses")
-    .select(ADMIN_BUSINESS_SELECT, { count: "exact" })
-    .order("created_at", { ascending: false });
+    .select(ADMIN_BUSINESS_SELECT, { count: "exact" });
 
   if (claimed === true) {
-    query = query.eq("is_claimed", true);
+    query = query
+      .eq("is_claimed", true)
+      .order("last_edited_at", { ascending: false, nullsFirst: false });
+  } else {
+    query = query
+      .order("total_score", { ascending: false })
+      .order("reviews_count", { ascending: false });
+  }
+
+  if (location?.type === "state") {
+    query = query.eq("state_id", location.id);
+  } else if (location?.type === "city") {
+    query = query.eq("city_id", location.id);
+  } else if (location?.type === "postal-code") {
+    query = query.in("postal_code_id", location.ids);
+  }
+
+  const scoreBounds = getScoreTier(scoreTier);
+  if (scoreBounds) {
+    if (scoreBounds.min != null) {
+      query = query.gte("total_score", scoreBounds.min);
+    }
+    if (scoreBounds.max != null) {
+      query = query.lt("total_score", scoreBounds.max);
+    }
+  }
+
+  const reviewsBounds = getReviewTier(reviewsTier);
+  if (reviewsBounds) {
+    if (reviewsBounds.min != null) {
+      query = query.gte("reviews_count", reviewsBounds.min);
+    }
+    if (reviewsBounds.max != null) {
+      query = query.lt("reviews_count", reviewsBounds.max);
+    }
+  }
+
+  if (emailFilter === "has") {
+    query = query.not("email", "is", null).neq("email", "");
+  } else if (emailFilter === "none") {
+    query = query.or("email.is.null,email.eq.");
   }
 
   const sanitized = sanitizeAdminBusinessSearch(q);
@@ -490,7 +660,388 @@ export const getAdminBusinesses = async (
     page * limit - 1
   );
 
-  return { data, count, error };
+  if (error) {
+    return { data: null, count, location, error };
+  }
+
+  if (location?.ids) {
+    const { ids, ...rest } = location;
+    location = rest;
+  }
+
+  const businesses = await withOwnerEmails(data);
+
+  return { data: businesses, count, location, error: null };
+};
+
+const ADMIN_LOCATION_PAGE_SIZE = 1000;
+
+const fetchAllAdminRows = async (table, selectCols) => {
+  const rows = [];
+  let start = 0;
+
+  for (;;) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(selectCols)
+      .range(start, start + ADMIN_LOCATION_PAGE_SIZE - 1);
+
+    if (error) return { data: null, error };
+
+    rows.push(...(data ?? []));
+    if (!data || data.length < ADMIN_LOCATION_PAGE_SIZE) break;
+    start += ADMIN_LOCATION_PAGE_SIZE;
+  }
+
+  return { data: rows, error: null };
+};
+
+const roundPercent = (count, total) => {
+  if (!total || total <= 0) return 0;
+  return Math.round((count / total) * 10000) / 100;
+};
+
+const matchesLocationSearch = (haystacks, q) => {
+  if (!q) return true;
+  const needle = q.toLowerCase();
+  return haystacks.some(
+    (value) => typeof value === "string" && value.toLowerCase().includes(needle)
+  );
+};
+
+const sortByBusinessCountThenName = (a, b, nameKey = "name") => {
+  if (b.business_count !== a.business_count) {
+    return b.business_count - a.business_count;
+  }
+  return String(a[nameKey] ?? "").localeCompare(String(b[nameKey] ?? ""));
+};
+
+/**
+ * Aggregates business counts for states, cities, and postal codes.
+ * Returns the full list for one tab (caller paginates / searches).
+ */
+export const getAdminLocationAggregates = async (tab) => {
+  const [statesRes, citiesRes, postalRes, businessesRes] = await Promise.all([
+    fetchAllAdminRows("states", "id, name, code"),
+    fetchAllAdminRows("cities", "id, name, slug, state_id"),
+    fetchAllAdminRows("postal_codes", "id, code, city_id"),
+    fetchAllAdminRows("businesses", "state_id, city_id, postal_code_id"),
+  ]);
+
+  const firstError =
+    statesRes.error ||
+    citiesRes.error ||
+    postalRes.error ||
+    businessesRes.error;
+  if (firstError) {
+    return { data: null, error: firstError };
+  }
+
+  const states = statesRes.data ?? [];
+  const cities = citiesRes.data ?? [];
+  const postalCodes = postalRes.data ?? [];
+  const businesses = businessesRes.data ?? [];
+  const totalBusinesses = businesses.length;
+
+  const stateById = new Map(states.map((s) => [s.id, s]));
+  const cityById = new Map(cities.map((c) => [c.id, c]));
+
+  const businessCountByState = new Map();
+  const businessCountByCity = new Map();
+  const businessCountByPostal = new Map();
+
+  for (const biz of businesses) {
+    if (biz.state_id) {
+      businessCountByState.set(
+        biz.state_id,
+        (businessCountByState.get(biz.state_id) ?? 0) + 1
+      );
+    }
+    if (biz.city_id) {
+      businessCountByCity.set(
+        biz.city_id,
+        (businessCountByCity.get(biz.city_id) ?? 0) + 1
+      );
+    }
+    if (biz.postal_code_id) {
+      businessCountByPostal.set(
+        biz.postal_code_id,
+        (businessCountByPostal.get(biz.postal_code_id) ?? 0) + 1
+      );
+    }
+  }
+
+  const cityCountByState = new Map();
+  const postalCountByState = new Map();
+  const postalCountByCity = new Map();
+
+  for (const city of cities) {
+    cityCountByState.set(
+      city.state_id,
+      (cityCountByState.get(city.state_id) ?? 0) + 1
+    );
+  }
+
+  for (const postal of postalCodes) {
+    postalCountByCity.set(
+      postal.city_id,
+      (postalCountByCity.get(postal.city_id) ?? 0) + 1
+    );
+    const city = cityById.get(postal.city_id);
+    if (city?.state_id) {
+      postalCountByState.set(
+        city.state_id,
+        (postalCountByState.get(city.state_id) ?? 0) + 1
+      );
+    }
+  }
+
+  if (tab === "states") {
+    const data = states
+      .map((state) => {
+        const business_count = businessCountByState.get(state.id) ?? 0;
+        return {
+          id: state.id,
+          name: state.name,
+          code: state.code,
+          business_count,
+          percentage: roundPercent(business_count, totalBusinesses),
+          city_count: cityCountByState.get(state.id) ?? 0,
+          postal_code_count: postalCountByState.get(state.id) ?? 0,
+          slug: String(state.code ?? "").toLowerCase(),
+        };
+      })
+      .sort((a, b) => sortByBusinessCountThenName(a, b, "name"));
+
+    return { data, totalBusinesses, error: null };
+  }
+
+  if (tab === "cities") {
+    const data = cities
+      .map((city) => {
+        const state = stateById.get(city.state_id);
+        const business_count = businessCountByCity.get(city.id) ?? 0;
+        const stateBusinessCount = businessCountByState.get(city.state_id) ?? 0;
+        return {
+          id: city.id,
+          name: city.name,
+          slug: city.slug,
+          state_id: city.state_id,
+          state_name: state?.name ?? null,
+          state_code: state?.code ?? null,
+          business_count,
+          percentage: roundPercent(business_count, stateBusinessCount),
+          postal_code_count: postalCountByCity.get(city.id) ?? 0,
+        };
+      })
+      .sort((a, b) => sortByBusinessCountThenName(a, b, "name"));
+
+    return { data, totalBusinesses, error: null };
+  }
+
+  const data = postalCodes
+    .map((postal) => {
+      const city = cityById.get(postal.city_id);
+      const state = city ? stateById.get(city.state_id) : null;
+      const business_count = businessCountByPostal.get(postal.id) ?? 0;
+      const cityBusinessCount = businessCountByCity.get(postal.city_id) ?? 0;
+      return {
+        id: postal.id,
+        code: postal.code,
+        city_id: postal.city_id,
+        city_name: city?.name ?? null,
+        state_id: city?.state_id ?? null,
+        state_name: state?.name ?? null,
+        state_code: state?.code ?? null,
+        business_count,
+        percentage: roundPercent(business_count, cityBusinessCount),
+      };
+    })
+    .sort((a, b) => sortByBusinessCountThenName(a, b, "code"));
+
+  return { data, totalBusinesses, error: null };
+};
+
+export const filterAdminLocations = (
+  rows,
+  tab,
+  q,
+  { stateId = null, cityId = null } = {}
+) => {
+  let filtered = rows ?? [];
+
+  if (stateId && (tab === "cities" || tab === "postal-codes")) {
+    filtered = filtered.filter((row) => row.state_id === stateId);
+  }
+
+  if (cityId && tab === "postal-codes") {
+    filtered = filtered.filter((row) => row.city_id === cityId);
+  }
+
+  const sanitized = sanitizeAdminBusinessSearch(q);
+  if (!sanitized) return filtered;
+
+  return filtered.filter((row) => {
+    if (tab === "states") {
+      return matchesLocationSearch([row.name, row.code], sanitized);
+    }
+    if (tab === "cities") {
+      return matchesLocationSearch([row.name, row.slug], sanitized);
+    }
+    return matchesLocationSearch([row.code], sanitized);
+  });
+};
+
+const CHART_TOP_SLICES = 4;
+
+/**
+ * Top N locations by business count, plus an "Other" bucket for the rest.
+ */
+export const buildAdminLocationChart = (rows, tab) => {
+  const list = rows ?? [];
+  const totalBusinesses = list.reduce(
+    (sum, row) => sum + (row.business_count ?? 0),
+    0
+  );
+
+  const ranked = list.filter((row) => (row.business_count ?? 0) > 0);
+  const top = ranked.slice(0, CHART_TOP_SLICES);
+  const rest = ranked.slice(CHART_TOP_SLICES);
+  const otherBusinesses = rest.reduce(
+    (sum, row) => sum + (row.business_count ?? 0),
+    0
+  );
+
+  const labelOf = (row) => {
+    if (tab === "postal-codes") return row.code ?? "Unknown";
+    return row.name ?? "Unknown";
+  };
+
+  const slices = top.map((row, index) => ({
+    key: `slice${index}`,
+    label: labelOf(row),
+    businesses: row.business_count,
+  }));
+
+  if (otherBusinesses > 0) {
+    slices.push({
+      key: "other",
+      label: "Other",
+      businesses: otherBusinesses,
+    });
+  }
+
+  return {
+    slices,
+    total_businesses: totalBusinesses,
+  };
+};
+
+/**
+ * Businesses whose city_id does not match the city on their postal_code_id.
+ */
+export const getAdminLocationDataIssues = async () => {
+  const [citiesRes, postalRes, businessesRes, statesRes] = await Promise.all([
+    fetchAllAdminRows("cities", "id, name, slug, state_id"),
+    fetchAllAdminRows("postal_codes", "id, code, city_id"),
+    fetchAllAdminRows(
+      "businesses",
+      "id, title, slug, city_id, state_id, postal_code_id"
+    ),
+    fetchAllAdminRows("states", "id, name, code"),
+  ]);
+
+  const firstError =
+    citiesRes.error ||
+    postalRes.error ||
+    businessesRes.error ||
+    statesRes.error;
+  if (firstError) {
+    return { data: null, error: firstError };
+  }
+
+  const stateById = new Map((statesRes.data ?? []).map((s) => [s.id, s]));
+  const cityById = new Map((citiesRes.data ?? []).map((c) => [c.id, c]));
+  const postalById = new Map((postalRes.data ?? []).map((p) => [p.id, p]));
+
+  const issues = [];
+  for (const business of businessesRes.data ?? []) {
+    if (!business.postal_code_id || !business.city_id) continue;
+    const postal = postalById.get(business.postal_code_id);
+    if (!postal) continue;
+    if (postal.city_id === business.city_id) continue;
+
+    const businessCity = cityById.get(business.city_id);
+    const postalCity = cityById.get(postal.city_id);
+    const businessState = businessCity
+      ? stateById.get(businessCity.state_id)
+      : stateById.get(business.state_id);
+    const postalState = postalCity
+      ? stateById.get(postalCity.state_id)
+      : null;
+
+    const businessCityName = businessCity?.name ?? null;
+    const postalCityName = postalCity?.name ?? null;
+
+    issues.push({
+      id: business.id,
+      business_id: business.id,
+      title: business.title,
+      slug: business.slug,
+      business_city_id: business.city_id,
+      business_city_name: businessCityName,
+      business_state_id: businessCity?.state_id ?? business.state_id ?? null,
+      business_state_name: businessState?.name ?? null,
+      business_state_code: businessState?.code ?? null,
+      postal_code_id: postal.id,
+      postal_code: postal.code,
+      postal_city_id: postal.city_id,
+      postal_city_name: postalCityName,
+      postal_state_id: postalCity?.state_id ?? null,
+      postal_state_name: postalState?.name ?? null,
+      postal_state_code: postalState?.code ?? null,
+      same_city_name:
+        Boolean(businessCityName) &&
+        Boolean(postalCityName) &&
+        businessCityName.toLowerCase() === postalCityName.toLowerCase(),
+    });
+  }
+
+  issues.sort((a, b) => {
+    const byState = String(a.business_state_code ?? "").localeCompare(
+      String(b.business_state_code ?? "")
+    );
+    if (byState !== 0) return byState;
+    const byCity = String(a.business_city_name ?? "").localeCompare(
+      String(b.business_city_name ?? "")
+    );
+    if (byCity !== 0) return byCity;
+    return String(a.title ?? "").localeCompare(String(b.title ?? ""));
+  });
+
+  return { data: issues, error: null };
+};
+
+export const filterAdminLocationDataIssues = (rows, q) => {
+  const sanitized = sanitizeAdminBusinessSearch(q);
+  if (!sanitized) return rows ?? [];
+
+  return (rows ?? []).filter((row) =>
+    matchesLocationSearch(
+      [
+        row.title,
+        row.slug,
+        row.business_city_name,
+        row.business_state_name,
+        row.business_state_code,
+        row.postal_code,
+        row.postal_city_name,
+        row.postal_state_name,
+        row.postal_state_code,
+      ],
+      sanitized
+    )
+  );
 };
 
 export const updateListingReportsStatus = async (

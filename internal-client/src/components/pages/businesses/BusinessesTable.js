@@ -10,19 +10,32 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
+import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
+import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
 import BusinessesEmptyState from "@/components/pages/businesses/BusinessesEmptyState";
 
-function BusinessesTableView({ businesses, onViewClick }) {
+function BusinessesTableView({
+  businesses,
+  onViewClick,
+  showOwnerEmail,
+  showScore,
+  showLastEdited,
+}) {
   return (
     <div className="hidden md:block">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Business</TableHead>
+            {showScore ? <TableHead>Score</TableHead> : null}
+            {showScore ? (
+              <TableHead className="text-right">Reviews</TableHead>
+            ) : null}
             <TableHead>Email</TableHead>
+            {showOwnerEmail ? <TableHead>Owner email</TableHead> : null}
             <TableHead>Phone</TableHead>
             <TableHead>Claimed</TableHead>
-            <TableHead>Created</TableHead>
+            {showLastEdited ? <TableHead>Last edited</TableHead> : null}
             <TableHead className="w-24 text-right">
               <span className="sr-only">Actions</span>
             </TableHead>
@@ -41,14 +54,33 @@ function BusinessesTableView({ businesses, onViewClick }) {
                   ) : null}
                 </div>
               </TableCell>
+              {showScore ? (
+                <TableCell>
+                  <BusinessScoreBadge score={row.total_score} />
+                </TableCell>
+              ) : null}
+              {showScore ? (
+                <TableCell className="text-right">
+                  <div className="flex justify-end">
+                    <BusinessReviewsBadge count={row.reviews_count} />
+                  </div>
+                </TableCell>
+              ) : null}
               <TableCell>
                 <span className="text-sm">{row.email ?? "—"}</span>
               </TableCell>
+              {showOwnerEmail ? (
+                <TableCell>
+                  <span className="text-sm">{row.owner_email ?? "—"}</span>
+                </TableCell>
+              ) : null}
               <TableCell>{row.phone ?? "—"}</TableCell>
               <TableCell>
                 <BusinessClaimedBadge isClaimed={Boolean(row.is_claimed)} />
               </TableCell>
-              <TableCell>{formatDate(row.created_at)}</TableCell>
+              {showLastEdited ? (
+                <TableCell>{formatDate(row.last_edited_at)}</TableCell>
+              ) : null}
               <TableCell className="text-right">
                 <Button
                   variant="outline"
@@ -68,7 +100,13 @@ function BusinessesTableView({ businesses, onViewClick }) {
   );
 }
 
-function BusinessesCardList({ businesses, onViewClick }) {
+function BusinessesCardList({
+  businesses,
+  onViewClick,
+  showOwnerEmail,
+  showScore,
+  showLastEdited,
+}) {
   return (
     <div className="flex flex-col gap-3 md:hidden">
       {businesses.map((row) => (
@@ -80,15 +118,34 @@ function BusinessesCardList({ businesses, onViewClick }) {
             <p className="truncate font-medium">{row.title ?? "—"}</p>
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <BusinessClaimedBadge isClaimed={Boolean(row.is_claimed)} />
+              {showScore ? <BusinessScoreBadge score={row.total_score} /> : null}
             </div>
           </div>
           <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm">
+            {showScore ? (
+              <>
+                <dt className="text-muted-foreground">Reviews</dt>
+                <dd>
+                  <BusinessReviewsBadge count={row.reviews_count} />
+                </dd>
+              </>
+            ) : null}
             <dt className="text-muted-foreground">Email</dt>
             <dd className="truncate">{row.email ?? "—"}</dd>
+            {showOwnerEmail ? (
+              <>
+                <dt className="text-muted-foreground">Owner email</dt>
+                <dd className="truncate">{row.owner_email ?? "—"}</dd>
+              </>
+            ) : null}
             <dt className="text-muted-foreground">Phone</dt>
             <dd>{row.phone ?? "—"}</dd>
-            <dt className="text-muted-foreground">Created</dt>
-            <dd>{formatDate(row.created_at)}</dd>
+            {showLastEdited ? (
+              <>
+                <dt className="text-muted-foreground">Last edited</dt>
+                <dd>{formatDate(row.last_edited_at)}</dd>
+              </>
+            ) : null}
           </dl>
           <div>
             <Button
@@ -113,6 +170,10 @@ export default function BusinessesTable({
   activeTab = "all",
   hasSearch = false,
 }) {
+  const showOwnerEmail = activeTab === "claimed";
+  const showScore = activeTab === "all";
+  const showLastEdited = activeTab === "claimed";
+
   if (!businesses.length) {
     return (
       <BusinessesEmptyState activeTab={activeTab} hasSearch={hasSearch} />
@@ -121,8 +182,20 @@ export default function BusinessesTable({
 
   return (
     <>
-      <BusinessesCardList businesses={businesses} onViewClick={onViewClick} />
-      <BusinessesTableView businesses={businesses} onViewClick={onViewClick} />
+      <BusinessesCardList
+        businesses={businesses}
+        onViewClick={onViewClick}
+        showOwnerEmail={showOwnerEmail}
+        showScore={showScore}
+        showLastEdited={showLastEdited}
+      />
+      <BusinessesTableView
+        businesses={businesses}
+        onViewClick={onViewClick}
+        showOwnerEmail={showOwnerEmail}
+        showScore={showScore}
+        showLastEdited={showLastEdited}
+      />
     </>
   );
 }

@@ -16,6 +16,8 @@ import {
   XCircleIcon,
   TimerOffIcon,
   LayoutDashboardIcon,
+  MapPinIcon,
+  AlertTriangleIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -144,6 +146,16 @@ const data = {
           title: "Claimed",
           url: "/businesses?tab=claimed",
           icon: <BadgeCheckIcon />,
+        },
+        {
+          title: "Locations",
+          url: "/locations?tab=states",
+          icon: <MapPinIcon />,
+        },
+        {
+          title: "Data Issues",
+          url: "/locations?tab=data-issues",
+          icon: <AlertTriangleIcon />,
         },
       ],
     },

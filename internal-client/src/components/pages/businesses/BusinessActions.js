@@ -2,10 +2,23 @@ import { RefreshCwIcon, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import {
+  SCORE_TIERS,
+  REVIEW_TIERS,
+  EMAIL_FILTERS,
+} from "@/lib/businessTiers";
+import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
 
 export default function BusinessActions({
   searchValue = "",
   onSearchChange,
+  showTierFilters = false,
+  scoreTier = null,
+  onScoreTierChange,
+  reviewsTier = null,
+  onReviewsTierChange,
+  emailFilter = null,
+  onEmailFilterChange,
   onRefresh,
   refreshPending = false,
   refreshError = null,
@@ -13,6 +26,40 @@ export default function BusinessActions({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
+        {showTierFilters ? (
+          <>
+            <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+              <BusinessTierCombobox
+                items={SCORE_TIERS}
+                value={scoreTier}
+                onValueChange={onScoreTierChange}
+                placeholder="All scores"
+                ariaLabel="Filter by score"
+                disabled={refreshPending}
+              />
+            </div>
+            <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+              <BusinessTierCombobox
+                items={REVIEW_TIERS}
+                value={reviewsTier}
+                onValueChange={onReviewsTierChange}
+                placeholder="All reviews"
+                ariaLabel="Filter by reviews"
+                disabled={refreshPending}
+              />
+            </div>
+            <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+              <BusinessTierCombobox
+                items={EMAIL_FILTERS}
+                value={emailFilter}
+                onValueChange={onEmailFilterChange}
+                placeholder="All emails"
+                ariaLabel="Filter by email"
+                disabled={refreshPending}
+              />
+            </div>
+          </>
+        ) : null}
         <div className="relative min-w-0 flex-1 md:max-w-sm">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
