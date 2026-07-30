@@ -16,6 +16,7 @@ const SEGMENT_LABELS = {
   dashboard: "Dashboard",
   "contact-form": "Contact Form",
   "claim-requests": "Claim Requests",
+  "listing-reports": "Listing Reports",
 };
 
 function formatSegment(segment) {

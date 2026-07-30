@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import OverviewContactMessagesTable from "@/components/pages/overview/OverviewContactMessagesTable";
 import OverviewClaimRequestsTable from "@/components/pages/overview/OverviewClaimRequestsTable";
+import OverviewListingReportsTable from "@/components/pages/overview/OverviewListingReportsTable";
 import ContactMessagesTableSkeleton from "@/components/pages/dashboard/ContactMessagesTableSkeleton";
 import ClaimRequestsTableSkeleton from "@/components/pages/claim-requests/ClaimRequestsTableSkeleton";
+import ListingReportsTableSkeleton from "@/components/pages/listing-reports/ListingReportsTableSkeleton";
 
 const PAGE_LIMIT = 10;
 
@@ -40,6 +42,7 @@ export default function OverviewDashboardPageContent() {
   const { accessToken, isReady, logout } = useAuth();
   const [contactRefreshError, setContactRefreshError] = useState(null);
   const [claimsRefreshError, setClaimsRefreshError] = useState(null);
+  const [reportsRefreshError, setReportsRefreshError] = useState(null);
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -92,6 +95,33 @@ export default function OverviewDashboardPageContent() {
       if (result.error) {
         throw new Error(
           result.error.message || "Failed to fetch claim requests",
+        );
+      }
+      return result.data;
+    },
+    enabled: isReady && !!accessToken,
+    staleTime: 30_000,
+  });
+
+  const reportsQuery = useQuery({
+    queryKey: ["dashboard-listing-reports"],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: "1",
+        limit: String(PAGE_LIMIT),
+      });
+
+      const result = await fetchApi(
+        `/admin/listing-reports?${params.toString()}`,
+        { accessToken },
+      );
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+      if (result.error) {
+        throw new Error(
+          result.error.message || "Failed to fetch listing reports",
         );
       }
       return result.data;
@@ -168,6 +198,40 @@ export default function OverviewDashboardPageContent() {
     },
   });
 
+  const reportsRefreshMutation = useMutation({
+    mutationFn: async () => {
+      const result = await fetchApi("/admin/cache/invalidate", {
+        method: "POST",
+        accessToken,
+        body: JSON.stringify({ resource: "listing-reports" }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to refresh cache",
+        );
+      }
+
+      return result.data;
+    },
+    onMutate: () => setReportsRefreshError(null),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["dashboard-listing-reports"],
+      });
+    },
+    onError: (err) => {
+      setReportsRefreshError(err.message || "Failed to refresh");
+    },
+  });
+
   if (!isReady || !accessToken) {
     return null;
   }
@@ -176,6 +240,8 @@ export default function OverviewDashboardPageContent() {
     contactRefreshMutation.isPending || contactQuery.isFetching;
   const claimsRefreshPending =
     claimsRefreshMutation.isPending || claimsQuery.isFetching;
+  const reportsRefreshPending =
+    reportsRefreshMutation.isPending || reportsQuery.isFetching;
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-4 md:px-8 md:py-6">
@@ -235,6 +301,36 @@ export default function OverviewDashboardPageContent() {
         ) : !claimsQuery.error ? (
           <OverviewClaimRequestsTable
             claimRequests={claimsQuery.data?.claimRequests ?? []}
+          />
+        ) : null}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">
+              Listing Reports
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Latest reports across all statuses
+            </p>
+          </div>
+          <RefreshButton
+            onClick={() => reportsRefreshMutation.mutate()}
+            pending={reportsRefreshPending}
+          />
+        </div>
+        {reportsRefreshError ? (
+          <p className="text-sm text-destructive">{reportsRefreshError}</p>
+        ) : null}
+        {reportsQuery.error && !reportsQuery.isFetching ? (
+          <p className="text-sm text-destructive">{reportsQuery.error.message}</p>
+        ) : null}
+        {reportsQuery.isLoading ? (
+          <ListingReportsTableSkeleton rows={5} />
+        ) : !reportsQuery.error ? (
+          <OverviewListingReportsTable
+            listingReports={reportsQuery.data?.listingReports ?? []}
           />
         ) : null}
       </section>

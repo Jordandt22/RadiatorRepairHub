@@ -1,3 +1,20 @@
+-- Enums required by complete_business_claim (tables arrive in a later migration).
+DO $$ BEGIN
+  CREATE TYPE public.claim_request_statuses AS ENUM (
+    'pending',
+    'success',
+    'failed',
+    'expired'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE public.user_roles AS ENUM ('business_owner');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Claim RPC: set owner on businesses; do not insert business_profiles
 CREATE OR REPLACE FUNCTION public.complete_business_claim(
@@ -29,4 +46,3 @@ begin
   where id = p_business_id;
 end;
 $function$;
-
