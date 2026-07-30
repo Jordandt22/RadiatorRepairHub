@@ -275,6 +275,7 @@ export default function ListingReportsPageContent() {
           page={page}
           totalPages={totalPages}
           displayPage={data?.page ?? page}
+          total={data?.total}
           isFetching={isFetching}
           onPrevious={handlePreviousPage}
           onNext={handleNextPage}

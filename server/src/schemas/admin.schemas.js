@@ -1,4 +1,5 @@
 import * as Yup from "yup";
+import { SCORE_TIER_IDS, REVIEW_TIER_IDS, EMAIL_FILTER_IDS } from "../lib/adminBusinessTiers.js";
 
 export const LoginAdminSchema = Yup.object({
   password: Yup.string().trim().required("Password is required"),
@@ -165,10 +166,124 @@ export const UpdateListingReportsStatusSchema = Yup.object({
     .required("Listing report IDs are required"),
 });
 
+export const GetAdminBusinessesQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  claimed: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return null;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .nullable()
+    .optional(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  state_code: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim().toUpperCase();
+      return trimmed === "" ? null : trimmed.slice(0, 10);
+    })
+    .nullable()
+    .optional(),
+  city_slug: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim().toLowerCase();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  postal_code: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 20);
+    })
+    .nullable()
+    .optional(),
+  score_tier: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...SCORE_TIER_IDS, null], "Invalid score tier")
+    .optional(),
+  reviews_tier: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...REVIEW_TIER_IDS, null], "Invalid reviews tier")
+    .optional(),
+  email_filter: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...EMAIL_FILTER_IDS, null], "Invalid email filter")
+    .optional(),
+});
+
+export const ADMIN_LOCATION_TABS = [
+  "states",
+  "cities",
+  "postal-codes",
+  "data-issues",
+];
+
+export const GetAdminLocationsQuerySchema = Yup.object({
+  tab: Yup.string()
+    .oneOf(ADMIN_LOCATION_TABS, "Invalid location tab")
+    .required(),
+  page: Yup.number().min(1).max(200).required(),
+  limit: Yup.number().min(1).max(1000).required(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  state_id: Yup.string()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return value;
+    })
+    .nullable()
+    .uuid("Invalid state ID")
+    .optional(),
+  city_id: Yup.string()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return value;
+    })
+    .nullable()
+    .uuid("Invalid city ID")
+    .optional(),
+});
+
 export const CACHE_INVALIDATE_RESOURCES = [
   "contact-messages",
   "claim-requests",
   "listing-reports",
+  "businesses",
+  "locations",
 ];
 
 export const InvalidateCacheSchema = Yup.object({

@@ -241,6 +241,47 @@ export const getListingReportsKey = (page, limit, status = null) => ({
   interval: 60 * 5,
 });
 
+export const getAdminBusinessesKey = (
+  page,
+  limit,
+  claimed = null,
+  q = null,
+  stateCode = null,
+  citySlug = null,
+  postalCode = null,
+  scoreTier = null,
+  reviewsTier = null,
+  emailFilter = null
+) => ({
+  key: `ADMIN_BUSINESSES?V:7&PAGE:${page}&LIMIT:${limit}&CLAIMED:${
+    claimed === true ? "true" : "all"
+  }&Q:${q ?? ""}&STATE:${stateCode ?? ""}&CITY:${citySlug ?? ""}&POSTAL:${
+    postalCode ?? ""
+  }&SCORE:${scoreTier ?? ""}&REVIEWS:${reviewsTier ?? ""}&EMAIL:${
+    emailFilter ?? ""
+  }`,
+  interval: 60 * 5,
+});
+
+export const getAdminLocationsKey = (
+  tab,
+  page,
+  limit,
+  q = null,
+  stateId = null,
+  cityId = null
+) => ({
+  key: `ADMIN_LOCATIONS?V:4&TAB:${tab}&PAGE:${page}&LIMIT:${limit}&Q:${
+    q ?? ""
+  }&STATE:${stateId ?? "all"}&CITY:${cityId ?? "all"}`,
+  interval: 60 * 5,
+});
+
+export const getAdminLocationAggregatesKey = (tab) => ({
+  key: `ADMIN_LOCATIONS?TAB:${tab}&AGGREGATES`,
+  interval: 60 * 5,
+});
+
 /** Store a value with an exact TTL (does not use checkInterval). */
 export const setWithExactTtl = async (key, ttlSeconds, value) => {
   if (process.env.NODE_ENV === "development")

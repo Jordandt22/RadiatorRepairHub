@@ -260,6 +260,7 @@ export default function ClaimRequestsPageContent() {
           page={page}
           totalPages={totalPages}
           displayPage={data?.page ?? page}
+          total={data?.total}
           isFetching={isFetching}
           onPrevious={handlePreviousPage}
           onNext={handleNextPage}

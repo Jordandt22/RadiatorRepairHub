@@ -1,6 +1,8 @@
+"use client";
+
 import { AppSidebar } from "@/components/app-sidebar";
 import ProtectedBreadcrumb from "@/components/ProtectedBreadcrumb";
-import { Separator } from "@/components/ui/separator";
+import PageFadeIn from "@/components/PageFadeIn";
 import {
   SidebarInset,
   SidebarProvider,
@@ -18,7 +20,7 @@ export default function ProtectedLayout({ children }) {
             <ProtectedBreadcrumb />
           </div>
         </header>
-        <div className="flex flex-1 flex-col">{children}</div>
+        <PageFadeIn className="flex flex-1 flex-col">{children}</PageFadeIn>
       </SidebarInset>
     </SidebarProvider>
   );

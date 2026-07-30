@@ -20,6 +20,12 @@ import {
   updateClaimRequestsStatus as updateClaimsStatus,
   getListingReports as fetchListingReports,
   updateListingReportsStatus as updateReportsStatus,
+  getAdminBusinesses as fetchAdminBusinesses,
+  getAdminLocationAggregates,
+  filterAdminLocations,
+  buildAdminLocationChart,
+  getAdminLocationDataIssues,
+  filterAdminLocationDataIssues,
 } from "../../supabase/supabase.functions.js";
 import {
   cacheData,
@@ -27,6 +33,9 @@ import {
   getContactMessagesKey,
   getClaimRequestsKey,
   getListingReportsKey,
+  getAdminBusinessesKey,
+  getAdminLocationsKey,
+  getAdminLocationAggregatesKey,
   deleteCacheDataByPrefix,
 } from "../../redis/redis.js";
 import { clearClaimCodeCache } from "../../lib/claimHelpers.js";
@@ -1356,10 +1365,258 @@ export const updateListingReportsStatus = async (req, res) => {
   );
 };
 
+export const getBusinesses = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const claimed =
+    req.query.claimed === true || req.query.claimed === "true" ? true : null;
+  const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const q = rawQ ? rawQ.slice(0, 100) : null;
+  const stateCode =
+    typeof req.query.state_code === "string" && req.query.state_code.trim()
+      ? req.query.state_code.trim().toUpperCase()
+      : null;
+  const citySlug =
+    typeof req.query.city_slug === "string" && req.query.city_slug.trim()
+      ? req.query.city_slug.trim().toLowerCase()
+      : null;
+  const postalCode =
+    typeof req.query.postal_code === "string" && req.query.postal_code.trim()
+      ? req.query.postal_code.trim()
+      : null;
+  const scoreTier =
+    typeof req.query.score_tier === "string" && req.query.score_tier.trim()
+      ? req.query.score_tier.trim()
+      : null;
+  const reviewsTier =
+    typeof req.query.reviews_tier === "string" &&
+    req.query.reviews_tier.trim()
+      ? req.query.reviews_tier.trim()
+      : null;
+  const emailFilter =
+    typeof req.query.email_filter === "string" &&
+    req.query.email_filter.trim()
+      ? req.query.email_filter.trim()
+      : null;
+
+  const { key, interval } = getAdminBusinessesKey(
+    page,
+    limit,
+    claimed,
+    q,
+    stateCode,
+    citySlug,
+    postalCode,
+    scoreTier,
+    reviewsTier,
+    emailFilter
+  );
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, count, location, error } = await fetchAdminBusinesses(
+    page,
+    limit,
+    {
+      claimed,
+      q,
+      stateCode,
+      citySlug,
+      postalCode,
+      scoreTier,
+      reviewsTier,
+      emailFilter,
+    }
+  );
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            error.message || "Location not found.",
+            error
+          )
+        );
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching businesses.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  const compiledData = {
+    businesses: data ?? [],
+    location,
+    total,
+    totalPages,
+    page,
+    limit,
+    claimed,
+    q,
+    state_code: stateCode,
+    city_slug: citySlug,
+    postal_code: postalCode,
+    score_tier: scoreTier,
+    reviews_tier: reviewsTier,
+    email_filter: emailFilter,
+  };
+
+  await cacheData(key, interval, compiledData);
+  return res.status(200).json(successHandler(compiledData));
+};
+
+export const getLocations = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const tab = req.query.tab;
+  const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const q = rawQ ? rawQ.slice(0, 100) : null;
+  const stateId =
+    typeof req.query.state_id === "string" && req.query.state_id.trim()
+      ? req.query.state_id.trim()
+      : null;
+  const cityId =
+    typeof req.query.city_id === "string" && req.query.city_id.trim()
+      ? req.query.city_id.trim()
+      : null;
+
+  const { key, interval } = getAdminLocationsKey(
+    tab,
+    page,
+    limit,
+    q,
+    stateId,
+    cityId
+  );
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  if (tab === "data-issues") {
+    const aggregatesCache = getAdminLocationAggregatesKey(tab);
+    let issues = null;
+    const cachedIssues = await getCacheData(aggregatesCache.key);
+    if (cachedIssues?.data) {
+      issues = cachedIssues.data;
+    } else {
+      const { data, error } = await getAdminLocationDataIssues();
+      if (error) {
+        return res
+          .status(500)
+          .json(
+            customErrorHandler(
+              SUPABASE_ERROR,
+              "There was an error fetching location data issues.",
+              error
+            )
+          );
+      }
+      issues = data ?? [];
+      await cacheData(aggregatesCache.key, aggregatesCache.interval, issues);
+    }
+
+    const filtered = filterAdminLocationDataIssues(issues, q);
+    const total = filtered.length;
+    let totalPages = Math.ceil(total / limit) || 0;
+    if (totalPages > 0 && page > totalPages) {
+      page = totalPages;
+    }
+
+    const start = (page - 1) * limit;
+    const locations = filtered.slice(start, start + limit);
+
+    const compiledData = {
+      locations,
+      chart: null,
+      total,
+      totalPages,
+      page,
+      limit,
+      tab,
+      q,
+      state_id: null,
+      city_id: null,
+    };
+
+    await cacheData(key, interval, compiledData);
+    return res.status(200).json(successHandler(compiledData));
+  }
+
+  const aggregatesCache = getAdminLocationAggregatesKey(tab);
+  let aggregates = null;
+  const cachedAggregates = await getCacheData(aggregatesCache.key);
+  if (cachedAggregates?.data) {
+    aggregates = cachedAggregates.data;
+  } else {
+    const { data, error } = await getAdminLocationAggregates(tab);
+    if (error) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            "There was an error fetching location stats.",
+            error
+          )
+        );
+    }
+    aggregates = data ?? [];
+    await cacheData(aggregatesCache.key, aggregatesCache.interval, aggregates);
+  }
+
+  const filtered = filterAdminLocations(aggregates, tab, q, {
+    stateId,
+    cityId,
+  });
+  const total = filtered.length;
+  let totalPages = Math.ceil(total / limit) || 0;
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  const start = (page - 1) * limit;
+  const locations = filtered.slice(start, start + limit);
+  const chart = buildAdminLocationChart(filtered, tab);
+
+  const compiledData = {
+    locations,
+    chart,
+    total,
+    totalPages,
+    page,
+    limit,
+    tab,
+    q,
+    state_id: stateId,
+    city_id: cityId,
+  };
+
+  await cacheData(key, interval, compiledData);
+  return res.status(200).json(successHandler(compiledData));
+};
+
 const CACHE_RESOURCE_PREFIXES = {
   "contact-messages": "CONTACT_MESSAGES",
   "claim-requests": "CLAIM_REQUESTS",
   "listing-reports": "LISTING_REPORTS",
+  businesses: "ADMIN_BUSINESSES",
+  locations: "ADMIN_LOCATIONS",
 };
 
 export const invalidateCache = async (req, res) => {
