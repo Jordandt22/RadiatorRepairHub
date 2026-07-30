@@ -20,6 +20,7 @@ import {
   updateClaimRequestsStatus as updateClaimsStatus,
   getListingReports as fetchListingReports,
   updateListingReportsStatus as updateReportsStatus,
+  getAdminBusinesses as fetchAdminBusinesses,
 } from "../../supabase/supabase.functions.js";
 import {
   cacheData,
@@ -27,6 +28,7 @@ import {
   getContactMessagesKey,
   getClaimRequestsKey,
   getListingReportsKey,
+  getAdminBusinessesKey,
   deleteCacheDataByPrefix,
 } from "../../redis/redis.js";
 import { clearClaimCodeCache } from "../../lib/claimHelpers.js";
@@ -1356,10 +1358,61 @@ export const updateListingReportsStatus = async (req, res) => {
   );
 };
 
+export const getBusinesses = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const claimed =
+    req.query.claimed === true || req.query.claimed === "true" ? true : null;
+  const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const q = rawQ ? rawQ.slice(0, 100) : null;
+
+  const { key, interval } = getAdminBusinessesKey(page, limit, claimed, q);
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, count, error } = await fetchAdminBusinesses(page, limit, {
+    claimed,
+    q,
+  });
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching businesses.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  const compiledData = {
+    businesses: data ?? [],
+    total,
+    totalPages,
+    page,
+    limit,
+    claimed,
+    q,
+  };
+
+  await cacheData(key, interval, compiledData);
+  return res.status(200).json(successHandler(compiledData));
+};
+
 const CACHE_RESOURCE_PREFIXES = {
   "contact-messages": "CONTACT_MESSAGES",
   "claim-requests": "CLAIM_REQUESTS",
   "listing-reports": "LISTING_REPORTS",
+  businesses: "ADMIN_BUSINESSES",
 };
 
 export const invalidateCache = async (req, res) => {

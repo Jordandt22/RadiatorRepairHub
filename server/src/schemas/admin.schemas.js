@@ -165,10 +165,33 @@ export const UpdateListingReportsStatusSchema = Yup.object({
     .required("Listing report IDs are required"),
 });
 
+export const GetAdminBusinessesQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  claimed: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return null;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .nullable()
+    .optional(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+});
+
 export const CACHE_INVALIDATE_RESOURCES = [
   "contact-messages",
   "claim-requests",
   "listing-reports",
+  "businesses",
 ];
 
 export const InvalidateCacheSchema = Yup.object({

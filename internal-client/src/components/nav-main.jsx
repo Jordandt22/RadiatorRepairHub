@@ -46,6 +46,64 @@ function isLeafItemActive(url, pathname) {
   }
 }
 
+function NavCollapsibleSection({
+  item,
+  sectionActive,
+  currentTab,
+  pathname,
+  onSubItemClick,
+}) {
+  const [open, setOpen] = useState(() => Boolean(sectionActive));
+
+  useEffect(() => {
+    if (sectionActive) {
+      setOpen(true);
+    }
+  }, [sectionActive]);
+
+  return (
+    <Collapsible
+      open={open}
+      onOpenChange={setOpen}
+      className="group/collapsible"
+      render={<SidebarMenuItem />}
+    >
+      <CollapsibleTrigger
+        render={<SidebarMenuButton tooltip={item.title} />}
+      >
+        {item.icon}
+        <span>{item.title}</span>
+        <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <SidebarMenuSub>
+          {item.items.map((subItem) => (
+            <SidebarMenuSubItem key={subItem.title}>
+              <SidebarMenuSubButton
+                isActive={isSubItemActive(
+                  subItem.url,
+                  pathname,
+                  currentTab,
+                )}
+                render={
+                  <Link
+                    href={subItem.url}
+                    scroll={false}
+                    onClick={(event) => onSubItemClick(event, subItem.url)}
+                  />
+                }
+              >
+                {subItem.icon}
+                <span>{subItem.title}</span>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
+          ))}
+        </SidebarMenuSub>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
 export function NavMain({ items, label = "Platform" }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -122,47 +180,14 @@ export function NavMain({ items, label = "Platform" }) {
             });
 
           return (
-            <Collapsible
+            <NavCollapsibleSection
               key={item.title}
-              defaultOpen={Boolean(sectionActive)}
-              className="group/collapsible"
-              render={<SidebarMenuItem />}
-            >
-              <CollapsibleTrigger
-                render={<SidebarMenuButton tooltip={item.title} />}
-              >
-                {item.icon}
-                <span>{item.title}</span>
-                <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {item.items.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton
-                        isActive={isSubItemActive(
-                          subItem.url,
-                          pathname,
-                          currentTab,
-                        )}
-                        render={
-                          <Link
-                            href={subItem.url}
-                            scroll={false}
-                            onClick={(event) =>
-                              handleSubItemClick(event, subItem.url)
-                            }
-                          />
-                        }
-                      >
-                        {subItem.icon}
-                        <span>{subItem.title}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            </Collapsible>
+              item={item}
+              sectionActive={sectionActive}
+              currentTab={currentTab}
+              pathname={pathname}
+              onSubItemClick={handleSubItemClick}
+            />
           );
         })}
       </SidebarMenu>

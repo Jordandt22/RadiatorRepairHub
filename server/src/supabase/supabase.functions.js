@@ -451,6 +451,48 @@ export const getListingReports = async (page, limit, status = null) => {
   return { data, count, error };
 };
 
+const ADMIN_BUSINESS_SELECT =
+  "id, title, slug, email, phone, address, website, is_claimed, owner_uid, last_edited_at, created_at, image_url, place_id";
+
+const sanitizeAdminBusinessSearch = (q) => {
+  if (!q) return null;
+  return q
+    .replace(/[%_,.()\"'\\]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 100);
+};
+
+export const getAdminBusinesses = async (
+  page,
+  limit,
+  { claimed = null, q = null } = {}
+) => {
+  let query = supabase
+    .from("businesses")
+    .select(ADMIN_BUSINESS_SELECT, { count: "exact" })
+    .order("created_at", { ascending: false });
+
+  if (claimed === true) {
+    query = query.eq("is_claimed", true);
+  }
+
+  const sanitized = sanitizeAdminBusinessSearch(q);
+  if (sanitized) {
+    const pattern = `%${sanitized}%`;
+    query = query.or(
+      `title.ilike."${pattern}",slug.ilike."${pattern}",email.ilike."${pattern}",phone.ilike."${pattern}"`
+    );
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};
+
 export const updateListingReportsStatus = async (
   ids,
   status,

@@ -132,9 +132,20 @@ const data = {
     },
     {
       title: "Businesses",
-      url: "#",
+      url: "/businesses?tab=all",
       icon: <Building2Icon />,
-      items: [],
+      items: [
+        {
+          title: "All",
+          url: "/businesses?tab=all",
+          icon: <Building2Icon />,
+        },
+        {
+          title: "Claimed",
+          url: "/businesses?tab=claimed",
+          icon: <BadgeCheckIcon />,
+        },
+      ],
     },
   ],
 };

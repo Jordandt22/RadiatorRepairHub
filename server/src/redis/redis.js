@@ -241,6 +241,18 @@ export const getListingReportsKey = (page, limit, status = null) => ({
   interval: 60 * 5,
 });
 
+export const getAdminBusinessesKey = (
+  page,
+  limit,
+  claimed = null,
+  q = null
+) => ({
+  key: `ADMIN_BUSINESSES?PAGE:${page}&LIMIT:${limit}&CLAIMED:${
+    claimed === true ? "true" : "all"
+  }&Q:${q ?? ""}`,
+  interval: 60 * 5,
+});
+
 /** Store a value with an exact TTL (does not use checkInterval). */
 export const setWithExactTtl = async (key, ttlSeconds, value) => {
   if (process.env.NODE_ENV === "development")
