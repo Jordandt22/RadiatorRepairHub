@@ -64,7 +64,7 @@ export default function DashboardPageContent() {
       window.history.replaceState(
         window.history.state,
         "",
-        "/dashboard?tab=pending",
+        "/contact-form?tab=pending",
       );
     }
   }, [searchParams]);
@@ -80,7 +80,7 @@ export default function DashboardPageContent() {
   const handleTabChange = (tab) => {
     const nextTab = resolveTab(tab);
     if (nextTab === activeTab) return;
-    replaceTab(nextTab, "/dashboard");
+    replaceTab(nextTab, "/contact-form");
   };
 
   const handlePreviousPage = () => {

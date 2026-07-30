@@ -8,15 +8,15 @@ export function getTabFromLocation() {
 export function replaceTab(tab, pathname) {
   const path =
     pathname ??
-    (typeof window !== "undefined" ? window.location.pathname : "/dashboard");
+    (typeof window !== "undefined" ? window.location.pathname : "/contact-form");
   const url = `${path}?tab=${tab}`;
   window.history.replaceState(window.history.state, "", url);
   window.dispatchEvent(new Event(TAB_CHANGE_EVENT));
 }
 
-/** @deprecated Prefer replaceTab — kept for callers that hardcode /dashboard */
+/** @deprecated Prefer replaceTab — kept for callers that hardcode /contact-form */
 export function replaceDashboardTab(tab) {
-  replaceTab(tab, "/dashboard");
+  replaceTab(tab, "/contact-form");
 }
 
 export function subscribeToDashboardTab(onChange) {

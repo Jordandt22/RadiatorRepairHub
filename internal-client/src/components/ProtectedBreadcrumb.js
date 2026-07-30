@@ -14,6 +14,8 @@ import {
 
 const SEGMENT_LABELS = {
   dashboard: "Dashboard",
+  "contact-form": "Contact Form",
+  "claim-requests": "Claim Requests",
 };
 
 function formatSegment(segment) {

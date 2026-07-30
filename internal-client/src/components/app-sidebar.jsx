@@ -15,6 +15,7 @@ import {
   BadgeCheckIcon,
   XCircleIcon,
   TimerOffIcon,
+  LayoutDashboardIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -37,39 +38,45 @@ const data = {
   ],
   navMain: [
     {
-      title: "Contact Form",
-      url: "/dashboard?tab=pending",
-      icon: <MailIcon />,
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: <LayoutDashboardIcon />,
       isActive: true,
+      items: [],
+    },
+    {
+      title: "Contact Form",
+      url: "/contact-form?tab=pending",
+      icon: <MailIcon />,
       items: [
         {
           title: "Pending",
-          url: "/dashboard?tab=pending",
+          url: "/contact-form?tab=pending",
           icon: <ClockIcon />,
         },
         {
           title: "Approved",
-          url: "/dashboard?tab=approved",
+          url: "/contact-form?tab=approved",
           icon: <CheckIcon />,
         },
         {
           title: "Sent",
-          url: "/dashboard?tab=sent",
+          url: "/contact-form?tab=sent",
           icon: <SendIcon />,
         },
         {
           title: "Result",
-          url: "/dashboard?tab=result",
+          url: "/contact-form?tab=result",
           icon: <CircleCheckIcon />,
         },
         {
           title: "Flagged",
-          url: "/dashboard?tab=flagged",
+          url: "/contact-form?tab=flagged",
           icon: <FlagIcon />,
         },
         {
           title: "Archived",
-          url: "/dashboard?tab=archived",
+          url: "/contact-form?tab=archived",
           icon: <ArchiveIcon />,
         },
       ],
@@ -118,7 +125,7 @@ export function AppSidebar({ ...props }) {
       </SidebarHeader>
       <SidebarContent>
         <Suspense fallback={null}>
-          <NavMain items={data.navMain} label="Messages" />
+          <NavMain items={data.navMain} label="Platform" />
         </Suspense>
       </SidebarContent>
       <NavLogout />
