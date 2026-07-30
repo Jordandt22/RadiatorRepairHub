@@ -1,3 +1,4 @@
--- Owner-edited about text lives on the profile so scraped business.description stays intact.
-ALTER TABLE public.business_profiles
-  ADD COLUMN IF NOT EXISTS description text;
+-- Originally added description on business_profiles.
+-- That table is gone; owner-editable description lives on public.businesses
+-- (already present in baseline remote_schema). Kept as a no-op for history.
+SELECT 1;

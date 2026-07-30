@@ -1,4 +1,7 @@
 -- Owners can update their business_hours rows (edit hours dialog).
+-- Later remote_schema migration renames this to "Owner Only".
+DROP POLICY IF EXISTS "Owners can update business hours" ON public.business_hours;
+
 CREATE POLICY "Owners can update business hours"
   ON public.business_hours
   FOR UPDATE
@@ -6,16 +9,16 @@ CREATE POLICY "Owners can update business hours"
   USING (
     EXISTS (
       SELECT 1
-      FROM public.business_profiles bp
-      WHERE bp.business_id = business_hours.business_id
-        AND bp.owner_uid = auth.uid()
+      FROM public.businesses b
+      WHERE b.id = business_hours.business_id
+        AND b.owner_uid = auth.uid()
     )
   )
   WITH CHECK (
     EXISTS (
       SELECT 1
-      FROM public.business_profiles bp
-      WHERE bp.business_id = business_hours.business_id
-        AND bp.owner_uid = auth.uid()
+      FROM public.businesses b
+      WHERE b.id = business_hours.business_id
+        AND b.owner_uid = auth.uid()
     )
   );
