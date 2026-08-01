@@ -39,9 +39,9 @@ import {
   deleteCacheDataByPrefix,
 } from "../../redis/redis.js";
 import { clearClaimCodeCache } from "../../lib/claimHelpers.js";
+import { buildFreeLeadEmailPayload } from "../../lib/contactMessageSend.js";
 import { resendClient } from "../../resend/resend.js";
 import {
-  FREE_LEAD_CLAIM_OFFER_MESSAGE,
   MESSAGE_ON_ITS_WAY,
   MESSAGE_DECLINED,
   MESSAGE_NO_RESPONSE,
@@ -372,26 +372,13 @@ export const sendContactMessages = async (req, res) => {
     );
   }
 
-  const batchPayload = eligible.map(({ message, businessEmail }) => ({
-    from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
-    to: [
-      process.env.NODE_ENV === "development"
-        ? TEST_RECIPIENT_EMAIL
-        : businessEmail,
-    ],
-    subject: FREE_LEAD_CLAIM_OFFER_MESSAGE.subject,
-    html: FREE_LEAD_CLAIM_OFFER_MESSAGE.html(message.business?.title, {
-      name: message.name,
-      phone: message.phone,
-      email: message.email,
-      vehicle: message.vehicle,
-      issue: message.issue,
-      urgency: message.urgency,
-      additionalDetails: message.additional_details,
-      isClaimed: message.business?.is_claimed,
-      businessSlug: message.business?.slug,
-    }),
-  }));
+  const batchPayload = eligible.map(({ message, businessEmail }) =>
+    buildFreeLeadEmailPayload({
+      message,
+      businessEmail,
+      senderEmail: SENDER_EMAIL,
+    })
+  );
 
   const { data: batchData, error: batchError } =
     await resendClient()?.batch?.send(batchPayload);

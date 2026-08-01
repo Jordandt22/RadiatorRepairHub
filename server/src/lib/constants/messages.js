@@ -171,18 +171,39 @@ export const UNDER_REVIEW_MESSAGE = Object.freeze({
 
 // Admin notification when a new contact message is submitted
 export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
-  subject: (businessName) =>
-    `New contact message${businessName ? ` for ${businessName}` : ""}`,
+  subject: (businessName, { autoSent = false } = {}) =>
+    `${autoSent ? "[Auto-sent] " : "[Needs review] "}New contact message${
+      businessName ? ` for ${businessName}` : ""
+    }`,
   html: (
     businessName,
-    { name, phone, email, vehicle, issue, urgency, additionalDetails },
+    {
+      name,
+      phone,
+      email,
+      vehicle,
+      issue,
+      urgency,
+      additionalDetails,
+      autoSent = false,
+    },
   ) => `
-  <p>A new contact message was submitted on RadiatorRepairHub.</p>
+  <p>A new contact message was submitted on RadiatorRepairHub${
+    autoSent
+      ? " and was <strong>auto-sent</strong> to the business."
+      : " and <strong>needs review</strong> before sending."
+  }</p>
 
   <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
     <tr>
       <td style="padding: 8px 0; font-weight: bold; width: 140px;">Business:</td>
       <td style="padding: 8px 0;">${businessName ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Status:</td>
+      <td style="padding: 8px 0;">${
+        autoSent ? "Auto-sent" : "Needs review (Pending)"
+      }</td>
     </tr>
     <tr>
       <td style="padding: 8px 0; font-weight: bold;">Name:</td>
@@ -214,7 +235,11 @@ export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
     </tr>
   </table>
 
-  <p>Review it in the admin dashboard under Pending.</p>
+  <p>${
+    autoSent
+      ? "View it in the admin dashboard under Sent → Auto Sent."
+      : "Review it in the admin dashboard under Pending."
+  }</p>
   `,
 });
 
