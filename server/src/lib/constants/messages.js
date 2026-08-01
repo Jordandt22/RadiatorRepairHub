@@ -159,11 +159,11 @@ export const UNDER_REVIEW_MESSAGE = Object.freeze({
   html: (name, businessName) => `
   <p>Hi ${name ?? "There"},</p>
 
-  <p>Thanks for reaching out through RadiatorRepairHub! We're currently reviewing your message, which usually takes about 10-20 minutes.</p>
+  <p>Thanks for reaching out through RadiatorRepairHub! We're currently reviewing your message, which usually takes about 2-3 hours.</p>
 
   <p>Once approved, we'll forward your message to <strong>${businessName ?? "the business"}</strong> — you may hear back from them directly, or we'll follow up to confirm it's been sent.</p>
 
-  <p>If you need a faster response, we'd recommend contacting the business directly in the meantime.</p>
+  <p>If that isn't fast enough, please contact the business directly using their phone number or email on their listing.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `,
