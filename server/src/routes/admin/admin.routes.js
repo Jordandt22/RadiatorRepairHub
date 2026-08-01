@@ -19,6 +19,11 @@ import {
   getBusinesses,
   getLocations,
   invalidateCache,
+  getOutreachBusinesses,
+  getOutreachMatchingIds,
+  previewOutreachEmails,
+  sendOutreachEmails,
+  getOutreachHistoryList,
 } from "../../controllers/admin/admin.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
 import {
@@ -41,6 +46,11 @@ import {
   GetAdminBusinessesQuerySchema,
   GetAdminLocationsQuerySchema,
   InvalidateCacheSchema,
+  GetOutreachBusinessesQuerySchema,
+  OutreachMatchingIdsSchema,
+  OutreachPreviewSchema,
+  OutreachSendSchema,
+  GetOutreachHistoryQuerySchema,
 } from "../../schemas/admin.schemas.js";
 import { bodyValidator, queryValidator } from "../../middleware/validators.js";
 import { authAdmin } from "../../middleware/admin.mw.js";
@@ -93,6 +103,41 @@ adminRouter.get(
   authAdmin,
   queryValidator(GetAdminBusinessesQuerySchema),
   serverErrorCatcherWrapper(getBusinesses)
+);
+
+adminRouter.get(
+  "/outreach/businesses",
+  authAdmin,
+  queryValidator(GetOutreachBusinessesQuerySchema),
+  serverErrorCatcherWrapper(getOutreachBusinesses)
+);
+
+adminRouter.post(
+  "/outreach/matching-ids",
+  authAdmin,
+  bodyValidator(OutreachMatchingIdsSchema),
+  serverErrorCatcherWrapper(getOutreachMatchingIds)
+);
+
+adminRouter.post(
+  "/outreach/preview",
+  authAdmin,
+  bodyValidator(OutreachPreviewSchema),
+  serverErrorCatcherWrapper(previewOutreachEmails)
+);
+
+adminRouter.post(
+  "/outreach/send",
+  authAdmin,
+  bodyValidator(OutreachSendSchema),
+  serverErrorCatcherWrapper(sendOutreachEmails)
+);
+
+adminRouter.get(
+  "/outreach/history",
+  authAdmin,
+  queryValidator(GetOutreachHistoryQuerySchema),
+  serverErrorCatcherWrapper(getOutreachHistoryList)
 );
 
 adminRouter.get(

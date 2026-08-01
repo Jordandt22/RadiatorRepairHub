@@ -26,6 +26,11 @@ import {
   buildAdminLocationChart,
   getAdminLocationDataIssues,
   filterAdminLocationDataIssues,
+  getOutreachBusinesses as fetchOutreachBusinesses,
+  getOutreachMatchingBusinessIds,
+  getOutreachBusinessesByIds,
+  insertOutreachHistory,
+  getOutreachHistory as fetchOutreachHistory,
 } from "../../supabase/supabase.functions.js";
 import {
   cacheData,
@@ -40,6 +45,13 @@ import {
 } from "../../redis/redis.js";
 import { clearClaimCodeCache } from "../../lib/claimHelpers.js";
 import { buildFreeLeadEmailPayload } from "../../lib/contactMessageSend.js";
+import {
+  buildOutreachEmailContent,
+  buildOutreachEmailPayload,
+  evaluateOutreachEligibility,
+  isOutreachDevRedirect,
+  resolveOutreachRecipientEmail,
+} from "../../lib/outreachSend.js";
 import { resendClient } from "../../resend/resend.js";
 import {
   MESSAGE_ON_ITS_WAY,
@@ -49,8 +61,8 @@ import {
   buildNearbyRecommendationsHtml,
   DECLINED_RECOMMENDATIONS_FALLBACK,
   SENDER_NAME,
+  ADMIN_OUTREACH_SENT_MESSAGE,
 } from "../../lib/constants/messages.js";
-
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
 
 export const loginAdmin = async (req, res) => {
@@ -1622,6 +1634,418 @@ export const invalidateCache = async (req, res) => {
     successHandler({
       resource,
       invalidated: true,
+    })
+  );
+};
+
+const parseOutreachListFilters = (source = {}) => {
+  const rawQ = typeof source.q === "string" ? source.q.trim() : "";
+  const q = rawQ ? rawQ.slice(0, 100) : null;
+  const claimEligibility =
+    typeof source.claim_eligibility === "string" &&
+    source.claim_eligibility.trim()
+      ? source.claim_eligibility.trim()
+      : null;
+  const websiteFilter =
+    typeof source.website_filter === "string" && source.website_filter.trim()
+      ? source.website_filter.trim()
+      : null;
+
+  const parseBool = (value) => {
+    if (value === true || value === "true") return true;
+    if (value === false || value === "false") return false;
+    return null;
+  };
+
+  return {
+    q,
+    claimEligibility,
+    websiteFilter,
+    claimInviteSent: parseBool(source.claim_invite_sent),
+    websiteOfferSent: parseBool(source.website_offer_sent),
+  };
+};
+
+export const getOutreachBusinesses = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const filters = parseOutreachListFilters(req.query);
+
+  const { data, count, error } = await fetchOutreachBusinesses(
+    page,
+    limit,
+    filters
+  );
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching outreach businesses.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  return res.status(200).json(
+    successHandler({
+      businesses: data ?? [],
+      total,
+      totalPages,
+      page,
+      limit,
+      q: filters.q,
+      claim_eligibility: filters.claimEligibility,
+      website_filter: filters.websiteFilter,
+      claim_invite_sent: filters.claimInviteSent,
+      website_offer_sent: filters.websiteOfferSent,
+    })
+  );
+};
+
+export const getOutreachMatchingIds = async (req, res) => {
+  const {
+    outreach_type,
+    limit = 25,
+    q,
+    claim_eligibility,
+    website_filter,
+    claim_invite_sent,
+    website_offer_sent,
+  } = req.body;
+
+  const filters = parseOutreachListFilters({
+    q,
+    claim_eligibility,
+    website_filter,
+    claim_invite_sent,
+    website_offer_sent,
+  });
+
+  const { data, businesses, error } = await getOutreachMatchingBusinessIds({
+    outreachType: outreach_type,
+    limit,
+    ...filters,
+  });
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error resolving matching businesses.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      business_ids: data ?? [],
+      businesses: businesses ?? [],
+      outreach_type,
+      limit,
+    })
+  );
+};
+
+const planOutreachBatch = (businessIds, businesses, outreachType) => {
+  const byId = new Map((businesses ?? []).map((row) => [row.id, row]));
+  const skipped = [];
+  const eligible = [];
+
+  for (const id of businessIds) {
+    const business = byId.get(id);
+    if (!business) {
+      skipped.push({ id, reason: "not_found" });
+      continue;
+    }
+
+    const result = evaluateOutreachEligibility(business, outreachType);
+    if (!result.ok) {
+      skipped.push({
+        id,
+        reason: result.reason,
+        title: business.title ?? null,
+      });
+      continue;
+    }
+
+    eligible.push({
+      business,
+      recipient: result.recipient,
+    });
+  }
+
+  return { skipped, eligible };
+};
+
+export const previewOutreachEmails = async (req, res) => {
+  const { business_ids, outreach_type } = req.body;
+
+  const { data: businesses, error } =
+    await getOutreachBusinessesByIds(business_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching businesses for preview.",
+          error
+        )
+      );
+  }
+
+  const { skipped, eligible } = planOutreachBatch(
+    business_ids,
+    businesses,
+    outreach_type
+  );
+
+  const sample = eligible[0] ?? null;
+  const sampleContent = sample
+    ? buildOutreachEmailContent(sample.business, outreach_type)
+    : null;
+  const devRedirect = isOutreachDevRedirect();
+  const deliveryEmail = devRedirect
+    ? process.env.TEST_RECIPIENT_EMAIL
+    : null;
+
+  return res.status(200).json(
+    successHandler({
+      outreach_type,
+      dev_redirect: devRedirect,
+      delivery_email: deliveryEmail,
+      will_send: eligible.map(({ business, recipient }) => ({
+        id: business.id,
+        title: business.title ?? null,
+        recipient,
+        delivery_to: resolveOutreachRecipientEmail(recipient),
+        claim_eligibility: business.claim_eligibility,
+      })),
+      skipped,
+      sample: sampleContent
+        ? {
+            business_id: sample.business.id,
+            business_title: sample.business.title ?? null,
+            recipient: sample.recipient,
+            delivery_to: resolveOutreachRecipientEmail(sample.recipient),
+            subject: sampleContent.subject,
+            html: sampleContent.html,
+          }
+        : null,
+    })
+  );
+};
+
+export const sendOutreachEmails = async (req, res) => {
+  const { business_ids, outreach_type } = req.body;
+  const { SENDER_EMAIL, TEST_RECIPIENT_EMAIL, RESEND_API_KEY } = process.env;
+
+  if (!RESEND_API_KEY || !SENDER_EMAIL) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(SERVER_ERROR, "Email sending is not configured.")
+      );
+  }
+
+  if (process.env.NODE_ENV === "development" && !TEST_RECIPIENT_EMAIL) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "TEST_RECIPIENT_EMAIL is required in development."
+        )
+      );
+  }
+
+  const { data: businesses, error: fetchError } =
+    await getOutreachBusinessesByIds(business_ids);
+
+  if (fetchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching businesses.",
+          fetchError
+        )
+      );
+  }
+
+  const { skipped, eligible } = planOutreachBatch(
+    business_ids,
+    businesses,
+    outreach_type
+  );
+
+  if (eligible.length === 0) {
+    return res.status(200).json(
+      successHandler({
+        sent: [],
+        skipped,
+        resendIds: [],
+      })
+    );
+  }
+
+  const batchPayload = eligible.map(({ business, recipient }) =>
+    buildOutreachEmailPayload({
+      business,
+      outreachType: outreach_type,
+      recipient,
+      senderEmail: SENDER_EMAIL,
+    })
+  );
+
+  const { data: batchData, error: batchError } =
+    await resendClient()?.batch?.send(batchPayload);
+
+  if (batchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          batchError.message || "Failed to send emails.",
+          batchError
+        )
+      );
+  }
+
+  const resendResults = Array.isArray(batchData)
+    ? batchData
+    : batchData?.data ?? [];
+
+  const sentAt = new Date().toISOString();
+  const historyRows = eligible.map(({ business, recipient }, index) => {
+    const content = buildOutreachEmailContent(business, outreach_type);
+    const deliveryTo = resolveOutreachRecipientEmail(recipient);
+    return {
+      business_id: business.id,
+      message_type: "email",
+      outreach_type,
+      recipient,
+      subject: content?.subject ?? null,
+      provider: "resend",
+      provider_message_id: resendResults[index]?.id ?? null,
+      sent_at: sentAt,
+      sent_by: null,
+      metadata: {
+        delivery_to: deliveryTo,
+        dev_redirect: isOutreachDevRedirect(),
+      },
+    };
+  });
+
+  const { data: inserted, error: insertError } =
+    await insertOutreachHistory(historyRows);
+
+  if (insertError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Emails were sent but outreach history could not be saved.",
+          insertError
+        )
+      );
+  }
+
+  const sentIds = (inserted ?? []).map((row) => row.business_id);
+  const sentCount = sentIds.length;
+  const skippedCount = skipped.length;
+  const { ADMIN_EMAIL, INTERNAL_CLIENT_URL } = process.env;
+
+  if (ADMIN_EMAIL && sentCount > 0) {
+    const historyUrl = INTERNAL_CLIENT_URL
+      ? `${String(INTERNAL_CLIENT_URL).replace(/\/$/, "")}/outreach?tab=history`
+      : null;
+
+    const { error: adminSendError } = await resendClient().emails.send({
+      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+      to: [ADMIN_EMAIL],
+      subject: ADMIN_OUTREACH_SENT_MESSAGE.subject(outreach_type, sentCount),
+      html: ADMIN_OUTREACH_SENT_MESSAGE.html({
+        outreachType: outreach_type,
+        sentCount,
+        skippedCount,
+        historyUrl,
+        devRedirect: isOutreachDevRedirect(),
+      }),
+    });
+
+    if (adminSendError && process.env.NODE_ENV === "development") {
+      console.error(
+        "Failed to send admin outreach summary email:",
+        adminSendError
+      );
+    }
+  }
+
+  return res.status(200).json(
+    successHandler({
+      sent: sentIds,
+      skipped,
+      resendIds: resendResults.map((item) => item.id).filter(Boolean),
+    })
+  );
+};
+
+export const getOutreachHistoryList = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const outreachType =
+    typeof req.query.outreach_type === "string" &&
+    req.query.outreach_type.trim()
+      ? req.query.outreach_type.trim()
+      : null;
+
+  const { data, count, error } = await fetchOutreachHistory(page, limit, {
+    outreachType,
+  });
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching outreach history.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  return res.status(200).json(
+    successHandler({
+      history: data ?? [],
+      total,
+      totalPages,
+      page,
+      limit,
+      outreach_type: outreachType,
     })
   );
 };

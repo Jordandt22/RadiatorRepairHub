@@ -58,11 +58,27 @@ function ComboboxInput({
   disabled = false,
   showTrigger = true,
   showClear = false,
+  autoComplete = "off",
   ...props
 }) {
   return (
     <InputGroup className={cn("w-auto", className)}>
-      <ComboboxPrimitive.Input render={<InputGroupInput disabled={disabled} />} {...props} />
+      <ComboboxPrimitive.Input
+        render={
+          <InputGroupInput
+            disabled={disabled}
+            autoComplete={autoComplete}
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            data-1p-ignore="true"
+            data-lpignore="true"
+            data-form-type="other"
+            data-bwignore="true"
+          />
+        }
+        {...props}
+      />
       <InputGroupAddon align="inline-end">
         {showTrigger && (
           <InputGroupButton
