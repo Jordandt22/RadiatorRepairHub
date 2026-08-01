@@ -1924,3 +1924,21 @@ export const markContactMessagesSent = async (ids) => {
 
   return { data, error };
 };
+
+/** Mark as auto-sent and customer confirmation already delivered. */
+export const markContactMessagesSentAndConfirmed = async (ids) => {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .update({
+      status: "sent",
+      send_method: "auto",
+      sent_at: now,
+      confirmation_sent: true,
+      confirmation_sent_at: now,
+    })
+    .in("contact_message_id", ids)
+    .select("contact_message_id");
+
+  return { data, error };
+};
