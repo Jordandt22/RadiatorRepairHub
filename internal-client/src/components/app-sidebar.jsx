@@ -18,6 +18,7 @@ import {
   LayoutDashboardIcon,
   MapPinIcon,
   AlertTriangleIcon,
+  MegaphoneIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -146,6 +147,11 @@ const data = {
           title: "Claimed",
           url: "/businesses?tab=claimed",
           icon: <BadgeCheckIcon />,
+        },
+        {
+          title: "Outreach",
+          url: "/outreach?tab=all",
+          icon: <MegaphoneIcon />,
         },
         {
           title: "Locations",

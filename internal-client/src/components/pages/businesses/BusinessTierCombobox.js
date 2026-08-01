@@ -33,6 +33,8 @@ export default function BusinessTierCombobox({
         aria-label={ariaLabel}
         showClear={Boolean(value)}
         disabled={disabled}
+        autoComplete="off"
+        name={`filter-${ariaLabel.replace(/\s+/g, "-").toLowerCase()}`}
         className={className ?? "w-full min-w-0 md:min-w-[10rem]"}
       />
       <ComboboxContent className="rounded-lg">

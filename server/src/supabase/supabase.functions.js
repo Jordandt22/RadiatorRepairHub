@@ -1942,3 +1942,238 @@ export const markContactMessagesSentAndConfirmed = async (ids) => {
 
   return { data, error };
 };
+
+const OUTREACH_LIST_SELECT =
+  "id, title, slug, email, phone, website, is_claimed, owner_uid, total_score, reviews_count, created_at, claim_eligibility, claim_invite_sent_at, website_offer_sent_at";
+
+const applyOutreachBusinessFilters = (
+  query,
+  {
+    q = null,
+    claimEligibility = null,
+    websiteFilter = null,
+    claimInviteSent = null,
+    websiteOfferSent = null,
+  } = {}
+) => {
+  let next = query;
+
+  if (claimEligibility) {
+    if (Array.isArray(claimEligibility)) {
+      next = next.in("claim_eligibility", claimEligibility);
+    } else {
+      next = next.eq("claim_eligibility", claimEligibility);
+    }
+  }
+
+  if (websiteFilter === "has") {
+    next = next.not("website", "is", null).neq("website", "");
+  } else if (websiteFilter === "none") {
+    next = next.or("website.is.null,website.eq.");
+  }
+
+  if (claimInviteSent === true) {
+    next = next.not("claim_invite_sent_at", "is", null);
+  } else if (claimInviteSent === false) {
+    next = next.is("claim_invite_sent_at", null);
+  }
+
+  if (websiteOfferSent === true) {
+    next = next.not("website_offer_sent_at", "is", null);
+  } else if (websiteOfferSent === false) {
+    next = next.is("website_offer_sent_at", null);
+  }
+
+  const sanitized = sanitizeAdminBusinessSearch(q);
+  if (sanitized) {
+    const pattern = `%${sanitized}%`;
+    next = next.or(
+      `title.ilike."${pattern}",slug.ilike."${pattern}",email.ilike."${pattern}",phone.ilike."${pattern}"`
+    );
+  }
+
+  return next;
+};
+
+export const getOutreachBusinesses = async (
+  page,
+  limit,
+  {
+    q = null,
+    claimEligibility = null,
+    websiteFilter = null,
+    claimInviteSent = null,
+    websiteOfferSent = null,
+  } = {}
+) => {
+  let query = supabase
+    .from("outreach_business_list")
+    .select(OUTREACH_LIST_SELECT, { count: "exact" })
+    .order("total_score", { ascending: false })
+    .order("reviews_count", { ascending: false });
+
+  query = applyOutreachBusinessFilters(query, {
+    q,
+    claimEligibility,
+    websiteFilter,
+    claimInviteSent,
+    websiteOfferSent,
+  });
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  if (error) {
+    return { data: null, count, error };
+  }
+
+  const businesses = await withOwnerEmails(data);
+  return { data: businesses, count, error: null };
+};
+
+export const getOutreachMatchingBusinessIds = async ({
+  outreachType,
+  limit = 25,
+  q = null,
+  claimEligibility = null,
+  websiteFilter = null,
+  claimInviteSent = null,
+  websiteOfferSent = null,
+} = {}) => {
+  let query = supabase
+    .from("outreach_business_list")
+    .select(OUTREACH_LIST_SELECT)
+    .order("total_score", { ascending: false })
+    .order("reviews_count", { ascending: false });
+
+  const filters = {
+    q,
+    claimEligibility,
+    websiteFilter,
+    claimInviteSent,
+    websiteOfferSent,
+  };
+
+  if (outreachType === "claim_invite") {
+    filters.claimEligibility = claimEligibility || "able";
+    if (claimInviteSent == null) filters.claimInviteSent = false;
+  } else if (outreachType === "website_offer") {
+    if (websiteFilter == null) filters.websiteFilter = "none";
+    if (websiteOfferSent == null) filters.websiteOfferSent = false;
+    if (!claimEligibility) {
+      filters.claimEligibility = ["able", "claimed"];
+    }
+  }
+
+  query = applyOutreachBusinessFilters(query, filters);
+
+  const fetchLimit = Math.min(Math.max(limit * 3, limit), 150);
+  const { data, error } = await query.range(0, fetchLimit - 1);
+
+  if (error) {
+    return { data: null, businesses: null, error };
+  }
+
+  const withOwners = await withOwnerEmails(data ?? []);
+  const matched = [];
+
+  for (const row of withOwners) {
+    if (matched.length >= limit) break;
+
+    if (outreachType === "claim_invite") {
+      if (row.claim_eligibility !== "able") continue;
+      if (row.claim_invite_sent_at) continue;
+      const email = typeof row.email === "string" ? row.email.trim() : "";
+      if (!email) continue;
+      matched.push(row);
+      continue;
+    }
+
+    if (outreachType === "website_offer") {
+      if (
+        row.claim_eligibility !== "able" &&
+        row.claim_eligibility !== "claimed"
+      ) {
+        continue;
+      }
+      const website =
+        typeof row.website === "string" ? row.website.trim() : "";
+      if (website) continue;
+      if (row.website_offer_sent_at) continue;
+      const ownerEmail =
+        typeof row.owner_email === "string" ? row.owner_email.trim() : "";
+      const listingEmail =
+        typeof row.email === "string" ? row.email.trim() : "";
+      if (!(ownerEmail || listingEmail)) continue;
+      matched.push(row);
+    }
+  }
+
+  return {
+    data: matched.map((row) => row.id),
+    businesses: matched,
+    error: null,
+  };
+};
+
+export const getOutreachBusinessesByIds = async (ids) => {
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return { data: [], error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("outreach_business_list")
+    .select(OUTREACH_LIST_SELECT)
+    .in("id", ids);
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  const byId = new Map((data ?? []).map((row) => [row.id, row]));
+  const ordered = ids.map((id) => byId.get(id)).filter(Boolean);
+  const businesses = await withOwnerEmails(ordered);
+  return { data: businesses, error: null };
+};
+
+export const insertOutreachHistory = async (rows) => {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return { data: [], error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("outreach_history")
+    .insert(rows)
+    .select(
+      "outreach_history_id, business_id, message_type, outreach_type, recipient, subject, provider_message_id, sent_at"
+    );
+
+  return { data, error };
+};
+
+const OUTREACH_HISTORY_SELECT =
+  "outreach_history_id, business_id, message_type, outreach_type, recipient, subject, provider, provider_message_id, sent_at, metadata, created_at, business:businesses(id, title, slug, email)";
+
+export const getOutreachHistory = async (
+  page,
+  limit,
+  { outreachType = null } = {}
+) => {
+  let query = supabase
+    .from("outreach_history")
+    .select(OUTREACH_HISTORY_SELECT, { count: "exact" })
+    .order("sent_at", { ascending: false });
+
+  if (outreachType) {
+    query = query.eq("outreach_type", outreachType);
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};

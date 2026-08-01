@@ -291,3 +291,128 @@ export const InvalidateCacheSchema = Yup.object({
     .oneOf(CACHE_INVALIDATE_RESOURCES, "Invalid cache resource")
     .required("Resource is required"),
 });
+
+export const OUTREACH_TYPES = ["claim_invite", "website_offer"];
+
+export const CLAIM_ELIGIBILITY_VALUES = [
+  "able",
+  "no_email",
+  "duplicate_email",
+  "claimed",
+];
+
+export const WEBSITE_FILTER_IDS = ["has", "none"];
+
+const optionalBoolQuery = Yup.boolean()
+  .transform((value, originalValue) => {
+    if (originalValue === "" || originalValue == null) return null;
+    if (originalValue === "true" || originalValue === true) return true;
+    if (originalValue === "false" || originalValue === false) return false;
+    return value;
+  })
+  .nullable()
+  .optional();
+
+export const GetOutreachBusinessesQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  claim_eligibility: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...CLAIM_ELIGIBILITY_VALUES, null], "Invalid claim eligibility")
+    .optional(),
+  website_filter: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...WEBSITE_FILTER_IDS, null], "Invalid website filter")
+    .optional(),
+  claim_invite_sent: optionalBoolQuery,
+  website_offer_sent: optionalBoolQuery,
+});
+
+export const OutreachMatchingIdsSchema = Yup.object({
+  outreach_type: Yup.string()
+    .oneOf(OUTREACH_TYPES, "Invalid outreach type")
+    .required("Outreach type is required"),
+  limit: Yup.number().min(1).max(50).default(25).optional(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  claim_eligibility: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...CLAIM_ELIGIBILITY_VALUES, null], "Invalid claim eligibility")
+    .optional(),
+  website_filter: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...WEBSITE_FILTER_IDS, null], "Invalid website filter")
+    .optional(),
+  claim_invite_sent: Yup.boolean().nullable().optional(),
+  website_offer_sent: Yup.boolean().nullable().optional(),
+});
+
+export const OutreachPreviewSchema = Yup.object({
+  outreach_type: Yup.string()
+    .oneOf(OUTREACH_TYPES, "Invalid outreach type")
+    .required("Outreach type is required"),
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(75, "At most 75 businesses can be previewed at once")
+    .required("Business IDs are required"),
+});
+
+export const OutreachSendSchema = Yup.object({
+  outreach_type: Yup.string()
+    .oneOf(OUTREACH_TYPES, "Invalid outreach type")
+    .required("Outreach type is required"),
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(75, "At most 75 businesses can be sent at once")
+    .required("Business IDs are required"),
+});
+
+export const GetOutreachHistoryQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  outreach_type: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...OUTREACH_TYPES, null], "Invalid outreach type")
+    .optional(),
+});
