@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import PageHeader from "@/components/layout/Header/PageHeader";
+import { ArrowRight } from "lucide-react";
+import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import BlogsList from "@/components/pages/blogs/BlogsList";
 import { getAllBlogPosts } from "@/lib/blogs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -56,32 +57,42 @@ function BlogsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
       />
-      <PageHeader
-        breadcrumbItems={breadcrumbItems}
-        pageTitle="Blogs"
-        pageDescription="Tips, guides, and advice for radiator repair and cooling system care."
-      />
 
-      <div className="max-w-3xl mx-auto px-6 py-12">
-        <BlogsList posts={posts} />
-      </div>
+      <div className="mx-auto max-w-4xl px-6 py-10 md:py-14">
+        <BreadcrumbList items={breadcrumbItems} variant="light" />
 
-      <section className="max-w-3xl mx-auto px-6 pb-12">
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2 font-heading">
-            Have a quick question?
-          </h2>
-          <p className="text-gray-600 mb-4">
-            Check our FAQ for answers to common radiator repair questions.
+        <header className="mb-10">
+          <h1 className="font-heading text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">
+            Blogs
+          </h1>
+          <p className="mt-3 max-w-2xl text-lg text-gray-600">
+            Practical guides on radiator repair, cooling system care, and finding
+            the right shop.
           </p>
-          <Link
-            href="/faq"
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300"
-          >
-            View FAQ
-          </Link>
-        </div>
-      </section>
+        </header>
+
+        <BlogsList posts={posts} />
+
+        <section className="mt-14 border-t border-gray-200 pt-10">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="font-heading text-xl font-bold text-gray-900">
+                Have A Quick Question?
+              </h2>
+              <p className="mt-1 text-gray-600">
+                Check our FAQ for common radiator repair answers.
+              </p>
+            </div>
+            <Link
+              href="/faq"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+            >
+              View FAQ
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

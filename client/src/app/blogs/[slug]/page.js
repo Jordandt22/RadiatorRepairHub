@@ -1,9 +1,12 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import PageHeader from "@/components/layout/Header/PageHeader";
+import BlogArticleLayout from "@/components/blogs/BlogArticleLayout";
+import { BLOG_COVER_IMAGE } from "@/components/blogs/blogConstants";
 import { mdxComponents } from "@/components/blogs/mdxComponents";
 import { getBlogPostBySlug, getBlogSlugs } from "@/lib/blogs";
+
+const COVER_ABSOLUTE_URL = `https://radiatorrepairhub.com${BLOG_COVER_IMAGE}`;
 
 export async function generateStaticParams() {
   return getBlogSlugs().map((slug) => ({ slug }));
@@ -31,6 +34,14 @@ export async function generateMetadata({ params }) {
       locale: "en_US",
       siteName: "RadiatorRepairHub",
       url: `https://radiatorrepairhub.com/blogs/${slug}`,
+      images: [
+        {
+          url: COVER_ABSOLUTE_URL,
+          width: 1200,
+          height: 675,
+          alt: post.metadata.title,
+        },
+      ],
       ...(post.metadata.date && {
         publishedTime: new Date(post.metadata.date).toISOString(),
       }),
@@ -65,6 +76,7 @@ async function BlogPostPage({ params }) {
     "@type": "Article",
     headline: post.metadata.title,
     description: post.metadata.description,
+    image: COVER_ABSOLUTE_URL,
     author: {
       "@type": "Organization",
       name: post.metadata.author || "RadiatorRepairHub",
@@ -86,29 +98,20 @@ async function BlogPostPage({ params }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <PageHeader
+      <BlogArticleLayout
+        title={post.metadata.title}
+        author={post.metadata.author}
+        dateLabel={formattedDate}
         breadcrumbItems={breadcrumbItems}
-        pageTitle={post.metadata.title}
-        pageDescription={
-          formattedDate
-            ? `${formattedDate}${post.metadata.author ? ` · ${post.metadata.author}` : ""}`
-            : post.metadata.description
-        }
-        headerLink={{
-          label: "View Blogs",
-          href: "/blogs",
-        }}
-      />
-
-      <article className="max-w-3xl mx-auto px-6 py-12">
+      >
         <MDXRemote source={post.content} components={mdxComponents} />
-      </article>
-    </div>
+      </BlogArticleLayout>
+    </>
   );
 }
 
