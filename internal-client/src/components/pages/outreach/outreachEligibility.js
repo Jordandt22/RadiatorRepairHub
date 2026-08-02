@@ -1,4 +1,7 @@
-import { CLAIM_ELIGIBILITY_LABELS } from "@/components/pages/outreach/outreachConstants";
+import {
+  CLAIM_ELIGIBILITY_LABELS,
+  isClaimInviteOutreachType,
+} from "@/components/pages/outreach/outreachConstants";
 
 export const OUTREACH_SKIP_REASON_LABELS = {
   not_found: "Not found",
@@ -51,7 +54,7 @@ function hasWebsite(business) {
 export function evaluateOutreachEligibilityClient(business, outreachType) {
   const eligibility = business?.claim_eligibility;
 
-  if (outreachType === "claim_invite") {
+  if (isClaimInviteOutreachType(outreachType)) {
     if (eligibility !== "able") {
       return { ok: false, reason: `eligibility_${eligibility || "unknown"}` };
     }

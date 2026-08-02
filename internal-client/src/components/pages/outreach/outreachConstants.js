@@ -9,7 +9,9 @@ export const OUTREACH_LIMIT_OPTIONS = [
 ];
 
 export const OUTREACH_TYPE_OPTIONS = [
-  { id: "claim_invite", label: "Claim invite" },
+  { id: "claim_invite", label: "Claim invite (website)" },
+  { id: "ownership_claim_invite", label: "Claim invite (ownership)" },
+  { id: "lead_claim_invite", label: "Claim invite (leads)" },
   { id: "website_offer", label: "Website offer" },
 ];
 
@@ -38,6 +40,17 @@ export const CLAIM_ELIGIBILITY_LABELS = {
 };
 
 export const OUTREACH_TYPE_LABELS = {
-  claim_invite: "Claim invite",
+  claim_invite: "Claim invite (website)",
+  ownership_claim_invite: "Claim invite (ownership)",
+  lead_claim_invite: "Claim invite (leads)",
   website_offer: "Website offer",
 };
+
+export const CLAIM_INVITE_OUTREACH_TYPES = [
+  "claim_invite",
+  "ownership_claim_invite",
+  "lead_claim_invite",
+];
+
+export const isClaimInviteOutreachType = (outreachType) =>
+  CLAIM_INVITE_OUTREACH_TYPES.includes(outreachType);

@@ -1,5 +1,7 @@
 import {
   CLAIM_INVITE_OUTREACH_MESSAGE,
+  OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE,
+  LEAD_CLAIM_INVITE_OUTREACH_MESSAGE,
   WEBSITE_OFFER_OUTREACH_MESSAGE,
   SENDER_NAME,
   buildBusinessClaimLink,
@@ -8,8 +10,20 @@ import {
 
 export const OUTREACH_TYPES = Object.freeze({
   CLAIM_INVITE: "claim_invite",
+  OWNERSHIP_CLAIM_INVITE: "ownership_claim_invite",
+  LEAD_CLAIM_INVITE: "lead_claim_invite",
   WEBSITE_OFFER: "website_offer",
 });
+
+/** Claim-invite A/B variants share eligibility (one claim email per business). */
+export const CLAIM_INVITE_OUTREACH_TYPES = Object.freeze([
+  OUTREACH_TYPES.CLAIM_INVITE,
+  OUTREACH_TYPES.OWNERSHIP_CLAIM_INVITE,
+  OUTREACH_TYPES.LEAD_CLAIM_INVITE,
+]);
+
+export const isClaimInviteOutreachType = (outreachType) =>
+  CLAIM_INVITE_OUTREACH_TYPES.includes(outreachType);
 
 export const CLAIM_ELIGIBILITY = Object.freeze({
   ABLE: "able",
@@ -52,7 +66,7 @@ export const hasWebsite = (business) => {
 export const evaluateOutreachEligibility = (business, outreachType) => {
   const eligibility = business?.claim_eligibility;
 
-  if (outreachType === OUTREACH_TYPES.CLAIM_INVITE) {
+  if (isClaimInviteOutreachType(outreachType)) {
     if (eligibility !== CLAIM_ELIGIBILITY.ABLE) {
       return { ok: false, reason: `eligibility_${eligibility || "unknown"}` };
     }
@@ -98,6 +112,26 @@ export const buildOutreachEmailContent = (business, outreachType) => {
     return {
       subject: CLAIM_INVITE_OUTREACH_MESSAGE.subject(businessName),
       html: CLAIM_INVITE_OUTREACH_MESSAGE.html(businessName, {
+        businessPageUrl,
+        howToClaimUrl,
+      }),
+    };
+  }
+
+  if (outreachType === OUTREACH_TYPES.OWNERSHIP_CLAIM_INVITE) {
+    return {
+      subject: OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE.subject(businessName),
+      html: OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE.html(businessName, {
+        businessPageUrl,
+        howToClaimUrl,
+      }),
+    };
+  }
+
+  if (outreachType === OUTREACH_TYPES.LEAD_CLAIM_INVITE) {
+    return {
+      subject: LEAD_CLAIM_INVITE_OUTREACH_MESSAGE.subject(businessName),
+      html: LEAD_CLAIM_INVITE_OUTREACH_MESSAGE.html(businessName, {
         businessPageUrl,
         howToClaimUrl,
       }),

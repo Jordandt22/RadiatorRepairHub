@@ -354,6 +354,8 @@ export const ADMIN_BUSINESS_CLAIMED_MESSAGE = Object.freeze({
 
 const OUTREACH_TYPE_ADMIN_LABELS = {
   claim_invite: "Claim invite",
+  ownership_claim_invite: "Claim invite (ownership)",
+  lead_claim_invite: "Claim invite (leads)",
   website_offer: "Website offer",
 };
 
@@ -410,10 +412,10 @@ export const ADMIN_OUTREACH_SENT_MESSAGE = Object.freeze({
   },
 });
 
-// Outreach: invite unclaimed businesses to claim their listing
+// Outreach: invite unclaimed businesses to claim their listing (A — control)
 export const CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   subject: (businessName) =>
-    `Claim your listing on RadiatorRepairHub${
+    `Claim your free listing on RadiatorRepairHub${
       businessName ? `: ${businessName}` : ""
     }`,
   html: (businessName, { businessPageUrl, howToClaimUrl }) => `
@@ -432,6 +434,52 @@ export const CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   `,
 });
 
+// Outreach A/B: ownership / control framing
+export const OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `${businessName ?? "Your business"} is listed on RadiatorRepairHub - Claim it for Free!`,
+  html: (businessName, { businessPageUrl, howToClaimUrl }) => `
+  <p>Hi there,</p>
+
+  <p><strong>${businessName ?? "Your business"}</strong> already has a listing on RadiatorRepairHub, the directory customers use to find radiator repair shops near them.</p>
+
+  <p>Right now it isn't claimed, so customers may see outdated info and the page won't be verified, which might turn customers away.</p>
+
+  <p>Claim it for free (takes a few minutes):</p>
+  <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
+
+  <p>Need a walkthrough? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
+// Outreach A/B: lead / outcome framing
+export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Get leads for ${businessName ?? "your business"} on RadiatorRepairHub`,
+  html: (businessName, { businessPageUrl, howToClaimUrl }) => `
+  <p>Hi there,</p>
+
+  <p>We've been getting an increase in traffic to our site, RadiatorRepairHub, which customers use to find radiator repair shops near them.</p>
+
+  <p>We already have a page for <strong>${businessName ?? "your business"}</strong> on our site and we wanted to make sure that customers are getting the most up to date information.</p>
+
+  <p>Claim your free listing so you can:</p>
+  <ul>
+    <li>Keep your contact info, hours, and services accurate</li>
+    <li>Show as a verified shop</li>
+    <li>Increase your visibility and reach more customers</li>
+  </ul>
+
+  <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
+
+  <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
 // Outreach: offer website help / RRH page as web presence
 export const WEBSITE_OFFER_OUTREACH_MESSAGE = Object.freeze({
   subject: (businessName) =>
@@ -439,7 +487,7 @@ export const WEBSITE_OFFER_OUTREACH_MESSAGE = Object.freeze({
   html: (businessName, { businessPageUrl }) => `
   <p>Hi there,</p>
 
-  <p>Many shops we work with don't have a dedicated website yet — and that can make it harder to run ads, set up Google Business Profile, or share a professional link with customers.</p>
+  <p>Many shops we work with don't have a dedicated website yet and that can make it harder to run ads, set up Google Business Profile, or share a professional link with customers.</p>
 
   <p>Good news: <strong>${businessName ?? "your business"}</strong> already has a page on RadiatorRepairHub you can use as your website right now:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>

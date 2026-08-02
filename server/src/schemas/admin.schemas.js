@@ -292,7 +292,12 @@ export const InvalidateCacheSchema = Yup.object({
     .required("Resource is required"),
 });
 
-export const OUTREACH_TYPES = ["claim_invite", "website_offer"];
+export const OUTREACH_TYPES = [
+  "claim_invite",
+  "ownership_claim_invite",
+  "lead_claim_invite",
+  "website_offer",
+];
 
 export const CLAIM_ELIGIBILITY_VALUES = [
   "able",
