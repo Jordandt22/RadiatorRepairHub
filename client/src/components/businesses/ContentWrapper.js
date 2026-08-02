@@ -24,6 +24,7 @@ import { useFilters } from "@/contexts/FilterProvider";
 import FiltersWrapper from "./FiltersWrapper";
 import ListingsWrapper from "./listings/ListingsWrapper";
 import BranchBoundBanner from "../promo/BranchBoundBanner";
+import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 
 function ContentWrapper({
   stateData,
@@ -32,6 +33,7 @@ function ContentWrapper({
   initialListings = null,
   initialListingsPage = 1,
   initialSearchBody = null,
+  affiliateProducts = [],
 }) {
   const pathname = usePathname();
   const { page: pageParam, sort: sortParam } = searchParams;
@@ -203,6 +205,19 @@ function ContentWrapper({
         initialListingsPage={initialListingsPage}
         initialSearchBody={initialSearchBody}
       />
+
+      {affiliateProducts.length > 0 ? (
+        <section className="border-t border-gray-200 bg-white py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <AffiliateProductsSection
+              products={affiliateProducts}
+              title="Tools & Supplies"
+              description="Coolant, radiator caps, and diagnostic tools useful while you compare shops or handle simple cooling system care."
+              variant="showcase"
+            />
+          </div>
+        </section>
+      ) : null}
 
       <BranchBoundBanner />
     </>

@@ -4,6 +4,7 @@ import React from "react";
 import BusinessesContainer from "@/components/businesses/BusinessesContainer";
 import { SEARCH_KEYWORDS } from "@/lib/seo/keywords";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 
 const searchTitle =
   "Radiator Repair Near Me | Search Local Auto Repair Shops - RadiatorRepairHub";
@@ -17,8 +18,17 @@ export const metadata = buildPageMetadata({
   path: "/search",
 });
 
+export const revalidate = 60;
+
 async function Page({ searchParams }) {
   const searchParamsData = await searchParams;
+
+  const { data: affiliateData } = await fetchActiveAffiliateProductsByAliases([
+    "valvoline",
+    "radiator-cap",
+    "ir-thermometer",
+  ]);
+  const featuredProducts = affiliateData?.products ?? [];
 
   // SearchResultsPage Schema
   const searchResultsSchema = {
@@ -41,7 +51,10 @@ async function Page({ searchParams }) {
           __html: JSON.stringify(searchResultsSchema),
         }}
       />
-      <BusinessesContainer searchParams={searchParamsData} />
+      <BusinessesContainer
+        searchParams={searchParamsData}
+        affiliateProducts={featuredProducts}
+      />
     </>
   );
 }
