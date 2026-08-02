@@ -11,6 +11,11 @@ import {
   splitContentAfterFirstSection,
 } from "@/lib/affiliateProducts";
 import { fetchActiveAffiliateProductsByIds } from "@/lib/api/affiliate-products";
+import {
+  INDEX_ROBOTS,
+  NOT_FOUND_METADATA,
+  SITE_URL,
+} from "@/lib/seo/metadata";
 
 const COVER_ABSOLUTE_URL = `https://radiatorrepairhub.com${BLOG_COVER_IMAGE}`;
 
@@ -26,15 +31,18 @@ export async function generateMetadata({ params }) {
   const post = getBlogPostBySlug(slug);
 
   if (!post) {
-    return { title: "Post Not Found | RadiatorRepairHub" };
+    return {
+      ...NOT_FOUND_METADATA,
+      title: "Post Not Found | RadiatorRepairHub",
+    };
   }
 
   return {
     title: `${post.metadata.title} | RadiatorRepairHub Blogs`,
     description: post.metadata.description,
-    robots: { index: true, follow: true },
+    robots: INDEX_ROBOTS,
     alternates: {
-      canonical: `https://radiatorrepairhub.com/blogs/${slug}`,
+      canonical: `${SITE_URL}/blogs/${slug}`,
     },
     openGraph: {
       title: post.metadata.title,
@@ -42,7 +50,7 @@ export async function generateMetadata({ params }) {
       type: "article",
       locale: "en_US",
       siteName: "RadiatorRepairHub",
-      url: `https://radiatorrepairhub.com/blogs/${slug}`,
+      url: `${SITE_URL}/blogs/${slug}`,
       images: [
         {
           url: COVER_ABSOLUTE_URL,

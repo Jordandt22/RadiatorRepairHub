@@ -25,7 +25,14 @@ import FiltersWrapper from "./FiltersWrapper";
 import ListingsWrapper from "./listings/ListingsWrapper";
 import BranchBoundBanner from "../promo/BranchBoundBanner";
 
-function ContentWrapper({ stateData, cityData, searchParams }) {
+function ContentWrapper({
+  stateData,
+  cityData,
+  searchParams,
+  initialListings = null,
+  initialListingsPage = 1,
+  initialSearchBody = null,
+}) {
   const pathname = usePathname();
   const { page: pageParam, sort: sortParam } = searchParams;
   const {
@@ -188,7 +195,14 @@ function ContentWrapper({ stateData, cityData, searchParams }) {
       <FiltersWrapper stateData={stateData} cityData={cityData} page={page} />
 
       {/* Business Listings */}
-      <ListingsWrapper stateData={stateData} cityData={cityData} page={page} />
+      <ListingsWrapper
+        stateData={stateData}
+        cityData={cityData}
+        page={page}
+        initialListings={initialListings}
+        initialListingsPage={initialListingsPage}
+        initialSearchBody={initialSearchBody}
+      />
 
       <BranchBoundBanner />
     </>

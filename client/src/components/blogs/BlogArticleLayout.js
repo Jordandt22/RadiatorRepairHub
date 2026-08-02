@@ -32,7 +32,7 @@ function BlogArticleLayout({
             <div className="flex items-center gap-3">
               <Image
                 src={BLOG_AUTHOR_AVATAR}
-                alt=""
+                alt={author || "RadiatorRepairHub"}
                 width={40}
                 height={40}
                 className="h-10 w-10 rounded-full border border-gray-200 bg-white object-contain p-1"
@@ -52,7 +52,7 @@ function BlogArticleLayout({
         <div className="relative mb-10 aspect-[16/9] overflow-hidden rounded-2xl border border-gray-200 bg-slate-900 shadow-sm">
           <Image
             src={BLOG_COVER_IMAGE}
-            alt=""
+            alt={title || "Blog cover"}
             fill
             priority
             className="object-cover"

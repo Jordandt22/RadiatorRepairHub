@@ -38,7 +38,7 @@ export default function AffiliateProductCard({
           {product.image_url ? (
             <Image
               src={product.image_url}
-              alt=""
+              alt={product.title || "Product image"}
               fill
               className="object-contain p-2"
               sizes="80px"
@@ -80,7 +80,7 @@ export default function AffiliateProductCard({
         {product.image_url ? (
           <Image
             src={product.image_url}
-            alt=""
+            alt={product.title || "Product image"}
             fill
             className="object-contain p-3"
             sizes="160px"

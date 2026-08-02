@@ -1,5 +1,10 @@
 import React from "react";
 import PageHeader from "@/components/layout/Header/PageHeader";
+import {
+  DEFAULT_OG_IMAGE,
+  INDEX_ROBOTS,
+  SITE_URL,
+} from "@/lib/seo/metadata";
 
 export const metadata = {
   title: "Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
@@ -15,21 +20,13 @@ export const metadata = {
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
+    url: `${SITE_URL}/terms`,
+    images: [DEFAULT_OG_IMAGE],
   },
   alternates: {
-    canonical: "https://radiatorrepairhub.com/terms",
+    canonical: `${SITE_URL}/terms`,
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
+  robots: INDEX_ROBOTS,
 };
 
 function TermsPage() {

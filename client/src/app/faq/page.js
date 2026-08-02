@@ -3,8 +3,10 @@ import Link from "next/link";
 import FAQSection from "@/components/seo/FAQSection";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
+import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import { FAQ_KEYWORDS } from "@/lib/seo/keywords";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 
 const faqTitle =
   "Frequently Asked Questions | Radiator Repair Help & Support - RadiatorRepairHub";
@@ -18,7 +20,16 @@ export const metadata = buildPageMetadata({
   path: "/faq",
 });
 
-export default function FAQPage() {
+export const revalidate = 60;
+
+export default async function FAQPage() {
+  const { data: affiliateData } = await fetchActiveAffiliateProductsByAliases([
+    "valvoline",
+    "radiator-cap",
+    "coolant-funnel",
+  ]);
+  const featuredProducts = affiliateData?.products ?? [];
+
   const faqs = [
     {
       question: "How do I find a radiator repair shop in my area?",
@@ -173,8 +184,21 @@ export default function FAQPage() {
       {/* FAQ Section */}
       <FAQSection faqs={faqs} title="Radiator Repair Questions & Answers" />
 
+      {featuredProducts.length > 0 ? (
+        <section className="bg-white py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <AffiliateProductsSection
+              products={featuredProducts}
+              title="Helpful Tools & Supplies"
+              description="Products related to coolant top-offs, radiator caps, and DIY flushes—use only what matches your vehicle."
+              variant="showcase"
+            />
+          </div>
+        </section>
+      ) : null}
+
       {/* Additional Help Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 font-heading">
@@ -222,7 +246,7 @@ export default function FAQPage() {
       </section>
 
       {/* Related Topics Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 font-heading">
@@ -299,7 +323,7 @@ export default function FAQPage() {
               className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
             >
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Shop
+                Tools & Supplies
               </h3>
               <p className="text-gray-600 text-sm">
                 Browse coolant, radiator caps, funnels, and diagnostic tools

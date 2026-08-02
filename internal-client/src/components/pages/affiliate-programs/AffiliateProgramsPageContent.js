@@ -213,10 +213,6 @@ export default function AffiliateProgramsPageContent() {
     createMutation.isPending || updateMutation.isPending;
   const hasSelection = selectedIds.size > 0;
   const setActivePending = setActiveMutation.isPending;
-  const activateDisabled =
-    !hasSelection || setActivePending || submitPending;
-  const deactivateDisabled =
-    !hasSelection || setActivePending || submitPending;
 
   const handleRefresh = async () => {
     setRefreshError(null);
@@ -265,6 +261,24 @@ export default function AffiliateProgramsPageContent() {
   const products = data?.products ?? [];
   const totalPages = data?.totalPages ?? 0;
   const currentPage = data?.page ?? page;
+
+  const selectedProducts = products.filter((row) => selectedIds.has(row.id));
+  const allSelectedActive =
+    selectedProducts.length > 0 &&
+    selectedProducts.every((row) => Boolean(row.is_active));
+  const allSelectedInactive =
+    selectedProducts.length > 0 &&
+    selectedProducts.every((row) => !row.is_active);
+  const activateDisabled =
+    !hasSelection ||
+    setActivePending ||
+    submitPending ||
+    allSelectedActive;
+  const deactivateDisabled =
+    !hasSelection ||
+    setActivePending ||
+    submitPending ||
+    allSelectedInactive;
 
   const handleToggleId = (id, checked) => {
     setSelectedIds((prev) => {

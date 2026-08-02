@@ -15,28 +15,41 @@ export function AffiliateProductsSection({
   title,
   variant = "related",
   blogSlug,
+  description = null,
 }) {
   if (!products?.length) return null;
 
   const isRecommended = variant === "recommended";
+  const isShowcase = variant === "showcase";
 
   return (
     <aside
       className={
         isRecommended
           ? "my-10 rounded-2xl border border-blue-100 bg-blue-50/40 p-5 md:p-6"
-          : "mt-12 border-t border-gray-200 pt-10"
+          : isShowcase
+            ? ""
+            : "mt-12 border-t border-gray-200 pt-10"
       }
       aria-label={title}
     >
-      <div className="mb-4 space-y-1">
+      <div className={`mb-4 space-y-1 ${isShowcase ? "text-center sm:text-left" : ""}`}>
         <h2
           className={`font-heading font-bold tracking-tight text-gray-900 ${
-            isRecommended ? "text-xl md:text-2xl" : "text-2xl md:text-[1.65rem]"
+            isRecommended
+              ? "text-xl md:text-2xl"
+              : isShowcase
+                ? "text-3xl md:text-4xl"
+                : "text-2xl md:text-[1.65rem]"
           }`}
         >
           {title}
         </h2>
+        {description ? (
+          <p className="max-w-2xl text-base text-gray-600 md:text-lg">
+            {description}
+          </p>
+        ) : null}
         <AffiliateDisclosure />
       </div>
 
@@ -58,7 +71,7 @@ export function AffiliateProductsSection({
         ))}
       </div>
 
-      <div className="mt-4">
+      <div className={`mt-4 ${isShowcase ? "text-center sm:text-left" : ""}`}>
         <Link
           href="/shop"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800"

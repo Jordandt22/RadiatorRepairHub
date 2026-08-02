@@ -45,7 +45,7 @@ function Navbar() {
       path: "/blogs",
     },
     {
-      label: "Shop",
+      label: "Tools & Supplies",
       path: "/shop",
     },
     {
@@ -77,7 +77,7 @@ function Navbar() {
       path: "/blogs",
     },
     {
-      label: "Shop",
+      label: "Tools & Supplies",
       path: "/shop",
     },
     {

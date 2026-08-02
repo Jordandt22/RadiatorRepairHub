@@ -14,21 +14,35 @@ export async function fetchFeaturedBusinesses(options = REFERENCE_CACHE) {
   return fetchApi("/businesses/featured", options);
 }
 
+export async function fetchBusinessesSearch(
+  body,
+  page = 1,
+  limit = 12,
+  options = { revalidate: 300 }
+) {
+  return fetchApi(`/businesses/search?page=${page}&limit=${limit}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    ...options,
+  });
+}
+
 export async function fetchBusinessesByCategory(
   primaryCategoryId,
   page = 1,
   limit = 12,
   options = REFERENCE_CACHE
 ) {
-  return fetchApi(`/businesses/search?page=${page}&limit=${limit}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  return fetchBusinessesSearch(
+    {
       primary_category_id: primaryCategoryId,
       sort_option: 1,
-    }),
-    ...options,
-  });
+    },
+    page,
+    limit,
+    options
+  );
 }
 
 export async function claimBusiness(businessId) {

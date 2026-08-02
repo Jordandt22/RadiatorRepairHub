@@ -27,7 +27,7 @@ function AuthorMeta({ author, dateLabel, size = "sm" }) {
     <div className="flex items-center gap-2.5">
       <Image
         src={BLOG_AUTHOR_AVATAR}
-        alt=""
+        alt={author || "RadiatorRepairHub"}
         width={avatarSize}
         height={avatarSize}
         className={`${avatarClass} rounded-full border border-gray-200 bg-white object-contain`}
@@ -67,7 +67,7 @@ function FeaturedPost({ post }) {
       <div className="relative aspect-video w-full max-h-56 overflow-hidden bg-slate-900 md:max-h-64">
         <Image
           src={BLOG_COVER_IMAGE}
-          alt=""
+          alt={post.metadata.title || "Blog cover"}
           fill
           priority
           className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
