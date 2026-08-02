@@ -149,7 +149,7 @@ export default function RootLayout({ children }) {
       <head>
         <meta
           name="impact-site-verification"
-          value="ea1fae58-835e-45b4-80bb-eb6b429c006d"
+          value="7fe93845-7fec-4461-a959-7fd30f73583f"
         />
         {/* Organization Schema */}
         <script

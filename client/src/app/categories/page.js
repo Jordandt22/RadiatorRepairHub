@@ -1,7 +1,11 @@
 import React from "react";
 import CategoriesPage from "@/components/pages/categories/CategoriesPage";
 import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
+import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import { fetchPrimaryCategories } from "@/lib/api/categories";
+import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
+
+export const revalidate = 60;
 
 export const metadata = {
   title:
@@ -45,8 +49,17 @@ export const metadata = {
 };
 
 async function Page() {
-  const { data: primaryCategories } = await fetchPrimaryCategories();
+  const [{ data: primaryCategories }, { data: affiliateData }] =
+    await Promise.all([
+      fetchPrimaryCategories(),
+      fetchActiveAffiliateProductsByAliases([
+        "valvoline",
+        "radiator-cap",
+        "coolant-funnel",
+      ]),
+    ]);
   const categories = primaryCategories || [];
+  const featuredProducts = affiliateData?.products ?? [];
 
   const itemListSchema = {
     "@context": "https://schema.org",
@@ -72,6 +85,20 @@ async function Page() {
         }}
       />
       <CategoriesPage primaryCategories={categories} />
+
+      {featuredProducts.length > 0 ? (
+        <section className="border-t border-gray-200 bg-white py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <AffiliateProductsSection
+              products={featuredProducts}
+              title="Tools & Supplies"
+              description="Coolant, radiator caps, and spill-proof funnels for common cooling system maintenance."
+              variant="showcase"
+            />
+          </div>
+        </section>
+      ) : null}
+
       <BranchBoundBanner />
     </>
   );

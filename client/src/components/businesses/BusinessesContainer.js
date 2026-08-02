@@ -16,7 +16,12 @@ import {
   LISTINGS_PAGE_LIMIT,
 } from "@/lib/businesses/listingsSearch";
 
-async function BusinessesContainer({ stateData, cityData, searchParams }) {
+async function BusinessesContainer({
+  stateData,
+  cityData,
+  searchParams,
+  affiliateProducts = [],
+}) {
   if (cityData && !stateData) {
     return notFound();
   }
@@ -48,6 +53,7 @@ async function BusinessesContainer({ stateData, cityData, searchParams }) {
             initialListings={initialError ? null : initialListings}
             initialListingsPage={page}
             initialSearchBody={searchBody}
+            affiliateProducts={affiliateProducts}
           />
         </FilterProvider>
       </ToastProvider>
