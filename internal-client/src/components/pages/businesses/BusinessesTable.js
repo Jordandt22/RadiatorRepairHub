@@ -22,20 +22,24 @@ function BusinessesTableView({
   showLastEdited,
 }) {
   return (
-    <div className="hidden md:block">
+    <div className="hidden min-w-0 md:block">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Business</TableHead>
-            {showScore ? <TableHead>Score</TableHead> : null}
+            <TableHead className="w-[28%]">Business</TableHead>
+            {showScore ? <TableHead className="w-[8%]">Score</TableHead> : null}
             {showScore ? (
-              <TableHead className="text-right">Reviews</TableHead>
+              <TableHead className="w-[8%] text-right">Reviews</TableHead>
             ) : null}
-            <TableHead>Email</TableHead>
-            {showOwnerEmail ? <TableHead>Owner email</TableHead> : null}
-            <TableHead>Phone</TableHead>
-            <TableHead>Claimed</TableHead>
-            {showLastEdited ? <TableHead>Last edited</TableHead> : null}
+            <TableHead className="w-[18%]">Email</TableHead>
+            {showOwnerEmail ? (
+              <TableHead className="w-[18%]">Owner email</TableHead>
+            ) : null}
+            <TableHead className="w-[12%]">Phone</TableHead>
+            <TableHead className="w-[10%]">Claimed</TableHead>
+            {showLastEdited ? (
+              <TableHead className="w-[12%]">Last edited</TableHead>
+            ) : null}
             <TableHead className="w-24 text-right">
               <span className="sr-only">Actions</span>
             </TableHead>
@@ -44,44 +48,55 @@ function BusinessesTableView({
         <TableBody>
           {businesses.map((row) => (
             <TableRow key={row.id} className="group">
-              <TableCell className="font-medium">
-                <div className="flex flex-col gap-0.5">
-                  <span>{row.title ?? "—"}</span>
+              <TableCell className="max-w-0 font-medium">
+                <div className="min-w-0">
+                  <span className="block truncate">{row.title ?? "—"}</span>
                   {row.slug ? (
-                    <span className="text-xs font-normal text-muted-foreground">
+                    <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
                       /business/{row.slug}
                     </span>
                   ) : null}
                 </div>
               </TableCell>
               {showScore ? (
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <BusinessScoreBadge score={row.total_score} />
                 </TableCell>
               ) : null}
               {showScore ? (
-                <TableCell className="text-right">
+                <TableCell className="whitespace-nowrap text-right">
                   <div className="flex justify-end">
                     <BusinessReviewsBadge count={row.reviews_count} />
                   </div>
                 </TableCell>
               ) : null}
-              <TableCell>
-                <span className="text-sm">{row.email ?? "—"}</span>
+              <TableCell className="max-w-0">
+                <span className="block truncate text-sm" title={row.email ?? undefined}>
+                  {row.email ?? "—"}
+                </span>
               </TableCell>
               {showOwnerEmail ? (
-                <TableCell>
-                  <span className="text-sm">{row.owner_email ?? "—"}</span>
+                <TableCell className="max-w-0">
+                  <span
+                    className="block truncate text-sm"
+                    title={row.owner_email ?? undefined}
+                  >
+                    {row.owner_email ?? "—"}
+                  </span>
                 </TableCell>
               ) : null}
-              <TableCell>{row.phone ?? "—"}</TableCell>
-              <TableCell>
+              <TableCell className="max-w-0 whitespace-nowrap">
+                <span className="block truncate">{row.phone ?? "—"}</span>
+              </TableCell>
+              <TableCell className="whitespace-nowrap">
                 <BusinessClaimedBadge isClaimed={Boolean(row.is_claimed)} />
               </TableCell>
               {showLastEdited ? (
-                <TableCell>{formatDate(row.last_edited_at)}</TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {formatDate(row.last_edited_at)}
+                </TableCell>
               ) : null}
-              <TableCell className="text-right">
+              <TableCell className="text-right whitespace-nowrap">
                 <Button
                   variant="outline"
                   size="sm"

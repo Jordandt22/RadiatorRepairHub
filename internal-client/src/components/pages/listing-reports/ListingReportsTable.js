@@ -37,7 +37,7 @@ function ListingReportsTableView({
     listingReports.some((row) => selectedIds.has(row.listing_report_id));
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex min-w-0 flex-col gap-2">
       <Table>
         <TableHeader>
           <TableRow>
@@ -50,11 +50,11 @@ function ListingReportsTableView({
                 aria-label="Select all listing reports"
               />
             </TableHead>
-            <TableHead>Business</TableHead>
-            <TableHead>Reason</TableHead>
-            <TableHead>Reporter</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Created</TableHead>
+            <TableHead className="w-[24%]">Business</TableHead>
+            <TableHead className="w-[16%]">Reason</TableHead>
+            <TableHead className="w-[20%]">Reporter</TableHead>
+            <TableHead className="w-[12%]">Status</TableHead>
+            <TableHead className="w-[12%]">Created</TableHead>
             <TableHead className="w-24 text-right">
               <span className="sr-only">Actions</span>
             </TableHead>
@@ -77,32 +77,43 @@ function ListingReportsTableView({
                     aria-label={`Select report for ${row.business?.title ?? "business"}`}
                   />
                 </TableCell>
-                <TableCell className="font-medium">
-                  <div className="flex flex-col gap-0.5">
-                    <span>{row.business?.title ?? "—"}</span>
+                <TableCell className="max-w-0 font-medium">
+                  <div className="min-w-0">
+                    <span className="block truncate">
+                      {row.business?.title ?? "—"}
+                    </span>
                     {row.business?.slug ? (
-                      <span className="text-xs font-normal text-muted-foreground">
+                      <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
                         /business/{row.business.slug}
                       </span>
                     ) : null}
                   </div>
                 </TableCell>
-                <TableCell>{reasonLabel(row.reason)}</TableCell>
-                <TableCell>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-sm">{row.reporter_email ?? "—"}</span>
+                <TableCell className="max-w-0">
+                  <span className="block truncate">{reasonLabel(row.reason)}</span>
+                </TableCell>
+                <TableCell className="max-w-0">
+                  <div className="min-w-0">
+                    <span
+                      className="block truncate text-sm"
+                      title={row.reporter_email ?? undefined}
+                    >
+                      {row.reporter_email ?? "—"}
+                    </span>
                     {row.reporter_name ? (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="mt-0.5 block truncate text-xs text-muted-foreground">
                         {row.reporter_name}
                       </span>
                     ) : null}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <ListingReportStatusBadge status={row.status} />
                 </TableCell>
-                <TableCell>{formatDate(row.created_at)}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="whitespace-nowrap">
+                  {formatDate(row.created_at)}
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-right">
                   <Button
                     variant="outline"
                     size="sm"
@@ -223,7 +234,7 @@ export default function ListingReportsTable({
         onToggleAll={onToggleAll}
         onViewClick={onViewClick}
       />
-      <div className="hidden md:block">
+      <div className="hidden min-w-0 md:block">
         <ListingReportsTableView
           listingReports={listingReports}
           selectedIds={selectedIds}

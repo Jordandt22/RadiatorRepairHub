@@ -11,14 +11,16 @@ import HowItWorks from "@/components/pages/home/HowItWorks";
 import WhyChoose from "@/components/pages/home/WhyChoose";
 import ContactSection from "@/components/pages/home/ContactSection";
 import FAQSection from "@/components/seo/FAQSection";
+import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import { HOME_KEYWORDS } from "@/lib/seo/keywords";
 import { EXTRA_FAQS } from "@/lib/seo/faqs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 
 const homeTitle =
-  "Radiator Repair Near Me | Find Auto Repair Shops - RadiatorRepairHub";
+  "Find Radiator Repair Shops Nationwide | RadiatorRepairHub Directory";
 const homeDescription =
-  "Find radiator repair near me and trusted auto repair shop listings in your area. Browse radiator services, compare reviews, and connect with certified specialists.";
+  "Browse RadiatorRepairHub's nationwide directory of radiator repair shops. Compare reviews, filter by city, and connect with cooling system specialists near you.";
 
 export const metadata = buildPageMetadata({
   title: homeTitle,
@@ -27,7 +29,16 @@ export const metadata = buildPageMetadata({
   path: "/",
 });
 
-export default function Home() {
+export const revalidate = 60;
+
+export default async function Home() {
+  const { data: affiliateData } = await fetchActiveAffiliateProductsByAliases([
+    "valvoline",
+    "radiator-cap",
+    "ir-thermometer",
+  ]);
+  const featuredProducts = affiliateData?.products ?? [];
+
   const faqs = [
     {
       question: "How do I find radiator repair services in my area?",
@@ -61,18 +72,15 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
       <HeroContent />
 
-      {/* Featured Businesses Section */}
       <FeaturedBusinesses />
 
-      {/* SEO Content Section */}
       <section className="pt-8 pb-28 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-lg text-gray-700 leading-relaxed">
             When your car&apos;s radiator needs repair, finding a trusted{" "}
-            <strong>radiator repair shop near you</strong>{" "}is crucial. Our
+            <strong>radiator repair shop near you</strong> is crucial. Our
             comprehensive directory connects you with certified specialists who
             can diagnose, repair, and maintain your vehicle&apos;s cooling
             system. From{" "}
@@ -103,46 +111,80 @@ export default function Home() {
             >
               state and city
             </Link>{" "}
-            to locate trusted repair shops in your area.
+            to locate trusted repair shops in your area. Prefer DIY maintenance?
+            Browse our{" "}
+            <Link
+              href="/blogs"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              cooling system guides
+            </Link>{" "}
+            or shop{" "}
+            <Link
+              href="/shop"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              tools and supplies
+            </Link>
+            .
           </p>
         </div>
       </section>
 
-      {/* BranchBound promo banner (dismissible, persisted via localStorage) */}
       <BranchBoundBanner />
 
-      {/* Featured Categories */}
       <FeaturedCategories />
 
-      {/* Popular Locations */}
       <PopularLocations />
 
-      {/* How It Works */}
       <HowItWorks />
 
-      {/* Why Choose RadiatorRepairHub */}
       <WhyChoose />
 
-      {/* FAQ Section — schema lives on /faq to avoid duplicate FAQPage markup */}
+      {featuredProducts.length > 0 ? (
+        <section className="bg-white py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <AffiliateProductsSection
+              products={featuredProducts}
+              title="Tools & Supplies"
+              description="Coolant, radiator caps, and diagnostic tools we recommend for common cooling system care."
+              variant="showcase"
+            />
+          </div>
+        </section>
+      ) : null}
+
       <FAQSection faqs={faqs} includeSchema={false} />
 
-      {/* FAQ CTA */}
-      <section className="py-8 bg-blue-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-lg text-gray-700 mb-4">
+      <section className="bg-blue-50 py-8">
+        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+          <p className="mb-4 text-lg text-gray-700">
             Have more questions? Check out our comprehensive FAQ page for
-            detailed answers.
+            detailed answers—or explore guides and tools for cooling system care.
           </p>
-          <Link
-            href="/faq"
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300"
-          >
-            View All FAQs
-          </Link>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link
+              href="/faq"
+              className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:bg-blue-700"
+            >
+              View All FAQs
+            </Link>
+            <Link
+              href="/blogs"
+              className="inline-flex items-center rounded-lg border border-blue-600 px-6 py-3 font-semibold text-blue-700 transition-colors duration-300 hover:bg-blue-100"
+            >
+              Read Blogs
+            </Link>
+            <Link
+              href="/shop"
+              className="inline-flex items-center rounded-lg border border-blue-600 px-6 py-3 font-semibold text-blue-700 transition-colors duration-300 hover:bg-blue-100"
+            >
+              Tools & Supplies
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Contact Section */}
       <ContactSection />
     </div>
   );

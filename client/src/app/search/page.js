@@ -6,9 +6,9 @@ import { SEARCH_KEYWORDS } from "@/lib/seo/keywords";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 const searchTitle =
-  "Radiator Repair Near Me | Auto Repair Shops Near Me - RadiatorRepairHub";
+  "Radiator Repair Near Me | Search Local Auto Repair Shops - RadiatorRepairHub";
 const searchDescription =
-  "Find radiator repair near me and auto repair shops near me in your area. Search for a radiator repair shop near me, compare ratings, read reviews, and connect with certified professionals.";
+  "Search radiator repair near me by location, rating, and services. Compare local auto repair shops, read reviews, and contact certified cooling system professionals.";
 
 export const metadata = buildPageMetadata({
   title: searchTitle,

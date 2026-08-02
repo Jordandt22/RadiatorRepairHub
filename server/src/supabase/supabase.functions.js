@@ -2182,3 +2182,89 @@ export const getOutreachHistory = async (
 
   return { data, count, error };
 };
+
+const AFFILIATE_PRODUCT_SELECT =
+  "id, provider, product_link, affiliate_link, title, description, image_url, is_active, created_at";
+
+const PUBLIC_AFFILIATE_PRODUCT_SELECT =
+  "id, provider, product_link, affiliate_link, title, description, image_url";
+
+export const getActiveAffiliateProductsByIds = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("affiliate_products")
+    .select(PUBLIC_AFFILIATE_PRODUCT_SELECT)
+    .in("id", ids)
+    .eq("is_active", true);
+
+  return { data, error };
+};
+
+export const getActiveAffiliateProducts = async () => {
+  const { data, error } = await supabase
+    .from("affiliate_products")
+    .select(PUBLIC_AFFILIATE_PRODUCT_SELECT)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  return { data, error };
+};
+
+export const getAffiliateProducts = async (page, limit) => {
+  const { data, count, error } = await supabase
+    .from("affiliate_products")
+    .select(AFFILIATE_PRODUCT_SELECT, { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range((page - 1) * limit, page * limit - 1);
+
+  return { data, count, error };
+};
+
+export const createAffiliateProduct = async (payload) => {
+  const { data, error } = await supabase
+    .from("affiliate_products")
+    .insert({
+      provider: payload.provider,
+      product_link: payload.product_link,
+      affiliate_link: payload.affiliate_link,
+      title: payload.title,
+      description: payload.description ?? null,
+      image_url: payload.image_url ?? null,
+      is_active: true,
+    })
+    .select(AFFILIATE_PRODUCT_SELECT)
+    .single();
+
+  return { data, error };
+};
+
+export const updateAffiliateProduct = async (id, payload) => {
+  const { data, error } = await supabase
+    .from("affiliate_products")
+    .update({
+      provider: payload.provider,
+      product_link: payload.product_link,
+      affiliate_link: payload.affiliate_link,
+      title: payload.title,
+      description: payload.description ?? null,
+      image_url: payload.image_url ?? null,
+    })
+    .eq("id", id)
+    .select(AFFILIATE_PRODUCT_SELECT)
+    .single();
+
+  return { data, error };
+};
+
+export const updateAffiliateProductsActive = async (ids, isActive) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("affiliate_products")
+    .update({ is_active: isActive })
+    .in("id", ids)
+    .select("id");
+
+  return { data, error };
+};

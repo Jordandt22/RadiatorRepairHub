@@ -15,6 +15,7 @@ function Footer() {
     { label: "Terms of Service", path: "/terms" },
     { label: "About", path: "/about" },
     { label: "Blogs", path: "/blogs" },
+    { label: "Tools & Supplies", path: "/shop" },
     { label: "FAQ", path: "/faq" },
     { label: "Contact", path: "/contact" },
     { label: "Get Listed", path: "/get-listed" },

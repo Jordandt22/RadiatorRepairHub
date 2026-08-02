@@ -22,42 +22,54 @@ function TypeBadge({ type }) {
 
 function HistoryTableView({ rows }) {
   return (
-    <div className="hidden md:block">
+    <div className="hidden min-w-0 md:block">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Business</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Recipient</TableHead>
-            <TableHead>Subject</TableHead>
-            <TableHead>Sent</TableHead>
+            <TableHead className="w-[24%]">Business</TableHead>
+            <TableHead className="w-[14%]">Type</TableHead>
+            <TableHead className="w-[22%]">Recipient</TableHead>
+            <TableHead className="w-[26%]">Subject</TableHead>
+            <TableHead className="w-[14%]">Sent</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.map((row) => (
             <TableRow key={row.outreach_history_id}>
-              <TableCell className="font-medium">
-                <div className="flex flex-col gap-0.5">
-                  <span>{row.business?.title ?? "—"}</span>
+              <TableCell className="max-w-0 font-medium">
+                <div className="min-w-0">
+                  <span className="block truncate">
+                    {row.business?.title ?? "—"}
+                  </span>
                   {row.business?.slug ? (
-                    <span className="text-xs font-normal text-muted-foreground">
+                    <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
                       /business/{row.business.slug}
                     </span>
                   ) : null}
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell className="whitespace-nowrap">
                 <TypeBadge type={row.outreach_type} />
               </TableCell>
-              <TableCell>
-                <span className="text-sm">{row.recipient ?? "—"}</span>
+              <TableCell className="max-w-0">
+                <span
+                  className="block truncate text-sm"
+                  title={row.recipient ?? undefined}
+                >
+                  {row.recipient ?? "—"}
+                </span>
               </TableCell>
-              <TableCell>
-                <span className="line-clamp-2 text-sm">
+              <TableCell className="max-w-0">
+                <span
+                  className="block truncate text-sm"
+                  title={row.subject ?? undefined}
+                >
                   {row.subject ?? "—"}
                 </span>
               </TableCell>
-              <TableCell>{formatDate(row.sent_at)}</TableCell>
+              <TableCell className="whitespace-nowrap">
+                {formatDate(row.sent_at)}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -3,41 +3,58 @@ import Link from "next/link";
 export const mdxComponents = {
   h1: (props) => (
     <h1
-      className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 font-heading"
+      className="mb-6 font-heading text-3xl font-bold text-gray-900 md:text-4xl"
       {...props}
     />
   ),
   h2: (props) => (
     <h2
-      className="text-2xl font-bold text-gray-900 mt-10 mb-4 font-heading"
+      className="mt-12 mb-4 font-heading text-2xl font-bold tracking-tight text-gray-900 md:text-[1.65rem]"
       {...props}
     />
   ),
   h3: (props) => (
     <h3
-      className="text-xl font-semibold text-gray-900 mt-8 mb-3 font-heading"
+      className="mt-8 mb-3 font-heading text-xl font-semibold text-gray-900"
       {...props}
     />
   ),
   p: (props) => (
-    <p className="text-lg text-gray-700 leading-relaxed mb-4" {...props} />
+    <p
+      className="mb-5 text-lg leading-[1.75] text-gray-700"
+      {...props}
+    />
   ),
   ul: (props) => (
-    <ul className="list-disc pl-6 mb-4 space-y-2 text-lg text-gray-700" {...props} />
+    <ul
+      className="mb-5 list-disc space-y-2.5 pl-6 text-lg leading-relaxed text-gray-700"
+      {...props}
+    />
   ),
   ol: (props) => (
-    <ol className="list-decimal pl-6 mb-4 space-y-2 text-lg text-gray-700" {...props} />
+    <ol
+      className="mb-5 list-decimal space-y-2.5 pl-6 text-lg leading-relaxed text-gray-700"
+      {...props}
+    />
   ),
-  li: (props) => <li className="leading-relaxed" {...props} />,
-  strong: (props) => <strong className="font-semibold text-gray-900" {...props} />,
+  li: (props) => <li className="leading-relaxed marker:text-gray-400" {...props} />,
+  strong: (props) => (
+    <strong className="font-semibold text-gray-900" {...props} />
+  ),
   a: (props) => (
     <Link
       href={props.href || "#"}
-      className="text-blue-600 hover:text-blue-800 underline"
+      className="font-medium text-blue-600 underline decoration-blue-600/30 underline-offset-2 transition-colors hover:text-blue-800 hover:decoration-blue-800/50"
     >
       {props.children}
     </Link>
   ),
-  hr: () => <hr className="my-8 border-gray-200" />,
-  em: (props) => <em className="text-gray-600 not-italic" {...props} />,
+  blockquote: (props) => (
+    <blockquote
+      className="my-8 border-l-4 border-blue-600 bg-blue-50/60 px-5 py-4 text-lg italic leading-relaxed text-gray-700"
+      {...props}
+    />
+  ),
+  hr: () => <hr className="my-10 border-gray-200" />,
+  em: (props) => <em className="text-gray-600" {...props} />,
 };

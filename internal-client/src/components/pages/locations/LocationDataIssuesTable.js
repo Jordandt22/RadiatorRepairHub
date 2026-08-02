@@ -30,44 +30,50 @@ function formatState(name, code) {
 
 function DataIssuesTableView({ issues }) {
   return (
-    <div className="hidden md:block">
+    <div className="hidden min-w-0 md:block">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Business</TableHead>
-            <TableHead>State</TableHead>
-            <TableHead>Listed city</TableHead>
-            <TableHead>Postal code</TableHead>
-            <TableHead>Postal city</TableHead>
-            <TableHead>Note</TableHead>
+            <TableHead className="w-[24%]">Business</TableHead>
+            <TableHead className="w-[16%]">State</TableHead>
+            <TableHead className="w-[14%]">Listed city</TableHead>
+            <TableHead className="w-[12%]">Postal code</TableHead>
+            <TableHead className="w-[14%]">Postal city</TableHead>
+            <TableHead className="w-[20%]">Note</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {issues.map((row) => (
             <TableRow key={row.id}>
-              <TableCell className="font-medium">
-                <div className="flex flex-col gap-0.5">
-                  <span>{row.title ?? "—"}</span>
+              <TableCell className="max-w-0 font-medium">
+                <div className="min-w-0">
+                  <span className="block truncate">{row.title ?? "—"}</span>
                   {row.slug ? (
-                    <span className="text-xs font-normal text-muted-foreground">
+                    <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
                       /business/{row.slug}
                     </span>
                   ) : null}
                 </div>
               </TableCell>
-              <TableCell>
-                {formatState(row.business_state_name, row.business_state_code)}
+              <TableCell className="max-w-0">
+                <span className="block truncate">
+                  {formatState(row.business_state_name, row.business_state_code)}
+                </span>
               </TableCell>
-              <TableCell>
-                {formatPlace(row.business_city_name, row.business_state_code)}
+              <TableCell className="max-w-0">
+                <span className="block truncate">
+                  {formatPlace(row.business_city_name, row.business_state_code)}
+                </span>
               </TableCell>
-              <TableCell className="font-medium">
-                {row.postal_code ?? "—"}
+              <TableCell className="max-w-0 font-medium">
+                <span className="block truncate">{row.postal_code ?? "—"}</span>
               </TableCell>
-              <TableCell>
-                {formatPlace(row.postal_city_name, row.postal_state_code)}
+              <TableCell className="max-w-0">
+                <span className="block truncate">
+                  {formatPlace(row.postal_city_name, row.postal_state_code)}
+                </span>
               </TableCell>
-              <TableCell>
+              <TableCell className="whitespace-nowrap">
                 {row.same_city_name ? (
                   <Badge
                     variant="outline"

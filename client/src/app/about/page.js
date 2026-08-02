@@ -123,6 +123,10 @@ function AboutPage() {
       href: "/blogs",
     },
     {
+      label: "Cooling tools & supplies",
+      href: "/shop",
+    },
+    {
       label: "Get your shop listed",
       href: "/get-listed",
     },

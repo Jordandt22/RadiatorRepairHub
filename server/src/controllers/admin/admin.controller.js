@@ -31,6 +31,10 @@ import {
   getOutreachBusinessesByIds,
   insertOutreachHistory,
   getOutreachHistory as fetchOutreachHistory,
+  getAffiliateProducts as fetchAffiliateProducts,
+  createAffiliateProduct as insertAffiliateProduct,
+  updateAffiliateProduct as patchAffiliateProduct,
+  updateAffiliateProductsActive as patchAffiliateProductsActive,
 } from "../../supabase/supabase.functions.js";
 import {
   cacheData,
@@ -2046,6 +2050,144 @@ export const getOutreachHistoryList = async (req, res) => {
       page,
       limit,
       outreach_type: outreachType,
+    })
+  );
+};
+
+export const getAffiliateProducts = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+
+  const { data, count, error } = await fetchAffiliateProducts(page, limit);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching affiliate products.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  return res.status(200).json(
+    successHandler({
+      products: data ?? [],
+      total,
+      totalPages,
+      page,
+      limit,
+    })
+  );
+};
+
+export const createAffiliateProduct = async (req, res) => {
+  const {
+    provider,
+    title,
+    description,
+    image_url,
+    product_link,
+    affiliate_link,
+  } = req.body;
+
+  const { data, error } = await insertAffiliateProduct({
+    provider,
+    title,
+    description: description ?? null,
+    image_url: image_url ?? null,
+    product_link,
+    affiliate_link,
+  });
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error creating the affiliate product.",
+          error
+        )
+      );
+  }
+
+  return res.status(201).json(successHandler({ product: data }));
+};
+
+export const updateAffiliateProduct = async (req, res) => {
+  const {
+    id,
+    provider,
+    title,
+    description,
+    image_url,
+    product_link,
+    affiliate_link,
+  } = req.body;
+
+  const { data, error } = await patchAffiliateProduct(id, {
+    provider,
+    title,
+    description: description ?? null,
+    image_url: image_url ?? null,
+    product_link,
+    affiliate_link,
+  });
+
+  if (error) {
+    const notFound =
+      error.code === "PGRST116" ||
+      error.message?.toLowerCase().includes("no rows");
+
+    return res
+      .status(notFound ? 404 : 500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          notFound
+            ? "Affiliate product not found."
+            : "There was an error updating the affiliate product.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(successHandler({ product: data }));
+};
+
+export const updateAffiliateProductsActive = async (req, res) => {
+  const { affiliate_product_ids, is_active } = req.body;
+
+  const { data, error } = await patchAffiliateProductsActive(
+    affiliate_product_ids,
+    is_active
+  );
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating affiliate product status.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      updated: data?.length ?? 0,
+      ids: (data ?? []).map((row) => row.id),
     })
   );
 };

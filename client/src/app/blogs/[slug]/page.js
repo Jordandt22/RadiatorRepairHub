@@ -1,9 +1,26 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import PageHeader from "@/components/layout/Header/PageHeader";
+import BlogArticleLayout from "@/components/blogs/BlogArticleLayout";
+import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
+import { BLOG_COVER_IMAGE } from "@/components/blogs/blogConstants";
 import { mdxComponents } from "@/components/blogs/mdxComponents";
 import { getBlogPostBySlug, getBlogSlugs } from "@/lib/blogs";
+import {
+  resolveAffiliateProductIds,
+  splitContentAfterFirstSection,
+} from "@/lib/affiliateProducts";
+import { fetchActiveAffiliateProductsByIds } from "@/lib/api/affiliate-products";
+import {
+  INDEX_ROBOTS,
+  NOT_FOUND_METADATA,
+  SITE_URL,
+} from "@/lib/seo/metadata";
+
+const COVER_ABSOLUTE_URL = `https://radiatorrepairhub.com${BLOG_COVER_IMAGE}`;
+
+/** Refresh product availability (is_active) without a full redeploy. */
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   return getBlogSlugs().map((slug) => ({ slug }));
@@ -14,15 +31,18 @@ export async function generateMetadata({ params }) {
   const post = getBlogPostBySlug(slug);
 
   if (!post) {
-    return { title: "Post Not Found | RadiatorRepairHub" };
+    return {
+      ...NOT_FOUND_METADATA,
+      title: "Post Not Found | RadiatorRepairHub",
+    };
   }
 
   return {
     title: `${post.metadata.title} | RadiatorRepairHub Blogs`,
     description: post.metadata.description,
-    robots: { index: true, follow: true },
+    robots: INDEX_ROBOTS,
     alternates: {
-      canonical: `https://radiatorrepairhub.com/blogs/${slug}`,
+      canonical: `${SITE_URL}/blogs/${slug}`,
     },
     openGraph: {
       title: post.metadata.title,
@@ -30,7 +50,15 @@ export async function generateMetadata({ params }) {
       type: "article",
       locale: "en_US",
       siteName: "RadiatorRepairHub",
-      url: `https://radiatorrepairhub.com/blogs/${slug}`,
+      url: `${SITE_URL}/blogs/${slug}`,
+      images: [
+        {
+          url: COVER_ABSOLUTE_URL,
+          width: 1200,
+          height: 675,
+          alt: post.metadata.title,
+        },
+      ],
       ...(post.metadata.date && {
         publishedTime: new Date(post.metadata.date).toISOString(),
       }),
@@ -60,11 +88,36 @@ async function BlogPostPage({ params }) {
     { name: post.metadata.title, url: `/blogs/${slug}` },
   ];
 
+  const recommendedIds = resolveAffiliateProductIds(
+    post.metadata.affiliateProducts?.recommended ?? []
+  ).slice(0, 2);
+  const relatedIds = resolveAffiliateProductIds(
+    post.metadata.affiliateProducts?.related ?? []
+  ).slice(0, 3);
+
+  const allIds = [...new Set([...recommendedIds, ...relatedIds])];
+  const { data: affiliateData } = allIds.length
+    ? await fetchActiveAffiliateProductsByIds(allIds)
+    : { data: { products: [] } };
+
+  const productsById = new Map(
+    (affiliateData?.products ?? []).map((product) => [product.id, product])
+  );
+  const recommendedProducts = recommendedIds
+    .map((id) => productsById.get(id))
+    .filter(Boolean);
+  const relatedProducts = relatedIds
+    .map((id) => productsById.get(id))
+    .filter(Boolean);
+
+  const { before, after } = splitContentAfterFirstSection(post.content);
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: post.metadata.title,
     description: post.metadata.description,
+    image: COVER_ABSOLUTE_URL,
     author: {
       "@type": "Organization",
       name: post.metadata.author || "RadiatorRepairHub",
@@ -86,29 +139,41 @@ async function BlogPostPage({ params }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <PageHeader
+      <BlogArticleLayout
+        title={post.metadata.title}
+        author={post.metadata.author}
+        dateLabel={formattedDate}
         breadcrumbItems={breadcrumbItems}
-        pageTitle={post.metadata.title}
-        pageDescription={
-          formattedDate
-            ? `${formattedDate}${post.metadata.author ? ` · ${post.metadata.author}` : ""}`
-            : post.metadata.description
+        relatedProductsSlot={
+          <AffiliateProductsSection
+            products={relatedProducts}
+            title="Helpful products for this topic"
+            variant="related"
+            blogSlug={slug}
+          />
         }
-        headerLink={{
-          label: "View Blogs",
-          href: "/blogs",
-        }}
-      />
-
-      <article className="max-w-3xl mx-auto px-6 py-12">
-        <MDXRemote source={post.content} components={mdxComponents} />
-      </article>
-    </div>
+      >
+        <div className="blog-prose">
+          <MDXRemote source={before} components={mdxComponents} />
+        </div>
+        <AffiliateProductsSection
+          products={recommendedProducts}
+          title="Recommended for this article"
+          variant="recommended"
+          blogSlug={slug}
+        />
+        {after ? (
+          <div className="blog-prose">
+            <MDXRemote source={after} components={mdxComponents} />
+          </div>
+        ) : null}
+      </BlogArticleLayout>
+    </>
   );
 }
 

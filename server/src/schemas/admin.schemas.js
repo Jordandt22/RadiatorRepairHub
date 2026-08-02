@@ -421,3 +421,57 @@ export const GetOutreachHistoryQuerySchema = Yup.object({
     .oneOf([...OUTREACH_TYPES, null], "Invalid outreach type")
     .optional(),
 });
+
+export const AFFILIATE_PROVIDERS = ["amazon"];
+
+const optionalTrimmedNullable = Yup.string()
+  .transform((value) => {
+    if (value == null) return null;
+    const trimmed = String(value).trim();
+    return trimmed === "" ? null : trimmed;
+  })
+  .nullable()
+  .optional();
+
+export const GetAffiliateProductsQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+});
+
+export const CreateAffiliateProductSchema = Yup.object({
+  provider: Yup.string()
+    .oneOf(AFFILIATE_PROVIDERS, "Invalid affiliate provider")
+    .default("amazon")
+    .required("Provider is required"),
+  title: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Title is required")
+    .max(200, "Title is too long")
+    .required("Title is required"),
+  description: optionalTrimmedNullable.max(1000, "Description is too long"),
+  image_url: optionalTrimmedNullable.max(2000, "Image URL is too long"),
+  product_link: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .url("Product link must be a valid URL")
+    .required("Product link is required"),
+  affiliate_link: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .url("Affiliate link must be a valid URL")
+    .required("Affiliate link is required"),
+});
+
+export const UpdateAffiliateProductSchema = CreateAffiliateProductSchema.concat(
+  Yup.object({
+    id: Yup.string()
+      .uuid("Invalid product id")
+      .required("Product id is required"),
+  })
+);
+
+export const UpdateAffiliateProductsActiveSchema = Yup.object({
+  is_active: Yup.boolean().required("Active status is required"),
+  affiliate_product_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid product id").required())
+    .min(1, "At least one product id is required")
+    .required("Product ids are required"),
+});

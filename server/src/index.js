@@ -12,6 +12,7 @@ import locationRouter from "./routes/location.routes.js";
 import categoriesRouter from "./routes/categories.routes.js";
 import contactMessagesRouter from "./routes/contact-messages.routes.js";
 import listingReportsRouter from "./routes/listing-reports.routes.js";
+import affiliateProductsRouter from "./routes/affiliate-products.routes.js";
 import adminRouter from "./routes/admin/admin.routes.js";
 import authRouter from "./routes/auth.routes.js";
 
@@ -61,6 +62,9 @@ app.use(`/v${API_VERSION}/api/contact-messages`, contactMessagesRouter);
 
 // Routes for Listing Reports
 app.use(`/v${API_VERSION}/api/listing-reports`, listingReportsRouter);
+
+// Routes for public affiliate products (active only)
+app.use(`/v${API_VERSION}/api/affiliate-products`, affiliateProductsRouter);
 
 // Routes for Admin
 app.use(`/v${API_VERSION}/api/admin`, adminRouter);

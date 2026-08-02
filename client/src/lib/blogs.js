@@ -13,11 +13,19 @@ function getMdxFiles() {
     .sort();
 }
 
+function normalizeAffiliateList(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean);
+}
+
 function parseBlogFile(filename) {
   const slug = filename.replace(/\.mdx$/, "");
   const filePath = path.join(BLOGS_DIR, filename);
   const fileContents = fs.readFileSync(filePath, "utf8");
   const { data, content } = matter(fileContents);
+  const affiliate = data.affiliateProducts ?? {};
 
   return {
     slug,
@@ -27,6 +35,10 @@ function parseBlogFile(filename) {
       description: data.description ?? "",
       date: data.date ?? "",
       author: data.author ?? "RadiatorRepairHub",
+      affiliateProducts: {
+        recommended: normalizeAffiliateList(affiliate.recommended),
+        related: normalizeAffiliateList(affiliate.related),
+      },
     },
   };
 }

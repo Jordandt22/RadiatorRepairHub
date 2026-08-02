@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import JsonLd from "./JsonLd";
 
-const BreadcrumbList = ({ items, navStyles }) => {
+const BreadcrumbList = ({ items, navStyles, variant = "dark" }) => {
   // Helper function to convert relative URLs to absolute URLs
   const getAbsoluteUrl = (url) => {
     if (url.startsWith("http://") || url.startsWith("https://")) {
@@ -10,6 +10,16 @@ const BreadcrumbList = ({ items, navStyles }) => {
     }
     return `https://radiatorrepairhub.com${url}`;
   };
+
+  const isLight = variant === "light";
+  const linkClass = isLight
+    ? "text-gray-600 hover:text-blue-600"
+    : "text-gray-300 hover:text-blue-400";
+  const currentClass = isLight ? "text-gray-500" : "text-gray-400";
+  const middleClass = isLight
+    ? "text-gray-600 group-hover/link:text-blue-600"
+    : "text-gray-300 group-hover/link:text-blue-400";
+  const chevronClass = isLight ? "text-gray-400" : "text-gray-500";
 
   // Generate BreadcrumbList structured data
   const breadcrumbSchema = {
@@ -29,13 +39,13 @@ const BreadcrumbList = ({ items, navStyles }) => {
       <JsonLd data={breadcrumbSchema} />
 
       {/* Visual Breadcrumb Navigation */}
-      <nav className={`flex mb-6 ${navStyles}`} aria-label="Breadcrumb">
+      <nav className={`flex mb-6 ${navStyles ?? ""}`} aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-3">
           {items.map((item, index) => (
             <li key={index} className="inline-flex items-center">
               {index > 0 && (
                 <svg
-                  className="w-3 h-3 text-gray-500 mx-1"
+                  className={`w-3 h-3 mx-1 ${chevronClass}`}
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -55,7 +65,7 @@ const BreadcrumbList = ({ items, navStyles }) => {
                 // Home icon for first item
                 <Link
                   href={item.url}
-                  className="inline-flex items-center text-sm font-medium text-gray-300 hover:text-blue-400 capitalize"
+                  className={`inline-flex items-center text-sm font-medium capitalize ${linkClass}`}
                 >
                   <svg
                     className="w-3 h-3 mr-2.5"
@@ -70,16 +80,22 @@ const BreadcrumbList = ({ items, navStyles }) => {
                 </Link>
               ) : index === items.length - 1 ? (
                 // Current page (last item)
-                <span className="ml-1 text-sm font-medium text-gray-400 md:ml-2 capitalize">
+                <span
+                  className={`ml-1 text-sm font-medium md:ml-2 capitalize ${currentClass}`}
+                >
                   {item.name}
                 </span>
               ) : (
                 // Middle items (clickable)
                 <Link
                   href={item.url}
-                  className="group/link inline-flex items-center text-sm font-medium hover:text-blue-400"
+                  className={`group/link inline-flex items-center text-sm font-medium ${
+                    isLight ? "hover:text-blue-600" : "hover:text-blue-400"
+                  }`}
                 >
-                  <span className="ml-1 text-sm font-medium text-gray-300 md:ml-2 group-hover/link:text-blue-400 capitalize">
+                  <span
+                    className={`ml-1 text-sm font-medium md:ml-2 capitalize ${middleClass}`}
+                  >
                     {item.name}
                   </span>
                 </Link>

@@ -45,6 +45,10 @@ function Navbar() {
       path: "/blogs",
     },
     {
+      label: "Tools & Supplies",
+      path: "/shop",
+    },
+    {
       label: "Contact",
       path: "/contact",
     },
@@ -71,6 +75,10 @@ function Navbar() {
     {
       label: "Blogs",
       path: "/blogs",
+    },
+    {
+      label: "Tools & Supplies",
+      path: "/shop",
     },
     {
       label: "Contact",
