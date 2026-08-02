@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import AffiliateProductCard from "@/components/blogs/AffiliateProductCard";
 
 function AffiliateDisclosure() {
@@ -54,6 +56,16 @@ export function AffiliateProductsSection({
             blogSlug={blogSlug}
           />
         ))}
+      </div>
+
+      <div className="mt-4">
+        <Link
+          href="/shop"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800"
+        >
+          Browse all tools & supplies
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
     </aside>
   );

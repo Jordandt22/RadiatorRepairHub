@@ -293,6 +293,18 @@ export default function FAQPage() {
                 Read guides and tips on radiator repair and cooling system care
               </p>
             </Link>
+
+            <Link
+              href="/shop"
+              className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Shop
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Browse coolant, radiator caps, funnels, and diagnostic tools
+              </p>
+            </Link>
           </div>
         </div>
       </section>

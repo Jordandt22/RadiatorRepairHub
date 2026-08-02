@@ -73,8 +73,26 @@ function BlogsPage() {
 
         <BlogsList posts={posts} />
 
-        <section className="mt-14 border-t border-gray-200 pt-10">
+        <section className="mt-14 space-y-8 border-t border-gray-200 pt-10">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="font-heading text-xl font-bold text-gray-900">
+                Need Tools Or Supplies?
+              </h2>
+              <p className="mt-1 text-gray-600">
+                Browse coolant, caps, funnels, and diagnostic tools we recommend.
+              </p>
+            </div>
+            <Link
+              href="/shop"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+            >
+              Visit shop
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-gray-200 pt-8 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="font-heading text-xl font-bold text-gray-900">
                 Have A Quick Question?
@@ -85,7 +103,7 @@ function BlogsPage() {
             </div>
             <Link
               href="/faq"
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-50"
             >
               View FAQ
               <ArrowRight className="h-4 w-4" />

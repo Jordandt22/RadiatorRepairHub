@@ -3,7 +3,10 @@ import {
   customErrorHandler,
   successHandler,
 } from "../helpers/customErrorHandler.js";
-import { getActiveAffiliateProductsByIds } from "../supabase/supabase.functions.js";
+import {
+  getActiveAffiliateProducts,
+  getActiveAffiliateProductsByIds,
+} from "../supabase/supabase.functions.js";
 
 const { SUPABASE_ERROR } = errorCodes;
 
@@ -12,6 +15,26 @@ export const getPublicAffiliateProducts = async (req, res) => {
     .split(",")
     .map((id) => id.trim())
     .filter(Boolean);
+
+  if (ids.length === 0) {
+    const { data, error } = await getActiveAffiliateProducts();
+
+    if (error) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            "There was an error fetching affiliate products.",
+            error
+          )
+        );
+    }
+
+    return res
+      .status(200)
+      .json(successHandler({ products: data ?? [] }));
+  }
 
   const { data, error } = await getActiveAffiliateProductsByIds(ids);
 

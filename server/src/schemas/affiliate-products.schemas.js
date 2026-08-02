@@ -6,14 +6,18 @@ const UUID_REGEX =
 export const GetPublicAffiliateProductsQuerySchema = Yup.object({
   ids: Yup.string()
     .trim()
-    .required("ids is required")
-    .test("valid-ids", "ids must be a comma-separated list of UUIDs", (value) => {
-      if (!value) return false;
-      const parts = value
-        .split(",")
-        .map((part) => part.trim())
-        .filter(Boolean);
-      if (parts.length === 0 || parts.length > 20) return false;
-      return parts.every((id) => UUID_REGEX.test(id));
-    }),
+    .optional()
+    .test(
+      "valid-ids",
+      "ids must be a comma-separated list of UUIDs",
+      (value) => {
+        if (!value) return true;
+        const parts = value
+          .split(",")
+          .map((part) => part.trim())
+          .filter(Boolean);
+        if (parts.length === 0 || parts.length > 20) return false;
+        return parts.every((id) => UUID_REGEX.test(id));
+      }
+    ),
 });

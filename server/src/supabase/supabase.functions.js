@@ -2201,6 +2201,16 @@ export const getActiveAffiliateProductsByIds = async (ids) => {
   return { data, error };
 };
 
+export const getActiveAffiliateProducts = async () => {
+  const { data, error } = await supabase
+    .from("affiliate_products")
+    .select(PUBLIC_AFFILIATE_PRODUCT_SELECT)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  return { data, error };
+};
+
 export const getAffiliateProducts = async (page, limit) => {
   const { data, count, error } = await supabase
     .from("affiliate_products")

@@ -18,6 +18,7 @@ export function buildSitemapEntries(
     { url: "/states", changeFrequency: "weekly", priority: 0.9 },
     { url: "/about", changeFrequency: "monthly", priority: 0.7 },
     { url: "/blogs", changeFrequency: "weekly", priority: 0.8 },
+    { url: "/shop", changeFrequency: "weekly", priority: 0.7 },
     { url: "/contact", changeFrequency: "monthly", priority: 0.7 },
     { url: "/get-listed", changeFrequency: "monthly", priority: 0.8 },
     { url: "/featured", changeFrequency: "daily", priority: 0.8 },
