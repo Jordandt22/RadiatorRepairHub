@@ -44,7 +44,7 @@ function OutreachTableView({
   const atCap = selectable && selectedIds.size >= selectionCap;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex min-w-0 flex-col gap-2">
       <Table>
         <TableHeader>
           <TableRow>
@@ -59,12 +59,12 @@ function OutreachTableView({
                 />
               </TableHead>
             ) : null}
-            <TableHead>Business</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Eligibility</TableHead>
-            <TableHead>Website</TableHead>
-            <TableHead>Claim invite</TableHead>
-            <TableHead>Website offer</TableHead>
+            <TableHead className="w-[28%]">Business</TableHead>
+            <TableHead className="w-[22%]">Email</TableHead>
+            <TableHead className="w-[14%]">Eligibility</TableHead>
+            <TableHead className="w-[10%]">Website</TableHead>
+            <TableHead className="w-[13%]">Claim invite</TableHead>
+            <TableHead className="w-[13%]">Website offer</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -89,31 +89,36 @@ function OutreachTableView({
                     />
                   </TableCell>
                 ) : null}
-                <TableCell className="font-medium">
-                  <div className="flex flex-col gap-0.5">
-                    <span>{row.title ?? "—"}</span>
+                <TableCell className="max-w-0 font-medium">
+                  <div className="min-w-0">
+                    <span className="block truncate">{row.title ?? "—"}</span>
                     {row.slug ? (
-                      <span className="text-xs font-normal text-muted-foreground">
+                      <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
                         /business/{row.slug}
                       </span>
                     ) : null}
                   </div>
                 </TableCell>
-                <TableCell>
-                  <span className="text-sm">{row.email ?? "—"}</span>
+                <TableCell className="max-w-0">
+                  <span
+                    className="block truncate text-sm"
+                    title={row.email ?? undefined}
+                  >
+                    {row.email ?? "—"}
+                  </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <ClaimEligibilityBadge eligibility={row.claim_eligibility} />
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <span className="text-sm">
                     {hasWebsiteValue(row.website) ? "Yes" : "No"}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <SentCell sentAt={row.claim_invite_sent_at} />
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <SentCell sentAt={row.website_offer_sent_at} />
                 </TableCell>
               </TableRow>
@@ -231,7 +236,7 @@ export default function OutreachTable({
           selectionCap={selectionCap}
         />
       </div>
-      <div className="hidden md:block">
+      <div className="hidden min-w-0 md:block">
         <OutreachTableView
           businesses={businesses}
           selectable={selectable}

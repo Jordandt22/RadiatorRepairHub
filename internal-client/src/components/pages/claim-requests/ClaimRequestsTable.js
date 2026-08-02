@@ -32,7 +32,7 @@ function ClaimRequestsTableView({
     claimRequests.some((row) => selectedIds.has(row.claim_request_id));
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex min-w-0 flex-col gap-2">
       <Table>
         <TableHeader>
           <TableRow>
@@ -45,18 +45,18 @@ function ClaimRequestsTableView({
                 aria-label="Select all claim requests"
               />
             </TableHead>
-            <TableHead>Business</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Attempts</TableHead>
+            <TableHead className="w-[32%]">Business</TableHead>
+            <TableHead className="w-[14%]">Status</TableHead>
+            <TableHead className="w-[10%]">Attempts</TableHead>
             {isSuccessTab ? (
               <>
-                <TableHead>Completed By</TableHead>
-                <TableHead>Completed At</TableHead>
+                <TableHead className="w-[16%]">Completed By</TableHead>
+                <TableHead className="w-[16%]">Completed At</TableHead>
               </>
             ) : (
               <>
-                <TableHead>Last Attempted</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead className="w-[16%]">Last Attempted</TableHead>
+                <TableHead className="w-[16%]">Created</TableHead>
               </>
             )}
           </TableRow>
@@ -74,27 +74,39 @@ function ClaimRequestsTableView({
                     aria-label={`Select claim request for ${row.business?.title ?? "business"}`}
                   />
                 </TableCell>
-                <TableCell className="font-medium">
-                  {row.business?.title ?? "—"}
+                <TableCell className="max-w-0 font-medium">
+                  <span className="block truncate">
+                    {row.business?.title ?? "—"}
+                  </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <ClaimRequestStatusBadge status={row.status} />
                 </TableCell>
-                <TableCell>{row.attempts ?? 0}</TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {row.attempts ?? 0}
+                </TableCell>
                 {isSuccessTab ? (
                   <>
                     <TableCell
-                      className="font-mono text-xs text-muted-foreground"
+                      className="max-w-0 font-mono text-xs text-muted-foreground"
                       title={row.completed_by ?? undefined}
                     >
-                      {shortId(row.completed_by)}
+                      <span className="block truncate">
+                        {shortId(row.completed_by)}
+                      </span>
                     </TableCell>
-                    <TableCell>{formatDate(row.completed_at)}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {formatDate(row.completed_at)}
+                    </TableCell>
                   </>
                 ) : (
                   <>
-                    <TableCell>{formatDate(row.last_attempted_at)}</TableCell>
-                    <TableCell>{formatDate(row.created_at)}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {formatDate(row.last_attempted_at)}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {formatDate(row.created_at)}
+                    </TableCell>
                   </>
                 )}
               </TableRow>
@@ -211,7 +223,7 @@ export default function ClaimRequestsTable({
         onToggleAll={onToggleAll}
         activeTab={activeTab}
       />
-      <div className="hidden md:block">
+      <div className="hidden min-w-0 md:block">
         <ClaimRequestsTableView
           claimRequests={claimRequests}
           selectedIds={selectedIds}

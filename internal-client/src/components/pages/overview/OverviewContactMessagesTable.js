@@ -46,35 +46,43 @@ export default function OverviewContactMessagesTable({ messages = [] }) {
         ))}
       </div>
 
-      <div className="hidden md:block">
+      <div className="hidden min-w-0 md:block">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Business</TableHead>
-              <TableHead>Issue</TableHead>
-              <TableHead>Urgency</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
+              <TableHead className="w-[18%]">Name</TableHead>
+              <TableHead className="w-[22%]">Business</TableHead>
+              <TableHead className="w-[14%]">Issue</TableHead>
+              <TableHead className="w-[14%]">Urgency</TableHead>
+              <TableHead className="w-[14%]">Status</TableHead>
+              <TableHead className="w-[18%]">Created</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {messages.map((message) => (
               <TableRow key={message.contact_message_id}>
-                <TableCell className="font-medium">
-                  {message.name || "—"}
+                <TableCell className="max-w-0 font-medium">
+                  <span className="block truncate">
+                    {message.name || "—"}
+                  </span>
                 </TableCell>
-                <TableCell>{message.business?.title ?? "—"}</TableCell>
-                <TableCell>
+                <TableCell className="max-w-0">
+                  <span className="block truncate">
+                    {message.business?.title ?? "—"}
+                  </span>
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
                   <IssueBadge issue={message.issue} />
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <UrgencyBadge urgency={message.urgency} />
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <StatusBadge status={message.status} />
                 </TableCell>
-                <TableCell>{formatDate(message.created_at)}</TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {formatDate(message.created_at)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

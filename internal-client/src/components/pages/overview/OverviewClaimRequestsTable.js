@@ -40,29 +40,37 @@ export default function OverviewClaimRequestsTable({ claimRequests = [] }) {
         ))}
       </div>
 
-      <div className="hidden md:block">
+      <div className="hidden min-w-0 md:block">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Business</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Attempts</TableHead>
-              <TableHead>Last Attempted</TableHead>
-              <TableHead>Created</TableHead>
+              <TableHead className="w-[32%]">Business</TableHead>
+              <TableHead className="w-[16%]">Status</TableHead>
+              <TableHead className="w-[12%]">Attempts</TableHead>
+              <TableHead className="w-[20%]">Last Attempted</TableHead>
+              <TableHead className="w-[20%]">Created</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {claimRequests.map((row) => (
               <TableRow key={row.claim_request_id}>
-                <TableCell className="font-medium">
-                  {row.business?.title ?? "—"}
+                <TableCell className="max-w-0 font-medium">
+                  <span className="block truncate">
+                    {row.business?.title ?? "—"}
+                  </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <ClaimRequestStatusBadge status={row.status} />
                 </TableCell>
-                <TableCell>{row.attempts ?? 0}</TableCell>
-                <TableCell>{formatDate(row.last_attempted_at)}</TableCell>
-                <TableCell>{formatDate(row.created_at)}</TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {row.attempts ?? 0}
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {formatDate(row.last_attempted_at)}
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {formatDate(row.created_at)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

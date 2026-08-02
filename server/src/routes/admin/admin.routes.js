@@ -24,6 +24,10 @@ import {
   previewOutreachEmails,
   sendOutreachEmails,
   getOutreachHistoryList,
+  getAffiliateProducts,
+  createAffiliateProduct,
+  updateAffiliateProduct,
+  updateAffiliateProductsActive,
 } from "../../controllers/admin/admin.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
 import {
@@ -51,6 +55,10 @@ import {
   OutreachPreviewSchema,
   OutreachSendSchema,
   GetOutreachHistoryQuerySchema,
+  GetAffiliateProductsQuerySchema,
+  CreateAffiliateProductSchema,
+  UpdateAffiliateProductSchema,
+  UpdateAffiliateProductsActiveSchema,
 } from "../../schemas/admin.schemas.js";
 import { bodyValidator, queryValidator } from "../../middleware/validators.js";
 import { authAdmin } from "../../middleware/admin.mw.js";
@@ -138,6 +146,34 @@ adminRouter.get(
   authAdmin,
   queryValidator(GetOutreachHistoryQuerySchema),
   serverErrorCatcherWrapper(getOutreachHistoryList)
+);
+
+adminRouter.get(
+  "/affiliate-products",
+  authAdmin,
+  queryValidator(GetAffiliateProductsQuerySchema),
+  serverErrorCatcherWrapper(getAffiliateProducts)
+);
+
+adminRouter.post(
+  "/affiliate-products",
+  authAdmin,
+  bodyValidator(CreateAffiliateProductSchema),
+  serverErrorCatcherWrapper(createAffiliateProduct)
+);
+
+adminRouter.patch(
+  "/affiliate-products",
+  authAdmin,
+  bodyValidator(UpdateAffiliateProductSchema),
+  serverErrorCatcherWrapper(updateAffiliateProduct)
+);
+
+adminRouter.patch(
+  "/affiliate-products/active",
+  authAdmin,
+  bodyValidator(UpdateAffiliateProductsActiveSchema),
+  serverErrorCatcherWrapper(updateAffiliateProductsActive)
 );
 
 adminRouter.get(

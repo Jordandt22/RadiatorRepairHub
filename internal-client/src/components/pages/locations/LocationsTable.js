@@ -79,15 +79,15 @@ function useRowNavigate(href) {
 
 function StatesTableView({ locations }) {
   return (
-    <div className="hidden md:block">
+    <div className="hidden min-w-0 md:block">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>State</TableHead>
-            <TableHead className="text-right">Businesses</TableHead>
-            <TableHead className="text-right">Percentage</TableHead>
-            <TableHead className="text-right">Cities</TableHead>
-            <TableHead className="text-right">Postal Codes</TableHead>
+            <TableHead className="w-[36%]">State</TableHead>
+            <TableHead className="w-[16%] text-right">Businesses</TableHead>
+            <TableHead className="w-[16%] text-right">Percentage</TableHead>
+            <TableHead className="w-[16%] text-right">Cities</TableHead>
+            <TableHead className="w-[16%] text-right">Postal Codes</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -105,28 +105,28 @@ function StateTableRow({ row }) {
   const nav = useRowNavigate(href);
   return (
     <TableRow {...nav}>
-      <TableCell className="font-medium">
-        <div className="flex flex-col gap-0.5">
-          <span>{row.name ?? "—"}</span>
+      <TableCell className="max-w-0 font-medium">
+        <div className="min-w-0">
+          <span className="block truncate">{row.name ?? "—"}</span>
           {row.code ? (
-            <span className="text-xs font-normal text-muted-foreground">
+            <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
               {row.code}
             </span>
           ) : null}
         </div>
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="whitespace-nowrap text-right">
         {formatCount(row.business_count)}
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="whitespace-nowrap text-right">
         <div className="flex justify-end">
           <PercentagePill value={row.percentage} />
         </div>
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="whitespace-nowrap text-right">
         {formatCount(row.city_count)}
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="whitespace-nowrap text-right">
         {formatCount(row.postal_code_count)}
       </TableCell>
     </TableRow>
@@ -135,15 +135,15 @@ function StateTableRow({ row }) {
 
 function CitiesTableView({ locations }) {
   return (
-    <div className="hidden md:block">
+    <div className="hidden min-w-0 md:block">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>City</TableHead>
-            <TableHead>State</TableHead>
-            <TableHead className="text-right">Businesses</TableHead>
-            <TableHead className="text-right">% in State</TableHead>
-            <TableHead className="text-right">Postal Codes</TableHead>
+            <TableHead className="w-[28%]">City</TableHead>
+            <TableHead className="w-[28%]">State</TableHead>
+            <TableHead className="w-[14%] text-right">Businesses</TableHead>
+            <TableHead className="w-[16%] text-right">% in State</TableHead>
+            <TableHead className="w-[14%] text-right">Postal Codes</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -161,9 +161,11 @@ function CityTableRow({ row }) {
   const nav = useRowNavigate(href);
   return (
     <TableRow {...nav}>
-      <TableCell className="font-medium">{row.name ?? "—"}</TableCell>
-      <TableCell>
-        <span className="text-sm">
+      <TableCell className="max-w-0 font-medium">
+        <span className="block truncate">{row.name ?? "—"}</span>
+      </TableCell>
+      <TableCell className="max-w-0">
+        <span className="block truncate text-sm">
           {row.state_name ?? "—"}
           {row.state_code ? (
             <span className="text-muted-foreground">
@@ -173,15 +175,15 @@ function CityTableRow({ row }) {
           ) : null}
         </span>
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="whitespace-nowrap text-right">
         {formatCount(row.business_count)}
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="whitespace-nowrap text-right">
         <div className="flex justify-end">
           <PercentagePill value={row.percentage} />
         </div>
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="whitespace-nowrap text-right">
         {formatCount(row.postal_code_count)}
       </TableCell>
     </TableRow>
@@ -190,15 +192,15 @@ function CityTableRow({ row }) {
 
 function PostalCodesTableView({ locations }) {
   return (
-    <div className="hidden md:block">
+    <div className="hidden min-w-0 md:block">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Postal Code</TableHead>
-            <TableHead>City</TableHead>
-            <TableHead>State</TableHead>
-            <TableHead className="text-right">Businesses</TableHead>
-            <TableHead className="text-right">% in City</TableHead>
+            <TableHead className="w-[16%]">Postal Code</TableHead>
+            <TableHead className="w-[28%]">City</TableHead>
+            <TableHead className="w-[28%]">State</TableHead>
+            <TableHead className="w-[14%] text-right">Businesses</TableHead>
+            <TableHead className="w-[14%] text-right">% in City</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -216,10 +218,14 @@ function PostalTableRow({ row }) {
   const nav = useRowNavigate(href);
   return (
     <TableRow {...nav}>
-      <TableCell className="font-medium">{row.code ?? "—"}</TableCell>
-      <TableCell>{row.city_name ?? "—"}</TableCell>
-      <TableCell>
-        <span className="text-sm">
+      <TableCell className="max-w-0 font-medium">
+        <span className="block truncate">{row.code ?? "—"}</span>
+      </TableCell>
+      <TableCell className="max-w-0">
+        <span className="block truncate">{row.city_name ?? "—"}</span>
+      </TableCell>
+      <TableCell className="max-w-0">
+        <span className="block truncate text-sm">
           {row.state_name ?? "—"}
           {row.state_code ? (
             <span className="text-muted-foreground">
@@ -229,10 +235,10 @@ function PostalTableRow({ row }) {
           ) : null}
         </span>
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="whitespace-nowrap text-right">
         {formatCount(row.business_count)}
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="whitespace-nowrap text-right">
         <div className="flex justify-end">
           <PercentagePill value={row.percentage} />
         </div>

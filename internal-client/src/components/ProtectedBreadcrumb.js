@@ -21,7 +21,8 @@ const SEGMENT_LABELS = {
   locations: "Locations",
   states: "States",
   cities: "Cities",
-  "postal-codes": "Postal Codes",
+  outreach: "Outreach",
+  "affiliate-programs": "Affiliate Programs",
 };
 
 const LOCATION_PARENT_HREF = {

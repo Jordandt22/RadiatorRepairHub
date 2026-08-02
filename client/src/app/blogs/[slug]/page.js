@@ -2,11 +2,20 @@ import React from "react";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import BlogArticleLayout from "@/components/blogs/BlogArticleLayout";
+import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import { BLOG_COVER_IMAGE } from "@/components/blogs/blogConstants";
 import { mdxComponents } from "@/components/blogs/mdxComponents";
 import { getBlogPostBySlug, getBlogSlugs } from "@/lib/blogs";
+import {
+  resolveAffiliateProductIds,
+  splitContentAfterFirstSection,
+} from "@/lib/affiliateProducts";
+import { fetchActiveAffiliateProductsByIds } from "@/lib/api/affiliate-products";
 
 const COVER_ABSOLUTE_URL = `https://radiatorrepairhub.com${BLOG_COVER_IMAGE}`;
+
+/** Refresh product availability (is_active) without a full redeploy. */
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   return getBlogSlugs().map((slug) => ({ slug }));
@@ -71,6 +80,30 @@ async function BlogPostPage({ params }) {
     { name: post.metadata.title, url: `/blogs/${slug}` },
   ];
 
+  const recommendedIds = resolveAffiliateProductIds(
+    post.metadata.affiliateProducts?.recommended ?? []
+  ).slice(0, 2);
+  const relatedIds = resolveAffiliateProductIds(
+    post.metadata.affiliateProducts?.related ?? []
+  ).slice(0, 3);
+
+  const allIds = [...new Set([...recommendedIds, ...relatedIds])];
+  const { data: affiliateData } = allIds.length
+    ? await fetchActiveAffiliateProductsByIds(allIds)
+    : { data: { products: [] } };
+
+  const productsById = new Map(
+    (affiliateData?.products ?? []).map((product) => [product.id, product])
+  );
+  const recommendedProducts = recommendedIds
+    .map((id) => productsById.get(id))
+    .filter(Boolean);
+  const relatedProducts = relatedIds
+    .map((id) => productsById.get(id))
+    .filter(Boolean);
+
+  const { before, after } = splitContentAfterFirstSection(post.content);
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -108,8 +141,29 @@ async function BlogPostPage({ params }) {
         author={post.metadata.author}
         dateLabel={formattedDate}
         breadcrumbItems={breadcrumbItems}
+        relatedProductsSlot={
+          <AffiliateProductsSection
+            products={relatedProducts}
+            title="Helpful products for this topic"
+            variant="related"
+            blogSlug={slug}
+          />
+        }
       >
-        <MDXRemote source={post.content} components={mdxComponents} />
+        <div className="blog-prose">
+          <MDXRemote source={before} components={mdxComponents} />
+        </div>
+        <AffiliateProductsSection
+          products={recommendedProducts}
+          title="Recommended for this article"
+          variant="recommended"
+          blogSlug={slug}
+        />
+        {after ? (
+          <div className="blog-prose">
+            <MDXRemote source={after} components={mdxComponents} />
+          </div>
+        ) : null}
       </BlogArticleLayout>
     </>
   );

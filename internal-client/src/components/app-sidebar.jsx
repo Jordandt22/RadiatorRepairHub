@@ -19,6 +19,7 @@ import {
   MapPinIcon,
   AlertTriangleIcon,
   MegaphoneIcon,
+  HandshakeIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -162,6 +163,18 @@ const data = {
           title: "Data Issues",
           url: "/locations?tab=data-issues",
           icon: <AlertTriangleIcon />,
+        },
+      ],
+    },
+    {
+      title: "Affiliate Programs",
+      url: "/affiliate-programs?tab=products",
+      icon: <HandshakeIcon />,
+      items: [
+        {
+          title: "Products",
+          url: "/affiliate-programs?tab=products",
+          icon: <HandshakeIcon />,
         },
       ],
     },

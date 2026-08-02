@@ -64,7 +64,7 @@ function MessagesView({
         dateField={dateField}
         dateLabel={dateLabel}
       />
-      <div className="hidden md:block">
+      <div className="hidden min-w-0 md:block">
         <MessagesTable
           messages={messages}
           selectedIds={selectedIds}
@@ -108,7 +108,7 @@ function MessagesTable({
   });
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex min-w-0 flex-col gap-2">
       <Table>
         <TableHeader>
           <TableRow>
@@ -122,15 +122,19 @@ function MessagesTable({
                 aria-label="Select all in this table"
               />
             </TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Business</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Issue</TableHead>
-            <TableHead>Urgency</TableHead>
-            <TableHead>Status</TableHead>
-            {showConfirmation ? <TableHead>Confirmation</TableHead> : null}
-            {showConfirmation ? <TableHead>Confirmed At</TableHead> : null}
-            <TableHead>{dateLabel}</TableHead>
+            <TableHead className="w-[14%]">Name</TableHead>
+            <TableHead className="w-[16%]">Business</TableHead>
+            <TableHead className="w-[16%]">Email</TableHead>
+            <TableHead className="w-[10%]">Issue</TableHead>
+            <TableHead className="w-[10%]">Urgency</TableHead>
+            <TableHead className="w-[10%]">Status</TableHead>
+            {showConfirmation ? (
+              <TableHead className="w-[10%]">Confirmation</TableHead>
+            ) : null}
+            {showConfirmation ? (
+              <TableHead className="w-[10%]">Confirmed At</TableHead>
+            ) : null}
+            <TableHead className="w-[10%]">{dateLabel}</TableHead>
             <TableHead className="w-20" />
           </TableRow>
         </TableHeader>
@@ -172,33 +176,50 @@ function MessagesTable({
                     />
                   )}
                 </TableCell>
-                <TableCell className="font-semibold">{message.name}</TableCell>
-                <TableCell>{message.business?.title || "—"}</TableCell>
-                <TableCell>{message.email}</TableCell>
-                <TableCell>
+                <TableCell className="max-w-0 font-semibold">
+                  <span className="block truncate" title={message.name}>
+                    {message.name}
+                  </span>
+                </TableCell>
+                <TableCell className="max-w-0">
+                  <span
+                    className="block truncate"
+                    title={message.business?.title || undefined}
+                  >
+                    {message.business?.title || "—"}
+                  </span>
+                </TableCell>
+                <TableCell className="max-w-0">
+                  <span className="block truncate" title={message.email}>
+                    {message.email}
+                  </span>
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
                   <IssueBadge issue={message.issue} />
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <UrgencyBadge urgency={message.urgency} />
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <StatusBadge status={message.status} />
                 </TableCell>
                 {showConfirmation ? (
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     <ConfirmationBadge
                       confirmationSent={message.confirmation_sent}
                     />
                   </TableCell>
                 ) : null}
                 {showConfirmation ? (
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     {formatDate(message.confirmation_sent_at)}
                   </TableCell>
                 ) : null}
-                <TableCell>{formatDate(message[dateField])}</TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {formatDate(message[dateField])}
+                </TableCell>
                 <TableCell
-                  className="text-right"
+                  className="whitespace-nowrap text-right"
                   onClick={(event) => event.stopPropagation()}
                 >
                   <Button

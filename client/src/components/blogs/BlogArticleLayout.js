@@ -14,6 +14,7 @@ function BlogArticleLayout({
   dateLabel,
   breadcrumbItems,
   children,
+  relatedProductsSlot = null,
 }) {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -59,7 +60,9 @@ function BlogArticleLayout({
           />
         </div>
 
-        <div className="blog-prose">{children}</div>
+        {children}
+
+        {relatedProductsSlot}
 
         <footer className="mt-12 border-t border-gray-200 pt-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

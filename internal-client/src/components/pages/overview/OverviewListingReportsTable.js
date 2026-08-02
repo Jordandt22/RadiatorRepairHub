@@ -49,38 +49,51 @@ export default function OverviewListingReportsTable({ listingReports = [] }) {
         ))}
       </div>
 
-      <div className="hidden md:block">
+      <div className="hidden min-w-0 md:block">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Business</TableHead>
-              <TableHead>Reason</TableHead>
-              <TableHead>Reporter</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
+              <TableHead className="w-[26%]">Business</TableHead>
+              <TableHead className="w-[18%]">Reason</TableHead>
+              <TableHead className="w-[24%]">Reporter</TableHead>
+              <TableHead className="w-[14%]">Status</TableHead>
+              <TableHead className="w-[18%]">Created</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {listingReports.map((row) => (
               <TableRow key={row.listing_report_id}>
-                <TableCell className="font-medium">
-                  {row.business?.title ?? "—"}
+                <TableCell className="max-w-0 font-medium">
+                  <span className="block truncate">
+                    {row.business?.title ?? "—"}
+                  </span>
                 </TableCell>
-                <TableCell>{reasonLabel(row.reason)}</TableCell>
-                <TableCell>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-sm">{row.reporter_email ?? "—"}</span>
+                <TableCell className="max-w-0">
+                  <span className="block truncate">
+                    {reasonLabel(row.reason)}
+                  </span>
+                </TableCell>
+                <TableCell className="max-w-0">
+                  <div className="min-w-0">
+                    <span
+                      className="block truncate text-sm"
+                      title={row.reporter_email ?? undefined}
+                    >
+                      {row.reporter_email ?? "—"}
+                    </span>
                     {row.reporter_name ? (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="mt-0.5 block truncate text-xs text-muted-foreground">
                         {row.reporter_name}
                       </span>
                     ) : null}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <ListingReportStatusBadge status={row.status} />
                 </TableCell>
-                <TableCell>{formatDate(row.created_at)}</TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {formatDate(row.created_at)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
