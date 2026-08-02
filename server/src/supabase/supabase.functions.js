@@ -2056,7 +2056,12 @@ export const getOutreachMatchingBusinessIds = async ({
     websiteOfferSent,
   };
 
-  if (outreachType === "claim_invite") {
+  const isClaimInviteType =
+    outreachType === "claim_invite" ||
+    outreachType === "ownership_claim_invite" ||
+    outreachType === "lead_claim_invite";
+
+  if (isClaimInviteType) {
     filters.claimEligibility = claimEligibility || "able";
     if (claimInviteSent == null) filters.claimInviteSent = false;
   } else if (outreachType === "website_offer") {
@@ -2082,7 +2087,7 @@ export const getOutreachMatchingBusinessIds = async ({
   for (const row of withOwners) {
     if (matched.length >= limit) break;
 
-    if (outreachType === "claim_invite") {
+    if (isClaimInviteType) {
       if (row.claim_eligibility !== "able") continue;
       if (row.claim_invite_sent_at) continue;
       const email = typeof row.email === "string" ? row.email.trim() : "";
