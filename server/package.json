@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "server": "nodemon src/index.js"
+    "start": "concurrently -n server,worker -c blue,magenta --kill-others-on-fail \"node src/index.js\" \"node src/worker.js\"",
+    "server": "nodemon src/index.js",
+    "worker": "node src/worker.js",
+    "dev": "concurrently -n server,worker -c blue,magenta --kill-others-on-fail \"npm:server\" \"npm:worker\""
   },
   "keywords": [],
   "author": "Jordandt22",
@@ -12,18 +14,24 @@
   "description": "",
   "type": "module",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
     "@arcjet/inspect": "^1.0.0-beta.11",
     "@arcjet/node": "^1.0.0-beta.11",
     "@supabase/supabase-js": "^2.57.2",
     "bcrypt": "^6.0.0",
+    "bullmq": "^6.0.6",
+    "concurrently": "^10.0.4",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "geo-tz": "^8.1.8",
     "helmet": "^8.1.0",
     "ioredis": "^5.7.0",
     "jose": "^6.2.3",
     "morgan": "^1.10.1",
+    "multer": "^2.2.0",
     "resend": "^6.17.2",
+    "slugify": "^1.6.9",
     "uuid": "^12.0.0",
     "yup": "^1.7.0"
   }

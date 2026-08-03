@@ -67,6 +67,14 @@ import {
   SENDER_NAME,
   ADMIN_OUTREACH_SENT_MESSAGE,
 } from "../../lib/constants/messages.js";
+import {
+  createIngestGroup as insertIngestGroup,
+  deleteIngestGroups,
+  getIngestBatchDetail,
+  getIngestGroupDetail,
+  listIngestGroups,
+} from "../../ingest/db.js";
+import { enqueueFilterJob } from "../../ingest/queues.js";
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
 
 export const loginAdmin = async (req, res) => {
@@ -2019,9 +2027,14 @@ export const getOutreachHistoryList = async (req, res) => {
     req.query.outreach_type.trim()
       ? req.query.outreach_type.trim()
       : null;
+  const q =
+    typeof req.query.q === "string" && req.query.q.trim()
+      ? req.query.q.trim()
+      : null;
 
   const { data, count, error } = await fetchOutreachHistory(page, limit, {
     outreachType,
+    q,
   });
 
   if (error) {
@@ -2050,6 +2063,7 @@ export const getOutreachHistoryList = async (req, res) => {
       page,
       limit,
       outreach_type: outreachType,
+      q,
     })
   );
 };
@@ -2190,4 +2204,153 @@ export const updateAffiliateProductsActive = async (req, res) => {
       ids: (data ?? []).map((row) => row.id),
     })
   );
+};
+
+export const createIngestGroup = async (req, res) => {
+  const file = req.file;
+  if (!file?.buffer) {
+    return res
+      .status(400)
+      .json(
+        customErrorHandler(YUP_ERROR, "A JSON file is required (field: file).")
+      );
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(file.buffer.toString("utf-8"));
+  } catch {
+    return res
+      .status(400)
+      .json(customErrorHandler(YUP_ERROR, "File must contain valid JSON."));
+  }
+
+  if (!Array.isArray(payload) || payload.length === 0) {
+    return res
+      .status(400)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "JSON must be a non-empty array of businesses."
+        )
+      );
+  }
+
+  const originalName = file.originalname || "upload.json";
+  const nameFromBody =
+    typeof req.body?.name === "string" ? req.body.name.trim() : "";
+  const name =
+    nameFromBody ||
+    originalName.replace(/\.json$/i, "") ||
+    `ingest-${new Date().toISOString()}`;
+
+  try {
+    const group = await insertIngestGroup({ name, payload });
+    await enqueueFilterJob(group.id);
+
+    return res.status(201).json(successHandler({ group }));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error creating the ingest group.",
+          error
+        )
+      );
+  }
+};
+
+export const getIngestGroups = async (req, res) => {
+  try {
+    const groups = await listIngestGroups();
+    return res.status(200).json(successHandler({ groups }));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching ingest groups.",
+          error
+        )
+      );
+  }
+};
+
+export const getIngestGroupById = async (req, res) => {
+  const { groupId } = req.params;
+
+  try {
+    const detail = await getIngestGroupDetail(groupId);
+
+    if (!detail) {
+      return res
+        .status(404)
+        .json(customErrorHandler(SUPABASE_ERROR, "Ingest group not found."));
+    }
+
+    return res.status(200).json(successHandler(detail));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the ingest group.",
+          error
+        )
+      );
+  }
+};
+
+export const deleteIngestGroupsHandler = async (req, res) => {
+  const { group_ids } = req.body;
+
+  try {
+    const data = await deleteIngestGroups(group_ids);
+    return res.status(200).json(
+      successHandler({
+        deleted: data?.length ?? 0,
+        ids: (data ?? []).map((row) => row.id),
+      })
+    );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error deleting ingest groups.",
+          error
+        )
+      );
+  }
+};
+
+export const getIngestBatchById = async (req, res) => {
+  const { batchId } = req.params;
+
+  try {
+    const detail = await getIngestBatchDetail(batchId);
+
+    if (!detail) {
+      return res
+        .status(404)
+        .json(customErrorHandler(SUPABASE_ERROR, "Ingest batch not found."));
+    }
+
+    return res.status(200).json(successHandler(detail));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the ingest batch.",
+          error
+        )
+      );
+  }
 };
