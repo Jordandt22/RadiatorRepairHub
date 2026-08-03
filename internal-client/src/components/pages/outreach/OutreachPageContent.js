@@ -84,10 +84,13 @@ export default function OutreachPageContent() {
 
   // History tab state
   const [historyPage, setHistoryPage] = useState(1);
+  const [historySearchInput, setHistorySearchInput] = useState("");
+  const [historyDebouncedSearch, setHistoryDebouncedSearch] = useState("");
   const [historyType, setHistoryType] = useState(null);
   const [historyRefreshError, setHistoryRefreshError] = useState(null);
 
   const searchQuery = debouncedSearch.trim();
+  const historySearchQuery = historyDebouncedSearch.trim();
   const claimEligibilityId = claimEligibility?.id ?? null;
   const websiteFilterId = websiteFilter?.id ?? null;
   const claimInviteSentValue = parseSentFilter(claimInviteSent);
@@ -126,6 +129,15 @@ export default function OutreachPageContent() {
     run(searchInput);
     return () => run.cancel();
   }, [searchInput]);
+
+  useEffect(() => {
+    const run = debounce((value) => {
+      setHistoryDebouncedSearch(value);
+      setHistoryPage(1);
+    }, SEARCH_DEBOUNCE_MS);
+    run(historySearchInput);
+    return () => run.cancel();
+  }, [historySearchInput]);
 
   const handleTabChange = (tab) => {
     const nextTab = resolveTab(tab);
@@ -183,7 +195,12 @@ export default function OutreachPageContent() {
     staleTime: 30_000,
   });
 
-  const historyQueryKey = ["outreach-history", historyPage, historyTypeId];
+  const historyQueryKey = [
+    "outreach-history",
+    historyPage,
+    historyTypeId,
+    historySearchQuery,
+  ];
 
   const historyQuery = useQuery({
     queryKey: historyQueryKey,
@@ -193,6 +210,7 @@ export default function OutreachPageContent() {
         limit: String(PAGE_LIMIT),
       });
       if (historyTypeId) params.set("outreach_type", historyTypeId);
+      if (historySearchQuery) params.set("q", historySearchQuery);
 
       const result = await fetchApi(
         `/admin/outreach/history?${params.toString()}`,
@@ -629,6 +647,8 @@ export default function OutreachPageContent() {
       {activeTab === "history" ? (
         <>
           <OutreachHistoryActions
+            searchValue={historySearchInput}
+            onSearchChange={setHistorySearchInput}
             outreachType={historyType}
             onOutreachTypeChange={(value) => {
               setHistoryType(value);
@@ -647,7 +667,7 @@ export default function OutreachPageContent() {
           ) : (
             <OutreachHistoryTable
               rows={historyRows}
-              hasFilters={Boolean(historyTypeId)}
+              hasFilters={Boolean(historyTypeId || historySearchQuery)}
             />
           )}
 

@@ -1,10 +1,13 @@
-import { RefreshCwIcon } from "lucide-react";
+import { RefreshCwIcon, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
 import { OUTREACH_TYPE_OPTIONS } from "@/components/pages/outreach/outreachConstants";
 
 export default function OutreachHistoryActions({
+  searchValue = "",
+  onSearchChange,
   outreachType = null,
   onOutreachTypeChange,
   onRefresh,
@@ -23,6 +26,17 @@ export default function OutreachHistoryActions({
             placeholder="All campaign types"
             ariaLabel="Filter history by campaign type"
             disabled={refreshPending}
+          />
+        </div>
+        <div className="relative min-w-0 flex-1 md:max-w-sm">
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            value={searchValue}
+            onChange={(e) => onSearchChange?.(e.target.value)}
+            placeholder="Search business, slug, recipient, subject…"
+            aria-label="Search outreach history"
+            className="rounded-full pl-9"
           />
         </div>
         <Button

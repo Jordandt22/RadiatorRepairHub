@@ -2139,21 +2139,50 @@ export const insertOutreachHistory = async (rows) => {
   return { data, error };
 };
 
-const OUTREACH_HISTORY_SELECT =
-  "outreach_history_id, business_id, message_type, outreach_type, recipient, subject, provider, provider_message_id, sent_at, metadata, created_at, business:businesses(id, title, slug, email)";
+const OUTREACH_HISTORY_LIST_SELECT =
+  "outreach_history_id, business_id, message_type, outreach_type, recipient, subject, provider, provider_message_id, sent_at, metadata, created_at, title, slug, email";
+
+const mapOutreachHistoryListRow = (row) => {
+  if (!row) return row;
+  const {
+    title,
+    slug,
+    email,
+    business_id,
+    ...rest
+  } = row;
+  return {
+    ...rest,
+    business_id,
+    business: {
+      id: business_id,
+      title: title ?? null,
+      slug: slug ?? null,
+      email: email ?? null,
+    },
+  };
+};
 
 export const getOutreachHistory = async (
   page,
   limit,
-  { outreachType = null } = {}
+  { outreachType = null, q = null } = {}
 ) => {
   let query = supabase
-    .from("outreach_history")
-    .select(OUTREACH_HISTORY_SELECT, { count: "exact" })
+    .from("outreach_history_list")
+    .select(OUTREACH_HISTORY_LIST_SELECT, { count: "exact" })
     .order("sent_at", { ascending: false });
 
   if (outreachType) {
     query = query.eq("outreach_type", outreachType);
+  }
+
+  const sanitized = sanitizeAdminBusinessSearch(q);
+  if (sanitized) {
+    const pattern = `%${sanitized}%`;
+    query = query.or(
+      `title.ilike."${pattern}",slug.ilike."${pattern}",recipient.ilike."${pattern}",subject.ilike."${pattern}"`
+    );
   }
 
   const { data, count, error } = await query.range(
@@ -2161,7 +2190,15 @@ export const getOutreachHistory = async (
     page * limit - 1
   );
 
-  return { data, count, error };
+  if (error) {
+    return { data: null, count, error };
+  }
+
+  return {
+    data: (data ?? []).map(mapOutreachHistoryListRow),
+    count,
+    error: null,
+  };
 };
 
 const AFFILIATE_PRODUCT_SELECT =

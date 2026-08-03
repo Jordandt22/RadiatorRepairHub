@@ -22,8 +22,9 @@ const CONTENT = {
     icon: HistoryIcon,
     title: "No outreach history",
     description: "Sent outreach emails will show up here.",
-    filteredTitle: "No history for this type",
-    filteredDescription: "Try another email type filter, or clear the filter.",
+    filteredTitle: "No matching history",
+    filteredDescription:
+      "Try adjusting the campaign type or search, or clear filters.",
   },
 };
 

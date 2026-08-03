@@ -2027,9 +2027,14 @@ export const getOutreachHistoryList = async (req, res) => {
     req.query.outreach_type.trim()
       ? req.query.outreach_type.trim()
       : null;
+  const q =
+    typeof req.query.q === "string" && req.query.q.trim()
+      ? req.query.q.trim()
+      : null;
 
   const { data, count, error } = await fetchOutreachHistory(page, limit, {
     outreachType,
+    q,
   });
 
   if (error) {
@@ -2058,6 +2063,7 @@ export const getOutreachHistoryList = async (req, res) => {
       page,
       limit,
       outreach_type: outreachType,
+      q,
     })
   );
 };
