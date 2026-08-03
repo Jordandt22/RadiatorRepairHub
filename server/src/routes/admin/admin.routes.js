@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 import {
   loginAdmin,
   getContactMessages,
@@ -28,6 +29,11 @@ import {
   createAffiliateProduct,
   updateAffiliateProduct,
   updateAffiliateProductsActive,
+  createIngestGroup,
+  getIngestGroups,
+  getIngestGroupById,
+  getIngestBatchById,
+  deleteIngestGroupsHandler,
 } from "../../controllers/admin/admin.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
 import {
@@ -59,9 +65,21 @@ import {
   CreateAffiliateProductSchema,
   UpdateAffiliateProductSchema,
   UpdateAffiliateProductsActiveSchema,
+  GetIngestGroupParamsSchema,
+  GetIngestBatchParamsSchema,
+  DeleteIngestGroupsSchema,
 } from "../../schemas/admin.schemas.js";
-import { bodyValidator, queryValidator } from "../../middleware/validators.js";
+import {
+  bodyValidator,
+  paramsValidator,
+  queryValidator,
+} from "../../middleware/validators.js";
 import { authAdmin } from "../../middleware/admin.mw.js";
+
+const ingestUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 },
+});
 
 const adminRouter = Router();
 
@@ -258,6 +276,40 @@ adminRouter.post(
   authAdmin,
   bodyValidator(InvalidateCacheSchema),
   serverErrorCatcherWrapper(invalidateCache)
+);
+
+adminRouter.post(
+  "/ingest/groups",
+  authAdmin,
+  ingestUpload.single("file"),
+  serverErrorCatcherWrapper(createIngestGroup)
+);
+
+adminRouter.get(
+  "/ingest/groups",
+  authAdmin,
+  serverErrorCatcherWrapper(getIngestGroups)
+);
+
+adminRouter.get(
+  "/ingest/groups/:groupId",
+  authAdmin,
+  paramsValidator(GetIngestGroupParamsSchema),
+  serverErrorCatcherWrapper(getIngestGroupById)
+);
+
+adminRouter.get(
+  "/ingest/batches/:batchId",
+  authAdmin,
+  paramsValidator(GetIngestBatchParamsSchema),
+  serverErrorCatcherWrapper(getIngestBatchById)
+);
+
+adminRouter.delete(
+  "/ingest/groups",
+  authAdmin,
+  bodyValidator(DeleteIngestGroupsSchema),
+  serverErrorCatcherWrapper(deleteIngestGroupsHandler)
 );
 
 export default adminRouter;

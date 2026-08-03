@@ -16,8 +16,10 @@ export async function fetchApi(path, options = {}) {
   }
 
   const { accessToken, headers, ...fetchOptions } = options;
+  const isFormData =
+    typeof FormData !== "undefined" && fetchOptions.body instanceof FormData;
   const requestHeaders = {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...headers,
   };
 

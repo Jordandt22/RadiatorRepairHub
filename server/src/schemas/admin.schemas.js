@@ -475,3 +475,22 @@ export const UpdateAffiliateProductsActiveSchema = Yup.object({
     .min(1, "At least one product id is required")
     .required("Product ids are required"),
 });
+
+export const GetIngestGroupParamsSchema = Yup.object({
+  groupId: Yup.string()
+    .uuid("Invalid group id")
+    .required("Group id is required"),
+});
+
+export const GetIngestBatchParamsSchema = Yup.object({
+  batchId: Yup.string()
+    .uuid("Invalid batch id")
+    .required("Batch id is required"),
+});
+
+export const DeleteIngestGroupsSchema = Yup.object({
+  group_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid group id").required())
+    .min(1, "At least one group id is required")
+    .required("Group ids are required"),
+});

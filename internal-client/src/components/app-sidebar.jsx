@@ -20,6 +20,7 @@ import {
   AlertTriangleIcon,
   MegaphoneIcon,
   HandshakeIcon,
+  UploadIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -163,6 +164,11 @@ const data = {
           title: "Data Issues",
           url: "/locations?tab=data-issues",
           icon: <AlertTriangleIcon />,
+        },
+        {
+          title: "Add Businesses",
+          url: "/add-businesses?tab=groups",
+          icon: <UploadIcon />,
         },
       ],
     },
