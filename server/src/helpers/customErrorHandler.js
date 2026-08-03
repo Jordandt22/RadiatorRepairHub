@@ -1,3 +1,5 @@
+import { logger } from "../lib/logger.js";
+
 export const errorCodes = {
   // Server & Validation
   SERVER_ERROR: "server-error",
@@ -16,14 +18,19 @@ export const errorCodes = {
 };
 
 export const customErrorHandler = (code, message, error) => {
-  console.error(`${code}: ${message}`);
-  if (error) {
-    console.error(
-      error.message ?? error,
-      error.code ? `(code: ${error.code})` : "",
-      error.details ? `details: ${error.details}` : "",
-    );
-  }
+  logger.error(
+    {
+      code,
+      err: error
+        ? {
+            message: error.message ?? String(error),
+            code: error.code,
+            details: error.details,
+          }
+        : undefined,
+    },
+    message
+  );
 
   return {
     data: null,
@@ -35,7 +42,7 @@ export const customErrorHandler = (code, message, error) => {
 };
 
 export const claimUnavailableHandler = (message, business = null) => {
-  console.error(`claim-unavailable: ${message}`);
+  logger.error({ code: errorCodes.CLAIM_UNAVAILABLE }, message);
   return {
     data: business?.slug ? { slug: business.slug } : null,
     error: {

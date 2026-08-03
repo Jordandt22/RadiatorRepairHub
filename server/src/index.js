@@ -2,8 +2,9 @@ import "dotenv/config";
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
-import morgan from "morgan";
+import pinoHttp from "pino-http";
 import http from "http";
+import { logger } from "./lib/logger.js";
 import { arcjetMiddleware } from "./middleware/arcjet.mw.js";
 
 // Routes
@@ -31,9 +32,28 @@ app.use(
 );
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-if (notProduction) {
-  app.use(morgan("dev"));
-} else {
+app.use(
+  pinoHttp({
+    logger,
+    autoLogging: {
+      ignore: (req) => req.url === "/" || req.url === "/health",
+    },
+    serializers: {
+      req(req) {
+        return {
+          method: req.method,
+          url: req.url,
+        };
+      },
+      res(res) {
+        return {
+          statusCode: res.statusCode,
+        };
+      },
+    },
+  })
+);
+if (!notProduction) {
   app.enable("trust proxy");
   app.set("trust proxy", 1);
 }
@@ -41,6 +61,10 @@ if (notProduction) {
 // Landing Page Route
 app.get("/", (req, res) => {
   res.send("RadiatorRepairHub API Server is Up and Running !");
+});
+
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 // Arcjet Middleware
@@ -75,7 +99,7 @@ app.use(`/v${API_VERSION}/api/auth`, authRouter);
 // PORT and Sever
 const server = http.createServer(app);
 server.listen(PORT || 8000, () => {
-  console.log(`CORS Enabled Server, Listening to port: ${PORT || 8000}...`);
+  logger.info(`CORS Enabled Server, Listening to port: ${PORT || 8000}...`);
 });
 
 export default server;
