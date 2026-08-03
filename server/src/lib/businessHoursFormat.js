@@ -94,15 +94,6 @@ export function daysEqual(a = [], b = []) {
   });
 }
 
-export function buildOpeningHoursConfirmation(date = new Date()) {
-  const formatted = date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-  return `Last updated ${formatted}`;
-}
-
 export function buildTimeOptions() {
   const options = [];
   for (let minutes = 0; minutes < 24 * 60; minutes += 15) {

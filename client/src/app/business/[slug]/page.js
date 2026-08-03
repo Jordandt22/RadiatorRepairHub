@@ -65,10 +65,9 @@ export async function generateMetadata({ params }) {
       } in ${business.city.name}, ${business.state.name}. ${business.meta_description ||
       business.local_note ||
       "Professional radiator repair and cooling system services for your vehicle."
-      } ${business.cta_line ||
-      (business.phone
+      } ${business.phone
         ? `Call ${business.phone} for radiator repair today!`
-        : "Contact us for quality radiator repair.")
+        : "Contact us for quality radiator repair."
       }`;
     const displayImage = getBusinessDisplayImage(business);
 

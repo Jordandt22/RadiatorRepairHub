@@ -1607,25 +1607,6 @@ export const updateOwnedBusinessHours = async (
   return { data: updatedDays, error: null };
 };
 
-export const updateOwnedBusinessHoursConfirmation = async (
-  businessId,
-  confirmation,
-  accessToken
-) => {
-  const client = createUserSupabaseClient(accessToken);
-  const { data, error } = await client
-    .from("businesses")
-    .update({
-      opening_hours_confirmation: confirmation,
-      last_edited_at: new Date().toISOString(),
-    })
-    .eq("id", businessId)
-    .select("id, opening_hours_confirmation, last_edited_at")
-    .maybeSingle();
-
-  return { data, error };
-};
-
 export const getOwnedBusinessSecondaryCategoryIds = async (
   businessId,
   accessToken

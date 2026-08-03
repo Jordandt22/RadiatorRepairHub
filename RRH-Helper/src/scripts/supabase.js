@@ -13,11 +13,6 @@ const DAYS = [
   "Sunday",
 ];
 
-function normalizeReviewsDistribution(dist) {
-  if (!dist || dist === "") return {};
-  return dist;
-}
-
 // --- Bulk Insert Function ---
 export async function insertBusinesses(businessArray) {
   const businessInserts = businessArray.map((b) => ({
@@ -25,26 +20,18 @@ export async function insertBusinesses(businessArray) {
     slug: b.slug,
     title: b.title,
     address: b.address,
-    neighborhood: b.neighborhood,
-    street: b.street,
     city_id: b.city_id,
     postal_code_id: b.postal_code_id,
     state_id: b.state_id,
-    country_code: b.country_code,
     website: b.website,
     phone: b.phone,
     total_score: b.total_score,
     place_id: b.place_id,
     primary_category_id: b.primary_category_id,
-    fid: b.fid,
-    cid: b.cid,
     reviews_count: Number(b.reviews_count),
     scraped_at: b.scraped_at,
     url: b.url,
-    rank: Number(b.rank),
     image_url: b.image_url,
-    kgmid: b.kgmid,
-    reviews_distribution: normalizeReviewsDistribution(b.reviews_distribution),
     latitude: b.latitude,
     longitude: b.longitude,
     timezone: b.timezone,
@@ -54,9 +41,6 @@ export async function insertBusinesses(businessArray) {
     local_note: b.local_note,
     keywords: Array.isArray(b.keywords) ? b.keywords : [],
     highlights: Array.isArray(b.highlights) ? b.highlights : [],
-    booking_links: Array.isArray(b.booking_links) ? b.booking_links : [],
-    owner_updates: Array.isArray(b.owner_updates) ? b.owner_updates : [],
-    image_urls: Array.isArray(b.image_urls) ? b.image_urls : [],
   }));
 
   const { data: insertedBusinesses, error: businessError } = await supabase
