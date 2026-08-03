@@ -6,13 +6,13 @@ export const serverErrorCatcherWrapper = (controller) => {
     try {
       return await controller.call(this, req, res, next);
     } catch (e) {
-      console.log(e);
       return res
         .status(500)
         .json(
           customErrorHandler(
             SERVER_ERROR,
-            "Sorry, there was an error with the server."
+            "Sorry, there was an error with the server.",
+            e
           )
         );
     }

@@ -5,6 +5,7 @@ import { QUEUE_NAMES } from "./ingest/queues.js";
 import { processFilterJob } from "./ingest/handlers/filterJob.js";
 import { processEnrichJob } from "./ingest/handlers/enrichJob.js";
 import { processInsertJob } from "./ingest/handlers/insertJob.js";
+import { logger } from "./lib/logger.js";
 
 const connection = getBullmqConnectionOptions();
 
@@ -27,11 +28,12 @@ const insertWorker = new Worker(
 );
 
 function attachLogging(worker, label) {
+  const log = logger.child({ worker: label });
   worker.on("completed", (job, result) => {
-    console.log(`[${label}] completed ${job.id}`, result);
+    log.info({ jobId: job.id, result }, "job completed");
   });
   worker.on("failed", (job, err) => {
-    console.error(`[${label}] failed ${job?.id}:`, err?.message || err);
+    log.error({ jobId: job?.id, err: err?.message || err }, "job failed");
   });
 }
 
@@ -39,13 +41,13 @@ attachLogging(filterWorker, "ingest-filter");
 attachLogging(enrichWorker, "ingest-enrich");
 attachLogging(insertWorker, "ingest-insert");
 
-console.log(
-  "Ingest worker listening:",
-  Object.values(QUEUE_NAMES).join(", ")
+logger.info(
+  { queues: Object.values(QUEUE_NAMES) },
+  "Ingest worker listening"
 );
 
 async function shutdown() {
-  console.log("Shutting down ingest worker...");
+  logger.info("Shutting down ingest worker...");
   await Promise.all([
     filterWorker.close(),
     enrichWorker.close(),
