@@ -147,10 +147,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
-        <meta
-          name="impact-site-verification"
-          value="7fe93845-7fec-4461-a959-7fd30f73583f"
-        />
         {/* Organization Schema */}
         <script
           type="application/ld+json"

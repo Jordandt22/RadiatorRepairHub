@@ -8,18 +8,6 @@ function toBoolString(val) {
   return val ? "TRUE" : "FALSE";
 }
 
-function normalizeCid(cid) {
-  if (cid == null || cid === "") return cid;
-  const num = Number(cid);
-  return Number.isNaN(num) ? cid : num;
-}
-
-function normalizeReviewsDistribution(dist) {
-  if (dist == null || dist === "") return "";
-  if (typeof dist === "object" && Object.keys(dist).length === 0) return "";
-  return dist;
-}
-
 function normalizeKeywords(keywords) {
   if (Array.isArray(keywords)) {
     return keywords.map((k) => String(k).trim()).filter(Boolean);
@@ -109,9 +97,6 @@ export function formatBusiness(biz) {
     opening_hours_specification:
       bizData.localBusinessSchema?.openingHoursSpecification || null,
     keywords: normalizeKeywords(bizData.localBusinessSchema?.keywords),
-    booking_links: Array.isArray(biz.bookingLinks) ? biz.bookingLinks : [],
-    owner_updates: Array.isArray(biz.ownerUpdates) ? biz.ownerUpdates : [],
-    image_urls: Array.isArray(biz.imageUrls) ? biz.imageUrls : [],
   };
 
   // Format to Snake Case
@@ -131,6 +116,17 @@ export function formatBusiness(biz) {
   delete formattedBiz.gas_prices;
   delete formattedBiz.additional_opening_hours;
   delete formattedBiz.plus_code;
+  delete formattedBiz.neighborhood;
+  delete formattedBiz.street;
+  delete formattedBiz.country_code;
+  delete formattedBiz.fid;
+  delete formattedBiz.cid;
+  delete formattedBiz.rank;
+  delete formattedBiz.kgmid;
+  delete formattedBiz.reviews_distribution;
+  delete formattedBiz.booking_links;
+  delete formattedBiz.owner_updates;
+  delete formattedBiz.image_urls;
 
   // Update Additional Fields
   const info = formattedBiz.additional_info || {};
@@ -186,20 +182,6 @@ export function formatBusiness(biz) {
   );
   formattedBiz.language = formattedBiz.language || "en";
   formattedBiz.website = formattedBiz.website || "";
-  formattedBiz.cid = normalizeCid(formattedBiz.cid);
-  formattedBiz.reviews_distribution = normalizeReviewsDistribution(
-    formattedBiz.reviews_distribution
-  );
-
-  formattedBiz.booking_links = Array.isArray(formattedBiz.booking_links)
-    ? formattedBiz.booking_links
-    : [];
-  formattedBiz.owner_updates = Array.isArray(formattedBiz.owner_updates)
-    ? formattedBiz.owner_updates
-    : [];
-  formattedBiz.image_urls = Array.isArray(formattedBiz.image_urls)
-    ? formattedBiz.image_urls
-    : [];
 
   formattedBiz.highlights = Array.isArray(bizData.highlights)
     ? bizData.highlights

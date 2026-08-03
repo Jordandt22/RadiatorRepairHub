@@ -43,7 +43,6 @@ import {
   updateOwnedBusinessAmenities,
   updateOwnedBusinessAbout,
   updateOwnedBusinessHours,
-  updateOwnedBusinessHoursConfirmation,
   getOwnedBusinessSecondaryCategoryIds,
   syncOwnedBusinessSecondaryCategories,
   touchOwnedBusinessEditedAt,
@@ -51,7 +50,6 @@ import {
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
 import {
-  buildOpeningHoursConfirmation,
   daysEqual,
   normalizeDayHours,
   normalizeIncomingHours,
@@ -1525,7 +1523,6 @@ export const updateBusinessHours = async (req, res) => {
     return res.status(200).json(
       successHandler({
         days: currentDays,
-        opening_hours_confirmation: business.opening_hours_confirmation,
       })
     );
   }
@@ -1545,26 +1542,6 @@ export const updateBusinessHours = async (req, res) => {
       );
   }
 
-  const confirmation = buildOpeningHoursConfirmation();
-  const { data: confirmationRow, error: confirmationError } =
-    await updateOwnedBusinessHoursConfirmation(
-      businessId,
-      confirmation,
-      accessToken
-    );
-
-  if (confirmationError || !confirmationRow) {
-    return res
-      .status(500)
-      .json(
-        customErrorHandler(
-          SUPABASE_ERROR,
-          "There was an error updating hours confirmation.",
-          confirmationError
-        )
-      );
-  }
-
   await touchOwnedBusinessEditedAt(businessId, ownerUid, accessToken);
   await invalidateBusinessCache(business);
 
@@ -1576,7 +1553,6 @@ export const updateBusinessHours = async (req, res) => {
         hours: day.hours,
         hours_text: day.hours_text,
       })),
-      opening_hours_confirmation: confirmationRow.opening_hours_confirmation,
     })
   );
 };
