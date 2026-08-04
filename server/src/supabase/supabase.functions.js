@@ -72,22 +72,62 @@ const formatFullBusiness = (business) => {
 // ---- Database ----
 
 // Businesses
-export const getTopRatedBusinesses = async () => {
-  const { data, error } = await supabase
-    .from("businesses")
-    .select(
-      listingBusinessSelect +
-        ", secondary_categories:business_secondary_categories!inner(secondary_categories(*)) , hours:business_hours!inner(*)"
-    )
-    .gte("reviews_count", 400)
-    .order("total_score", { ascending: false })
-    .limit(12);
+const FEATURED_LIMIT = 12;
+const FEATURED_CLAIMED_MIN_REVIEWS = 25;
+const FEATURED_FILL_MIN_REVIEWS = 400;
 
-  if (data) {
-    return { data: formatBusinessListings(data), error };
+const featuredListingSelect =
+  listingBusinessSelect +
+  ", secondary_categories:business_secondary_categories!inner(secondary_categories(*)), hours:business_hours!inner(*)";
+
+const sortFeaturedBusinesses = (a, b) => {
+  const claimedDiff =
+    Number(Boolean(b.is_claimed)) - Number(Boolean(a.is_claimed));
+  if (claimedDiff !== 0) return claimedDiff;
+
+  const scoreDiff = (Number(b.total_score) || 0) - (Number(a.total_score) || 0);
+  if (scoreDiff !== 0) return scoreDiff;
+
+  return (Number(b.reviews_count) || 0) - (Number(a.reviews_count) || 0);
+};
+
+/** Claimed-first fill, then top-rated (high review count) to reach FEATURED_LIMIT. */
+export const getTopRatedBusinesses = async () => {
+  const {
+    data: claimedData,
+    error: claimedError,
+  } = await supabase
+    .from("businesses")
+    .select(featuredListingSelect)
+    .eq("is_claimed", true)
+    .gte("reviews_count", FEATURED_CLAIMED_MIN_REVIEWS)
+    .order("total_score", { ascending: false })
+    .limit(FEATURED_LIMIT);
+
+  if (claimedError) {
+    return { data: null, error: claimedError };
   }
 
-  return { data: null, error };
+  const claimed = claimedData || [];
+  const remaining = FEATURED_LIMIT - claimed.length;
+
+  let fill = [];
+  if (remaining > 0) {
+    const { data: fillData, error: fillError } = await supabase
+      .from("businesses")
+      .select(featuredListingSelect)
+      .eq("is_claimed", false)
+      .gte("reviews_count", FEATURED_FILL_MIN_REVIEWS)
+      .order("total_score", { ascending: false })
+      .limit(remaining);
+    if (fillError) {
+      return { data: null, error: fillError };
+    }
+    fill = fillData || [];
+  }
+
+  const merged = [...claimed, ...fill].sort(sortFeaturedBusinesses);
+  return { data: formatBusinessListings(merged), error: null };
 };
 
 export const getBusinessById = async (business_id) => {
@@ -162,6 +202,7 @@ export const getBusinessesByState = async (state_id, page, limit) => {
     .select(listingBusinessSelect)
     .eq("state_id", state_id)
     .order("reviews_count", { ascending: false })
+    .order("is_claimed", { ascending: false })
     .order("total_score", { ascending: false })
     .range((page - 1) * limit, page * limit - 1);
 
@@ -200,6 +241,7 @@ export const getBusinessesByCity = async (city_id, state_id, page, limit) => {
     .eq("city_id", city_id)
     .eq("state_id", state_id)
     .order("reviews_count", { ascending: false })
+    .order("is_claimed", { ascending: false })
     .order("total_score", { ascending: false })
     .range((page - 1) * limit, page * limit - 1);
 
@@ -234,10 +276,14 @@ export const searchBusinesses = async (
   });
 
   // Sorting by Total Score and Reviews Count
+  // Soft boost: on default-quality sorts, claimed/verified wins ties (not cases 2/4).
   switch (sort_option) {
     // Most Reviews
     case 1:
       businessesQuery = businessesQuery.order("reviews_count", {
+        ascending: false,
+      });
+      businessesQuery = businessesQuery.order("is_claimed", {
         ascending: false,
       });
       businessesQuery = businessesQuery.order("total_score", {
@@ -260,6 +306,9 @@ export const searchBusinesses = async (
       businessesQuery = businessesQuery.order("total_score", {
         ascending: false,
       });
+      businessesQuery = businessesQuery.order("is_claimed", {
+        ascending: false,
+      });
       businessesQuery = businessesQuery.order("reviews_count", {
         ascending: false,
       });
@@ -275,9 +324,12 @@ export const searchBusinesses = async (
       });
       break;
 
-    // Default
+    // Default (Most Reviews + soft claimed boost)
     default:
       businessesQuery = businessesQuery.order("reviews_count", {
+        ascending: false,
+      });
+      businessesQuery = businessesQuery.order("is_claimed", {
         ascending: false,
       });
       businessesQuery = businessesQuery.order("total_score", {

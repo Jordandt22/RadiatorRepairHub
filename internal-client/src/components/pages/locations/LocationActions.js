@@ -70,7 +70,7 @@ export default function LocationActions({
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
         {showStateFilter ? (
-          <div className="min-w-0 w-full sm:w-auto sm:min-w-[12rem] md:max-w-xs">
+          <div className="min-w-0 w-full sm:w-auto sm:min-w-48 md:max-w-xs">
             <LocationStateCombobox
               states={states}
               value={selectedState}
@@ -80,7 +80,7 @@ export default function LocationActions({
           </div>
         ) : null}
         {showCityFilter ? (
-          <div className="min-w-0 w-full sm:w-auto sm:min-w-[14rem] md:max-w-sm">
+          <div className="min-w-0 w-full sm:w-auto sm:min-w-56 md:max-w-sm">
             <LocationCityCombobox
               cities={cities}
               value={selectedCity}
@@ -101,7 +101,7 @@ export default function LocationActions({
           />
         </div>
         {showSort ? (
-          <div className="min-w-0 w-full sm:w-auto sm:min-w-[14rem]">
+          <div className="min-w-0 w-full sm:w-auto sm:min-w-56">
             <Select
               value={sortValue}
               onValueChange={(value) => onSortChange?.(value)}
@@ -146,7 +146,7 @@ export default function LocationActions({
                   : "Preview state stats export"
             }
             className={cn(
-              "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:translate-y-[-2px] hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:ml-auto md:px-6",
+              "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:ml-auto md:px-6",
             )}
           >
             <ClipboardListIcon />
@@ -160,7 +160,7 @@ export default function LocationActions({
           onClick={onRefresh}
           aria-label="Refresh"
           className={cn(
-            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:translate-y-[-2px] hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
             !showExport && "md:ml-auto",
           )}
         >
