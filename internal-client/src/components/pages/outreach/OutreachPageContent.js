@@ -64,6 +64,7 @@ export default function OutreachPageContent() {
   const [claimEligibility, setClaimEligibility] = useState(null);
   const [websiteFilter, setWebsiteFilter] = useState(null);
   const [claimInviteSent, setClaimInviteSent] = useState(null);
+  const [claimFollowupSent, setClaimFollowupSent] = useState(null);
   const [websiteOfferSent, setWebsiteOfferSent] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
 
@@ -94,6 +95,7 @@ export default function OutreachPageContent() {
   const claimEligibilityId = claimEligibility?.id ?? null;
   const websiteFilterId = websiteFilter?.id ?? null;
   const claimInviteSentValue = parseSentFilter(claimInviteSent);
+  const claimFollowupSentValue = parseSentFilter(claimFollowupSent);
   const websiteOfferSentValue = parseSentFilter(websiteOfferSent);
   const outreachTypeId = outreachType?.id ?? null;
   const matchLimitValue = matchLimit?.value ?? 25;
@@ -153,6 +155,7 @@ export default function OutreachPageContent() {
     claimEligibilityId,
     websiteFilterId,
     claimInviteSentValue,
+    claimFollowupSentValue,
     websiteOfferSentValue,
   ];
 
@@ -170,6 +173,9 @@ export default function OutreachPageContent() {
       if (websiteFilterId) params.set("website_filter", websiteFilterId);
       if (claimInviteSentValue !== null) {
         params.set("claim_invite_sent", String(claimInviteSentValue));
+      }
+      if (claimFollowupSentValue !== null) {
+        params.set("claim_followup_sent", String(claimFollowupSentValue));
       }
       if (websiteOfferSentValue !== null) {
         params.set("website_offer_sent", String(websiteOfferSentValue));
@@ -483,6 +489,7 @@ export default function OutreachPageContent() {
       claimEligibilityId ||
       websiteFilterId ||
       claimInviteSentValue !== null ||
+      claimFollowupSentValue !== null ||
       websiteOfferSentValue !== null,
   );
 
@@ -529,6 +536,11 @@ export default function OutreachPageContent() {
             claimInviteSent={claimInviteSent}
             onClaimInviteSentChange={(value) => {
               setClaimInviteSent(value);
+              resetBrowsePage();
+            }}
+            claimFollowupSent={claimFollowupSent}
+            onClaimFollowupSentChange={(value) => {
+              setClaimFollowupSent(value);
               resetBrowsePage();
             }}
             websiteOfferSent={websiteOfferSent}

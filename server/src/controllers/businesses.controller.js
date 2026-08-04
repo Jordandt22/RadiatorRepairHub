@@ -58,10 +58,12 @@ import {
 import { resendClient } from "../resend/resend.js";
 import {
   ADMIN_BUSINESS_CLAIMED_MESSAGE,
+  OWNER_CLAIM_THANK_YOU_MESSAGE,
   CLAIM_VERIFICATION_MESSAGE,
   SENDER_NAME,
   buildClaimVerifyLink,
   buildBusinessClaimLink,
+  getWebBaseUrl,
   maskEmail,
 } from "../lib/constants/messages.js";
 import {
@@ -663,9 +665,12 @@ export const completeClaim = async (req, res) => {
 
   await invalidateBusinessCache(business);
 
-  const { SENDER_EMAIL, RESEND_API_KEY, ADMIN_EMAIL } = process.env;
+  const { SENDER_EMAIL, RESEND_API_KEY, ADMIN_EMAIL, TEST_RECIPIENT_EMAIL } =
+    process.env;
+  const isDev = process.env.NODE_ENV === "development";
+  const businessPageUrl = buildBusinessClaimLink(business.slug);
+
   if (RESEND_API_KEY && SENDER_EMAIL && ADMIN_EMAIL) {
-    const businessPageUrl = buildBusinessClaimLink(business.slug);
     const { error: adminSendError } = await resendClient().emails.send({
       from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
       to: [ADMIN_EMAIL],
@@ -676,10 +681,31 @@ export const completeClaim = async (req, res) => {
       }),
     });
 
-    if (adminSendError && process.env.NODE_ENV === "development") {
+    if (adminSendError && isDev) {
       console.error(
         "Failed to send admin business-claimed email:",
         adminSendError
+      );
+    }
+  }
+
+  if (RESEND_API_KEY && SENDER_EMAIL && (!isDev || TEST_RECIPIENT_EMAIL)) {
+    const ownerRecipient = isDev ? TEST_RECIPIENT_EMAIL : email;
+    const dashboardUrl = `${getWebBaseUrl()}/dashboard`;
+    const { error: thankYouSendError } = await resendClient().emails.send({
+      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+      to: [ownerRecipient],
+      subject: OWNER_CLAIM_THANK_YOU_MESSAGE.subject(business.title),
+      html: OWNER_CLAIM_THANK_YOU_MESSAGE.html(business.title, {
+        businessPageUrl,
+        dashboardUrl,
+      }),
+    });
+
+    if (thankYouSendError && isDev) {
+      console.error(
+        "Failed to send owner claim thank-you email:",
+        thankYouSendError
       );
     }
   }

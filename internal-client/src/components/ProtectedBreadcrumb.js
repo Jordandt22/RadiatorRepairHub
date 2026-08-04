@@ -22,10 +22,19 @@ const SEGMENT_LABELS = {
   states: "States",
   cities: "Cities",
   outreach: "Outreach",
+  "email-cleaner": "Email Cleaner",
+  users: "Users",
   "affiliate-programs": "Affiliate Programs",
   "add-businesses": "Add Businesses",
   group: "Groups",
   batch: "Batch",
+  systems: "Systems",
+  cache: "Cache",
+  redis: "Redis",
+  database: "Database",
+  supabase: "Supabase",
+  clients: "Clients",
+  radiatorrepairhub: "RadiatorRepairHub",
 };
 
 const LOCATION_PARENT_HREF = {
@@ -37,6 +46,10 @@ const LOCATION_PARENT_HREF = {
 const SEGMENT_HREF = {
   group: "/add-businesses?tab=groups",
   batch: "/add-businesses?tab=groups",
+  users: "/users",
+  businesses: "/businesses?tab=all",
+  systems: "/systems/cache/redis",
+  cache: "/systems/cache/redis",
 };
 
 function formatSegment(segment, index, segments) {
@@ -61,6 +74,12 @@ function formatSegment(segment, index, segments) {
   if (index === 1 && parent === "batch") {
     return "Details";
   }
+  if (index === 1 && parent === "users") {
+    return "Details";
+  }
+  if (index === 1 && parent === "businesses") {
+    return "Details";
+  }
 
   return segment
     .split("-")
@@ -75,6 +94,15 @@ function hrefForSegment(segments, index) {
   }
   if (index === 0 && SEGMENT_HREF[segment]) {
     return SEGMENT_HREF[segment];
+  }
+  if (segment === "cache" && segments[0] === "systems") {
+    return "/systems/cache/redis";
+  }
+  if (segment === "database" && segments[0] === "systems") {
+    return "/systems/database/supabase";
+  }
+  if (segment === "clients" && segments[0] === "systems") {
+    return "/systems/clients/radiatorrepairhub";
   }
   return `/${segments.slice(0, index + 1).join("/")}`;
 }
@@ -96,7 +124,9 @@ export default function ProtectedBreadcrumb() {
           const isLast = index === segments.length - 1;
           const keepVisibleOnMobile =
             (!isLast && segments[0] === "group" && index === 0) ||
-            (!isLast && segments[0] === "batch" && index === 0);
+            (!isLast && segments[0] === "batch" && index === 0) ||
+            (!isLast && segments[0] === "users" && index === 0) ||
+            (!isLast && segments[0] === "businesses" && index === 0);
 
           return (
             <Fragment key={`${href}-${index}`}>

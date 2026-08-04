@@ -9,6 +9,7 @@ import {
   keepPreviousData,
 } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/Auth.context";
+import { useLoading } from "@/contexts/Loading.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { debounce } from "@/lib/debounce";
 import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
@@ -19,7 +20,7 @@ import BusinessFilterTabs, {
 import BusinessActions from "@/components/pages/businesses/BusinessActions";
 import BusinessesTable from "@/components/pages/businesses/BusinessesTable";
 import BusinessesTableSkeleton from "@/components/pages/businesses/BusinessesTableSkeleton";
-import BusinessDrawer from "@/components/pages/businesses/BusinessDrawer";
+import ReverseClaimConfirmDialog from "@/components/pages/businesses/ReverseClaimConfirmDialog";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
 const PAGE_LIMIT = 20;
@@ -34,6 +35,7 @@ export default function BusinessesPageContent() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
+  const { setLoading } = useLoading();
   const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState(() =>
     resolveTab(searchParams.get("tab")),
@@ -43,9 +45,10 @@ export default function BusinessesPageContent() {
   const [scoreTier, setScoreTier] = useState(null);
   const [reviewsTier, setReviewsTier] = useState(null);
   const [emailFilter, setEmailFilter] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [actionError, setActionError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedBusiness, setSelectedBusiness] = useState(null);
 
   const claimedFilter = TAB_CLAIMED[activeTab] ?? null;
   const searchQuery = debouncedSearch.trim();
@@ -53,6 +56,7 @@ export default function BusinessesPageContent() {
   const reviewsTierId = reviewsTier?.id ?? null;
   const emailFilterId = emailFilter?.id ?? null;
   const showTierFilters = activeTab === "all";
+  const showReverseClaim = activeTab === "claimed";
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -77,6 +81,8 @@ export default function BusinessesPageContent() {
       setScoreTier(null);
       setReviewsTier(null);
       setEmailFilter(null);
+      setSelectedIds(new Set());
+      setActionError(null);
     });
   }, []);
 
@@ -85,6 +91,7 @@ export default function BusinessesPageContent() {
       debounce((value) => {
         setDebouncedSearch(value);
         setPage(1);
+        setSelectedIds(new Set());
       }, SEARCH_DEBOUNCE_MS),
     [],
   );
@@ -104,6 +111,8 @@ export default function BusinessesPageContent() {
     setScoreTier(null);
     setReviewsTier(null);
     setEmailFilter(null);
+    setSelectedIds(new Set());
+    setActionError(null);
     replaceTab(nextTab, "/businesses");
   };
 
@@ -124,10 +133,12 @@ export default function BusinessesPageContent() {
 
   const handlePreviousPage = () => {
     setPage((prev) => Math.max(1, prev - 1));
+    setSelectedIds(new Set());
   };
 
   const handleNextPage = () => {
     setPage((prev) => prev + 1);
+    setSelectedIds(new Set());
   };
 
   const { data, error, isLoading, isFetching, isPlaceholderData } = useQuery({
@@ -181,6 +192,41 @@ export default function BusinessesPageContent() {
     staleTime: 30_000,
   });
 
+  const unclaimMutation = useMutation({
+    mutationFn: async (business_ids) => {
+      const result = await fetchApi("/admin/businesses/unclaim", {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify({ business_ids }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to reverse claims";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      setActionError(null);
+      setConfirmOpen(false);
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["admin-businesses"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to reverse claims");
+      setConfirmOpen(false);
+    },
+  });
+
   const refreshMutation = useMutation({
     mutationFn: async () => {
       const result = await fetchApi("/admin/cache/invalidate", {
@@ -215,6 +261,10 @@ export default function BusinessesPageContent() {
     },
   });
 
+  useEffect(() => {
+    setLoading(unclaimMutation.isPending);
+  }, [unclaimMutation.isPending, setLoading]);
+
   const businesses = useMemo(
     () => data?.businesses ?? [],
     [data?.businesses],
@@ -225,6 +275,8 @@ export default function BusinessesPageContent() {
   }
 
   const totalPages = data?.totalPages ?? 0;
+  const hasSelection = selectedIds.size > 0;
+  const reverseClaimDisabled = !hasSelection || unclaimMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
   const hasSearch = Boolean(
     searchQuery ||
@@ -232,9 +284,37 @@ export default function BusinessesPageContent() {
         (scoreTierId || reviewsTierId || emailFilterId)),
   );
 
-  const handleViewClick = (business) => {
-    setSelectedBusiness(business);
-    setDrawerOpen(true);
+  const handleToggleId = (id, checked) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const handleToggleAll = (checked) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      for (const row of businesses) {
+        if (checked) next.add(row.id);
+        else next.delete(row.id);
+      }
+      return next;
+    });
+  };
+
+  const handleReverseClaimClick = () => {
+    if (selectedIds.size === 0 || unclaimMutation.isPending) return;
+    setActionError(null);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmReverseClaim = () => {
+    const business_ids = Array.from(selectedIds);
+    if (business_ids.length === 0 || unclaimMutation.isPending) return;
+    setActionError(null);
+    unclaimMutation.mutate(business_ids);
   };
 
   return (
@@ -252,6 +332,12 @@ export default function BusinessesPageContent() {
           onReviewsTierChange={handleReviewsTierChange}
           emailFilter={emailFilter}
           onEmailFilterChange={handleEmailFilterChange}
+          showReverseClaim={showReverseClaim}
+          selectedCount={selectedIds.size}
+          reverseClaimDisabled={reverseClaimDisabled}
+          onReverseClaim={handleReverseClaimClick}
+          reverseClaimPending={unclaimMutation.isPending}
+          actionError={actionError}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
           refreshError={refreshError}
@@ -266,9 +352,11 @@ export default function BusinessesPageContent() {
         ) : !error || isPlaceholderData ? (
           <BusinessesTable
             businesses={businesses}
-            onViewClick={handleViewClick}
             activeTab={activeTab}
             hasSearch={hasSearch}
+            selectedIds={showReverseClaim ? selectedIds : undefined}
+            onToggleId={showReverseClaim ? handleToggleId : undefined}
+            onToggleAll={showReverseClaim ? handleToggleAll : undefined}
           />
         ) : null}
 
@@ -283,10 +371,12 @@ export default function BusinessesPageContent() {
         />
       </div>
 
-      <BusinessDrawer
-        business={selectedBusiness}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
+      <ReverseClaimConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        selectedCount={selectedIds.size}
+        onConfirm={handleConfirmReverseClaim}
+        confirmPending={unclaimMutation.isPending}
       />
     </div>
   );

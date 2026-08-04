@@ -10,6 +10,7 @@ export const OUTREACH_SKIP_REASON_LABELS = {
   missing_recipient: "Missing recipient",
   invalid_outreach_type: "Invalid type",
   already_added: "Already added",
+  claim_invite_not_sent: "No claim invite sent",
   eligibility_able: "Eligibility: Able",
   eligibility_no_email: "No email",
   eligibility_duplicate_email: "Duplicate email",
@@ -59,6 +60,22 @@ export function evaluateOutreachEligibilityClient(business, outreachType) {
       return { ok: false, reason: `eligibility_${eligibility || "unknown"}` };
     }
     if (business?.claim_invite_sent_at) {
+      return { ok: false, reason: "already_sent" };
+    }
+    if (!resolveRecipient(business)) {
+      return { ok: false, reason: "missing_recipient" };
+    }
+    return { ok: true, reason: null };
+  }
+
+  if (outreachType === "claim_followup") {
+    if (eligibility !== "able") {
+      return { ok: false, reason: `eligibility_${eligibility || "unknown"}` };
+    }
+    if (!business?.claim_invite_sent_at) {
+      return { ok: false, reason: "claim_invite_not_sent" };
+    }
+    if (business?.claim_followup_sent_at) {
       return { ok: false, reason: "already_sent" };
     }
     if (!resolveRecipient(business)) {

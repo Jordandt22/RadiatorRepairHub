@@ -42,6 +42,7 @@ export default function OutreachTableSkeleton({ rows = 8 }) {
               <TableHead>Eligibility</TableHead>
               <TableHead>Website</TableHead>
               <TableHead>Claim invite</TableHead>
+              <TableHead>Follow-up</TableHead>
               <TableHead>Website offer</TableHead>
             </TableRow>
           </TableHeader>
@@ -65,6 +66,9 @@ export default function OutreachTableSkeleton({ rows = 8 }) {
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-12" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-20" />

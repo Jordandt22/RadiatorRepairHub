@@ -20,7 +20,7 @@ export default function ProtectedLayout({ children }) {
             <ProtectedBreadcrumb />
           </div>
         </header>
-        <PageFadeIn className="flex flex-1 flex-col">{children}</PageFadeIn>
+        <PageFadeIn className="flex flex-1 flex-col pb-14 md:pb-16">{children}</PageFadeIn>
       </SidebarInset>
     </SidebarProvider>
   );

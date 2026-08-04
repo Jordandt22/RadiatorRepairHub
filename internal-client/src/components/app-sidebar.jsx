@@ -21,6 +21,12 @@ import {
   MegaphoneIcon,
   HandshakeIcon,
   UploadIcon,
+  MailXIcon,
+  UsersIcon,
+  DatabaseIcon,
+  HardDriveIcon,
+  Table2Icon,
+  GlobeIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -49,6 +55,62 @@ const data = {
       isActive: true,
       items: [],
     },
+    {
+      title: "Businesses",
+      url: "/businesses?tab=all",
+      icon: <Building2Icon />,
+      items: [
+        {
+          title: "All",
+          url: "/businesses?tab=all",
+          icon: <Building2Icon />,
+        },
+        {
+          title: "Claimed",
+          url: "/businesses?tab=claimed",
+          icon: <BadgeCheckIcon />,
+        },
+        {
+          title: "Outreach",
+          url: "/outreach?tab=all",
+          icon: <MegaphoneIcon />,
+        },
+        {
+          title: "Email Cleaner",
+          url: "/email-cleaner",
+          icon: <MailXIcon />,
+        },
+        {
+          title: "Locations",
+          url: "/locations?tab=states",
+          icon: <MapPinIcon />,
+        },
+        {
+          title: "Data Issues",
+          url: "/locations?tab=data-issues",
+          icon: <AlertTriangleIcon />,
+        },
+        {
+          title: "Add Businesses",
+          url: "/add-businesses?tab=groups",
+          icon: <UploadIcon />,
+        },
+      ],
+    },
+    {
+      title: "Users",
+      url: "/users",
+      icon: <UsersIcon />,
+      items: [
+        {
+          title: "All",
+          url: "/users",
+          icon: <UsersIcon />,
+        },
+      ],
+    },
+  ],
+  navInbox: [
     {
       title: "Contact Form",
       url: "/contact-form?tab=pending",
@@ -135,43 +197,8 @@ const data = {
         },
       ],
     },
-    {
-      title: "Businesses",
-      url: "/businesses?tab=all",
-      icon: <Building2Icon />,
-      items: [
-        {
-          title: "All",
-          url: "/businesses?tab=all",
-          icon: <Building2Icon />,
-        },
-        {
-          title: "Claimed",
-          url: "/businesses?tab=claimed",
-          icon: <BadgeCheckIcon />,
-        },
-        {
-          title: "Outreach",
-          url: "/outreach?tab=all",
-          icon: <MegaphoneIcon />,
-        },
-        {
-          title: "Locations",
-          url: "/locations?tab=states",
-          icon: <MapPinIcon />,
-        },
-        {
-          title: "Data Issues",
-          url: "/locations?tab=data-issues",
-          icon: <AlertTriangleIcon />,
-        },
-        {
-          title: "Add Businesses",
-          url: "/add-businesses?tab=groups",
-          icon: <UploadIcon />,
-        },
-      ],
-    },
+  ],
+  navExternal: [
     {
       title: "Affiliate Programs",
       url: "/affiliate-programs?tab=products",
@@ -181,6 +208,44 @@ const data = {
           title: "Products",
           url: "/affiliate-programs?tab=products",
           icon: <HandshakeIcon />,
+        },
+      ],
+    },
+  ],
+  navSystems: [
+    {
+      title: "Cache",
+      url: "/systems/cache/redis",
+      icon: <DatabaseIcon />,
+      items: [
+        {
+          title: "Redis",
+          url: "/systems/cache/redis",
+          icon: <HardDriveIcon />,
+        },
+      ],
+    },
+    {
+      title: "Database",
+      url: "/systems/database/supabase",
+      icon: <Table2Icon />,
+      items: [
+        {
+          title: "Supabase",
+          url: "/systems/database/supabase",
+          icon: <Table2Icon />,
+        },
+      ],
+    },
+    {
+      title: "Clients",
+      url: "/systems/clients/radiatorrepairhub",
+      icon: <GlobeIcon />,
+      items: [
+        {
+          title: "RadiatorRepairHub",
+          url: "/systems/clients/radiatorrepairhub",
+          icon: <Wrench />,
         },
       ],
     },
@@ -196,6 +261,9 @@ export function AppSidebar({ ...props }) {
       <SidebarContent>
         <Suspense fallback={null}>
           <NavMain items={data.navMain} label="Platform" />
+          <NavMain items={data.navInbox} label="Inbox" />
+          <NavMain items={data.navExternal} label="External" />
+          <NavMain items={data.navSystems} label="Systems" />
         </Suspense>
       </SidebarContent>
       <NavLogout />

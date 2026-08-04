@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -68,19 +69,15 @@ export default function ContactMessageDrawer({ message, open, onOpenChange }) {
               <DetailRow label="Phone">{message.phone || "—"}</DetailRow>
               <DetailRow label="Vehicle">{message.vehicle || "—"}</DetailRow>
               <DetailRow label="Business">
-                {message.business?.title ? (
-                  message.business.slug ? (
-                    <a
-                      href={`${process.env.NEXT_PUBLIC_WEB_URL}/business/${message.business.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline underline-offset-2"
-                    >
-                      {message.business.title}
-                    </a>
-                  ) : (
-                    message.business.title
-                  )
+                {message.business?.id ? (
+                  <Link
+                    href={`/businesses/${message.business.id}`}
+                    className="underline underline-offset-2"
+                  >
+                    {message.business.title || "View business"}
+                  </Link>
+                ) : message.business?.title ? (
+                  message.business.title
                 ) : (
                   "—"
                 )}

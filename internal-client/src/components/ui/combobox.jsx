@@ -59,6 +59,7 @@ function ComboboxInput({
   showTrigger = true,
   showClear = false,
   autoComplete = "off",
+  name = "rrh-combobox",
   ...props
 }) {
   return (
@@ -68,6 +69,7 @@ function ComboboxInput({
           <InputGroupInput
             disabled={disabled}
             autoComplete={autoComplete}
+            name={name}
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}

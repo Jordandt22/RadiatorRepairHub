@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import {
   Combobox,
   ComboboxContent,
@@ -15,6 +16,8 @@ export default function LocationCityCombobox({
   onValueChange,
   disabled = false,
 }) {
+  const inputId = useId();
+
   return (
     <Combobox
       items={cities}
@@ -34,6 +37,9 @@ export default function LocationCityCombobox({
         aria-label="Filter by city"
         showClear={Boolean(value)}
         disabled={disabled}
+        autoComplete="off"
+        name={`rrh-city-filter-${inputId}`}
+        id={`rrh-city-filter-${inputId}`}
         className="w-full min-w-0 md:min-w-[14rem]"
       />
       <ComboboxContent className="rounded-lg">

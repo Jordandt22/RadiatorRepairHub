@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import {
   Combobox,
   ComboboxContent,
@@ -15,6 +16,8 @@ export default function LocationStateCombobox({
   onValueChange,
   disabled = false,
 }) {
+  const inputId = useId();
+
   return (
     <Combobox
       items={states}
@@ -32,6 +35,9 @@ export default function LocationStateCombobox({
         aria-label="Filter by state"
         showClear={Boolean(value)}
         disabled={disabled}
+        autoComplete="off"
+        name={`rrh-state-filter-${inputId}`}
+        id={`rrh-state-filter-${inputId}`}
         className="w-full min-w-0 md:min-w-[12rem]"
       />
       <ComboboxContent className="rounded-lg">

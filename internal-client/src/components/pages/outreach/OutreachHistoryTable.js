@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import OutreachEmptyState from "@/components/pages/outreach/OutreachEmptyState";
 import { OUTREACH_TYPE_LABELS } from "@/components/pages/outreach/outreachConstants";
@@ -37,16 +38,11 @@ function HistoryTableView({ rows }) {
           {rows.map((row) => (
             <TableRow key={row.outreach_history_id}>
               <TableCell className="max-w-0 font-medium">
-                <div className="min-w-0">
-                  <span className="block truncate">
-                    {row.business?.title ?? "—"}
-                  </span>
-                  {row.business?.slug ? (
-                    <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
-                      /business/{row.business.slug}
-                    </span>
-                  ) : null}
-                </div>
+                <BusinessTitleLink
+                  id={row.business?.id ?? row.business_id}
+                  title={row.business?.title}
+                  slug={row.business?.slug}
+                />
               </TableCell>
               <TableCell className="whitespace-nowrap">
                 <TypeBadge type={row.outreach_type} />
@@ -87,16 +83,11 @@ function HistoryCardList({ rows }) {
           className="rounded-lg border border-border bg-card p-4"
         >
           <div className="space-y-2">
-            <div>
-              <p className="text-sm font-medium">
-                {row.business?.title ?? "—"}
-              </p>
-              {row.business?.slug ? (
-                <p className="text-xs text-muted-foreground">
-                  /business/{row.business.slug}
-                </p>
-              ) : null}
-            </div>
+            <BusinessTitleLink
+              id={row.business?.id ?? row.business_id}
+              title={row.business?.title}
+              slug={row.business?.slug}
+            />
             <TypeBadge type={row.outreach_type} />
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
               <dt className="text-muted-foreground">Recipient</dt>

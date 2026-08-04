@@ -17,6 +17,7 @@ import ClaimStatusFilterTabs, {
   VALID_TABS,
 } from "@/components/pages/claim-requests/ClaimStatusFilterTabs";
 import ClaimRequestActions from "@/components/pages/claim-requests/ClaimRequestActions";
+import ClaimRequestDeleteConfirmDialog from "@/components/pages/claim-requests/ClaimRequestDeleteConfirmDialog";
 import ClaimRequestsTable from "@/components/pages/claim-requests/ClaimRequestsTable";
 import ClaimRequestsTableSkeleton from "@/components/pages/claim-requests/ClaimRequestsTableSkeleton";
 import Pagination from "@/components/pages/dashboard/Pagination";
@@ -40,8 +41,10 @@ export default function ClaimRequestsPageContent() {
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [actionError, setActionError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const statusFilter = TAB_STATUS[activeTab] ?? "pending";
+  const showDelete = activeTab !== "pending";
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -63,6 +66,7 @@ export default function ClaimRequestsPageContent() {
     return subscribeToDashboardTab((tab) => {
       setActiveTab(resolveTab(tab));
       setSelectedIds(new Set());
+      setConfirmOpen(false);
       setPage(1);
     });
   }, []);
@@ -70,6 +74,7 @@ export default function ClaimRequestsPageContent() {
   const handleTabChange = (tab) => {
     const nextTab = resolveTab(tab);
     if (nextTab === activeTab) return;
+    setConfirmOpen(false);
     replaceTab(nextTab, "/claim-requests");
   };
 
@@ -145,6 +150,40 @@ export default function ClaimRequestsPageContent() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (claim_request_ids) => {
+      const result = await fetchApi("/admin/claim-requests", {
+        method: "DELETE",
+        accessToken,
+        body: JSON.stringify({ claim_request_ids }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to delete claim requests";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      setActionError(null);
+      setConfirmOpen(false);
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["claim-requests"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to delete claim requests");
+    },
+  });
+
   const refreshMutation = useMutation({
     mutationFn: async () => {
       const result = await fetchApi("/admin/cache/invalidate", {
@@ -180,8 +219,8 @@ export default function ClaimRequestsPageContent() {
   });
 
   useEffect(() => {
-    setLoading(statusMutation.isPending);
-  }, [statusMutation.isPending, setLoading]);
+    setLoading(statusMutation.isPending || deleteMutation.isPending);
+  }, [statusMutation.isPending, deleteMutation.isPending, setLoading]);
 
   const claimRequests = useMemo(
     () => data?.claimRequests ?? [],
@@ -195,6 +234,7 @@ export default function ClaimRequestsPageContent() {
   const totalPages = data?.totalPages ?? 0;
   const hasSelection = selectedIds.size > 0;
   const markExpiredDisabled = !hasSelection || statusMutation.isPending;
+  const deleteDisabled = !hasSelection || deleteMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
 
   const handleToggleId = (id, checked) => {
@@ -224,6 +264,23 @@ export default function ClaimRequestsPageContent() {
     statusMutation.mutate({ status: "expired", claim_request_ids });
   };
 
+  const handleDeleteClick = () => {
+    if (selectedIds.size === 0 || deleteMutation.isPending) return;
+    setActionError(null);
+    setConfirmOpen(true);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleConfirmDelete = () => {
+    const claim_request_ids = Array.from(selectedIds);
+    if (claim_request_ids.length === 0 || deleteMutation.isPending) return;
+    setActionError(null);
+    deleteMutation.mutate(claim_request_ids);
+  };
+
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-4 py-4 md:gap-4 md:px-8 md:py-6">
       <ClaimStatusFilterTabs value={activeTab} onValueChange={handleTabChange} />
@@ -232,10 +289,15 @@ export default function ClaimRequestsPageContent() {
         <ClaimRequestActions
           selectedCount={selectedIds.size}
           showMarkExpired={activeTab === "pending"}
+          showDelete={showDelete}
           markExpiredDisabled={markExpiredDisabled}
+          deleteDisabled={deleteDisabled}
           onMarkExpired={handleMarkExpired}
+          onDelete={handleDeleteClick}
+          onClearSelection={handleClearSelection}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
+          deletePending={deleteMutation.isPending}
           actionError={actionError}
           refreshError={refreshError}
         />
@@ -266,6 +328,14 @@ export default function ClaimRequestsPageContent() {
           onNext={handleNextPage}
         />
       </div>
+
+      <ClaimRequestDeleteConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        selectedCount={selectedIds.size}
+        onConfirm={handleConfirmDelete}
+        confirmPending={deleteMutation.isPending}
+      />
     </div>
   );
 }

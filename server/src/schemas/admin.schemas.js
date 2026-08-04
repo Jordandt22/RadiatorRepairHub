@@ -1,5 +1,16 @@
 import * as Yup from "yup";
 import { SCORE_TIER_IDS, REVIEW_TIER_IDS, EMAIL_FILTER_IDS } from "../lib/adminBusinessTiers.js";
+import { normalizeWebsiteUrl } from "../lib/websiteReachability.js";
+
+const isValidPhone = (value) => {
+  if (!value?.trim()) return false;
+
+  const digits = value.replace(/\D/g, "");
+  const local =
+    digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+
+  return /^[2-9]\d{2}[2-9]\d{6}$/.test(local);
+};
 
 export const LoginAdminSchema = Yup.object({
   password: Yup.string().trim().required("Password is required"),
@@ -138,6 +149,13 @@ export const UpdateClaimRequestsStatusSchema = Yup.object({
   status: Yup.string()
     .oneOf(CLAIM_REQUEST_STATUSES, "Invalid status")
     .required("Status is required"),
+  claim_request_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid claim request ID").required())
+    .min(1, "At least one claim request ID is required")
+    .required("Claim request IDs are required"),
+});
+
+export const DeleteClaimRequestsSchema = Yup.object({
   claim_request_ids: Yup.array()
     .of(Yup.string().uuid("Invalid claim request ID").required())
     .min(1, "At least one claim request ID is required")
@@ -303,6 +321,129 @@ export const ExportAdminLocationPostalCodesQuerySchema = Yup.object({
   city_id: Yup.string().uuid("Invalid city ID").required(),
   sort: locationSortQuery,
 });
+export const GetAdminBusinessesWithEmailsQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  emails_sent: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return null;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .nullable()
+    .optional(),
+});
+
+export const ClearBusinessEmailsSchema = Yup.object({
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(30, "At most 30 businesses can be cleared at once")
+    .required("Business IDs are required"),
+});
+
+export const UpdateBusinessEmailSchema = Yup.object({
+  business_id: Yup.string()
+    .uuid("Invalid business ID")
+    .required("Business ID is required"),
+  email: Yup.string()
+    .trim()
+    .email("Please enter a valid email address")
+    .required("Email is required"),
+});
+
+export const UpdateBusinessListingSchema = Yup.object({
+  business_id: Yup.string()
+    .uuid("Invalid business ID")
+    .required("Business ID is required"),
+  title: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Title is required")
+    .max(200, "Title is too long")
+    .required("Title is required"),
+  email: Yup.string()
+    .trim()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .notRequired()
+    .test("valid-email", "Please enter a valid email address", (value) => {
+      if (value == null || value === "") return true;
+      return Yup.string().email().isValidSync(value);
+    }),
+  website: Yup.string()
+    .trim()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return normalizeWebsiteUrl(value);
+    })
+    .nullable()
+    .notRequired()
+    .test("valid-website", "Please enter a valid website URL", (value) => {
+      if (value == null || value === "") return true;
+      try {
+        const parsed = new URL(value);
+        return ["http:", "https:"].includes(parsed.protocol);
+      } catch {
+        return false;
+      }
+    }),
+  phone: Yup.string()
+    .trim()
+    .required("Phone number is required")
+    .test("valid-phone", "Please enter a valid phone number", isValidPhone),
+  address: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Address is required")
+    .max(500, "Address is too long")
+    .required("Address is required"),
+});
+
+export const GetAdminBusinessParamsSchema = Yup.object({
+  id: Yup.string().uuid("Invalid business ID").required("Business ID is required"),
+});
+
+export const UnclaimBusinessesSchema = Yup.object({
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(30, "At most 30 businesses can be unclaimed at once")
+    .required("Business IDs are required"),
+});
+
+export const GetAdminUsersQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+});
+
+export const DeleteAdminUsersSchema = Yup.object({
+  user_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid user ID").required())
+    .min(1, "At least one user ID is required")
+    .max(30, "At most 30 users can be deleted at once")
+    .required("User IDs are required"),
+});
+
+export const GetAdminUserParamsSchema = Yup.object({
+  uid: Yup.string().uuid("Invalid user ID").required("User ID is required"),
+});
+
 export const CACHE_INVALIDATE_RESOURCES = [
   "contact-messages",
   "claim-requests",
@@ -310,6 +451,8 @@ export const CACHE_INVALIDATE_RESOURCES = [
   "businesses",
   "locations",
   "dashboard",
+  "reference",
+  "all",
 ];
 
 export const InvalidateCacheSchema = Yup.object({
@@ -322,6 +465,7 @@ export const OUTREACH_TYPES = [
   "claim_invite",
   "ownership_claim_invite",
   "lead_claim_invite",
+  "claim_followup",
   "website_offer",
 ];
 
@@ -375,6 +519,7 @@ export const GetOutreachBusinessesQuerySchema = Yup.object({
     .optional(),
   claim_invite_sent: optionalBoolQuery,
   website_offer_sent: optionalBoolQuery,
+  claim_followup_sent: optionalBoolQuery,
 });
 
 export const OutreachMatchingIdsSchema = Yup.object({
@@ -410,6 +555,7 @@ export const OutreachMatchingIdsSchema = Yup.object({
     .optional(),
   claim_invite_sent: Yup.boolean().nullable().optional(),
   website_offer_sent: Yup.boolean().nullable().optional(),
+  claim_followup_sent: Yup.boolean().nullable().optional(),
 });
 
 export const OutreachPreviewSchema = Yup.object({

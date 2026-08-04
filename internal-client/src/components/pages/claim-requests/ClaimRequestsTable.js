@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import ClaimRequestStatusBadge from "@/components/pages/claim-requests/ClaimRequestStatusBadge";
 import ClaimRequestsEmptyState from "@/components/pages/claim-requests/ClaimRequestsEmptyState";
@@ -75,9 +76,11 @@ function ClaimRequestsTableView({
                   />
                 </TableCell>
                 <TableCell className="max-w-0 font-medium">
-                  <span className="block truncate">
-                    {row.business?.title ?? "—"}
-                  </span>
+                  <BusinessTitleLink
+                    id={row.business?.id}
+                    title={row.business?.title}
+                    showSlug={false}
+                  />
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <ClaimRequestStatusBadge status={row.status} />
@@ -164,9 +167,11 @@ function ClaimRequestsCardList({
                 className="mt-0.5"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">
-                  {row.business?.title ?? "—"}
-                </p>
+                <BusinessTitleLink
+                  id={row.business?.id}
+                  title={row.business?.title}
+                  showSlug={false}
+                />
                 <div className="mt-1.5">
                   <ClaimRequestStatusBadge status={row.status} />
                 </div>

@@ -18,6 +18,8 @@ export default function OutreachBrowseActions({
   onWebsiteFilterChange,
   claimInviteSent = null,
   onClaimInviteSentChange,
+  claimFollowupSent = null,
+  onClaimFollowupSentChange,
   websiteOfferSent = null,
   onWebsiteOfferSentChange,
   onRefresh,
@@ -55,6 +57,16 @@ export default function OutreachBrowseActions({
             onValueChange={onClaimInviteSentChange}
             placeholder="Claim invite"
             ariaLabel="Filter by claim invite sent"
+            disabled={refreshPending}
+          />
+        </div>
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+          <BusinessTierCombobox
+            items={SENT_FILTERS}
+            value={claimFollowupSent}
+            onValueChange={onClaimFollowupSentChange}
+            placeholder="Claim follow-up"
+            ariaLabel="Filter by claim follow-up sent"
             disabled={refreshPending}
           />
         </div>

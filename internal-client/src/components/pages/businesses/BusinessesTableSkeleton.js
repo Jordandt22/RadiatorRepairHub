@@ -48,6 +48,7 @@ export default function BusinessesTableSkeleton({
   const showOwnerEmail = activeTab === "claimed";
   const showScore = activeTab === "all";
   const showLastEdited = activeTab === "claimed";
+  const showSelection = activeTab === "claimed";
 
   return (
     <>
@@ -68,6 +69,7 @@ export default function BusinessesTableSkeleton({
         <Table>
           <TableHeader>
             <TableRow>
+              {showSelection ? <TableHead className="w-10" /> : null}
               <TableHead>Business</TableHead>
               {showScore ? <TableHead>Score</TableHead> : null}
               {showScore ? (
@@ -86,6 +88,11 @@ export default function BusinessesTableSkeleton({
           <TableBody>
             {Array.from({ length: rows }).map((_, index) => (
               <TableRow key={index}>
+                {showSelection ? (
+                  <TableCell>
+                    <Skeleton className="size-4" />
+                  </TableCell>
+                ) : null}
                 <TableCell>
                   <div className="space-y-1.5">
                     <Skeleton className="h-4 w-36" />

@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import {
   IssueBadge,
@@ -31,9 +32,12 @@ export default function OverviewContactMessagesTable({ messages = [] }) {
             className="flex flex-col gap-2 rounded-lg border border-border bg-background p-4"
           >
             <p className="font-medium">{message.name || "—"}</p>
-            <p className="truncate text-sm text-muted-foreground">
-              {message.business?.title ?? "—"}
-            </p>
+            <BusinessTitleLink
+              id={message.business?.id}
+              title={message.business?.title}
+              showSlug={false}
+              titleClassName="text-sm font-normal text-muted-foreground"
+            />
             <div className="flex flex-wrap gap-1.5">
               <StatusBadge status={message.status} />
               <IssueBadge issue={message.issue} />
@@ -67,9 +71,11 @@ export default function OverviewContactMessagesTable({ messages = [] }) {
                   </span>
                 </TableCell>
                 <TableCell className="max-w-0">
-                  <span className="block truncate">
-                    {message.business?.title ?? "—"}
-                  </span>
+                  <BusinessTitleLink
+                    id={message.business?.id}
+                    title={message.business?.title}
+                    showSlug={false}
+                  />
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <IssueBadge issue={message.issue} />

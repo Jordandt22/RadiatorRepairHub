@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import ClaimEligibilityBadge from "@/components/pages/outreach/ClaimEligibilityBadge";
 import OutreachEmptyState from "@/components/pages/outreach/OutreachEmptyState";
@@ -60,11 +61,12 @@ function OutreachTableView({
               </TableHead>
             ) : null}
             <TableHead className="w-[28%]">Business</TableHead>
-            <TableHead className="w-[22%]">Email</TableHead>
-            <TableHead className="w-[14%]">Eligibility</TableHead>
-            <TableHead className="w-[10%]">Website</TableHead>
-            <TableHead className="w-[13%]">Claim invite</TableHead>
-            <TableHead className="w-[13%]">Website offer</TableHead>
+            <TableHead className="w-[20%]">Email</TableHead>
+            <TableHead className="w-[12%]">Eligibility</TableHead>
+            <TableHead className="w-[8%]">Website</TableHead>
+            <TableHead className="w-[11%]">Claim invite</TableHead>
+            <TableHead className="w-[11%]">Follow-up</TableHead>
+            <TableHead className="w-[10%]">Website offer</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -90,14 +92,11 @@ function OutreachTableView({
                   </TableCell>
                 ) : null}
                 <TableCell className="max-w-0 font-medium">
-                  <div className="min-w-0">
-                    <span className="block truncate">{row.title ?? "—"}</span>
-                    {row.slug ? (
-                      <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
-                        /business/{row.slug}
-                      </span>
-                    ) : null}
-                  </div>
+                  <BusinessTitleLink
+                    id={row.id}
+                    title={row.title}
+                    slug={row.slug}
+                  />
                 </TableCell>
                 <TableCell className="max-w-0">
                   <span
@@ -117,6 +116,9 @@ function OutreachTableView({
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <SentCell sentAt={row.claim_invite_sent_at} />
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  <SentCell sentAt={row.claim_followup_sent_at} />
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <SentCell sentAt={row.website_offer_sent_at} />
@@ -162,14 +164,11 @@ function OutreachCardList({
                 />
               ) : null}
               <div className="min-w-0 flex-1 space-y-2">
-                <div>
-                  <p className="text-sm font-medium">{row.title ?? "—"}</p>
-                  {row.slug ? (
-                    <p className="text-xs text-muted-foreground">
-                      /business/{row.slug}
-                    </p>
-                  ) : null}
-                </div>
+                <BusinessTitleLink
+                  id={row.id}
+                  title={row.title}
+                  slug={row.slug}
+                />
                 <ClaimEligibilityBadge eligibility={row.claim_eligibility} />
                 <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
                   <dt className="text-muted-foreground">Email</dt>
@@ -180,6 +179,12 @@ function OutreachCardList({
                   <dd>
                     {row.claim_invite_sent_at
                       ? formatDate(row.claim_invite_sent_at)
+                      : "—"}
+                  </dd>
+                  <dt className="text-muted-foreground">Follow-up</dt>
+                  <dd>
+                    {row.claim_followup_sent_at
+                      ? formatDate(row.claim_followup_sent_at)
                       : "—"}
                   </dd>
                   <dt className="text-muted-foreground">Website offer</dt>
