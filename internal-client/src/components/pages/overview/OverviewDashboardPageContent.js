@@ -1,24 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCwIcon } from "lucide-react";
 import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
+import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import DashboardFilterTabs, {
+  VALID_DASHBOARD_TABS,
+} from "@/components/pages/overview/DashboardFilterTabs";
 import OverviewContactMessagesTable from "@/components/pages/overview/OverviewContactMessagesTable";
 import OverviewClaimRequestsTable from "@/components/pages/overview/OverviewClaimRequestsTable";
 import OverviewListingReportsTable from "@/components/pages/overview/OverviewListingReportsTable";
 import OverviewDashboardCharts, {
   OverviewDashboardChartsSkeleton,
 } from "@/components/pages/overview/OverviewDashboardCharts";
+import OverviewSystemsPanel from "@/components/pages/overview/OverviewSystemsPanel";
 import ContactMessagesTableSkeleton from "@/components/pages/dashboard/ContactMessagesTableSkeleton";
 import ClaimRequestsTableSkeleton from "@/components/pages/claim-requests/ClaimRequestsTableSkeleton";
 import ListingReportsTableSkeleton from "@/components/pages/listing-reports/ListingReportsTableSkeleton";
 
 const PAGE_LIMIT = 10;
+
+function resolveTab(tab) {
+  return VALID_DASHBOARD_TABS.includes(tab) ? tab : "inbox";
+}
 
 function RefreshButton({ onClick, pending, className }) {
   return (
@@ -41,18 +50,48 @@ function RefreshButton({ onClick, pending, className }) {
 
 export default function OverviewDashboardPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState(() =>
+    resolveTab(searchParams.get("tab")),
+  );
   const [contactRefreshError, setContactRefreshError] = useState(null);
   const [claimsRefreshError, setClaimsRefreshError] = useState(null);
   const [reportsRefreshError, setReportsRefreshError] = useState(null);
   const [statsRefreshError, setStatsRefreshError] = useState(null);
+
+  const inboxEnabled = activeTab === "inbox";
+  const analyticsEnabled = activeTab === "analytics";
+  const systemsEnabled = activeTab === "systems";
 
   useEffect(() => {
     if (isReady && !accessToken) {
       router.replace("/");
     }
   }, [isReady, accessToken, router]);
+
+  useEffect(() => {
+    if (!searchParams.get("tab")) {
+      window.history.replaceState(
+        window.history.state,
+        "",
+        "/dashboard?tab=inbox",
+      );
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    return subscribeToDashboardTab((tab) => {
+      setActiveTab(resolveTab(tab));
+    });
+  }, []);
+
+  const handleTabChange = (tab) => {
+    const nextTab = resolveTab(tab);
+    if (nextTab === activeTab) return;
+    replaceTab(nextTab, "/dashboard");
+  };
 
   const statsQuery = useQuery({
     queryKey: ["dashboard-stats"],
@@ -63,11 +102,13 @@ export default function OverviewDashboardPageContent() {
         throw new Error("Session expired");
       }
       if (result.error) {
-        throw new Error(result.error.message || "Failed to fetch dashboard stats");
+        throw new Error(
+          result.error.message || "Failed to fetch dashboard stats",
+        );
       }
       return result.data;
     },
-    enabled: isReady && !!accessToken,
+    enabled: Boolean(isReady && accessToken && analyticsEnabled),
     staleTime: 30_000,
   });
 
@@ -93,7 +134,7 @@ export default function OverviewDashboardPageContent() {
       }
       return result.data;
     },
-    enabled: isReady && !!accessToken,
+    enabled: Boolean(isReady && accessToken && inboxEnabled),
     staleTime: 30_000,
   });
 
@@ -120,7 +161,7 @@ export default function OverviewDashboardPageContent() {
       }
       return result.data;
     },
-    enabled: isReady && !!accessToken,
+    enabled: Boolean(isReady && accessToken && inboxEnabled),
     staleTime: 30_000,
   });
 
@@ -147,7 +188,7 @@ export default function OverviewDashboardPageContent() {
       }
       return result.data;
     },
-    enabled: isReady && !!accessToken,
+    enabled: Boolean(isReady && accessToken && inboxEnabled),
     staleTime: 30_000,
   });
 
@@ -301,122 +342,157 @@ export default function OverviewDashboardPageContent() {
     reportsRefreshMutation.isPending || reportsQuery.isFetching;
 
   return (
-    <div className="mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-4 md:px-8 md:py-6">
-      <section className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">Overview</h2>
-            <p className="text-sm text-muted-foreground">
-              Business coverage and outreach email volume
-            </p>
-          </div>
-          <RefreshButton
-            onClick={() => statsRefreshMutation.mutate()}
-            pending={statsRefreshPending}
-          />
-        </div>
-        {statsRefreshError ? (
-          <p className="text-sm text-destructive">{statsRefreshError}</p>
-        ) : null}
-        {statsQuery.error && !statsQuery.isFetching ? (
-          <p className="text-sm text-destructive">{statsQuery.error.message}</p>
-        ) : null}
-        {statsQuery.isLoading ? (
-          <OverviewDashboardChartsSkeleton />
-        ) : !statsQuery.error ? (
-          <OverviewDashboardCharts stats={statsQuery.data} />
-        ) : null}
-      </section>
+    <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-4 py-4 md:gap-4 md:px-8 md:py-6">
+      <div className="mt-2 flex flex-col gap-3 md:mt-4 md:gap-4">
+        <DashboardFilterTabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+        />
 
-      <section className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">
-              Contact Form
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Latest messages across all statuses
-            </p>
-          </div>
-          <RefreshButton
-            onClick={() => contactRefreshMutation.mutate()}
-            pending={contactRefreshPending}
-          />
-        </div>
-        {contactRefreshError ? (
-          <p className="text-sm text-destructive">{contactRefreshError}</p>
+        {activeTab === "analytics" ? (
+          <section className="flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Analytics
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Business coverage and outreach email volume
+                </p>
+              </div>
+              <RefreshButton
+                onClick={() => statsRefreshMutation.mutate()}
+                pending={statsRefreshPending}
+              />
+            </div>
+            {statsRefreshError ? (
+              <p className="text-sm text-destructive">{statsRefreshError}</p>
+            ) : null}
+            {statsQuery.error && !statsQuery.isFetching ? (
+              <p className="text-sm text-destructive">
+                {statsQuery.error.message}
+              </p>
+            ) : null}
+            {statsQuery.isLoading ? (
+              <OverviewDashboardChartsSkeleton />
+            ) : !statsQuery.error ? (
+              <OverviewDashboardCharts stats={statsQuery.data} />
+            ) : null}
+          </section>
         ) : null}
-        {contactQuery.error && !contactQuery.isFetching ? (
-          <p className="text-sm text-destructive">{contactQuery.error.message}</p>
-        ) : null}
-        {contactQuery.isLoading ? (
-          <ContactMessagesTableSkeleton rows={5} />
-        ) : !contactQuery.error ? (
-          <OverviewContactMessagesTable
-            messages={contactQuery.data?.contactMessages ?? []}
-          />
-        ) : null}
-      </section>
 
-      <section className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">
-              Claim Requests
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Latest claims across all statuses
-            </p>
-          </div>
-          <RefreshButton
-            onClick={() => claimsRefreshMutation.mutate()}
-            pending={claimsRefreshPending}
-          />
-        </div>
-        {claimsRefreshError ? (
-          <p className="text-sm text-destructive">{claimsRefreshError}</p>
-        ) : null}
-        {claimsQuery.error && !claimsQuery.isFetching ? (
-          <p className="text-sm text-destructive">{claimsQuery.error.message}</p>
-        ) : null}
-        {claimsQuery.isLoading ? (
-          <ClaimRequestsTableSkeleton rows={5} />
-        ) : !claimsQuery.error ? (
-          <OverviewClaimRequestsTable
-            claimRequests={claimsQuery.data?.claimRequests ?? []}
-          />
-        ) : null}
-      </section>
+        {activeTab === "inbox" ? (
+          <div className="flex flex-col gap-8">
+            <section className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight">
+                    Contact Form
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Latest messages across all statuses
+                  </p>
+                </div>
+                <RefreshButton
+                  onClick={() => contactRefreshMutation.mutate()}
+                  pending={contactRefreshPending}
+                />
+              </div>
+              {contactRefreshError ? (
+                <p className="text-sm text-destructive">{contactRefreshError}</p>
+              ) : null}
+              {contactQuery.error && !contactQuery.isFetching ? (
+                <p className="text-sm text-destructive">
+                  {contactQuery.error.message}
+                </p>
+              ) : null}
+              {contactQuery.isLoading ? (
+                <ContactMessagesTableSkeleton rows={5} />
+              ) : !contactQuery.error ? (
+                <OverviewContactMessagesTable
+                  messages={contactQuery.data?.contactMessages ?? []}
+                />
+              ) : null}
+            </section>
 
-      <section className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">
-              Listing Reports
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Latest reports across all statuses
-            </p>
+            <section className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight">
+                    Claim Requests
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Latest claims across all statuses
+                  </p>
+                </div>
+                <RefreshButton
+                  onClick={() => claimsRefreshMutation.mutate()}
+                  pending={claimsRefreshPending}
+                />
+              </div>
+              {claimsRefreshError ? (
+                <p className="text-sm text-destructive">{claimsRefreshError}</p>
+              ) : null}
+              {claimsQuery.error && !claimsQuery.isFetching ? (
+                <p className="text-sm text-destructive">
+                  {claimsQuery.error.message}
+                </p>
+              ) : null}
+              {claimsQuery.isLoading ? (
+                <ClaimRequestsTableSkeleton rows={5} />
+              ) : !claimsQuery.error ? (
+                <OverviewClaimRequestsTable
+                  claimRequests={claimsQuery.data?.claimRequests ?? []}
+                />
+              ) : null}
+            </section>
+
+            <section className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight">
+                    Listing Reports
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Latest reports across all statuses
+                  </p>
+                </div>
+                <RefreshButton
+                  onClick={() => reportsRefreshMutation.mutate()}
+                  pending={reportsRefreshPending}
+                />
+              </div>
+              {reportsRefreshError ? (
+                <p className="text-sm text-destructive">{reportsRefreshError}</p>
+              ) : null}
+              {reportsQuery.error && !reportsQuery.isFetching ? (
+                <p className="text-sm text-destructive">
+                  {reportsQuery.error.message}
+                </p>
+              ) : null}
+              {reportsQuery.isLoading ? (
+                <ListingReportsTableSkeleton rows={5} />
+              ) : !reportsQuery.error ? (
+                <OverviewListingReportsTable
+                  listingReports={reportsQuery.data?.listingReports ?? []}
+                />
+              ) : null}
+            </section>
           </div>
-          <RefreshButton
-            onClick={() => reportsRefreshMutation.mutate()}
-            pending={reportsRefreshPending}
-          />
-        </div>
-        {reportsRefreshError ? (
-          <p className="text-sm text-destructive">{reportsRefreshError}</p>
         ) : null}
-        {reportsQuery.error && !reportsQuery.isFetching ? (
-          <p className="text-sm text-destructive">{reportsQuery.error.message}</p>
+
+        {activeTab === "systems" ? (
+          <section className="flex flex-col gap-3">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight">Systems</h2>
+              <p className="text-sm text-muted-foreground">
+                Health checks for cache, database, and the public site
+              </p>
+            </div>
+            <OverviewSystemsPanel enabled={systemsEnabled} />
+          </section>
         ) : null}
-        {reportsQuery.isLoading ? (
-          <ListingReportsTableSkeleton rows={5} />
-        ) : !reportsQuery.error ? (
-          <OverviewListingReportsTable
-            listingReports={reportsQuery.data?.listingReports ?? []}
-          />
-        ) : null}
-      </section>
+      </div>
     </div>
   );
 }

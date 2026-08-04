@@ -27,6 +27,9 @@ import {
   HardDriveIcon,
   Table2Icon,
   GlobeIcon,
+  InboxIcon,
+  ActivityIcon,
+  ServerIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -50,10 +53,26 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/dashboard?tab=inbox",
       icon: <LayoutDashboardIcon />,
       isActive: true,
-      items: [],
+      items: [
+        {
+          title: "Inbox",
+          url: "/dashboard?tab=inbox",
+          icon: <InboxIcon />,
+        },
+        {
+          title: "Analytics",
+          url: "/dashboard?tab=analytics",
+          icon: <ActivityIcon />,
+        },
+        {
+          title: "Systems",
+          url: "/dashboard?tab=systems",
+          icon: <ServerIcon />,
+        },
+      ],
     },
     {
       title: "Businesses",
