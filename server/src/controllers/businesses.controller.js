@@ -1565,7 +1565,7 @@ export const getFeaturedBusinesses = async (req, res) => {
     return res.status(200).json(successHandler(cachedData.data));
   }
 
-  // Get Top 10 Rated Businesses
+  // Claimed-first fill, then top-rated businesses
   const { data, error } = await getTopRatedBusinesses();
   if (error) {
     return res

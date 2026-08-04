@@ -141,7 +141,7 @@ function OverviewStatPieCard({
               className="flex items-center gap-1.5 text-muted-foreground"
             >
               <span
-                className="size-2.5 shrink-0 rounded-[2px]"
+                className="size-2.5 shrink-0 rounded-xs"
                 style={{ backgroundColor: slice.color }}
               />
               <span>
