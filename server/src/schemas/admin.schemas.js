@@ -1,5 +1,16 @@
 import * as Yup from "yup";
 import { SCORE_TIER_IDS, REVIEW_TIER_IDS, EMAIL_FILTER_IDS } from "../lib/adminBusinessTiers.js";
+import { normalizeWebsiteUrl } from "../lib/websiteReachability.js";
+
+const isValidPhone = (value) => {
+  if (!value?.trim()) return false;
+
+  const digits = value.replace(/\D/g, "");
+  const local =
+    digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+
+  return /^[2-9]\d{2}[2-9]\d{6}$/.test(local);
+};
 
 export const LoginAdminSchema = Yup.object({
   password: Yup.string().trim().required("Password is required"),
@@ -138,6 +149,13 @@ export const UpdateClaimRequestsStatusSchema = Yup.object({
   status: Yup.string()
     .oneOf(CLAIM_REQUEST_STATUSES, "Invalid status")
     .required("Status is required"),
+  claim_request_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid claim request ID").required())
+    .min(1, "At least one claim request ID is required")
+    .required("Claim request IDs are required"),
+});
+
+export const DeleteClaimRequestsSchema = Yup.object({
   claim_request_ids: Yup.array()
     .of(Yup.string().uuid("Invalid claim request ID").required())
     .min(1, "At least one claim request ID is required")
@@ -332,6 +350,52 @@ export const UpdateBusinessEmailSchema = Yup.object({
     .trim()
     .email("Please enter a valid email address")
     .required("Email is required"),
+});
+
+export const UpdateBusinessListingSchema = Yup.object({
+  business_id: Yup.string()
+    .uuid("Invalid business ID")
+    .required("Business ID is required"),
+  title: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Title is required")
+    .max(200, "Title is too long")
+    .required("Title is required"),
+  email: Yup.string()
+    .trim()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .notRequired()
+    .test("valid-email", "Please enter a valid email address", (value) => {
+      if (value == null || value === "") return true;
+      return Yup.string().email().isValidSync(value);
+    }),
+  website: Yup.string()
+    .trim()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return normalizeWebsiteUrl(value);
+    })
+    .nullable()
+    .notRequired()
+    .test("valid-website", "Please enter a valid website URL", (value) => {
+      if (value == null || value === "") return true;
+      try {
+        const parsed = new URL(value);
+        return ["http:", "https:"].includes(parsed.protocol);
+      } catch {
+        return false;
+      }
+    }),
+  phone: Yup.string()
+    .trim()
+    .required("Phone number is required")
+    .test("valid-phone", "Please enter a valid phone number", isValidPhone),
+  address: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Address is required")
+    .max(500, "Address is too long")
+    .required("Address is required"),
 });
 
 export const GetAdminBusinessParamsSchema = Yup.object({

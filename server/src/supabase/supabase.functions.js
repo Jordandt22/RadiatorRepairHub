@@ -854,6 +854,32 @@ export const updateBusinessEmail = async (id, email) => {
 };
 
 /**
+ * Update listing contact fields for a business (admin business detail).
+ */
+export const updateBusinessListing = async (
+  id,
+  { title, email, website, phone, address }
+) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({
+      title,
+      email,
+      website,
+      phone,
+      address,
+      last_edited_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select(
+      "id, title, slug, email, website, phone, address, last_edited_at"
+    )
+    .single();
+
+  return { data, error };
+};
+
+/**
  * Reverse claims for the given business IDs (admin claimed businesses).
  * Sets is_claimed=false and owner_uid=null.
  */
@@ -1668,6 +1694,20 @@ export const deleteClaimRequest = async (claim_request_id) => {
     .eq("claim_request_id", claim_request_id)
     .select("claim_request_id")
     .single();
+
+  return { data, error };
+};
+
+/** Deletes claim requests that are not pending (success / failed / expired). */
+export const deleteClaimRequests = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .delete()
+    .in("claim_request_id", ids)
+    .neq("status", "pending")
+    .select("claim_request_id");
 
   return { data, error };
 };

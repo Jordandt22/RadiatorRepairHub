@@ -18,6 +18,7 @@ import {
   markContactMessagesNoResponse as markMessagesNoResponse,
   getClaimRequests as fetchClaimRequests,
   updateClaimRequestsStatus as updateClaimsStatus,
+  deleteClaimRequests as removeClaimRequests,
   getListingReports as fetchListingReports,
   updateListingReportsStatus as updateReportsStatus,
   getAdminBusinesses as fetchAdminBusinesses,
@@ -25,6 +26,7 @@ import {
   getAdminBusinessesWithEmails as fetchAdminBusinessesWithEmails,
   clearBusinessEmails as clearEmailsOnBusinesses,
   updateBusinessEmail as patchBusinessEmail,
+  updateBusinessListing as patchBusinessListing,
   unclaimBusinessesByIds,
   getAdminUsers as fetchAdminUsers,
   getAdminUserByUid as fetchAdminUserByUid,
@@ -95,6 +97,7 @@ import {
   listIngestGroups,
 } from "../../ingest/db.js";
 import { enqueueFilterJob } from "../../ingest/queues.js";
+import { normalizeWebsiteUrl } from "../../lib/websiteReachability.js";
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
 
 export const loginAdmin = async (req, res) => {
@@ -1319,6 +1322,37 @@ export const updateClaimRequestsStatus = async (req, res) => {
   );
 };
 
+export const deleteClaimRequests = async (req, res) => {
+  const { claim_request_ids } = req.body;
+
+  const { data, error } = await removeClaimRequests(claim_request_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error deleting claim requests.",
+          error
+        )
+      );
+  }
+
+  const claimRequestIds = (data ?? []).map((row) => row.claim_request_id);
+
+  await Promise.all(claimRequestIds.map((id) => clearClaimCodeCache(id)));
+  await deleteCacheDataByPrefix("CLAIM_REQUESTS");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+
+  return res.status(200).json(
+    successHandler({
+      deleted: claimRequestIds.length,
+      claimRequestIds,
+    })
+  );
+};
+
 export const getListingReports = async (req, res) => {
   let page = Number(req.query.page);
   const limit = Number(req.query.limit);
@@ -1660,6 +1694,75 @@ export const updateBusinessEmail = async (req, res) => {
       title: data.title,
       slug: data.slug,
       email: data.email,
+    })
+  );
+};
+
+export const updateBusinessListing = async (req, res) => {
+  const { business_id, title, email, website, phone, address } = req.body;
+
+  const normalizedTitle = String(title ?? "").trim();
+  const normalizedAddress = String(address ?? "").trim();
+  const normalizedPhone = String(phone ?? "").trim();
+  const normalizedEmail =
+    typeof email === "string" && email.trim() ? email.trim() : null;
+  const normalizedWebsite =
+    typeof website === "string" && website.trim()
+      ? normalizeWebsiteUrl(website.trim())
+      : null;
+
+  const { data, error } = await patchBusinessListing(business_id, {
+    title: normalizedTitle,
+    email: normalizedEmail,
+    website: normalizedWebsite,
+    phone: normalizedPhone,
+    address: normalizedAddress,
+  });
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(SUPABASE_ERROR, "Business not found.", error)
+        );
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating the business listing.",
+          error
+        )
+      );
+  }
+
+  try {
+    const { key: businessIdCacheKey } = getBusinessByIdKey(data.id);
+    await deleteCacheData(businessIdCacheKey);
+    if (data.slug) {
+      const { key: businessSlugCacheKey } = getBusinessBySlugKey(data.slug);
+      await deleteCacheData(businessSlugCacheKey);
+    }
+  } catch {
+    // best-effort cache cleanup
+  }
+
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+  await deleteCacheDataByPrefix("ADMIN_LOCATIONS");
+
+  return res.status(200).json(
+    successHandler({
+      id: data.id,
+      title: data.title,
+      slug: data.slug,
+      email: data.email,
+      website: data.website,
+      phone: data.phone,
+      address: data.address,
+      last_edited_at: data.last_edited_at,
     })
   );
 };

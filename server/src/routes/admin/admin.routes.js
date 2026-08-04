@@ -15,6 +15,7 @@ import {
   sendContactNoResponse,
   getClaimRequests,
   updateClaimRequestsStatus,
+  deleteClaimRequests,
   getListingReports,
   updateListingReportsStatus,
   getBusinesses,
@@ -22,6 +23,7 @@ import {
   getBusinessesWithEmails,
   clearBusinessEmails,
   updateBusinessEmail,
+  updateBusinessListing,
   unclaimBusinesses,
   getUsers,
   getUserByUid,
@@ -63,6 +65,7 @@ import {
   GetContactMessagesQuerySchema,
   GetClaimRequestsQuerySchema,
   UpdateClaimRequestsStatusSchema,
+  DeleteClaimRequestsSchema,
   GetListingReportsQuerySchema,
   UpdateListingReportsStatusSchema,
   GetAdminBusinessesQuerySchema,
@@ -70,6 +73,7 @@ import {
   GetAdminBusinessParamsSchema,
   ClearBusinessEmailsSchema,
   UpdateBusinessEmailSchema,
+  UpdateBusinessListingSchema,
   UnclaimBusinessesSchema,
   GetAdminUsersQuerySchema,
   DeleteAdminUsersSchema,
@@ -133,6 +137,12 @@ adminRouter.patch(
   serverErrorCatcherWrapper(updateClaimRequestsStatus)
 );
 
+adminRouter.delete(
+  "/claim-requests",
+  bodyValidator(DeleteClaimRequestsSchema),
+  serverErrorCatcherWrapper(deleteClaimRequests)
+);
+
 adminRouter.get(
   "/listing-reports",
   queryValidator(GetListingReportsQuerySchema),
@@ -173,6 +183,12 @@ adminRouter.patch(
   "/businesses/email",
   bodyValidator(UpdateBusinessEmailSchema),
   serverErrorCatcherWrapper(updateBusinessEmail)
+);
+
+adminRouter.patch(
+  "/businesses/listing",
+  bodyValidator(UpdateBusinessListingSchema),
+  serverErrorCatcherWrapper(updateBusinessListing)
 );
 
 adminRouter.patch(

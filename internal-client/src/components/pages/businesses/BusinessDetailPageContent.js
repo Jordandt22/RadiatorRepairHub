@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeftIcon, ExternalLinkIcon } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeftIcon, ExternalLinkIcon, PencilIcon } from "lucide-react";
 import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
 import BusinessDetailSkeleton from "@/components/pages/businesses/BusinessDetailSkeleton";
+import BusinessListingEditDialog from "@/components/pages/businesses/BusinessListingEditDialog";
 import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
 import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
 import { formatFullDate } from "@/components/pages/dashboard/formatDate";
@@ -23,11 +24,26 @@ function DetailCard({ label, children }) {
   );
 }
 
+function formatListingError(error) {
+  const message = error?.message;
+  if (typeof message === "string") return message;
+  if (message && typeof message === "object") {
+    const first = Object.values(message).find(
+      (value) => typeof value === "string" && value.trim()
+    );
+    if (first) return first;
+  }
+  return "Failed to update listing";
+}
+
 export default function BusinessDetailPageContent() {
   const router = useRouter();
   const params = useParams();
   const id = params?.id;
+  const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
+  const [editOpen, setEditOpen] = useState(false);
+  const [editError, setEditError] = useState(null);
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -53,6 +69,39 @@ export default function BusinessDetailPageContent() {
       return result.data;
     },
     staleTime: 30_000,
+  });
+
+  const updateListingMutation = useMutation({
+    mutationFn: async (payload) => {
+      const result = await fetchApi("/admin/businesses/listing", {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify(payload),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(formatListingError(result.error));
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      setEditError(null);
+      setEditOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ["admin-business", id] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-businesses"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["admin-businesses-with-emails"],
+      });
+    },
+    onError: (err) => {
+      setEditError(err.message || "Failed to update listing");
+    },
   });
 
   if (!isReady || !accessToken) {
@@ -133,7 +182,21 @@ export default function BusinessDetailPageContent() {
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold tracking-tight">Listing</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold tracking-tight">Listing</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer rounded-full"
+            onClick={() => {
+              setEditError(null);
+              setEditOpen(true);
+            }}
+          >
+            <PencilIcon />
+            Edit
+          </Button>
+        </div>
         <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <DetailCard label="Title">{data.title || "—"}</DetailCard>
           <DetailCard label="Slug">{data.slug || "—"}</DetailCard>
@@ -229,6 +292,21 @@ export default function BusinessDetailPageContent() {
           </p>
         )}
       </section>
+
+      <BusinessListingEditDialog
+        open={editOpen}
+        onOpenChange={(next) => {
+          if (!next) setEditError(null);
+          setEditOpen(next);
+        }}
+        business={data}
+        submitPending={updateListingMutation.isPending}
+        submitError={editError}
+        onSubmit={async (payload) => {
+          setEditError(null);
+          await updateListingMutation.mutateAsync(payload);
+        }}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { RefreshCwIcon, TimerOffIcon } from "lucide-react";
+import { RefreshCwIcon, TimerOffIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -32,13 +32,21 @@ function ActionButton({
 export default function ClaimRequestActions({
   selectedCount = 0,
   showMarkExpired = false,
+  showDelete = false,
   markExpiredDisabled = true,
+  deleteDisabled = true,
   onMarkExpired,
+  onDelete,
+  onClearSelection,
   onRefresh,
   refreshPending = false,
+  deletePending = false,
   actionError = null,
   refreshError = null,
 }) {
+  const showSelectionCount =
+    selectedCount > 0 && (showMarkExpired || showDelete);
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
@@ -51,7 +59,24 @@ export default function ClaimRequestActions({
             className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
           />
         ) : null}
-        {showMarkExpired && selectedCount > 0 ? (
+        {showDelete ? (
+          <ActionButton
+            label="Delete"
+            icon={Trash2Icon}
+            disabled={deleteDisabled || deletePending}
+            onClick={onDelete}
+            className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
+          />
+        ) : null}
+        {showDelete ? (
+          <ActionButton
+            label="Clear"
+            icon={XIcon}
+            disabled={selectedCount === 0 || deletePending}
+            onClick={onClearSelection}
+          />
+        ) : null}
+        {showSelectionCount ? (
           <span className="hidden shrink-0 text-sm text-muted-foreground md:inline">
             {selectedCount} selected
           </span>
