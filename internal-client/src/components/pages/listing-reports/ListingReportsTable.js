@@ -84,7 +84,7 @@ function ListingReportsTableView({
                     </span>
                     {row.business?.slug ? (
                       <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
-                        /business/{row.business.slug}
+                        {row.business.slug}
                       </span>
                     ) : null}
                   </div>

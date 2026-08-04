@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   useMutation,
   useQuery,
@@ -12,82 +12,39 @@ import { useAuth } from "@/contexts/Auth.context";
 import { useLoading } from "@/contexts/Loading.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { debounce } from "@/lib/debounce";
-import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
-import BusinessFilterTabs, {
-  TAB_CLAIMED,
-  VALID_TABS,
-} from "@/components/pages/businesses/BusinessFilterTabs";
-import BusinessActions from "@/components/pages/businesses/BusinessActions";
-import BusinessesTable from "@/components/pages/businesses/BusinessesTable";
-import BusinessesTableSkeleton from "@/components/pages/businesses/BusinessesTableSkeleton";
-import BusinessDrawer from "@/components/pages/businesses/BusinessDrawer";
-import ReverseClaimConfirmDialog from "@/components/pages/businesses/ReverseClaimConfirmDialog";
+import EmailCleanerActions from "@/components/pages/email-cleaner/EmailCleanerActions";
+import EmailCleanerConfirmDialog from "@/components/pages/email-cleaner/EmailCleanerConfirmDialog";
+import EmailCleanerEditDialog from "@/components/pages/email-cleaner/EmailCleanerEditDialog";
+import EmailCleanerTable from "@/components/pages/email-cleaner/EmailCleanerTable";
+import EmailCleanerTableSkeleton from "@/components/pages/email-cleaner/EmailCleanerTableSkeleton";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
 const PAGE_LIMIT = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
-function resolveTab(tab) {
-  return VALID_TABS.includes(tab) ? tab : "all";
-}
-
-export default function BusinessesPageContent() {
+export default function EmailCleanerPageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
   const { setLoading } = useLoading();
   const [page, setPage] = useState(1);
-  const [activeTab, setActiveTab] = useState(() =>
-    resolveTab(searchParams.get("tab")),
-  );
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [scoreTier, setScoreTier] = useState(null);
-  const [reviewsTier, setReviewsTier] = useState(null);
-  const [emailFilter, setEmailFilter] = useState(null);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingBusiness, setEditingBusiness] = useState(null);
+  const [editError, setEditError] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedBusiness, setSelectedBusiness] = useState(null);
 
-  const claimedFilter = TAB_CLAIMED[activeTab] ?? null;
   const searchQuery = debouncedSearch.trim();
-  const scoreTierId = scoreTier?.id ?? null;
-  const reviewsTierId = reviewsTier?.id ?? null;
-  const emailFilterId = emailFilter?.id ?? null;
-  const showTierFilters = activeTab === "all";
-  const showReverseClaim = activeTab === "claimed";
 
   useEffect(() => {
     if (isReady && !accessToken) {
       router.replace("/");
     }
   }, [isReady, accessToken, router]);
-
-  useEffect(() => {
-    if (!searchParams.get("tab")) {
-      window.history.replaceState(
-        window.history.state,
-        "",
-        "/businesses?tab=all",
-      );
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    return subscribeToDashboardTab((tab) => {
-      setActiveTab(resolveTab(tab));
-      setPage(1);
-      setScoreTier(null);
-      setReviewsTier(null);
-      setEmailFilter(null);
-      setSelectedIds(new Set());
-      setActionError(null);
-    });
-  }, []);
 
   const debouncedSetSearch = useMemo(
     () =>
@@ -108,32 +65,6 @@ export default function BusinessesPageContent() {
     debouncedSetSearch(value);
   };
 
-  const handleTabChange = (tab) => {
-    const nextTab = resolveTab(tab);
-    if (nextTab === activeTab) return;
-    setScoreTier(null);
-    setReviewsTier(null);
-    setEmailFilter(null);
-    setSelectedIds(new Set());
-    setActionError(null);
-    replaceTab(nextTab, "/businesses");
-  };
-
-  const handleScoreTierChange = (tier) => {
-    setScoreTier(tier);
-    setPage(1);
-  };
-
-  const handleReviewsTierChange = (tier) => {
-    setReviewsTier(tier);
-    setPage(1);
-  };
-
-  const handleEmailFilterChange = (filter) => {
-    setEmailFilter(filter);
-    setPage(1);
-  };
-
   const handlePreviousPage = () => {
     setPage((prev) => Math.max(1, prev - 1));
     setSelectedIds(new Set());
@@ -145,38 +76,18 @@ export default function BusinessesPageContent() {
   };
 
   const { data, error, isLoading, isFetching, isPlaceholderData } = useQuery({
-    queryKey: [
-      "admin-businesses",
-      page,
-      activeTab,
-      searchQuery,
-      scoreTierId,
-      reviewsTierId,
-      emailFilterId,
-    ],
+    queryKey: ["admin-businesses-with-emails", page, searchQuery],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
         limit: String(PAGE_LIMIT),
       });
-      if (claimedFilter === true) {
-        params.set("claimed", "true");
-      }
       if (searchQuery) {
         params.set("q", searchQuery);
       }
-      if (showTierFilters && scoreTierId) {
-        params.set("score_tier", scoreTierId);
-      }
-      if (showTierFilters && reviewsTierId) {
-        params.set("reviews_tier", reviewsTierId);
-      }
-      if (showTierFilters && emailFilterId) {
-        params.set("email_filter", emailFilterId);
-      }
 
       const result = await fetchApi(
-        `/admin/businesses?${params.toString()}`,
+        `/admin/businesses/with-emails?${params.toString()}`,
         { accessToken },
       );
       if (result.status === 401) {
@@ -185,7 +96,7 @@ export default function BusinessesPageContent() {
       }
       if (result.error) {
         throw new Error(
-          result.error.message || "Failed to fetch businesses",
+          result.error.message || "Failed to fetch businesses with emails",
         );
       }
       return result.data;
@@ -195,9 +106,9 @@ export default function BusinessesPageContent() {
     staleTime: 30_000,
   });
 
-  const unclaimMutation = useMutation({
+  const clearEmailsMutation = useMutation({
     mutationFn: async (business_ids) => {
-      const result = await fetchApi("/admin/businesses/unclaim", {
+      const result = await fetchApi("/admin/businesses/clear-emails", {
         method: "PATCH",
         accessToken,
         body: JSON.stringify({ business_ids }),
@@ -212,7 +123,7 @@ export default function BusinessesPageContent() {
         const message =
           typeof result.error.message === "string"
             ? result.error.message
-            : "Failed to reverse claims";
+            : "Failed to clear emails";
         throw new Error(message);
       }
 
@@ -222,11 +133,53 @@ export default function BusinessesPageContent() {
       setActionError(null);
       setConfirmOpen(false);
       setSelectedIds(new Set());
+      await queryClient.invalidateQueries({
+        queryKey: ["admin-businesses-with-emails"],
+      });
       await queryClient.invalidateQueries({ queryKey: ["admin-businesses"] });
     },
     onError: (err) => {
-      setActionError(err.message || "Failed to reverse claims");
+      setActionError(err.message || "Failed to clear emails");
       setConfirmOpen(false);
+    },
+  });
+
+  const updateEmailMutation = useMutation({
+    mutationFn: async ({ business_id, email }) => {
+      const result = await fetchApi("/admin/businesses/email", {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify({ business_id, email }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : typeof result.error.message?.email === "string"
+              ? result.error.message.email
+              : "Failed to update email";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      setEditError(null);
+      setEditOpen(false);
+      setEditingBusiness(null);
+      await queryClient.invalidateQueries({
+        queryKey: ["admin-businesses-with-emails"],
+      });
+      await queryClient.invalidateQueries({ queryKey: ["admin-businesses"] });
+    },
+    onError: (err) => {
+      setEditError(err.message || "Failed to update email");
     },
   });
 
@@ -257,7 +210,9 @@ export default function BusinessesPageContent() {
       setRefreshError(null);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["admin-businesses"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["admin-businesses-with-emails"],
+      });
     },
     onError: (err) => {
       setRefreshError(err.message || "Failed to refresh");
@@ -265,8 +220,14 @@ export default function BusinessesPageContent() {
   });
 
   useEffect(() => {
-    setLoading(unclaimMutation.isPending);
-  }, [unclaimMutation.isPending, setLoading]);
+    setLoading(
+      clearEmailsMutation.isPending || updateEmailMutation.isPending,
+    );
+  }, [
+    clearEmailsMutation.isPending,
+    updateEmailMutation.isPending,
+    setLoading,
+  ]);
 
   const businesses = useMemo(
     () => data?.businesses ?? [],
@@ -279,18 +240,9 @@ export default function BusinessesPageContent() {
 
   const totalPages = data?.totalPages ?? 0;
   const hasSelection = selectedIds.size > 0;
-  const reverseClaimDisabled = !hasSelection || unclaimMutation.isPending;
+  const actionDisabled = !hasSelection || clearEmailsMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
-  const hasSearch = Boolean(
-    searchQuery ||
-      (showTierFilters &&
-        (scoreTierId || reviewsTierId || emailFilterId)),
-  );
-
-  const handleViewClick = (business) => {
-    setSelectedBusiness(business);
-    setDrawerOpen(true);
-  };
+  const hasSearch = Boolean(searchQuery);
 
   const handleToggleId = (id, checked) => {
     setSelectedIds((prev) => {
@@ -312,42 +264,62 @@ export default function BusinessesPageContent() {
     });
   };
 
-  const handleReverseClaimClick = () => {
-    if (selectedIds.size === 0 || unclaimMutation.isPending) return;
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleDeleteEmailsClick = () => {
+    if (selectedIds.size === 0 || clearEmailsMutation.isPending) return;
     setActionError(null);
     setConfirmOpen(true);
   };
 
-  const handleConfirmReverseClaim = () => {
+  const handleConfirmDeleteEmails = () => {
     const business_ids = Array.from(selectedIds);
-    if (business_ids.length === 0 || unclaimMutation.isPending) return;
+    if (business_ids.length === 0 || clearEmailsMutation.isPending) return;
     setActionError(null);
-    unclaimMutation.mutate(business_ids);
+    clearEmailsMutation.mutate(business_ids);
+  };
+
+  const handleEditClick = (business) => {
+    setEditError(null);
+    setEditingBusiness(business);
+    setEditOpen(true);
+  };
+
+  const handleEditOpenChange = (open) => {
+    if (updateEmailMutation.isPending) return;
+    setEditOpen(open);
+    if (!open) {
+      setEditingBusiness(null);
+      setEditError(null);
+    }
+  };
+
+  const handleUpdateEmail = async ({ business_id, email }) => {
+    setEditError(null);
+    try {
+      await updateEmailMutation.mutateAsync({ business_id, email });
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-4 py-4 md:gap-4 md:px-8 md:py-6">
-      <BusinessFilterTabs value={activeTab} onValueChange={handleTabChange} />
-
       <div className="mt-2 flex flex-col gap-3 md:mt-4 md:gap-4">
-        <BusinessActions
+        <EmailCleanerActions
           searchValue={searchInput}
           onSearchChange={handleSearchChange}
-          showTierFilters={showTierFilters}
-          scoreTier={scoreTier}
-          onScoreTierChange={handleScoreTierChange}
-          reviewsTier={reviewsTier}
-          onReviewsTierChange={handleReviewsTierChange}
-          emailFilter={emailFilter}
-          onEmailFilterChange={handleEmailFilterChange}
-          showReverseClaim={showReverseClaim}
           selectedCount={selectedIds.size}
-          reverseClaimDisabled={reverseClaimDisabled}
-          onReverseClaim={handleReverseClaimClick}
-          reverseClaimPending={unclaimMutation.isPending}
-          actionError={actionError}
+          actionDisabled={actionDisabled}
+          onDeleteEmails={handleDeleteEmailsClick}
+          onClearSelection={handleClearSelection}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
+          deletePending={clearEmailsMutation.isPending}
+          actionError={actionError}
           refreshError={refreshError}
         />
 
@@ -356,16 +328,15 @@ export default function BusinessesPageContent() {
         ) : null}
 
         {showInitialSkeleton ? (
-          <BusinessesTableSkeleton activeTab={activeTab} />
+          <EmailCleanerTableSkeleton />
         ) : !error || isPlaceholderData ? (
-          <BusinessesTable
+          <EmailCleanerTable
             businesses={businesses}
-            onViewClick={handleViewClick}
-            activeTab={activeTab}
+            selectedIds={selectedIds}
+            onToggleId={handleToggleId}
+            onToggleAll={handleToggleAll}
+            onEditClick={handleEditClick}
             hasSearch={hasSearch}
-            selectedIds={showReverseClaim ? selectedIds : undefined}
-            onToggleId={showReverseClaim ? handleToggleId : undefined}
-            onToggleAll={showReverseClaim ? handleToggleAll : undefined}
           />
         ) : null}
 
@@ -380,18 +351,21 @@ export default function BusinessesPageContent() {
         />
       </div>
 
-      <BusinessDrawer
-        business={selectedBusiness}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-      />
-
-      <ReverseClaimConfirmDialog
+      <EmailCleanerConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         selectedCount={selectedIds.size}
-        onConfirm={handleConfirmReverseClaim}
-        confirmPending={unclaimMutation.isPending}
+        onConfirm={handleConfirmDeleteEmails}
+        confirmPending={clearEmailsMutation.isPending}
+      />
+
+      <EmailCleanerEditDialog
+        open={editOpen}
+        onOpenChange={handleEditOpenChange}
+        business={editingBusiness}
+        onSubmit={handleUpdateEmail}
+        submitPending={updateEmailMutation.isPending}
+        submitError={editError}
       />
     </div>
   );

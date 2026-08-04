@@ -303,6 +303,58 @@ export const ExportAdminLocationPostalCodesQuerySchema = Yup.object({
   city_id: Yup.string().uuid("Invalid city ID").required(),
   sort: locationSortQuery,
 });
+export const GetAdminBusinessesWithEmailsQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+});
+
+export const ClearBusinessEmailsSchema = Yup.object({
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(30, "At most 30 businesses can be cleared at once")
+    .required("Business IDs are required"),
+});
+
+export const UpdateBusinessEmailSchema = Yup.object({
+  business_id: Yup.string()
+    .uuid("Invalid business ID")
+    .required("Business ID is required"),
+  email: Yup.string()
+    .trim()
+    .email("Please enter a valid email address")
+    .required("Email is required"),
+});
+
+export const UnclaimBusinessesSchema = Yup.object({
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(30, "At most 30 businesses can be unclaimed at once")
+    .required("Business IDs are required"),
+});
+
+export const GetAdminUsersQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+});
+
+export const DeleteAdminUsersSchema = Yup.object({
+  user_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid user ID").required())
+    .min(1, "At least one user ID is required")
+    .max(30, "At most 30 users can be deleted at once")
+    .required("User IDs are required"),
+});
+
 export const CACHE_INVALIDATE_RESOURCES = [
   "contact-messages",
   "claim-requests",
@@ -322,6 +374,7 @@ export const OUTREACH_TYPES = [
   "claim_invite",
   "ownership_claim_invite",
   "lead_claim_invite",
+  "claim_followup",
   "website_offer",
 ];
 
@@ -375,6 +428,7 @@ export const GetOutreachBusinessesQuerySchema = Yup.object({
     .optional(),
   claim_invite_sent: optionalBoolQuery,
   website_offer_sent: optionalBoolQuery,
+  claim_followup_sent: optionalBoolQuery,
 });
 
 export const OutreachMatchingIdsSchema = Yup.object({
@@ -410,6 +464,7 @@ export const OutreachMatchingIdsSchema = Yup.object({
     .optional(),
   claim_invite_sent: Yup.boolean().nullable().optional(),
   website_offer_sent: Yup.boolean().nullable().optional(),
+  claim_followup_sent: Yup.boolean().nullable().optional(),
 });
 
 export const OutreachPreviewSchema = Yup.object({

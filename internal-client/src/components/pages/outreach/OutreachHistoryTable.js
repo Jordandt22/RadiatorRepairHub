@@ -43,7 +43,7 @@ function HistoryTableView({ rows }) {
                   </span>
                   {row.business?.slug ? (
                     <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
-                      /business/{row.business.slug}
+                      {row.business.slug}
                     </span>
                   ) : null}
                 </div>
@@ -93,7 +93,7 @@ function HistoryCardList({ rows }) {
               </p>
               {row.business?.slug ? (
                 <p className="text-xs text-muted-foreground">
-                  /business/{row.business.slug}
+                  {row.business.slug}
                 </p>
               ) : null}
             </div>

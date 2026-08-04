@@ -21,6 +21,12 @@ import {
   getListingReports as fetchListingReports,
   updateListingReportsStatus as updateReportsStatus,
   getAdminBusinesses as fetchAdminBusinesses,
+  getAdminBusinessesWithEmails as fetchAdminBusinessesWithEmails,
+  clearBusinessEmails as clearEmailsOnBusinesses,
+  updateBusinessEmail as patchBusinessEmail,
+  unclaimBusinessesByIds,
+  getAdminUsers as fetchAdminUsers,
+  deleteAdminUsers as removeAdminUsers,
   getAdminLocationAggregates,
   filterAdminLocations,
   sortAdminLocations,
@@ -48,6 +54,9 @@ import {
   getAdminLocationsKey,
   getAdminLocationAggregatesKey,
   getAdminDashboardStatsKey,
+  getBusinessByIdKey,
+  getBusinessBySlugKey,
+  deleteCacheData,
   deleteCacheDataByPrefix,
 } from "../../redis/redis.js";
 import { clearClaimCodeCache } from "../../lib/claimHelpers.js";
@@ -1500,6 +1509,261 @@ export const getBusinesses = async (req, res) => {
   return res.status(200).json(successHandler(compiledData));
 };
 
+export const getBusinessesWithEmails = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const q = rawQ ? rawQ.slice(0, 100) : null;
+
+  const { data, count, error } = await fetchAdminBusinessesWithEmails(
+    page,
+    limit,
+    { q }
+  );
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching businesses with emails.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  return res.status(200).json(
+    successHandler({
+      businesses: data ?? [],
+      total,
+      totalPages,
+      page,
+      limit,
+      q,
+    })
+  );
+};
+
+export const clearBusinessEmails = async (req, res) => {
+  const { business_ids } = req.body;
+
+  const { data, error } = await clearEmailsOnBusinesses(business_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error clearing business emails.",
+          error
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+  await deleteCacheDataByPrefix("ADMIN_LOCATIONS");
+
+  const clearedIds = (data ?? []).map((row) => row.id);
+
+  return res.status(200).json(
+    successHandler({
+      cleared: clearedIds.length,
+      business_ids: clearedIds,
+    })
+  );
+};
+
+export const updateBusinessEmail = async (req, res) => {
+  const { business_id, email } = req.body;
+  const normalizedEmail = String(email).trim();
+
+  const { data, error } = await patchBusinessEmail(
+    business_id,
+    normalizedEmail
+  );
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(SUPABASE_ERROR, "Business not found.", error)
+        );
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating the business email.",
+          error
+        )
+      );
+  }
+
+  try {
+    const { key: businessIdCacheKey } = getBusinessByIdKey(data.id);
+    await deleteCacheData(businessIdCacheKey);
+    if (data.slug) {
+      const { key: businessSlugCacheKey } = getBusinessBySlugKey(data.slug);
+      await deleteCacheData(businessSlugCacheKey);
+    }
+  } catch {
+    // best-effort cache cleanup
+  }
+
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+  await deleteCacheDataByPrefix("ADMIN_LOCATIONS");
+
+  return res.status(200).json(
+    successHandler({
+      id: data.id,
+      title: data.title,
+      slug: data.slug,
+      email: data.email,
+    })
+  );
+};
+
+export const unclaimBusinesses = async (req, res) => {
+  const { business_ids } = req.body;
+
+  const { data, error } = await unclaimBusinessesByIds(business_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error reversing business claims.",
+          error
+        )
+      );
+  }
+
+  for (const business of data ?? []) {
+    try {
+      const { key: businessIdCacheKey } = getBusinessByIdKey(business.id);
+      await deleteCacheData(businessIdCacheKey);
+      if (business.slug) {
+        const { key: businessSlugCacheKey } = getBusinessBySlugKey(
+          business.slug
+        );
+        await deleteCacheData(businessSlugCacheKey);
+      }
+    } catch {
+      // best-effort cache cleanup
+    }
+  }
+
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+  await deleteCacheDataByPrefix("ADMIN_LOCATIONS");
+
+  const unclaimedIds = (data ?? []).map((row) => row.id);
+
+  return res.status(200).json(
+    successHandler({
+      unclaimed: unclaimedIds.length,
+      business_ids: unclaimedIds,
+    })
+  );
+};
+
+export const getUsers = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+
+  const { data, count, error } = await fetchAdminUsers(page, limit);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching users.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  return res.status(200).json(
+    successHandler({
+      users: data ?? [],
+      total,
+      totalPages,
+      page,
+      limit,
+    })
+  );
+};
+
+export const deleteUsers = async (req, res) => {
+  const { user_ids } = req.body;
+
+  const { deleted, unclaimedBusinesses, errors } =
+    await removeAdminUsers(user_ids);
+
+  for (const business of unclaimedBusinesses ?? []) {
+    try {
+      const { key: businessIdCacheKey } = getBusinessByIdKey(business.id);
+      await deleteCacheData(businessIdCacheKey);
+      if (business.slug) {
+        const { key: businessSlugCacheKey } = getBusinessBySlugKey(
+          business.slug
+        );
+        await deleteCacheData(businessSlugCacheKey);
+      }
+    } catch {
+      // best-effort cache cleanup
+    }
+  }
+
+  if (deleted.length || unclaimedBusinesses.length) {
+    await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+    await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+    await deleteCacheDataByPrefix("ADMIN_LOCATIONS");
+  }
+
+  if (deleted.length === 0 && errors.length > 0) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          errors[0]?.message || "There was an error deleting users.",
+          errors
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      deleted: deleted.length,
+      user_ids: deleted,
+      errors,
+    })
+  );
+};
+
 export const getLocations = async (req, res) => {
   let page = Number(req.query.page);
   const limit = Number(req.query.limit);
@@ -1897,6 +2161,7 @@ const parseOutreachListFilters = (source = {}) => {
     websiteFilter,
     claimInviteSent: parseBool(source.claim_invite_sent),
     websiteOfferSent: parseBool(source.website_offer_sent),
+    claimFollowupSent: parseBool(source.claim_followup_sent),
   };
 };
 
@@ -1941,6 +2206,7 @@ export const getOutreachBusinesses = async (req, res) => {
       website_filter: filters.websiteFilter,
       claim_invite_sent: filters.claimInviteSent,
       website_offer_sent: filters.websiteOfferSent,
+      claim_followup_sent: filters.claimFollowupSent,
     })
   );
 };
@@ -1954,6 +2220,7 @@ export const getOutreachMatchingIds = async (req, res) => {
     website_filter,
     claim_invite_sent,
     website_offer_sent,
+    claim_followup_sent,
   } = req.body;
 
   const filters = parseOutreachListFilters({
@@ -1962,6 +2229,7 @@ export const getOutreachMatchingIds = async (req, res) => {
     website_filter,
     claim_invite_sent,
     website_offer_sent,
+    claim_followup_sent,
   });
 
   const { data, businesses, error } = await getOutreachMatchingBusinessIds({

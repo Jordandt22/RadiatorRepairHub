@@ -22,6 +22,8 @@ const SEGMENT_LABELS = {
   states: "States",
   cities: "Cities",
   outreach: "Outreach",
+  "email-cleaner": "Email Cleaner",
+  users: "Users",
   "affiliate-programs": "Affiliate Programs",
   "add-businesses": "Add Businesses",
   group: "Groups",

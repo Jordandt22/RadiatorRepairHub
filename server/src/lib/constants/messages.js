@@ -352,10 +352,39 @@ export const ADMIN_BUSINESS_CLAIMED_MESSAGE = Object.freeze({
   `,
 });
 
+// Thank-you email sent to the business owner after a successful claim
+export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Thanks for claiming ${businessName ?? "your business"} on RadiatorRepairHub`,
+  html: (businessName, { businessPageUrl, dashboardUrl }) => `
+  <p>Hi there,</p>
+
+  <p>Thank you for claiming <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub. Your account is ready, and you can now manage your listing.</p>
+
+  <p>View your listing:<br>
+  <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
+
+  <p>Go to your dashboard:<br>
+  <a href="${dashboardUrl}" style="color: #1a73e8;">${dashboardUrl}</a></p>
+
+  <p><strong>With your Claimed Listing, you can:</strong></p>
+  <ul>
+    <li>Update information about your business</li>
+    <li>Keep contact info accurate so customers can reach you</li>
+    <li>Show as a verified shop and have higher priority in search results</li>
+  </ul>
+
+  <p>If you have any questions, just reply to this email, we're happy to help anytime!</p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
 const OUTREACH_TYPE_ADMIN_LABELS = {
   claim_invite: "Claim invite",
   ownership_claim_invite: "Claim invite (ownership)",
   lead_claim_invite: "Claim invite (leads)",
+  claim_followup: "Claim follow-up",
   website_offer: "Website offer",
 };
 
@@ -468,13 +497,42 @@ export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   <p>Claim your free listing so you can:</p>
   <ul>
     <li>Keep your contact info, hours, and services accurate</li>
-    <li>Show as a verified shop</li>
+    <li>Show as a verified shop and have higher priority in search results</li>
     <li>Increase your visibility and reach more customers</li>
   </ul>
 
   <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
+// Outreach: final follow-up after any claim-invite variant
+export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Follow-up: Claim your listing on RadiatorRepairHub${
+      businessName ? `: ${businessName}` : ""
+    }`,
+  html: (businessName, { businessPageUrl, howToClaimUrl }) => `
+  <p>Hi there,</p>
+
+  <p>We previously reached out about claiming your free listing for <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub.</p>
+
+  <p><strong>By claiming your listing, you can:</strong></p>
+  <ul>
+    <li>Update your information about your business</li>
+    <li>Keep contact info accurate so customers can reach you</li>
+    <li>Show as a verified shop with higher priority in search results</li>
+    <li>Use your RadiatorRepairHub page as a website link for Google Business Profile, ads, and social profiles</li>
+  </ul>
+
+  <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
+
+  <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
+
+  <p>If you're not interested, no worries! We won't bother you again.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `,
@@ -524,7 +582,7 @@ export const DECLINED_RECOMMENDATIONS_FALLBACK =
 
 export const buildNearbyRecommendationsHtml = (
   shops,
-  fallback = DECLINED_RECOMMENDATIONS_FALLBACK
+  fallback = DECLINED_RECOMMENDATIONS_FALLBACK,
 ) => {
   if (!Array.isArray(shops) || shops.length === 0) {
     return `<p>${fallback}</p>`;

@@ -12,6 +12,7 @@ export const OUTREACH_TYPE_OPTIONS = [
   { id: "claim_invite", label: "Claim invite (website)" },
   { id: "ownership_claim_invite", label: "Claim invite (ownership)" },
   { id: "lead_claim_invite", label: "Claim invite (leads)" },
+  { id: "claim_followup", label: "Claim follow-up" },
   { id: "website_offer", label: "Website offer" },
 ];
 
@@ -43,6 +44,7 @@ export const OUTREACH_TYPE_LABELS = {
   claim_invite: "Claim invite (website)",
   ownership_claim_invite: "Claim invite (ownership)",
   lead_claim_invite: "Claim invite (leads)",
+  claim_followup: "Claim follow-up",
   website_offer: "Website offer",
 };
 

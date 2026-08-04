@@ -60,11 +60,12 @@ function OutreachTableView({
               </TableHead>
             ) : null}
             <TableHead className="w-[28%]">Business</TableHead>
-            <TableHead className="w-[22%]">Email</TableHead>
-            <TableHead className="w-[14%]">Eligibility</TableHead>
-            <TableHead className="w-[10%]">Website</TableHead>
-            <TableHead className="w-[13%]">Claim invite</TableHead>
-            <TableHead className="w-[13%]">Website offer</TableHead>
+            <TableHead className="w-[20%]">Email</TableHead>
+            <TableHead className="w-[12%]">Eligibility</TableHead>
+            <TableHead className="w-[8%]">Website</TableHead>
+            <TableHead className="w-[11%]">Claim invite</TableHead>
+            <TableHead className="w-[11%]">Follow-up</TableHead>
+            <TableHead className="w-[10%]">Website offer</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -94,7 +95,7 @@ function OutreachTableView({
                     <span className="block truncate">{row.title ?? "—"}</span>
                     {row.slug ? (
                       <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
-                        /business/{row.slug}
+                        {row.slug}
                       </span>
                     ) : null}
                   </div>
@@ -117,6 +118,9 @@ function OutreachTableView({
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <SentCell sentAt={row.claim_invite_sent_at} />
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  <SentCell sentAt={row.claim_followup_sent_at} />
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <SentCell sentAt={row.website_offer_sent_at} />
@@ -166,7 +170,7 @@ function OutreachCardList({
                   <p className="text-sm font-medium">{row.title ?? "—"}</p>
                   {row.slug ? (
                     <p className="text-xs text-muted-foreground">
-                      /business/{row.slug}
+                      {row.slug}
                     </p>
                   ) : null}
                 </div>
@@ -180,6 +184,12 @@ function OutreachCardList({
                   <dd>
                     {row.claim_invite_sent_at
                       ? formatDate(row.claim_invite_sent_at)
+                      : "—"}
+                  </dd>
+                  <dt className="text-muted-foreground">Follow-up</dt>
+                  <dd>
+                    {row.claim_followup_sent_at
+                      ? formatDate(row.claim_followup_sent_at)
                       : "—"}
                   </dd>
                   <dt className="text-muted-foreground">Website offer</dt>

@@ -2,6 +2,7 @@ import {
   CLAIM_INVITE_OUTREACH_MESSAGE,
   OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE,
   LEAD_CLAIM_INVITE_OUTREACH_MESSAGE,
+  CLAIM_FOLLOWUP_OUTREACH_MESSAGE,
   WEBSITE_OFFER_OUTREACH_MESSAGE,
   SENDER_NAME,
   buildBusinessClaimLink,
@@ -12,6 +13,7 @@ export const OUTREACH_TYPES = Object.freeze({
   CLAIM_INVITE: "claim_invite",
   OWNERSHIP_CLAIM_INVITE: "ownership_claim_invite",
   LEAD_CLAIM_INVITE: "lead_claim_invite",
+  CLAIM_FOLLOWUP: "claim_followup",
   WEBSITE_OFFER: "website_offer",
 });
 
@@ -80,6 +82,23 @@ export const evaluateOutreachEligibility = (business, outreachType) => {
     return { ok: true, recipient };
   }
 
+  if (outreachType === OUTREACH_TYPES.CLAIM_FOLLOWUP) {
+    if (eligibility !== CLAIM_ELIGIBILITY.ABLE) {
+      return { ok: false, reason: `eligibility_${eligibility || "unknown"}` };
+    }
+    if (!business?.claim_invite_sent_at) {
+      return { ok: false, reason: "claim_invite_not_sent" };
+    }
+    if (business?.claim_followup_sent_at) {
+      return { ok: false, reason: "already_sent" };
+    }
+    const recipient = resolveOutreachRecipient(business);
+    if (!recipient) {
+      return { ok: false, reason: "missing_recipient" };
+    }
+    return { ok: true, recipient };
+  }
+
   if (outreachType === OUTREACH_TYPES.WEBSITE_OFFER) {
     if (
       eligibility !== CLAIM_ELIGIBILITY.ABLE &&
@@ -132,6 +151,16 @@ export const buildOutreachEmailContent = (business, outreachType) => {
     return {
       subject: LEAD_CLAIM_INVITE_OUTREACH_MESSAGE.subject(businessName),
       html: LEAD_CLAIM_INVITE_OUTREACH_MESSAGE.html(businessName, {
+        businessPageUrl,
+        howToClaimUrl,
+      }),
+    };
+  }
+
+  if (outreachType === OUTREACH_TYPES.CLAIM_FOLLOWUP) {
+    return {
+      subject: CLAIM_FOLLOWUP_OUTREACH_MESSAGE.subject(businessName),
+      html: CLAIM_FOLLOWUP_OUTREACH_MESSAGE.html(businessName, {
         businessPageUrl,
         howToClaimUrl,
       }),

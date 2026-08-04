@@ -50,7 +50,7 @@ function DataIssuesTableView({ issues }) {
                   <span className="block truncate">{row.title ?? "—"}</span>
                   {row.slug ? (
                     <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
-                      /business/{row.slug}
+                      {row.slug}
                     </span>
                   ) : null}
                 </div>
@@ -110,7 +110,7 @@ function DataIssuesCardList({ issues }) {
             <p className="truncate font-medium">{row.title ?? "—"}</p>
             {row.slug ? (
               <p className="text-xs text-muted-foreground">
-                /business/{row.slug}
+                {row.slug}
               </p>
             ) : null}
             <div className="mt-1.5">

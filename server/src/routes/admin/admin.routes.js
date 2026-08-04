@@ -18,6 +18,12 @@ import {
   getListingReports,
   updateListingReportsStatus,
   getBusinesses,
+  getBusinessesWithEmails,
+  clearBusinessEmails,
+  updateBusinessEmail,
+  unclaimBusinesses,
+  getUsers,
+  deleteUsers,
   getLocations,
   exportLocationStates,
   exportLocationCities,
@@ -58,6 +64,12 @@ import {
   GetListingReportsQuerySchema,
   UpdateListingReportsStatusSchema,
   GetAdminBusinessesQuerySchema,
+  GetAdminBusinessesWithEmailsQuerySchema,
+  ClearBusinessEmailsSchema,
+  UpdateBusinessEmailSchema,
+  UnclaimBusinessesSchema,
+  GetAdminUsersQuerySchema,
+  DeleteAdminUsersSchema,
   GetAdminLocationsQuerySchema,
   ExportAdminLocationStatesQuerySchema,
   ExportAdminLocationCitiesQuerySchema,
@@ -136,6 +148,48 @@ adminRouter.get(
   authAdmin,
   queryValidator(GetAdminBusinessesQuerySchema),
   serverErrorCatcherWrapper(getBusinesses)
+);
+
+adminRouter.get(
+  "/businesses/with-emails",
+  authAdmin,
+  queryValidator(GetAdminBusinessesWithEmailsQuerySchema),
+  serverErrorCatcherWrapper(getBusinessesWithEmails)
+);
+
+adminRouter.patch(
+  "/businesses/clear-emails",
+  authAdmin,
+  bodyValidator(ClearBusinessEmailsSchema),
+  serverErrorCatcherWrapper(clearBusinessEmails)
+);
+
+adminRouter.patch(
+  "/businesses/email",
+  authAdmin,
+  bodyValidator(UpdateBusinessEmailSchema),
+  serverErrorCatcherWrapper(updateBusinessEmail)
+);
+
+adminRouter.patch(
+  "/businesses/unclaim",
+  authAdmin,
+  bodyValidator(UnclaimBusinessesSchema),
+  serverErrorCatcherWrapper(unclaimBusinesses)
+);
+
+adminRouter.get(
+  "/users",
+  authAdmin,
+  queryValidator(GetAdminUsersQuerySchema),
+  serverErrorCatcherWrapper(getUsers)
+);
+
+adminRouter.delete(
+  "/users",
+  authAdmin,
+  bodyValidator(DeleteAdminUsersSchema),
+  serverErrorCatcherWrapper(deleteUsers)
 );
 
 adminRouter.get(
