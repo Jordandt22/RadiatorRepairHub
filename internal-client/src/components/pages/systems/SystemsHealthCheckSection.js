@@ -5,12 +5,12 @@ import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import SystemsHealthStatusCard from "@/components/pages/systems/SystemsHealthStatusCard";
 
-export function useSystemsHealth() {
+export function useSystemsHealth({ enabled = true } = {}) {
   const { accessToken, isReady, logout } = useAuth();
 
   return useQuery({
     queryKey: ["admin-systems-health"],
-    enabled: Boolean(isReady && accessToken),
+    enabled: Boolean(enabled && isReady && accessToken),
     queryFn: async () => {
       const result = await fetchApi("/admin/systems/health", { accessToken });
 
@@ -40,8 +40,11 @@ export default function SystemsHealthCheckSection({
   description,
   externalUrl = null,
   externalLabel = "Open",
+  enabled = true,
 }) {
-  const { data, error, isLoading, isFetching, refetch } = useSystemsHealth();
+  const { data, error, isLoading, isFetching, refetch } = useSystemsHealth({
+    enabled,
+  });
   const check = data?.checks?.find((item) => item.id === checkId) ?? null;
   const checkWithTimestamp = check
     ? { ...check, checked_at: data?.checked_at ?? null }
