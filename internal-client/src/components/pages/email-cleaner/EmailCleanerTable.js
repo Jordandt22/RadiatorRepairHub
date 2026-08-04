@@ -184,9 +184,12 @@ export default function EmailCleanerTable({
   onToggleAll,
   onEditClick,
   hasSearch = false,
+  hasFilters = false,
 }) {
   if (!businesses.length) {
-    return <EmailCleanerEmptyState hasSearch={hasSearch} />;
+    return (
+      <EmailCleanerEmptyState hasSearch={hasSearch} hasFilters={hasFilters} />
+    );
   }
 
   return (

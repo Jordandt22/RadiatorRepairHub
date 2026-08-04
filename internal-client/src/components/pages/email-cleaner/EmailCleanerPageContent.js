@@ -22,6 +22,13 @@ import Pagination from "@/components/pages/dashboard/Pagination";
 const PAGE_LIMIT = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
+function parseEmailsSentFilter(item) {
+  if (!item?.id) return null;
+  if (item.id === "true") return true;
+  if (item.id === "false") return false;
+  return null;
+}
+
 export default function EmailCleanerPageContent() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -30,6 +37,7 @@ export default function EmailCleanerPageContent() {
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [emailsSent, setEmailsSent] = useState(null);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -39,6 +47,7 @@ export default function EmailCleanerPageContent() {
   const [refreshError, setRefreshError] = useState(null);
 
   const searchQuery = debouncedSearch.trim();
+  const emailsSentValue = parseEmailsSentFilter(emailsSent);
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -65,6 +74,12 @@ export default function EmailCleanerPageContent() {
     debouncedSetSearch(value);
   };
 
+  const handleEmailsSentChange = (value) => {
+    setEmailsSent(value);
+    setPage(1);
+    setSelectedIds(new Set());
+  };
+
   const handlePreviousPage = () => {
     setPage((prev) => Math.max(1, prev - 1));
     setSelectedIds(new Set());
@@ -76,7 +91,12 @@ export default function EmailCleanerPageContent() {
   };
 
   const { data, error, isLoading, isFetching, isPlaceholderData } = useQuery({
-    queryKey: ["admin-businesses-with-emails", page, searchQuery],
+    queryKey: [
+      "admin-businesses-with-emails",
+      page,
+      searchQuery,
+      emailsSentValue,
+    ],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
@@ -84,6 +104,9 @@ export default function EmailCleanerPageContent() {
       });
       if (searchQuery) {
         params.set("q", searchQuery);
+      }
+      if (emailsSentValue !== null) {
+        params.set("emails_sent", String(emailsSentValue));
       }
 
       const result = await fetchApi(
@@ -243,6 +266,7 @@ export default function EmailCleanerPageContent() {
   const actionDisabled = !hasSelection || clearEmailsMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
   const hasSearch = Boolean(searchQuery);
+  const hasFilters = emailsSentValue !== null;
 
   const handleToggleId = (id, checked) => {
     setSelectedIds((prev) => {
@@ -312,6 +336,8 @@ export default function EmailCleanerPageContent() {
         <EmailCleanerActions
           searchValue={searchInput}
           onSearchChange={handleSearchChange}
+          emailsSent={emailsSent}
+          onEmailsSentChange={handleEmailsSentChange}
           selectedCount={selectedIds.size}
           actionDisabled={actionDisabled}
           onDeleteEmails={handleDeleteEmailsClick}
@@ -337,6 +363,7 @@ export default function EmailCleanerPageContent() {
             onToggleAll={handleToggleAll}
             onEditClick={handleEditClick}
             hasSearch={hasSearch}
+            hasFilters={hasFilters}
           />
         ) : null}
 

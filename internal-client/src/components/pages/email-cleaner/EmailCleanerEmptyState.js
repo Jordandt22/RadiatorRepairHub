@@ -13,8 +13,17 @@ const SEARCH_EMPTY = {
   description: "No businesses matched your search. Try different keywords.",
 };
 
-export default function EmailCleanerEmptyState({ hasSearch = false }) {
-  const content = hasSearch ? SEARCH_EMPTY : EMPTY;
+const FILTER_EMPTY = {
+  icon: SearchIcon,
+  title: "No matches",
+  description: "No businesses matched your filters. Try adjusting them.",
+};
+
+export default function EmailCleanerEmptyState({
+  hasSearch = false,
+  hasFilters = false,
+}) {
+  const content = hasSearch || hasFilters ? (hasSearch ? SEARCH_EMPTY : FILTER_EMPTY) : EMPTY;
   const Icon = content.icon;
 
   return (

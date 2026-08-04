@@ -766,14 +766,44 @@ const EMAIL_CLEANER_BUSINESS_SELECT = "id, title, slug, email";
 export const getAdminBusinessesWithEmails = async (
   page,
   limit,
-  { q = null } = {}
+  { q = null, emailsSent = null } = {}
 ) => {
+  let sentBusinessIds = null;
+
+  if (emailsSent === true || emailsSent === false) {
+    const { data: historyRows, error: historyError } = await supabase
+      .from("outreach_history")
+      .select("business_id");
+
+    if (historyError) {
+      return { data: null, count: null, error: historyError };
+    }
+
+    sentBusinessIds = [
+      ...new Set(
+        (historyRows ?? [])
+          .map((row) => row?.business_id)
+          .filter(Boolean)
+      ),
+    ];
+
+    if (emailsSent === true && sentBusinessIds.length === 0) {
+      return { data: [], count: 0, error: null };
+    }
+  }
+
   let query = supabase
     .from("businesses")
     .select(EMAIL_CLEANER_BUSINESS_SELECT, { count: "exact" })
     .not("email", "is", null)
     .neq("email", "")
     .order("title", { ascending: true });
+
+  if (emailsSent === true) {
+    query = query.in("id", sentBusinessIds);
+  } else if (emailsSent === false && sentBusinessIds.length > 0) {
+    query = query.not("id", "in", `(${sentBusinessIds.join(",")})`);
+  }
 
   const sanitized = sanitizeAdminBusinessSearch(q);
   if (sanitized) {

@@ -1581,10 +1581,17 @@ export const getBusinessesWithEmails = async (req, res) => {
   const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
   const q = rawQ ? rawQ.slice(0, 100) : null;
 
+  const parseBool = (value) => {
+    if (value === true || value === "true") return true;
+    if (value === false || value === "false") return false;
+    return null;
+  };
+  const emailsSent = parseBool(req.query.emails_sent);
+
   const { data, count, error } = await fetchAdminBusinessesWithEmails(
     page,
     limit,
-    { q }
+    { q, emailsSent }
   );
 
   if (error) {
@@ -1613,6 +1620,7 @@ export const getBusinessesWithEmails = async (req, res) => {
       page,
       limit,
       q,
+      emails_sent: emailsSent,
     })
   );
 };

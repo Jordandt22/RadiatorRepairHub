@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import {
   Combobox,
   ComboboxContent,
@@ -18,6 +19,8 @@ export default function BusinessTierCombobox({
   disabled = false,
   className,
 }) {
+  const inputId = useId();
+
   return (
     <Combobox
       items={items}
@@ -34,7 +37,8 @@ export default function BusinessTierCombobox({
         showClear={Boolean(value)}
         disabled={disabled}
         autoComplete="off"
-        name={`filter-${ariaLabel.replace(/\s+/g, "-").toLowerCase()}`}
+        name={`rrh-filter-${inputId}`}
+        id={`rrh-filter-${inputId}`}
         className={className ?? "w-full min-w-0 md:min-w-[10rem]"}
       />
       <ComboboxContent className="rounded-lg">

@@ -2,6 +2,12 @@ import { MailXIcon, RefreshCwIcon, SearchIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
+
+export const EMAILS_SENT_FILTERS = [
+  { id: "true", label: "Emails Sent" },
+  { id: "false", label: "No Emails Sent" },
+];
 
 function ActionButton({
   label,
@@ -33,6 +39,8 @@ function ActionButton({
 export default function EmailCleanerActions({
   searchValue = "",
   onSearchChange,
+  emailsSent = null,
+  onEmailsSentChange,
   selectedCount = 0,
   actionDisabled = true,
   onDeleteEmails,
@@ -64,7 +72,17 @@ export default function EmailCleanerActions({
             {selectedCount} selected
           </span>
         ) : null}
-        <div className="relative min-w-0 flex-1 md:max-w-sm md:ml-auto">
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:ml-auto md:max-w-xs">
+          <BusinessTierCombobox
+            items={EMAILS_SENT_FILTERS}
+            value={emailsSent}
+            onValueChange={onEmailsSentChange}
+            placeholder="All sent status"
+            ariaLabel="Filter by sent status"
+            disabled={refreshPending || deletePending}
+          />
+        </div>
+        <div className="relative min-w-0 flex-1 md:max-w-sm">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
