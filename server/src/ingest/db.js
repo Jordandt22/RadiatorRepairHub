@@ -236,7 +236,7 @@ function summarizeBatch(batch) {
 export async function listIngestGroups() {
   const { data: groups, error } = await supabase
     .from("ingest_groups")
-    .select("id, name, status, created_at, filtered_out_payload")
+    .select("id, name, status, created_at")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -248,7 +248,7 @@ export async function listIngestGroups() {
     await Promise.all([
       supabase
         .from("ingest_batches")
-        .select("id, group_id, status")
+        .select("id, group_id, status, result_payload")
         .in("group_id", groupIds),
       supabase
         .from("ingest_jobs")
@@ -264,16 +264,20 @@ export async function listIngestGroups() {
   return (groups || []).map((group) => {
     const groupBatches = (batches || []).filter((b) => b.group_id === group.id);
     const groupJobs = (jobs || []).filter((j) => j.group_id === group.id);
-    const filteredOutCount = Array.isArray(group.filtered_out_payload)
-      ? group.filtered_out_payload.length
-      : 0;
+    const insertedCount = groupBatches.reduce((sum, batch) => {
+      if (batch.status !== "completed") return sum;
+      return (
+        sum +
+        (Array.isArray(batch.result_payload) ? batch.result_payload.length : 0)
+      );
+    }, 0);
 
     return {
       id: group.id,
       name: group.name,
       status: group.status,
       created_at: group.created_at,
-      filtered_out_count: filteredOutCount,
+      inserted_count: insertedCount,
       total_batches: groupBatches.length,
       processing_batches: groupBatches.filter((b) =>
         processingStatuses.has(b.status)

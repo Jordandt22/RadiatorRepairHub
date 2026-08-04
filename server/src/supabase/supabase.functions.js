@@ -696,6 +696,244 @@ const fetchAllAdminRows = async (table, selectCols) => {
   return { data: rows, error: null };
 };
 
+const countExact = async (query) => {
+  const { count, error } = await query;
+  if (error) return { count: 0, error };
+  return { count: count ?? 0, error: null };
+};
+
+const OUTREACH_TYPE_STAT_LABELS = {
+  claim_invite: "Claim invite (website)",
+  ownership_claim_invite: "Claim invite (ownership)",
+  lead_claim_invite: "Claim invite (leads)",
+  website_offer: "Website offer",
+};
+
+const CLAIM_ELIGIBILITY_STAT_LABELS = {
+  able: "Able",
+  no_email: "No email",
+  duplicate_email: "Duplicate email",
+  claimed: "Claimed",
+};
+
+/**
+ * Overview dashboard pie-chart stats: email/website coverage, claim eligibility,
+ * and outreach emails by type.
+ */
+export const getAdminDashboardStats = async () => {
+  const [
+    totalRes,
+    withEmailRes,
+    withoutEmailRes,
+    withWebsiteRes,
+    withoutWebsiteRes,
+    ableRes,
+    noEmailRes,
+    duplicateEmailRes,
+    claimedRes,
+    claimInviteRes,
+    ownershipClaimRes,
+    leadClaimRes,
+    websiteOfferRes,
+  ] = await Promise.all([
+    countExact(
+      supabase.from("businesses").select("id", { count: "exact", head: true })
+    ),
+    countExact(
+      supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .not("email", "is", null)
+        .neq("email", "")
+    ),
+    countExact(
+      supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .or("email.is.null,email.eq.")
+    ),
+    countExact(
+      supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .not("website", "is", null)
+        .neq("website", "")
+    ),
+    countExact(
+      supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .or("website.is.null,website.eq.")
+    ),
+    countExact(
+      supabase
+        .from("outreach_business_list")
+        .select("id", { count: "exact", head: true })
+        .eq("claim_eligibility", "able")
+    ),
+    countExact(
+      supabase
+        .from("outreach_business_list")
+        .select("id", { count: "exact", head: true })
+        .eq("claim_eligibility", "no_email")
+    ),
+    countExact(
+      supabase
+        .from("outreach_business_list")
+        .select("id", { count: "exact", head: true })
+        .eq("claim_eligibility", "duplicate_email")
+    ),
+    countExact(
+      supabase
+        .from("outreach_business_list")
+        .select("id", { count: "exact", head: true })
+        .eq("claim_eligibility", "claimed")
+    ),
+    countExact(
+      supabase
+        .from("outreach_history")
+        .select("outreach_history_id", { count: "exact", head: true })
+        .eq("outreach_type", "claim_invite")
+    ),
+    countExact(
+      supabase
+        .from("outreach_history")
+        .select("outreach_history_id", { count: "exact", head: true })
+        .eq("outreach_type", "ownership_claim_invite")
+    ),
+    countExact(
+      supabase
+        .from("outreach_history")
+        .select("outreach_history_id", { count: "exact", head: true })
+        .eq("outreach_type", "lead_claim_invite")
+    ),
+    countExact(
+      supabase
+        .from("outreach_history")
+        .select("outreach_history_id", { count: "exact", head: true })
+        .eq("outreach_type", "website_offer")
+    ),
+  ]);
+
+  const firstError =
+    totalRes.error ||
+    withEmailRes.error ||
+    withoutEmailRes.error ||
+    withWebsiteRes.error ||
+    withoutWebsiteRes.error ||
+    ableRes.error ||
+    noEmailRes.error ||
+    duplicateEmailRes.error ||
+    claimedRes.error ||
+    claimInviteRes.error ||
+    ownershipClaimRes.error ||
+    leadClaimRes.error ||
+    websiteOfferRes.error;
+
+  if (firstError) {
+    return { data: null, error: firstError };
+  }
+
+  const emailSlices = [
+    {
+      key: "with_email",
+      label: "With email",
+      count: withEmailRes.count,
+    },
+    {
+      key: "without_email",
+      label: "No email",
+      count: withoutEmailRes.count,
+    },
+  ].filter((slice) => slice.count > 0);
+
+  const websiteSlices = [
+    {
+      key: "with_website",
+      label: "With website",
+      count: withWebsiteRes.count,
+    },
+    {
+      key: "without_website",
+      label: "No website",
+      count: withoutWebsiteRes.count,
+    },
+  ].filter((slice) => slice.count > 0);
+
+  const claimEligibilitySlices = [
+    {
+      key: "able",
+      label: CLAIM_ELIGIBILITY_STAT_LABELS.able,
+      count: ableRes.count,
+    },
+    {
+      key: "no_email",
+      label: CLAIM_ELIGIBILITY_STAT_LABELS.no_email,
+      count: noEmailRes.count,
+    },
+    {
+      key: "duplicate_email",
+      label: CLAIM_ELIGIBILITY_STAT_LABELS.duplicate_email,
+      count: duplicateEmailRes.count,
+    },
+    {
+      key: "claimed",
+      label: CLAIM_ELIGIBILITY_STAT_LABELS.claimed,
+      count: claimedRes.count,
+    },
+  ].filter((slice) => slice.count > 0);
+
+  const emailsSentSlices = [
+    {
+      key: "claim_invite",
+      label: OUTREACH_TYPE_STAT_LABELS.claim_invite,
+      count: claimInviteRes.count,
+    },
+    {
+      key: "ownership_claim_invite",
+      label: OUTREACH_TYPE_STAT_LABELS.ownership_claim_invite,
+      count: ownershipClaimRes.count,
+    },
+    {
+      key: "lead_claim_invite",
+      label: OUTREACH_TYPE_STAT_LABELS.lead_claim_invite,
+      count: leadClaimRes.count,
+    },
+    {
+      key: "website_offer",
+      label: OUTREACH_TYPE_STAT_LABELS.website_offer,
+      count: websiteOfferRes.count,
+    },
+  ].filter((slice) => slice.count > 0);
+
+  const emailsSentTotal = emailsSentSlices.reduce(
+    (sum, slice) => sum + slice.count,
+    0
+  );
+
+  return {
+    data: {
+      email: {
+        total: totalRes.count,
+        slices: emailSlices,
+      },
+      website: {
+        total: totalRes.count,
+        slices: websiteSlices,
+      },
+      claim_eligibility: {
+        total: totalRes.count,
+        slices: claimEligibilitySlices,
+      },
+      emails_sent: {
+        total: emailsSentTotal,
+        slices: emailsSentSlices,
+      },
+    },
+    error: null,
+  };
+};
+
 const roundPercent = (count, total) => {
   if (!total || total <= 0) return 0;
   return Math.round((count / total) * 10000) / 100;
@@ -709,11 +947,21 @@ const matchesLocationSearch = (haystacks, q) => {
   );
 };
 
-const sortByBusinessCountThenName = (a, b, nameKey = "name") => {
-  if (b.business_count !== a.business_count) {
-    return b.business_count - a.business_count;
-  }
+const sortByBusinessCountThenName = (a, b, nameKey = "name", direction = "desc") => {
+  const diff =
+    direction === "asc"
+      ? a.business_count - b.business_count
+      : b.business_count - a.business_count;
+  if (diff !== 0) return diff;
   return String(a[nameKey] ?? "").localeCompare(String(b[nameKey] ?? ""));
+};
+
+export const sortAdminLocations = (rows, tab, sort = "businesses_desc") => {
+  const direction = sort === "businesses_asc" ? "asc" : "desc";
+  const nameKey = tab === "postal-codes" ? "code" : "name";
+  return [...(rows ?? [])].sort((a, b) =>
+    sortByBusinessCountThenName(a, b, nameKey, direction)
+  );
 };
 
 /**
@@ -898,7 +1146,7 @@ const CHART_TOP_SLICES = 4;
  * Top N locations by business count, plus an "Other" bucket for the rest.
  */
 export const buildAdminLocationChart = (rows, tab) => {
-  const list = rows ?? [];
+  const list = sortAdminLocations(rows, tab, "businesses_desc");
   const totalBusinesses = list.reduce(
     (sum, row) => sum + (row.business_count ?? 0),
     0

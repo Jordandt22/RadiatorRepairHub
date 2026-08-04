@@ -269,11 +269,19 @@ export const getAdminLocationsKey = (
   limit,
   q = null,
   stateId = null,
-  cityId = null
+  cityId = null,
+  sort = "businesses_desc"
 ) => ({
-  key: `ADMIN_LOCATIONS?V:4&TAB:${tab}&PAGE:${page}&LIMIT:${limit}&Q:${
+  key: `ADMIN_LOCATIONS?V:5&TAB:${tab}&PAGE:${page}&LIMIT:${limit}&Q:${
     q ?? ""
-  }&STATE:${stateId ?? "all"}&CITY:${cityId ?? "all"}`,
+  }&STATE:${stateId ?? "all"}&CITY:${cityId ?? "all"}&SORT:${
+    sort ?? "businesses_desc"
+  }`,
+  interval: 60 * 5,
+});
+
+export const getAdminDashboardStatsKey = () => ({
+  key: "ADMIN_DASHBOARD_STATS?V:3",
   interval: 60 * 5,
 });
 

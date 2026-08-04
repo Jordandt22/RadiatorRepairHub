@@ -23,9 +23,11 @@ import {
   getAdminBusinesses as fetchAdminBusinesses,
   getAdminLocationAggregates,
   filterAdminLocations,
+  sortAdminLocations,
   buildAdminLocationChart,
   getAdminLocationDataIssues,
   filterAdminLocationDataIssues,
+  getAdminDashboardStats,
   getOutreachBusinesses as fetchOutreachBusinesses,
   getOutreachMatchingBusinessIds,
   getOutreachBusinessesByIds,
@@ -45,6 +47,7 @@ import {
   getAdminBusinessesKey,
   getAdminLocationsKey,
   getAdminLocationAggregatesKey,
+  getAdminDashboardStatsKey,
   deleteCacheDataByPrefix,
 } from "../../redis/redis.js";
 import { clearClaimCodeCache } from "../../lib/claimHelpers.js";
@@ -56,6 +59,12 @@ import {
   isOutreachDevRedirect,
   resolveOutreachRecipientEmail,
 } from "../../lib/outreachSend.js";
+import {
+  formatCitiesExportText,
+  formatPostalCodesExportText,
+  formatStatesExportText,
+  locationSortLabel,
+} from "../../lib/locationExport.js";
 import { resendClient } from "../../resend/resend.js";
 import {
   MESSAGE_ON_ITS_WAY,
@@ -1505,6 +1514,10 @@ export const getLocations = async (req, res) => {
     typeof req.query.city_id === "string" && req.query.city_id.trim()
       ? req.query.city_id.trim()
       : null;
+  const sort =
+    typeof req.query.sort === "string" && req.query.sort.trim()
+      ? req.query.sort.trim()
+      : "businesses_desc";
 
   const { key, interval } = getAdminLocationsKey(
     tab,
@@ -1512,7 +1525,8 @@ export const getLocations = async (req, res) => {
     limit,
     q,
     stateId,
-    cityId
+    cityId,
+    sort
   );
   const cachedData = await getCacheData(key);
   if (cachedData) {
@@ -1563,6 +1577,7 @@ export const getLocations = async (req, res) => {
       q,
       state_id: null,
       city_id: null,
+      sort: null,
     };
 
     await cacheData(key, interval, compiledData);
@@ -1595,14 +1610,15 @@ export const getLocations = async (req, res) => {
     stateId,
     cityId,
   });
-  const total = filtered.length;
+  const sorted = sortAdminLocations(filtered, tab, sort);
+  const total = sorted.length;
   let totalPages = Math.ceil(total / limit) || 0;
   if (totalPages > 0 && page > totalPages) {
     page = totalPages;
   }
 
   const start = (page - 1) * limit;
-  const locations = filtered.slice(start, start + limit);
+  const locations = sorted.slice(start, start + limit);
   const chart = buildAdminLocationChart(filtered, tab);
 
   const compiledData = {
@@ -1616,10 +1632,215 @@ export const getLocations = async (req, res) => {
     q,
     state_id: stateId,
     city_id: cityId,
+    sort,
   };
 
   await cacheData(key, interval, compiledData);
   return res.status(200).json(successHandler(compiledData));
+};
+
+async function loadAdminLocationAggregates(tab) {
+  const aggregatesCache = getAdminLocationAggregatesKey(tab);
+  const cachedAggregates = await getCacheData(aggregatesCache.key);
+  if (cachedAggregates?.data) {
+    return { data: cachedAggregates.data, error: null };
+  }
+
+  const { data, error } = await getAdminLocationAggregates(tab);
+  if (error) {
+    return { data: null, error };
+  }
+
+  const aggregates = data ?? [];
+  await cacheData(aggregatesCache.key, aggregatesCache.interval, aggregates);
+  return { data: aggregates, error: null };
+}
+
+export const exportLocationStates = async (req, res) => {
+  const sort =
+    typeof req.query.sort === "string" && req.query.sort.trim()
+      ? req.query.sort.trim()
+      : "businesses_desc";
+
+  const { data: aggregates, error } = await loadAdminLocationAggregates("states");
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error exporting state location stats.",
+          error
+        )
+      );
+  }
+
+  const sorted = sortAdminLocations(aggregates ?? [], "states", sort);
+  const text = formatStatesExportText(sorted, { sort });
+
+  return res.status(200).json(
+    successHandler({
+      tab: "states",
+      sort,
+      sort_label: locationSortLabel(sort),
+      total: sorted.length,
+      text,
+    })
+  );
+};
+
+export const exportLocationCities = async (req, res) => {
+  const stateId = req.query.state_id;
+  const sort =
+    typeof req.query.sort === "string" && req.query.sort.trim()
+      ? req.query.sort.trim()
+      : "businesses_desc";
+
+  const [
+    { data: stateAggregates, error: statesError },
+    { data: cityAggregates, error: citiesError },
+  ] = await Promise.all([
+    loadAdminLocationAggregates("states"),
+    loadAdminLocationAggregates("cities"),
+  ]);
+
+  if (statesError || citiesError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error exporting city location stats.",
+          statesError || citiesError
+        )
+      );
+  }
+
+  const state = (stateAggregates ?? []).find((row) => row.id === stateId);
+  if (!state) {
+    return res
+      .status(404)
+      .json(customErrorHandler(YUP_ERROR, "State not found."));
+  }
+
+  const filtered = filterAdminLocations(cityAggregates ?? [], "cities", null, {
+    stateId,
+  });
+  const sorted = sortAdminLocations(filtered, "cities", sort);
+  const text = formatCitiesExportText(sorted, {
+    sort,
+    stateName: state.name,
+    stateCode: state.code,
+    stateBusinessCount: state.business_count,
+  });
+
+  return res.status(200).json(
+    successHandler({
+      tab: "cities",
+      sort,
+      sort_label: locationSortLabel(sort),
+      total: sorted.length,
+      state: {
+        id: state.id,
+        name: state.name,
+        code: state.code,
+        business_count: state.business_count,
+      },
+      text,
+    })
+  );
+};
+
+export const exportLocationPostalCodes = async (req, res) => {
+  const cityId = req.query.city_id;
+  const sort =
+    typeof req.query.sort === "string" && req.query.sort.trim()
+      ? req.query.sort.trim()
+      : "businesses_desc";
+
+  const [
+    { data: cityAggregates, error: citiesError },
+    { data: postalAggregates, error: postalError },
+  ] = await Promise.all([
+    loadAdminLocationAggregates("cities"),
+    loadAdminLocationAggregates("postal-codes"),
+  ]);
+
+  if (citiesError || postalError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error exporting postal code location stats.",
+          citiesError || postalError
+        )
+      );
+  }
+
+  const city = (cityAggregates ?? []).find((row) => row.id === cityId);
+  if (!city) {
+    return res
+      .status(404)
+      .json(customErrorHandler(YUP_ERROR, "City not found."));
+  }
+
+  const filtered = filterAdminLocations(
+    postalAggregates ?? [],
+    "postal-codes",
+    null,
+    { cityId }
+  );
+  const sorted = sortAdminLocations(filtered, "postal-codes", sort);
+  const text = formatPostalCodesExportText(sorted, {
+    sort,
+    cityName: city.name,
+    stateName: city.state_name,
+    stateCode: city.state_code,
+    cityBusinessCount: city.business_count,
+  });
+
+  return res.status(200).json(
+    successHandler({
+      tab: "postal-codes",
+      sort,
+      sort_label: locationSortLabel(sort),
+      total: sorted.length,
+      city: {
+        id: city.id,
+        name: city.name,
+        state_id: city.state_id,
+        state_name: city.state_name,
+        state_code: city.state_code,
+        business_count: city.business_count,
+      },
+      text,
+    })
+  );
+};
+
+export const getDashboardStats = async (req, res) => {
+  const { key, interval } = getAdminDashboardStatsKey();
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getAdminDashboardStats();
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching dashboard stats.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  return res.status(200).json(successHandler(data));
 };
 
 const CACHE_RESOURCE_PREFIXES = {
@@ -1628,6 +1849,7 @@ const CACHE_RESOURCE_PREFIXES = {
   "listing-reports": "LISTING_REPORTS",
   businesses: "ADMIN_BUSINESSES",
   locations: "ADMIN_LOCATIONS",
+  dashboard: "ADMIN_DASHBOARD",
 };
 
 export const invalidateCache = async (req, res) => {

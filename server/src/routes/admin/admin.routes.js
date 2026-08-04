@@ -19,6 +19,10 @@ import {
   updateListingReportsStatus,
   getBusinesses,
   getLocations,
+  exportLocationStates,
+  exportLocationCities,
+  exportLocationPostalCodes,
+  getDashboardStats,
   invalidateCache,
   getOutreachBusinesses,
   getOutreachMatchingIds,
@@ -55,6 +59,9 @@ import {
   UpdateListingReportsStatusSchema,
   GetAdminBusinessesQuerySchema,
   GetAdminLocationsQuerySchema,
+  ExportAdminLocationStatesQuerySchema,
+  ExportAdminLocationCitiesQuerySchema,
+  ExportAdminLocationPostalCodesQuerySchema,
   InvalidateCacheSchema,
   GetOutreachBusinessesQuerySchema,
   OutreachMatchingIdsSchema,
@@ -199,6 +206,33 @@ adminRouter.get(
   authAdmin,
   queryValidator(GetAdminLocationsQuerySchema),
   serverErrorCatcherWrapper(getLocations)
+);
+
+adminRouter.get(
+  "/locations/export/states",
+  authAdmin,
+  queryValidator(ExportAdminLocationStatesQuerySchema),
+  serverErrorCatcherWrapper(exportLocationStates)
+);
+
+adminRouter.get(
+  "/locations/export/cities",
+  authAdmin,
+  queryValidator(ExportAdminLocationCitiesQuerySchema),
+  serverErrorCatcherWrapper(exportLocationCities)
+);
+
+adminRouter.get(
+  "/locations/export/postal-codes",
+  authAdmin,
+  queryValidator(ExportAdminLocationPostalCodesQuerySchema),
+  serverErrorCatcherWrapper(exportLocationPostalCodes)
+);
+
+adminRouter.get(
+  "/dashboard/stats",
+  authAdmin,
+  serverErrorCatcherWrapper(getDashboardStats)
 );
 
 adminRouter.patch(

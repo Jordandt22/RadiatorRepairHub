@@ -246,6 +246,17 @@ export const ADMIN_LOCATION_TABS = [
   "data-issues",
 ];
 
+export const ADMIN_LOCATION_SORTS = ["businesses_desc", "businesses_asc"];
+
+const locationSortQuery = Yup.string()
+  .transform((value) => {
+    if (value == null) return "businesses_desc";
+    const trimmed = String(value).trim();
+    return trimmed === "" ? "businesses_desc" : trimmed;
+  })
+  .oneOf(ADMIN_LOCATION_SORTS, "Invalid location sort")
+  .optional();
+
 export const GetAdminLocationsQuerySchema = Yup.object({
   tab: Yup.string()
     .oneOf(ADMIN_LOCATION_TABS, "Invalid location tab")
@@ -276,14 +287,29 @@ export const GetAdminLocationsQuerySchema = Yup.object({
     .nullable()
     .uuid("Invalid city ID")
     .optional(),
+  sort: locationSortQuery,
 });
 
+export const ExportAdminLocationStatesQuerySchema = Yup.object({
+  sort: locationSortQuery,
+});
+
+export const ExportAdminLocationCitiesQuerySchema = Yup.object({
+  state_id: Yup.string().uuid("Invalid state ID").required(),
+  sort: locationSortQuery,
+});
+
+export const ExportAdminLocationPostalCodesQuerySchema = Yup.object({
+  city_id: Yup.string().uuid("Invalid city ID").required(),
+  sort: locationSortQuery,
+});
 export const CACHE_INVALIDATE_RESOURCES = [
   "contact-messages",
   "claim-requests",
   "listing-reports",
   "businesses",
   "locations",
+  "dashboard",
 ];
 
 export const InvalidateCacheSchema = Yup.object({

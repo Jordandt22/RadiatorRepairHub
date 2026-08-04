@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { ToastProvider, useToast } from "@/contexts/ToastProvider";
 import { claimBusiness } from "@/lib/api/businesses";
+import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
 
 function ClaimStatusLabel({ children, reason, showHowToClaim = false }) {
   return (
@@ -102,6 +103,49 @@ function ClaimBusinessButtonContent({ businessId }) {
   );
 }
 
+function ClaimedBusinessStatus({ businessId, lastEditedAt = null }) {
+  const { isOwner } = useIsBusinessOwner(businessId);
+
+  let editedDate = null;
+  if (lastEditedAt) {
+    try {
+      editedDate = new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(new Date(lastEditedAt));
+    } catch {
+      editedDate = null;
+    }
+  }
+
+  return (
+    <div className="mt-3 flex flex-col items-center gap-1.5">
+      <div className="flex w-full items-center justify-center gap-1.5 rounded-full bg-green-500 p-2 text-white">
+        <BadgeCheck className="size-5 shrink-0" aria-hidden="true" />
+        <p className="text-sm font-medium">Verified Business</p>
+      </div>
+      {isOwner ? (
+        <Button
+          variant="outline"
+          size="sm"
+          nativeButton={false}
+          className="mt-1.5 w-full rounded-full gap-2 text-sm font-medium"
+          render={<Link href="/dashboard" />}
+        >
+          <LayoutDashboard className="size-4" />
+          My Dashboard
+        </Button>
+      ) : null}
+      {editedDate ? (
+        <p className="mt-2 text-center text-xs font-medium text-gray-600">
+          Last Updated {editedDate}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export default function ClaimBusinessButton({
   businessId,
   email,
@@ -110,31 +154,11 @@ export default function ClaimBusinessButton({
   lastEditedAt = null,
 }) {
   if (isClaimed) {
-    let editedDate = null;
-    if (lastEditedAt) {
-      try {
-        editedDate = new Intl.DateTimeFormat("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }).format(new Date(lastEditedAt));
-      } catch {
-        editedDate = null;
-      }
-    }
-
     return (
-      <div className="mt-3 flex flex-col items-center gap-1.5">
-        <div className="flex w-full items-center justify-center gap-1.5 rounded-full bg-green-500 p-2 text-white">
-          <BadgeCheck className="size-5 shrink-0" aria-hidden="true" />
-          <p className="text-sm font-medium">Verified Business</p>
-        </div>
-        {editedDate ? (
-          <p className="mt-2 text-center text-xs font-medium text-gray-600">
-            Last Updated {editedDate}
-          </p>
-        ) : null}
-      </div>
+      <ClaimedBusinessStatus
+        businessId={businessId}
+        lastEditedAt={lastEditedAt}
+      />
     );
   }
 
