@@ -11,6 +11,9 @@ import { cn } from "@/lib/utils";
 import OverviewContactMessagesTable from "@/components/pages/overview/OverviewContactMessagesTable";
 import OverviewClaimRequestsTable from "@/components/pages/overview/OverviewClaimRequestsTable";
 import OverviewListingReportsTable from "@/components/pages/overview/OverviewListingReportsTable";
+import OverviewDashboardCharts, {
+  OverviewDashboardChartsSkeleton,
+} from "@/components/pages/overview/OverviewDashboardCharts";
 import ContactMessagesTableSkeleton from "@/components/pages/dashboard/ContactMessagesTableSkeleton";
 import ClaimRequestsTableSkeleton from "@/components/pages/claim-requests/ClaimRequestsTableSkeleton";
 import ListingReportsTableSkeleton from "@/components/pages/listing-reports/ListingReportsTableSkeleton";
@@ -43,12 +46,30 @@ export default function OverviewDashboardPageContent() {
   const [contactRefreshError, setContactRefreshError] = useState(null);
   const [claimsRefreshError, setClaimsRefreshError] = useState(null);
   const [reportsRefreshError, setReportsRefreshError] = useState(null);
+  const [statsRefreshError, setStatsRefreshError] = useState(null);
 
   useEffect(() => {
     if (isReady && !accessToken) {
       router.replace("/");
     }
   }, [isReady, accessToken, router]);
+
+  const statsQuery = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: async () => {
+      const result = await fetchApi("/admin/dashboard/stats", { accessToken });
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to fetch dashboard stats");
+      }
+      return result.data;
+    },
+    enabled: isReady && !!accessToken,
+    staleTime: 30_000,
+  });
 
   const contactQuery = useQuery({
     queryKey: ["dashboard-contact-messages"],
@@ -128,6 +149,40 @@ export default function OverviewDashboardPageContent() {
     },
     enabled: isReady && !!accessToken,
     staleTime: 30_000,
+  });
+
+  const statsRefreshMutation = useMutation({
+    mutationFn: async () => {
+      const result = await fetchApi("/admin/cache/invalidate", {
+        method: "POST",
+        accessToken,
+        body: JSON.stringify({ resource: "dashboard" }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to refresh cache",
+        );
+      }
+
+      return result.data;
+    },
+    onMutate: () => setStatsRefreshError(null),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["dashboard-stats"],
+      });
+    },
+    onError: (err) => {
+      setStatsRefreshError(err.message || "Failed to refresh");
+    },
   });
 
   const contactRefreshMutation = useMutation({
@@ -236,6 +291,8 @@ export default function OverviewDashboardPageContent() {
     return null;
   }
 
+  const statsRefreshPending =
+    statsRefreshMutation.isPending || statsQuery.isFetching;
   const contactRefreshPending =
     contactRefreshMutation.isPending || contactQuery.isFetching;
   const claimsRefreshPending =
@@ -245,6 +302,32 @@ export default function OverviewDashboardPageContent() {
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-4 md:px-8 md:py-6">
+      <section className="flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">Overview</h2>
+            <p className="text-sm text-muted-foreground">
+              Business coverage and outreach email volume
+            </p>
+          </div>
+          <RefreshButton
+            onClick={() => statsRefreshMutation.mutate()}
+            pending={statsRefreshPending}
+          />
+        </div>
+        {statsRefreshError ? (
+          <p className="text-sm text-destructive">{statsRefreshError}</p>
+        ) : null}
+        {statsQuery.error && !statsQuery.isFetching ? (
+          <p className="text-sm text-destructive">{statsQuery.error.message}</p>
+        ) : null}
+        {statsQuery.isLoading ? (
+          <OverviewDashboardChartsSkeleton />
+        ) : !statsQuery.error ? (
+          <OverviewDashboardCharts stats={statsQuery.data} />
+        ) : null}
+      </section>
+
       <section className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
           <div>

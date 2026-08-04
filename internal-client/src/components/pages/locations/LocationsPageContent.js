@@ -15,7 +15,10 @@ import PageFadeIn from "@/components/PageFadeIn";
 import LocationFilterTabs, {
   VALID_TABS,
 } from "@/components/pages/locations/LocationFilterTabs";
-import LocationActions from "@/components/pages/locations/LocationActions";
+import LocationActions, {
+  LOCATION_SORT_OPTIONS,
+} from "@/components/pages/locations/LocationActions";
+import LocationExportDialog from "@/components/pages/locations/LocationExportDialog";
 import LocationsTable from "@/components/pages/locations/LocationsTable";
 import LocationDataIssuesTable from "@/components/pages/locations/LocationDataIssuesTable";
 import LocationsTableSkeleton from "@/components/pages/locations/LocationsTableSkeleton";
@@ -25,9 +28,16 @@ import Pagination from "@/components/pages/dashboard/Pagination";
 
 const PAGE_LIMIT = 20;
 const SEARCH_DEBOUNCE_MS = 300;
+const DEFAULT_SORT = LOCATION_SORT_OPTIONS[0].value;
 
 function resolveTab(tab) {
   return VALID_TABS.includes(tab) ? tab : "states";
+}
+
+function resolveSort(sort) {
+  return LOCATION_SORT_OPTIONS.some((option) => option.value === sort)
+    ? sort
+    : DEFAULT_SORT;
 }
 
 export default function LocationsPageContent() {
@@ -43,6 +53,8 @@ export default function LocationsPageContent() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [stateId, setStateId] = useState(null);
   const [cityId, setCityId] = useState(null);
+  const [sort, setSort] = useState(DEFAULT_SORT);
+  const [exportOpen, setExportOpen] = useState(false);
   const [refreshError, setRefreshError] = useState(null);
 
   const searchQuery = debouncedSearch.trim();
@@ -105,6 +117,13 @@ export default function LocationsPageContent() {
 
   const handleCityChange = (city) => {
     setCityId(city?.id ?? null);
+    setPage(1);
+  };
+
+  const handleSortChange = (value) => {
+    const nextSort = resolveSort(value);
+    if (nextSort === sort) return;
+    setSort(nextSort);
     setPage(1);
   };
 
@@ -215,12 +234,14 @@ export default function LocationsPageContent() {
       searchQuery,
       activeStateId,
       activeCityId,
+      sort,
     ],
     queryFn: async () => {
       const params = new URLSearchParams({
         tab: activeTab,
         page: String(page),
         limit: String(PAGE_LIMIT),
+        sort,
       });
       if (searchQuery) {
         params.set("q", searchQuery);
@@ -318,15 +339,49 @@ export default function LocationsPageContent() {
           activeTab={activeTab}
           searchValue={searchInput}
           onSearchChange={handleSearchChange}
+          sortValue={sort}
+          onSortChange={handleSortChange}
           states={states}
           selectedState={selectedState}
           onStateChange={handleStateChange}
           cities={cities}
           selectedCity={selectedCity}
           onCityChange={handleCityChange}
+          onExportClick={() => setExportOpen(true)}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
           refreshError={refreshError}
+        />
+
+        <LocationExportDialog
+          open={exportOpen}
+          onOpenChange={setExportOpen}
+          mode={
+            activeTab === "postal-codes"
+              ? "postal-codes"
+              : activeTab === "cities"
+                ? "cities"
+                : "states"
+          }
+          sort={sort}
+          stateId={selectedState?.id ?? null}
+          stateLabel={
+            selectedState
+              ? `${selectedState.name}${
+                  selectedState.code ? ` (${selectedState.code})` : ""
+                }`
+              : null
+          }
+          cityId={selectedCity?.id ?? null}
+          cityLabel={
+            selectedCity
+              ? `${selectedCity.name}${
+                  selectedCity.state_code
+                    ? ` (${selectedCity.state_code})`
+                    : ""
+                }`
+              : null
+          }
         />
 
         {error && !isFetching ? (

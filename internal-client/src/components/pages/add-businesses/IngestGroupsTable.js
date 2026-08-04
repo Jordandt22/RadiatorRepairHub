@@ -45,7 +45,7 @@ function IngestGroupsTableView({
             <TableHead className="w-[14%]">Status</TableHead>
             <TableHead className="w-[12%]">Batches</TableHead>
             <TableHead className="w-[12%]">Jobs</TableHead>
-            <TableHead className="w-[12%]">Filtered out</TableHead>
+            <TableHead className="w-[12%]">Inserted</TableHead>
             <TableHead className="w-[12%]">Created</TableHead>
             <TableHead className="w-24 text-right">
               <span className="sr-only">Actions</span>
@@ -81,7 +81,7 @@ function IngestGroupsTableView({
                   {row.running_jobs}/{row.total_jobs}
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
-                  {row.filtered_out_count ?? 0}
+                  {row.inserted_count ?? 0}
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   {formatDate(row.created_at)}
@@ -162,8 +162,8 @@ function IngestGroupsCardList({
               <dd>
                 {row.running_jobs}/{row.total_jobs}
               </dd>
-              <dt className="text-muted-foreground">Filtered out</dt>
-              <dd>{row.filtered_out_count ?? 0}</dd>
+              <dt className="text-muted-foreground">Inserted</dt>
+              <dd>{row.inserted_count ?? 0}</dd>
               <dt className="text-muted-foreground">Created</dt>
               <dd>{formatDate(row.created_at)}</dd>
             </dl>
