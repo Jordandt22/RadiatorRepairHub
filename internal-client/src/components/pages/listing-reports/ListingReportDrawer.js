@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -25,11 +26,6 @@ function DetailRow({ label, children }) {
 }
 
 export default function ListingReportDrawer({ report, open, onOpenChange }) {
-  const businessUrl =
-    report?.business?.slug && process.env.NEXT_PUBLIC_WEB_URL
-      ? `${process.env.NEXT_PUBLIC_WEB_URL}/business/${report.business.slug}`
-      : null;
-
   return (
     <Drawer open={open} onOpenChange={onOpenChange} swipeDirection="right">
       <DrawerContent>
@@ -44,19 +40,15 @@ export default function ListingReportDrawer({ report, open, onOpenChange }) {
           <div className="flex-1 overflow-y-auto px-4">
             <dl>
               <DetailRow label="Business">
-                {report.business?.title ? (
-                  businessUrl ? (
-                    <a
-                      href={businessUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline underline-offset-2"
-                    >
-                      {report.business.title}
-                    </a>
-                  ) : (
-                    report.business.title
-                  )
+                {report.business?.id ? (
+                  <Link
+                    href={`/businesses/${report.business.id}`}
+                    className="underline underline-offset-2"
+                  >
+                    {report.business.title || "View business"}
+                  </Link>
+                ) : report.business?.title ? (
+                  report.business.title
                 ) : (
                   "—"
                 )}

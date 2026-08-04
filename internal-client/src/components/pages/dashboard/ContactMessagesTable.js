@@ -19,6 +19,7 @@ import ContactMessagesCardList from "@/components/pages/dashboard/ContactMessage
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import ContactMessagesEmptyState from "@/components/pages/dashboard/ContactMessagesEmptyState";
 import { getMessageSelectionState } from "@/components/pages/dashboard/messageSelection";
+import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 
 export const EMAIL_SEND_SELECTION_CAP = 5;
 
@@ -182,12 +183,11 @@ function MessagesTable({
                   </span>
                 </TableCell>
                 <TableCell className="max-w-0">
-                  <span
-                    className="block truncate"
-                    title={message.business?.title || undefined}
-                  >
-                    {message.business?.title || "—"}
-                  </span>
+                  <BusinessTitleLink
+                    id={message.business?.id}
+                    title={message.business?.title}
+                    showSlug={false}
+                  />
                 </TableCell>
                 <TableCell className="max-w-0">
                   <span className="block truncate" title={message.email}>

@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { EyeIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -31,11 +34,14 @@ function UsersTableView({ users, selectedIds, onToggleId, onToggleAll }) {
                 aria-label="Select all users"
               />
             </TableHead>
-            <TableHead className="w-[28%]">Email</TableHead>
-            <TableHead className="w-[28%]">UID</TableHead>
-            <TableHead className="w-[16%]">Role</TableHead>
-            <TableHead className="w-[16%]">Created</TableHead>
-            <TableHead className="w-[12%] text-right">Claimed</TableHead>
+            <TableHead className="w-[24%]">Email</TableHead>
+            <TableHead className="w-[24%]">UID</TableHead>
+            <TableHead className="w-[14%]">Role</TableHead>
+            <TableHead className="w-[14%]">Created</TableHead>
+            <TableHead className="w-[10%] text-right">Claimed</TableHead>
+            <TableHead className="w-24 text-right">
+              <span className="sr-only">Actions</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -45,6 +51,7 @@ function UsersTableView({ users, selectedIds, onToggleId, onToggleAll }) {
             return (
               <TableRow
                 key={id}
+                className="group"
                 data-state={checked ? "selected" : undefined}
               >
                 <TableCell>
@@ -78,6 +85,18 @@ function UsersTableView({ users, selectedIds, onToggleId, onToggleAll }) {
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-right tabular-nums">
                   {row.claimed_count ?? 0}
+                </TableCell>
+                <TableCell className="text-right whitespace-nowrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="cursor-pointer opacity-0 transition-all duration-200 group-hover:opacity-100 hover:scale-95 focus-visible:opacity-100 focus-visible:scale-95"
+                    nativeButton={false}
+                    render={<Link href={`/users/${row.uid}`} />}
+                  >
+                    <EyeIcon />
+                    View
+                  </Button>
                 </TableCell>
               </TableRow>
             );
@@ -143,6 +162,18 @@ function UsersCardList({ users, selectedIds, onToggleId, onToggleAll }) {
               <dt className="text-muted-foreground">Claimed</dt>
               <dd className="tabular-nums">{row.claimed_count ?? 0}</dd>
             </dl>
+            <div className="pl-8">
+              <Button
+                variant="outline"
+                size="sm"
+                className="cursor-pointer"
+                nativeButton={false}
+                render={<Link href={`/users/${row.uid}`} />}
+              >
+                <EyeIcon />
+                View
+              </Button>
+            </div>
           </div>
         );
       })}
@@ -155,9 +186,10 @@ export default function UsersTable({
   selectedIds,
   onToggleId,
   onToggleAll,
+  hasSearch = false,
 }) {
   if (!users.length) {
-    return <UsersEmptyState />;
+    return <UsersEmptyState hasSearch={hasSearch} />;
   }
 
   return (

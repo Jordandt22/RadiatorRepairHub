@@ -35,6 +35,11 @@ export const authAdmin = serverErrorCatcherWrapper(async (req, res, next) => {
   try {
     const secret = new TextEncoder().encode(process.env.ADMIN_JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
+    if (payload?.role !== "admin") {
+      return res
+        .status(401)
+        .json(customErrorHandler(ACCESS_DENIED, "Invalid or expired token."));
+    }
     req.admin = payload;
     return next();
   } catch {

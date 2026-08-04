@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import BusinessActions from "@/components/pages/businesses/BusinessActions";
 import BusinessesTable from "@/components/pages/businesses/BusinessesTable";
 import BusinessesTableSkeleton from "@/components/pages/businesses/BusinessesTableSkeleton";
-import BusinessDrawer from "@/components/pages/businesses/BusinessDrawer";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
 const PAGE_LIMIT = 20;
@@ -67,8 +66,6 @@ export default function LocationBusinessesPageContent({ kind, param }) {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [refreshError, setRefreshError] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedBusiness, setSelectedBusiness] = useState(null);
 
   const searchQuery = debouncedSearch.trim();
 
@@ -221,10 +218,6 @@ export default function LocationBusinessesPageContent({ kind, param }) {
       ) : !error || isPlaceholderData ? (
         <BusinessesTable
           businesses={businesses}
-          onViewClick={(business) => {
-            setSelectedBusiness(business);
-            setDrawerOpen(true);
-          }}
           activeTab="all"
           hasSearch={hasSearch}
         />
@@ -238,12 +231,6 @@ export default function LocationBusinessesPageContent({ kind, param }) {
         isFetching={isFetching}
         onPrevious={() => setPage((prev) => Math.max(1, prev - 1))}
         onNext={() => setPage((prev) => prev + 1)}
-      />
-
-      <BusinessDrawer
-        business={selectedBusiness}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
       />
     </PageFadeIn>
   );

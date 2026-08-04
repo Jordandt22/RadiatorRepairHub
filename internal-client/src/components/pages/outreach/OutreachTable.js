@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import ClaimEligibilityBadge from "@/components/pages/outreach/ClaimEligibilityBadge";
 import OutreachEmptyState from "@/components/pages/outreach/OutreachEmptyState";
@@ -91,14 +92,11 @@ function OutreachTableView({
                   </TableCell>
                 ) : null}
                 <TableCell className="max-w-0 font-medium">
-                  <div className="min-w-0">
-                    <span className="block truncate">{row.title ?? "—"}</span>
-                    {row.slug ? (
-                      <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
-                        {row.slug}
-                      </span>
-                    ) : null}
-                  </div>
+                  <BusinessTitleLink
+                    id={row.id}
+                    title={row.title}
+                    slug={row.slug}
+                  />
                 </TableCell>
                 <TableCell className="max-w-0">
                   <span
@@ -166,14 +164,11 @@ function OutreachCardList({
                 />
               ) : null}
               <div className="min-w-0 flex-1 space-y-2">
-                <div>
-                  <p className="text-sm font-medium">{row.title ?? "—"}</p>
-                  {row.slug ? (
-                    <p className="text-xs text-muted-foreground">
-                      {row.slug}
-                    </p>
-                  ) : null}
-                </div>
+                <BusinessTitleLink
+                  id={row.id}
+                  title={row.title}
+                  slug={row.slug}
+                />
                 <ClaimEligibilityBadge eligibility={row.claim_eligibility} />
                 <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
                   <dt className="text-muted-foreground">Email</dt>

@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import EmailCleanerEmptyState from "@/components/pages/email-cleaner/EmailCleanerEmptyState";
 
 function EmailCleanerTableView({
@@ -64,14 +65,11 @@ function EmailCleanerTableView({
                   />
                 </TableCell>
                 <TableCell className="max-w-0 font-medium">
-                  <div className="min-w-0">
-                    <span className="block truncate">{row.title ?? "—"}</span>
-                    {row.slug ? (
-                      <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
-                        {row.slug}
-                      </span>
-                    ) : null}
-                  </div>
+                  <BusinessTitleLink
+                    id={row.id}
+                    title={row.title}
+                    slug={row.slug}
+                  />
                 </TableCell>
                 <TableCell className="max-w-0">
                   <span
@@ -148,12 +146,11 @@ function EmailCleanerCardList({
                 className="mt-0.5"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{row.title ?? "—"}</p>
-                {row.slug ? (
-                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                    {row.slug}
-                  </p>
-                ) : null}
+                <BusinessTitleLink
+                  id={row.id}
+                  title={row.title}
+                  slug={row.slug}
+                />
               </div>
             </div>
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 pl-8 text-sm">

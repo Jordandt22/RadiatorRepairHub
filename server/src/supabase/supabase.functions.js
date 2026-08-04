@@ -726,6 +726,38 @@ export const getAdminBusinesses = async (
   return { data: businesses, count, location, error: null };
 };
 
+/**
+ * Single admin business with owner_email enrichment.
+ */
+export const getAdminBusinessById = async (id) => {
+  if (!id || typeof id !== "string") {
+    return {
+      data: null,
+      error: { code: "PGRST116", message: "Business not found" },
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .select(ADMIN_BUSINESS_SELECT)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  if (!data) {
+    return {
+      data: null,
+      error: { code: "PGRST116", message: "Business not found" },
+    };
+  }
+
+  const [business] = await withOwnerEmails([data]);
+  return { data: business, error: null };
+};
+
 const EMAIL_CLEANER_BUSINESS_SELECT = "id, title, slug, email";
 
 /**
@@ -1736,21 +1768,109 @@ export const deletePublicUserByUid = async (uid) => {
 
 /**
  * Paginated app users (public.users) with auth email + claimed business count.
+ * Optional q searches uid and auth email (partial, case-insensitive).
  */
-export const getAdminUsers = async (page, limit) => {
-  const { data, count, error } = await supabase
-    .from("users")
-    .select("uid, role, created_at", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range((page - 1) * limit, page * limit - 1);
+export const getAdminUsers = async (page, limit, { q = null } = {}) => {
+  const sanitized = sanitizeAdminBusinessSearch(q);
+  let rows = [];
+  let count = 0;
+  let emailByUid = new Map();
 
-  if (error) {
-    return { data: null, count, error };
+  if (!sanitized) {
+    const { data, count: total, error } = await supabase
+      .from("users")
+      .select("uid, role, created_at", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range((page - 1) * limit, page * limit - 1);
+
+    if (error) {
+      return { data: null, count: total, error };
+    }
+
+    rows = data ?? [];
+    count = total ?? 0;
+    emailByUid = await getAuthEmailsByUids(rows.map((row) => row.uid));
+  } else {
+    const matchingUidSet = new Set();
+    const needle = sanitized.toLowerCase();
+
+    const { data: uidRows, error: uidError } = await supabase
+      .from("users")
+      .select("uid")
+      .ilike("uid", `%${sanitized}%`);
+
+    if (uidError) {
+      return { data: null, count: null, error: uidError };
+    }
+
+    for (const row of uidRows ?? []) {
+      if (row?.uid) matchingUidSet.add(row.uid);
+    }
+
+    let authPage = 1;
+    const perPage = 200;
+    for (;;) {
+      const { data: listData, error: listError } = await adminAuthClient.listUsers(
+        {
+          page: authPage,
+          perPage,
+        }
+      );
+
+      if (listError) {
+        return { data: null, count: null, error: listError };
+      }
+
+      const authUsers = listData?.users ?? [];
+      for (const user of authUsers) {
+        if (user?.id && user.email) {
+          emailByUid.set(user.id, user.email);
+        }
+        if (
+          user?.id &&
+          typeof user.email === "string" &&
+          user.email.toLowerCase().includes(needle)
+        ) {
+          matchingUidSet.add(user.id);
+        }
+      }
+
+      if (authUsers.length < perPage) break;
+      authPage += 1;
+      if (authPage > 50) break;
+    }
+
+    const matchingUids = [...matchingUidSet];
+    if (!matchingUids.length) {
+      return { data: [], count: 0, error: null };
+    }
+
+    const { data, count: total, error } = await supabase
+      .from("users")
+      .select("uid, role, created_at", { count: "exact" })
+      .in("uid", matchingUids)
+      .order("created_at", { ascending: false })
+      .range((page - 1) * limit, page * limit - 1);
+
+    if (error) {
+      return { data: null, count: total, error };
+    }
+
+    rows = data ?? [];
+    count = total ?? 0;
+
+    const missingEmailUids = rows
+      .map((row) => row.uid)
+      .filter((uid) => uid && !emailByUid.has(uid));
+    if (missingEmailUids.length) {
+      const extras = await getAuthEmailsByUids(missingEmailUids);
+      for (const [uid, email] of extras) {
+        emailByUid.set(uid, email);
+      }
+    }
   }
 
-  const rows = data ?? [];
   const uids = rows.map((row) => row.uid).filter(Boolean);
-  const emailByUid = await getAuthEmailsByUids(uids);
   const claimedByUid = new Map();
 
   if (uids.length) {
@@ -1782,6 +1902,77 @@ export const getAdminUsers = async (page, limit) => {
   }));
 
   return { data: users, count, error: null };
+};
+
+const ADMIN_USER_CLAIMED_BUSINESS_SELECT =
+  "id, title, slug, email, phone, address, website, total_score, reviews_count, last_edited_at, created_at, is_claimed";
+
+/**
+ * Single app user with auth details and claimed businesses.
+ */
+export const getAdminUserByUid = async (uid) => {
+  if (!uid || typeof uid !== "string") {
+    return {
+      data: null,
+      error: { code: "PGRST116", message: "User not found" },
+    };
+  }
+
+  const { data: row, error } = await supabase
+    .from("users")
+    .select("uid, role, created_at")
+    .eq("uid", uid)
+    .maybeSingle();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  if (!row) {
+    return {
+      data: null,
+      error: { code: "PGRST116", message: "User not found" },
+    };
+  }
+
+  let authUser = null;
+  try {
+    const { data: authData, error: authError } =
+      await adminAuthClient.getUserById(uid);
+    if (!authError) {
+      authUser = authData?.user ?? null;
+    }
+  } catch {
+    // continue without auth enrichment
+  }
+
+  const { data: businesses, error: businessesError } = await supabase
+    .from("businesses")
+    .select(ADMIN_USER_CLAIMED_BUSINESS_SELECT)
+    .eq("owner_uid", uid)
+    .eq("is_claimed", true)
+    .order("last_edited_at", { ascending: false, nullsFirst: false });
+
+  if (businessesError) {
+    return { data: null, error: businessesError };
+  }
+
+  const claimedBusinesses = businesses ?? [];
+
+  return {
+    data: {
+      uid: row.uid,
+      role: row.role ?? null,
+      created_at: row.created_at ?? null,
+      email: authUser?.email ?? null,
+      email_confirmed_at: authUser?.email_confirmed_at ?? null,
+      last_sign_in_at: authUser?.last_sign_in_at ?? null,
+      phone: authUser?.phone || null,
+      claimed_count: claimedBusinesses.length,
+      businesses: claimedBusinesses,
+    },
+    error: null,
+  };
 };
 
 /**

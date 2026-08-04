@@ -20,7 +20,6 @@ import BusinessFilterTabs, {
 import BusinessActions from "@/components/pages/businesses/BusinessActions";
 import BusinessesTable from "@/components/pages/businesses/BusinessesTable";
 import BusinessesTableSkeleton from "@/components/pages/businesses/BusinessesTableSkeleton";
-import BusinessDrawer from "@/components/pages/businesses/BusinessDrawer";
 import ReverseClaimConfirmDialog from "@/components/pages/businesses/ReverseClaimConfirmDialog";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
@@ -50,8 +49,6 @@ export default function BusinessesPageContent() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedBusiness, setSelectedBusiness] = useState(null);
 
   const claimedFilter = TAB_CLAIMED[activeTab] ?? null;
   const searchQuery = debouncedSearch.trim();
@@ -287,11 +284,6 @@ export default function BusinessesPageContent() {
         (scoreTierId || reviewsTierId || emailFilterId)),
   );
 
-  const handleViewClick = (business) => {
-    setSelectedBusiness(business);
-    setDrawerOpen(true);
-  };
-
   const handleToggleId = (id, checked) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -360,7 +352,6 @@ export default function BusinessesPageContent() {
         ) : !error || isPlaceholderData ? (
           <BusinessesTable
             businesses={businesses}
-            onViewClick={handleViewClick}
             activeTab={activeTab}
             hasSearch={hasSearch}
             selectedIds={showReverseClaim ? selectedIds : undefined}
@@ -379,12 +370,6 @@ export default function BusinessesPageContent() {
           onNext={handleNextPage}
         />
       </div>
-
-      <BusinessDrawer
-        business={selectedBusiness}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-      />
 
       <ReverseClaimConfirmDialog
         open={confirmOpen}

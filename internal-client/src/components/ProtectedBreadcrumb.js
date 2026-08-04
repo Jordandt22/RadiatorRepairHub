@@ -39,6 +39,8 @@ const LOCATION_PARENT_HREF = {
 const SEGMENT_HREF = {
   group: "/add-businesses?tab=groups",
   batch: "/add-businesses?tab=groups",
+  users: "/users",
+  businesses: "/businesses?tab=all",
 };
 
 function formatSegment(segment, index, segments) {
@@ -61,6 +63,12 @@ function formatSegment(segment, index, segments) {
     return "Details";
   }
   if (index === 1 && parent === "batch") {
+    return "Details";
+  }
+  if (index === 1 && parent === "users") {
+    return "Details";
+  }
+  if (index === 1 && parent === "businesses") {
     return "Details";
   }
 
@@ -98,7 +106,9 @@ export default function ProtectedBreadcrumb() {
           const isLast = index === segments.length - 1;
           const keepVisibleOnMobile =
             (!isLast && segments[0] === "group" && index === 0) ||
-            (!isLast && segments[0] === "batch" && index === 0);
+            (!isLast && segments[0] === "batch" && index === 0) ||
+            (!isLast && segments[0] === "users" && index === 0) ||
+            (!isLast && segments[0] === "businesses" && index === 0);
 
           return (
             <Fragment key={`${href}-${index}`}>

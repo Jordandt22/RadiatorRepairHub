@@ -55,6 +55,9 @@ export default function UsersTableSkeleton({ rows = 8 }) {
               <TableHead>Role</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="text-right">Claimed</TableHead>
+              <TableHead className="w-24 text-right">
+                <span className="sr-only">Actions</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -77,6 +80,9 @@ export default function UsersTableSkeleton({ rows = 8 }) {
                 </TableCell>
                 <TableCell className="text-right">
                   <Skeleton className="ml-auto h-4 w-8" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Skeleton className="ml-auto h-8 w-16" />
                 </TableCell>
               </TableRow>
             ))}

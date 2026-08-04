@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import ListingReportStatusBadge from "@/components/pages/listing-reports/ListingReportStatusBadge";
 import ListingReportsEmptyState from "@/components/pages/listing-reports/ListingReportsEmptyState";
@@ -78,16 +79,11 @@ function ListingReportsTableView({
                   />
                 </TableCell>
                 <TableCell className="max-w-0 font-medium">
-                  <div className="min-w-0">
-                    <span className="block truncate">
-                      {row.business?.title ?? "—"}
-                    </span>
-                    {row.business?.slug ? (
-                      <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
-                        {row.business.slug}
-                      </span>
-                    ) : null}
-                  </div>
+                  <BusinessTitleLink
+                    id={row.business?.id}
+                    title={row.business?.title}
+                    slug={row.business?.slug}
+                  />
                 </TableCell>
                 <TableCell className="max-w-0">
                   <span className="block truncate">{reasonLabel(row.reason)}</span>
@@ -178,9 +174,12 @@ function ListingReportsCardList({
                 className="mt-0.5"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">
-                  {row.business?.title ?? "—"}
-                </p>
+                <BusinessTitleLink
+                  id={row.business?.id}
+                  title={row.business?.title}
+                  slug={row.business?.slug}
+                  showSlug={false}
+                />
                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
                   <ListingReportStatusBadge status={row.status} />
                   <span className="text-xs text-muted-foreground">

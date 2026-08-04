@@ -334,6 +334,10 @@ export const UpdateBusinessEmailSchema = Yup.object({
     .required("Email is required"),
 });
 
+export const GetAdminBusinessParamsSchema = Yup.object({
+  id: Yup.string().uuid("Invalid business ID").required("Business ID is required"),
+});
+
 export const UnclaimBusinessesSchema = Yup.object({
   business_ids: Yup.array()
     .of(Yup.string().uuid("Invalid business ID").required())
@@ -345,6 +349,14 @@ export const UnclaimBusinessesSchema = Yup.object({
 export const GetAdminUsersQuerySchema = Yup.object({
   page: Yup.number().min(1).max(100).required(),
   limit: Yup.number().min(1).max(30).required(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
 });
 
 export const DeleteAdminUsersSchema = Yup.object({
@@ -353,6 +365,10 @@ export const DeleteAdminUsersSchema = Yup.object({
     .min(1, "At least one user ID is required")
     .max(30, "At most 30 users can be deleted at once")
     .required("User IDs are required"),
+});
+
+export const GetAdminUserParamsSchema = Yup.object({
+  uid: Yup.string().uuid("Invalid user ID").required("User ID is required"),
 });
 
 export const CACHE_INVALIDATE_RESOURCES = [

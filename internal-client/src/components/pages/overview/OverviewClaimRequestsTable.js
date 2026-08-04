@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import ClaimRequestStatusBadge from "@/components/pages/claim-requests/ClaimRequestStatusBadge";
 
@@ -26,7 +27,11 @@ export default function OverviewClaimRequestsTable({ claimRequests = [] }) {
             key={row.claim_request_id}
             className="flex flex-col gap-2 rounded-lg border border-border bg-background p-4"
           >
-            <p className="font-medium">{row.business?.title ?? "—"}</p>
+            <BusinessTitleLink
+              id={row.business?.id}
+              title={row.business?.title}
+              showSlug={false}
+            />
             <ClaimRequestStatusBadge status={row.status} />
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
               <dt className="text-muted-foreground">Attempts</dt>
@@ -55,9 +60,11 @@ export default function OverviewClaimRequestsTable({ claimRequests = [] }) {
             {claimRequests.map((row) => (
               <TableRow key={row.claim_request_id}>
                 <TableCell className="max-w-0 font-medium">
-                  <span className="block truncate">
-                    {row.business?.title ?? "—"}
-                  </span>
+                  <BusinessTitleLink
+                    id={row.business?.id}
+                    title={row.business?.title}
+                    showSlug={false}
+                  />
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <ClaimRequestStatusBadge status={row.status} />

@@ -21,11 +21,13 @@ import {
   getListingReports as fetchListingReports,
   updateListingReportsStatus as updateReportsStatus,
   getAdminBusinesses as fetchAdminBusinesses,
+  getAdminBusinessById as fetchAdminBusinessById,
   getAdminBusinessesWithEmails as fetchAdminBusinessesWithEmails,
   clearBusinessEmails as clearEmailsOnBusinesses,
   updateBusinessEmail as patchBusinessEmail,
   unclaimBusinessesByIds,
   getAdminUsers as fetchAdminUsers,
+  getAdminUserByUid as fetchAdminUserByUid,
   deleteAdminUsers as removeAdminUsers,
   getAdminLocationAggregates,
   filterAdminLocations,
@@ -1509,6 +1511,33 @@ export const getBusinesses = async (req, res) => {
   return res.status(200).json(successHandler(compiledData));
 };
 
+export const getBusinessById = async (req, res) => {
+  const { id } = req.params;
+
+  const { data, error } = await fetchAdminBusinessById(id);
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(SUPABASE_ERROR, "Business not found.", error)
+        );
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the business.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(successHandler(data));
+};
+
 export const getBusinessesWithEmails = async (req, res) => {
   let page = Number(req.query.page);
   const limit = Number(req.query.limit);
@@ -1684,8 +1713,10 @@ export const unclaimBusinesses = async (req, res) => {
 export const getUsers = async (req, res) => {
   let page = Number(req.query.page);
   const limit = Number(req.query.limit);
+  const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const q = rawQ ? rawQ.slice(0, 100) : null;
 
-  const { data, count, error } = await fetchAdminUsers(page, limit);
+  const { data, count, error } = await fetchAdminUsers(page, limit, { q });
 
   if (error) {
     return res
@@ -1712,8 +1743,36 @@ export const getUsers = async (req, res) => {
       totalPages,
       page,
       limit,
+      q,
     })
   );
+};
+
+export const getUserByUid = async (req, res) => {
+  const { uid } = req.params;
+
+  const { data, error } = await fetchAdminUserByUid(uid);
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(SUPABASE_ERROR, "User not found.", error)
+        );
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the user.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(successHandler(data));
 };
 
 export const deleteUsers = async (req, res) => {

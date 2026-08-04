@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import LocationsEmptyState from "@/components/pages/locations/LocationsEmptyState";
 
 function formatPlace(city, stateCode) {
@@ -46,14 +47,11 @@ function DataIssuesTableView({ issues }) {
           {issues.map((row) => (
             <TableRow key={row.id}>
               <TableCell className="max-w-0 font-medium">
-                <div className="min-w-0">
-                  <span className="block truncate">{row.title ?? "—"}</span>
-                  {row.slug ? (
-                    <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
-                      {row.slug}
-                    </span>
-                  ) : null}
-                </div>
+                <BusinessTitleLink
+                  id={row.id}
+                  title={row.title}
+                  slug={row.slug}
+                />
               </TableCell>
               <TableCell className="max-w-0">
                 <span className="block truncate">
@@ -107,12 +105,11 @@ function DataIssuesCardList({ issues }) {
           className="flex flex-col gap-2 rounded-lg border border-border bg-background p-4"
         >
           <div className="min-w-0">
-            <p className="truncate font-medium">{row.title ?? "—"}</p>
-            {row.slug ? (
-              <p className="text-xs text-muted-foreground">
-                {row.slug}
-              </p>
-            ) : null}
+            <BusinessTitleLink
+              id={row.id}
+              title={row.title}
+              slug={row.slug}
+            />
             <div className="mt-1.5">
               {row.same_city_name ? (
                 <Badge

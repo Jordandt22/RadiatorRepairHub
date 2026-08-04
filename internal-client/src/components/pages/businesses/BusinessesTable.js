@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { EyeIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -13,11 +15,43 @@ import { formatDate } from "@/components/pages/dashboard/formatDate";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
 import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
 import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
+import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import BusinessesEmptyState from "@/components/pages/businesses/BusinessesEmptyState";
+
+function OwnerEmailCell({ ownerEmail, ownerUid }) {
+  if (!ownerEmail) {
+    return <span className="text-sm">—</span>;
+  }
+
+  const badgeClassName =
+    "max-w-full border-transparent bg-sky-100 text-sky-800";
+
+  if (!ownerUid) {
+    return (
+      <Badge
+        variant="outline"
+        className={badgeClassName}
+        title={ownerEmail}
+      >
+        <span className="truncate">{ownerEmail}</span>
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge
+      variant="outline"
+      className={`${badgeClassName} cursor-pointer hover:bg-sky-200`}
+      title={ownerEmail}
+      render={<Link href={`/users/${ownerUid}`} />}
+    >
+      <span className="truncate">{ownerEmail}</span>
+    </Badge>
+  );
+}
 
 function BusinessesTableView({
   businesses,
-  onViewClick,
   showOwnerEmail,
   showScore,
   showLastEdited,
@@ -91,14 +125,11 @@ function BusinessesTableView({
                   </TableCell>
                 ) : null}
                 <TableCell className="max-w-0 font-medium">
-                  <div className="min-w-0">
-                    <span className="block truncate">{row.title ?? "—"}</span>
-                    {row.slug ? (
-                      <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
-                        {row.slug}
-                      </span>
-                    ) : null}
-                  </div>
+                  <BusinessTitleLink
+                    id={row.id}
+                    title={row.title}
+                    slug={row.slug}
+                  />
                 </TableCell>
                 {showScore ? (
                   <TableCell className="whitespace-nowrap">
@@ -122,12 +153,10 @@ function BusinessesTableView({
                 </TableCell>
                 {showOwnerEmail ? (
                   <TableCell className="max-w-0">
-                    <span
-                      className="block truncate text-sm"
-                      title={row.owner_email ?? undefined}
-                    >
-                      {row.owner_email ?? "—"}
-                    </span>
+                    <OwnerEmailCell
+                      ownerEmail={row.owner_email}
+                      ownerUid={row.owner_uid}
+                    />
                   </TableCell>
                 ) : null}
                 <TableCell className="max-w-0 whitespace-nowrap">
@@ -146,7 +175,8 @@ function BusinessesTableView({
                     variant="outline"
                     size="sm"
                     className="opacity-0 transition-all duration-200 group-hover:opacity-100 cursor-pointer hover:scale-95 focus-visible:opacity-100 focus-visible:scale-95"
-                    onClick={() => onViewClick(row)}
+                    nativeButton={false}
+                    render={<Link href={`/businesses/${row.id}`} />}
                   >
                     <EyeIcon />
                     View
@@ -163,7 +193,6 @@ function BusinessesTableView({
 
 function BusinessesCardList({
   businesses,
-  onViewClick,
   showOwnerEmail,
   showScore,
   showLastEdited,
@@ -215,7 +244,12 @@ function BusinessesCardList({
                 />
               ) : null}
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{row.title ?? "—"}</p>
+                <BusinessTitleLink
+                  id={row.id}
+                  title={row.title}
+                  slug={row.slug}
+                  showSlug={false}
+                />
                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
                   <BusinessClaimedBadge isClaimed={Boolean(row.is_claimed)} />
                   {showScore ? (
@@ -240,7 +274,12 @@ function BusinessesCardList({
               {showOwnerEmail ? (
                 <>
                   <dt className="text-muted-foreground">Owner email</dt>
-                  <dd className="truncate">{row.owner_email ?? "—"}</dd>
+                  <dd className="min-w-0 truncate">
+                    <OwnerEmailCell
+                      ownerEmail={row.owner_email}
+                      ownerUid={row.owner_uid}
+                    />
+                  </dd>
                 </>
               ) : null}
               <dt className="text-muted-foreground">Phone</dt>
@@ -257,7 +296,8 @@ function BusinessesCardList({
                 variant="outline"
                 size="sm"
                 className="cursor-pointer"
-                onClick={() => onViewClick(row)}
+                nativeButton={false}
+                render={<Link href={`/businesses/${row.id}`} />}
               >
                 <EyeIcon />
                 View
@@ -272,7 +312,6 @@ function BusinessesCardList({
 
 export default function BusinessesTable({
   businesses = [],
-  onViewClick,
   activeTab = "all",
   hasSearch = false,
   selectedIds,
@@ -298,7 +337,6 @@ export default function BusinessesTable({
     <>
       <BusinessesCardList
         businesses={businesses}
-        onViewClick={onViewClick}
         showOwnerEmail={showOwnerEmail}
         showScore={showScore}
         showLastEdited={showLastEdited}
@@ -309,7 +347,6 @@ export default function BusinessesTable({
       />
       <BusinessesTableView
         businesses={businesses}
-        onViewClick={onViewClick}
         showOwnerEmail={showOwnerEmail}
         showScore={showScore}
         showLastEdited={showLastEdited}

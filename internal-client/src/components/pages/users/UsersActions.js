@@ -1,5 +1,6 @@
-import { RefreshCwIcon, Trash2Icon, XIcon } from "lucide-react";
+import { RefreshCwIcon, SearchIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 function ActionButton({
@@ -30,6 +31,8 @@ function ActionButton({
 }
 
 export default function UsersActions({
+  searchValue = "",
+  onSearchChange,
   selectedCount = 0,
   actionDisabled = true,
   onDelete,
@@ -61,12 +64,23 @@ export default function UsersActions({
             {selectedCount} selected
           </span>
         ) : null}
+        <div className="relative min-w-0 flex-1 md:max-w-sm md:ml-auto">
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            value={searchValue}
+            onChange={(e) => onSearchChange?.(e.target.value)}
+            placeholder="Search email or uid…"
+            aria-label="Search users"
+            className="rounded-full pl-9"
+          />
+        </div>
         <ActionButton
           label="Refresh"
           icon={RefreshCwIcon}
           disabled={refreshPending}
           onClick={onRefresh}
-          className="md:ml-auto hover:bg-gray-100"
+          className="hover:bg-gray-100"
           iconClassName={refreshPending ? "animate-spin" : undefined}
         />
       </div>

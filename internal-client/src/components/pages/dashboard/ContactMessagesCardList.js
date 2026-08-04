@@ -8,6 +8,7 @@ import {
 } from "@/components/pages/dashboard/ContactMessageBadges";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import { getMessageSelectionState } from "@/components/pages/dashboard/messageSelection";
+import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import { cn } from "@/lib/utils";
 
 function ContactMessageCard({
@@ -63,9 +64,18 @@ function ContactMessageCard({
               <p className="truncate font-semibold text-foreground">
                 {message.name}
               </p>
-              <p className="truncate text-sm text-muted-foreground">
-                {message.business?.title || "—"}
-              </p>
+              <div
+                className="mt-0.5"
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+              >
+                <BusinessTitleLink
+                  id={message.business?.id}
+                  title={message.business?.title}
+                  showSlug={false}
+                  titleClassName="text-sm font-normal text-muted-foreground"
+                />
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-1.5">
