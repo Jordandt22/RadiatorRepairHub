@@ -31,6 +31,10 @@ const SEGMENT_LABELS = {
   systems: "Systems",
   cache: "Cache",
   redis: "Redis",
+  database: "Database",
+  supabase: "Supabase",
+  clients: "Clients",
+  radiatorrepairhub: "RadiatorRepairHub",
 };
 
 const LOCATION_PARENT_HREF = {
@@ -93,6 +97,12 @@ function hrefForSegment(segments, index) {
   }
   if (segment === "cache" && segments[0] === "systems") {
     return "/systems/cache/redis";
+  }
+  if (segment === "database" && segments[0] === "systems") {
+    return "/systems/database/supabase";
+  }
+  if (segment === "clients" && segments[0] === "systems") {
+    return "/systems/clients/radiatorrepairhub";
   }
   return `/${segments.slice(0, index + 1).join("/")}`;
 }

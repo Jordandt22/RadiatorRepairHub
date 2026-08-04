@@ -100,6 +100,7 @@ import {
 } from "../../ingest/db.js";
 import { enqueueFilterJob } from "../../ingest/queues.js";
 import { normalizeWebsiteUrl } from "../../lib/websiteReachability.js";
+import { getSystemsHealthChecks } from "../../lib/systemsHealth.js";
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
 
 export const loginAdmin = async (req, res) => {
@@ -2319,6 +2320,11 @@ export const invalidateCache = async (req, res) => {
       invalidated: true,
     })
   );
+};
+
+export const getSystemsHealth = async (_req, res) => {
+  const data = await getSystemsHealthChecks();
+  return res.status(200).json(successHandler(data));
 };
 
 const parseOutreachListFilters = (source = {}) => {

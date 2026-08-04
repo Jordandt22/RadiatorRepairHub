@@ -34,6 +34,7 @@ import {
   exportLocationPostalCodes,
   getDashboardStats,
   invalidateCache,
+  getSystemsHealth,
   getOutreachBusinesses,
   getOutreachMatchingIds,
   previewOutreachEmails,
@@ -362,6 +363,11 @@ adminRouter.post(
   "/cache/invalidate",
   bodyValidator(InvalidateCacheSchema),
   serverErrorCatcherWrapper(invalidateCache)
+);
+
+adminRouter.get(
+  "/systems/health",
+  serverErrorCatcherWrapper(getSystemsHealth)
 );
 
 adminRouter.post(

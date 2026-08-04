@@ -25,6 +25,8 @@ import {
   UsersIcon,
   DatabaseIcon,
   HardDriveIcon,
+  Table2Icon,
+  GlobeIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -220,6 +222,30 @@ const data = {
           title: "Redis",
           url: "/systems/cache/redis",
           icon: <HardDriveIcon />,
+        },
+      ],
+    },
+    {
+      title: "Database",
+      url: "/systems/database/supabase",
+      icon: <Table2Icon />,
+      items: [
+        {
+          title: "Supabase",
+          url: "/systems/database/supabase",
+          icon: <Table2Icon />,
+        },
+      ],
+    },
+    {
+      title: "Clients",
+      url: "/systems/clients/radiatorrepairhub",
+      icon: <GlobeIcon />,
+      items: [
+        {
+          title: "RadiatorRepairHub",
+          url: "/systems/clients/radiatorrepairhub",
+          icon: <Wrench />,
         },
       ],
     },

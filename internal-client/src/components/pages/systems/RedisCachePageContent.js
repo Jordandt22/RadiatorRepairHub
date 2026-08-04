@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
 import RedisFlushConfirmDialog from "@/components/pages/systems/RedisFlushConfirmDialog";
+import SystemsHealthCheckSection from "@/components/pages/systems/SystemsHealthCheckSection";
 
 const CACHE_RESOURCES = [
   {
@@ -147,6 +148,12 @@ export default function RedisCachePageContent() {
           Invalidate Redis cache prefixes used by the admin app and public site.
         </p>
       </div>
+
+      <SystemsHealthCheckSection
+        checkId="redis"
+        title="Redis connection"
+        description="Pings Redis from the API to confirm the cache server is reachable."
+      />
 
       {actionError ? (
         <p className="text-sm text-destructive">{actionError}</p>
