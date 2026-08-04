@@ -23,6 +23,8 @@ import {
   UploadIcon,
   MailXIcon,
   UsersIcon,
+  DatabaseIcon,
+  HardDriveIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -208,6 +210,20 @@ const data = {
       ],
     },
   ],
+  navSystems: [
+    {
+      title: "Cache",
+      url: "/systems/cache/redis",
+      icon: <DatabaseIcon />,
+      items: [
+        {
+          title: "Redis",
+          url: "/systems/cache/redis",
+          icon: <HardDriveIcon />,
+        },
+      ],
+    },
+  ],
 };
 
 export function AppSidebar({ ...props }) {
@@ -221,6 +237,7 @@ export function AppSidebar({ ...props }) {
           <NavMain items={data.navMain} label="Platform" />
           <NavMain items={data.navInbox} label="Inbox" />
           <NavMain items={data.navExternal} label="External" />
+          <NavMain items={data.navSystems} label="Systems" />
         </Suspense>
       </SidebarContent>
       <NavLogout />

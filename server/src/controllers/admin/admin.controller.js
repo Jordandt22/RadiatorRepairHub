@@ -62,6 +62,8 @@ import {
   getBusinessBySlugKey,
   deleteCacheData,
   deleteCacheDataByPrefix,
+  clearReferenceCache,
+  flushDBCache,
 } from "../../redis/redis.js";
 import { clearClaimCodeCache } from "../../lib/claimHelpers.js";
 import { buildFreeLeadEmailPayload } from "../../lib/contactMessageSend.js";
@@ -2280,6 +2282,27 @@ const CACHE_RESOURCE_PREFIXES = {
 
 export const invalidateCache = async (req, res) => {
   const { resource } = req.body;
+
+  if (resource === "all") {
+    await flushDBCache();
+    return res.status(200).json(
+      successHandler({
+        resource,
+        invalidated: true,
+      })
+    );
+  }
+
+  if (resource === "reference") {
+    await clearReferenceCache();
+    return res.status(200).json(
+      successHandler({
+        resource,
+        invalidated: true,
+      })
+    );
+  }
+
   const prefix = CACHE_RESOURCE_PREFIXES[resource];
 
   if (!prefix) {

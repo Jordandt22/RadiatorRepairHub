@@ -28,6 +28,9 @@ const SEGMENT_LABELS = {
   "add-businesses": "Add Businesses",
   group: "Groups",
   batch: "Batch",
+  systems: "Systems",
+  cache: "Cache",
+  redis: "Redis",
 };
 
 const LOCATION_PARENT_HREF = {
@@ -41,6 +44,8 @@ const SEGMENT_HREF = {
   batch: "/add-businesses?tab=groups",
   users: "/users",
   businesses: "/businesses?tab=all",
+  systems: "/systems/cache/redis",
+  cache: "/systems/cache/redis",
 };
 
 function formatSegment(segment, index, segments) {
@@ -85,6 +90,9 @@ function hrefForSegment(segments, index) {
   }
   if (index === 0 && SEGMENT_HREF[segment]) {
     return SEGMENT_HREF[segment];
+  }
+  if (segment === "cache" && segments[0] === "systems") {
+    return "/systems/cache/redis";
   }
   return `/${segments.slice(0, index + 1).join("/")}`;
 }

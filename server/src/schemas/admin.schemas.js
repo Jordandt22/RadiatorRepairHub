@@ -442,6 +442,8 @@ export const CACHE_INVALIDATE_RESOURCES = [
   "businesses",
   "locations",
   "dashboard",
+  "reference",
+  "all",
 ];
 
 export const InvalidateCacheSchema = Yup.object({
