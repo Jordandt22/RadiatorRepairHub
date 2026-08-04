@@ -66,14 +66,19 @@ const checkDatabase = () =>
 
 const checkWebsite = () =>
   runCheck("website", "RadiatorRepairHub", async () => {
-    const url = getWebBaseUrl();
+    const baseUrl = getWebBaseUrl();
+    // Prefer robots.txt: lightweight and less likely to trip Cloudflare bot checks.
+    const url = `${baseUrl}/robots.txt`;
     const response = await fetch(url, {
       method: "GET",
       redirect: "follow",
       signal: AbortSignal.timeout(CHECK_TIMEOUT_MS),
       headers: {
-        Accept: "text/html,application/xhtml+xml",
-        "User-Agent": "RRH-Internal-HealthCheck/1.0",
+        Accept: "text/plain,text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        // Browser-like UA — bare custom agents are often blocked by Cloudflare.
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
       },
     });
 
@@ -81,7 +86,7 @@ const checkWebsite = () =>
       throw new Error(`Website returned HTTP ${response.status}`);
     }
 
-    return { url };
+    return { url: baseUrl };
   });
 
 export const getSystemsHealthChecks = async () => {
