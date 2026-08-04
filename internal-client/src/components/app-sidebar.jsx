@@ -262,8 +262,8 @@ export function AppSidebar({ ...props }) {
         <Suspense fallback={null}>
           <NavMain items={data.navMain} label="Platform" />
           <NavMain items={data.navInbox} label="Inbox" />
-          <NavMain items={data.navExternal} label="External" />
           <NavMain items={data.navSystems} label="Systems" />
+          <NavMain items={data.navExternal} label="External" />
         </Suspense>
       </SidebarContent>
       <NavLogout />
