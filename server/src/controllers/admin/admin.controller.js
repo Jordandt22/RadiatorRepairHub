@@ -43,6 +43,7 @@ import {
   getOutreachBusinessesByIds,
   insertOutreachHistory,
   getOutreachHistory as fetchOutreachHistory,
+  deleteOutreachHistoryByIds as removeOutreachHistory,
   getAffiliateProducts as fetchAffiliateProducts,
   createAffiliateProduct as insertAffiliateProduct,
   updateAffiliateProduct as patchAffiliateProduct,
@@ -2753,6 +2754,33 @@ export const getOutreachHistoryList = async (req, res) => {
       limit,
       outreach_type: outreachType,
       q,
+    })
+  );
+};
+
+export const deleteOutreachHistory = async (req, res) => {
+  const { outreach_history_ids } = req.body;
+
+  const { data, error } = await removeOutreachHistory(outreach_history_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error removing outreach history.",
+          error
+        )
+      );
+  }
+
+  const deletedIds = (data ?? []).map((row) => row.outreach_history_id);
+
+  return res.status(200).json(
+    successHandler({
+      deleted: deletedIds.length,
+      outreach_history_ids: deletedIds,
     })
   );
 };

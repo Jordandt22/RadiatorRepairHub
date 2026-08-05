@@ -23,6 +23,7 @@ import OutreachTable from "@/components/pages/outreach/OutreachTable";
 import OutreachTableSkeleton from "@/components/pages/outreach/OutreachTableSkeleton";
 import OutreachHistoryTable from "@/components/pages/outreach/OutreachHistoryTable";
 import OutreachHistoryTableSkeleton from "@/components/pages/outreach/OutreachHistoryTableSkeleton";
+import RemoveSentConfirmDialog from "@/components/pages/outreach/RemoveSentConfirmDialog";
 import OutreachPreviewSheet from "@/components/pages/outreach/OutreachPreviewSheet";
 import OutreachAddBusinessesSheet from "@/components/pages/outreach/OutreachAddBusinessesSheet";
 import Pagination from "@/components/pages/dashboard/Pagination";
@@ -89,6 +90,11 @@ export default function OutreachPageContent() {
   const [historyDebouncedSearch, setHistoryDebouncedSearch] = useState("");
   const [historyType, setHistoryType] = useState(null);
   const [historyRefreshError, setHistoryRefreshError] = useState(null);
+  const [historySelectedIds, setHistorySelectedIds] = useState(
+    () => new Set(),
+  );
+  const [historyActionError, setHistoryActionError] = useState(null);
+  const [removeSentConfirmOpen, setRemoveSentConfirmOpen] = useState(false);
 
   const searchQuery = debouncedSearch.trim();
   const historySearchQuery = historyDebouncedSearch.trim();
@@ -262,6 +268,47 @@ export default function OutreachPageContent() {
     },
     onError: (err) => {
       setHistoryRefreshError(err.message || "Failed to refresh");
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const removeSentMutation = useMutation({
+    mutationFn: async (outreach_history_ids) => {
+      const result = await fetchApi("/admin/outreach/history", {
+        method: "DELETE",
+        accessToken,
+        body: JSON.stringify({ outreach_history_ids }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(
+          result.error.message || "Failed to remove sent history",
+        );
+      }
+
+      return result.data;
+    },
+    onMutate: () => {
+      setHistoryActionError(null);
+      setLoading(true);
+    },
+    onSuccess: async () => {
+      setHistoryActionError(null);
+      setRemoveSentConfirmOpen(false);
+      setHistorySelectedIds(new Set());
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["outreach-history"] }),
+        queryClient.invalidateQueries({ queryKey: ["outreach-businesses"] }),
+      ]);
+    },
+    onError: (err) => {
+      setHistoryActionError(err.message || "Failed to remove sent history");
+      setRemoveSentConfirmOpen(false);
     },
     onSettled: () => setLoading(false),
   });
@@ -495,6 +542,49 @@ export default function OutreachPageContent() {
 
   const historyRows = historyQuery.data?.history ?? [];
   const historyTotalPages = historyQuery.data?.totalPages ?? 0;
+  const historyNoEmailRows = historyRows.filter((row) => {
+    const email =
+      typeof row.business?.email === "string" ? row.business.email.trim() : "";
+    return !email;
+  });
+
+  const handleHistoryToggleId = (id, checked) => {
+    setHistorySelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const handleHistoryTogglePage = (checked) => {
+    setHistorySelectedIds((prev) => {
+      const next = new Set(prev);
+      for (const row of historyRows) {
+        if (checked) next.add(row.outreach_history_id);
+        else next.delete(row.outreach_history_id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectNoEmail = () => {
+    setHistorySelectedIds(
+      new Set(historyNoEmailRows.map((row) => row.outreach_history_id)),
+    );
+    setHistoryActionError(null);
+  };
+
+  const handleRemoveSentClick = () => {
+    if (historySelectedIds.size === 0 || removeSentMutation.isPending) return;
+    setHistoryActionError(null);
+    setRemoveSentConfirmOpen(true);
+  };
+
+  const handleRemoveSentConfirm = () => {
+    if (historySelectedIds.size === 0 || removeSentMutation.isPending) return;
+    removeSentMutation.mutate(Array.from(historySelectedIds));
+  };
 
   const outreachTypeLabel = useMemo(
     () => outreachType?.label ?? null,
@@ -665,6 +755,7 @@ export default function OutreachPageContent() {
             onOutreachTypeChange={(value) => {
               setHistoryType(value);
               setHistoryPage(1);
+              setHistorySelectedIds(new Set());
             }}
             onRefresh={() => refreshHistoryMutation.mutate()}
             refreshPending={
@@ -672,6 +763,17 @@ export default function OutreachPageContent() {
             }
             refreshError={historyRefreshError}
             listError={historyQuery.error?.message ?? null}
+            selectedCount={historySelectedIds.size}
+            onRemoveSent={handleRemoveSentClick}
+            removeDisabled={
+              historySelectedIds.size === 0 || removeSentMutation.isPending
+            }
+            onSelectNoEmail={handleSelectNoEmail}
+            selectNoEmailDisabled={
+              historyNoEmailRows.length === 0 || removeSentMutation.isPending
+            }
+            noEmailCount={historyNoEmailRows.length}
+            actionError={historyActionError}
           />
 
           {historyQuery.isLoading && !historyQuery.data ? (
@@ -680,6 +782,9 @@ export default function OutreachPageContent() {
             <OutreachHistoryTable
               rows={historyRows}
               hasFilters={Boolean(historyTypeId || historySearchQuery)}
+              selectedIds={historySelectedIds}
+              onToggleId={handleHistoryToggleId}
+              onTogglePage={handleHistoryTogglePage}
             />
           )}
 
@@ -692,14 +797,26 @@ export default function OutreachPageContent() {
               isFetching={
                 historyQuery.isFetching || historyQuery.isPlaceholderData
               }
-              onPrevious={() =>
-                setHistoryPage((prev) => Math.max(1, prev - 1))
-              }
-              onNext={() => setHistoryPage((prev) => prev + 1)}
+              onPrevious={() => {
+                setHistorySelectedIds(new Set());
+                setHistoryPage((prev) => Math.max(1, prev - 1));
+              }}
+              onNext={() => {
+                setHistorySelectedIds(new Set());
+                setHistoryPage((prev) => prev + 1);
+              }}
             />
           ) : null}
         </>
       ) : null}
+
+      <RemoveSentConfirmDialog
+        open={removeSentConfirmOpen}
+        onOpenChange={setRemoveSentConfirmOpen}
+        selectedCount={historySelectedIds.size}
+        onConfirm={handleRemoveSentConfirm}
+        confirmPending={removeSentMutation.isPending}
+      />
 
       <OutreachPreviewSheet
         open={previewOpen}

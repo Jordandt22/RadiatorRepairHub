@@ -512,8 +512,10 @@ const ADMIN_BUSINESS_SELECT =
 
 const sanitizeAdminBusinessSearch = (q) => {
   if (!q) return null;
+  // Strip LIKE wildcards and PostgREST .or() reserved chars. Keep "." and "@"
+  // so full emails/domains still match.
   return q
-    .replace(/[%_,.()\"'\\]/g, " ")
+    .replace(/[%_,()\"'\\]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 100);
@@ -2951,6 +2953,19 @@ export const insertOutreachHistory = async (rows) => {
     );
 
   return { data, error };
+};
+
+/** Deletes outreach history rows so businesses can be sent that campaign again. */
+export const deleteOutreachHistoryByIds = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("outreach_history")
+    .delete()
+    .in("outreach_history_id", ids)
+    .select("outreach_history_id, business_id, outreach_type");
+
+  return { data: data ?? [], error };
 };
 
 const OUTREACH_HISTORY_LIST_SELECT =

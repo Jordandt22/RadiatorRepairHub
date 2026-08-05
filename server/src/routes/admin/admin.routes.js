@@ -40,6 +40,7 @@ import {
   previewOutreachEmails,
   sendOutreachEmails,
   getOutreachHistoryList,
+  deleteOutreachHistory,
   getAffiliateProducts,
   createAffiliateProduct,
   updateAffiliateProduct,
@@ -89,6 +90,7 @@ import {
   OutreachPreviewSchema,
   OutreachSendSchema,
   GetOutreachHistoryQuerySchema,
+  DeleteOutreachHistorySchema,
   GetAffiliateProductsQuerySchema,
   CreateAffiliateProductSchema,
   UpdateAffiliateProductSchema,
@@ -244,6 +246,12 @@ adminRouter.get(
   "/outreach/history",
   queryValidator(GetOutreachHistoryQuerySchema),
   serverErrorCatcherWrapper(getOutreachHistoryList)
+);
+
+adminRouter.delete(
+  "/outreach/history",
+  bodyValidator(DeleteOutreachHistorySchema),
+  serverErrorCatcherWrapper(deleteOutreachHistory)
 );
 
 adminRouter.get(
