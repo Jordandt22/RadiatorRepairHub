@@ -26,6 +26,7 @@ const SEGMENT_LABELS = {
   users: "Users",
   "affiliate-programs": "Affiliate Programs",
   "add-businesses": "Add Businesses",
+  "upload-photos": "Upload Photos",
   group: "Groups",
   batch: "Batch",
   systems: "Systems",
@@ -46,6 +47,7 @@ const LOCATION_PARENT_HREF = {
 const SEGMENT_HREF = {
   group: "/add-businesses?tab=groups",
   batch: "/add-businesses?tab=groups",
+  "upload-photos": "/upload-photos?tab=jobs",
   users: "/users",
   businesses: "/businesses?tab=all",
   systems: "/systems/cache/redis",
@@ -74,6 +76,13 @@ function formatSegment(segment, index, segments) {
   if (index === 1 && parent === "batch") {
     return "Details";
   }
+  if (index === 1 && parent === "upload-photos") {
+    if (segment === "batch") return "Batch";
+    return "Job";
+  }
+  if (index === 2 && parent === "upload-photos" && segments[1] === "batch") {
+    return "Details";
+  }
   if (index === 1 && parent === "users") {
     return "Details";
   }
@@ -94,6 +103,13 @@ function hrefForSegment(segments, index) {
   }
   if (index === 0 && SEGMENT_HREF[segment]) {
     return SEGMENT_HREF[segment];
+  }
+  if (
+    segment === "batch" &&
+    segments[0] === "upload-photos" &&
+    index === 1
+  ) {
+    return "/upload-photos?tab=jobs";
   }
   if (segment === "cache" && segments[0] === "systems") {
     return "/systems/cache/redis";

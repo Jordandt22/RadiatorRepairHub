@@ -43,6 +43,7 @@ function AboutSectionContent({
   description: initialDescription = "",
   imageUrl,
   placeId,
+  imageId,
   cdnStored,
   imageAlt,
 }) {
@@ -149,6 +150,8 @@ function AboutSectionContent({
           <BusinessImage
             src={imageUrl}
             placeId={placeId}
+            businessId={businessId}
+            imageId={imageId}
             cdnStored={Boolean(cdnStored)}
             alt={imageAlt}
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"

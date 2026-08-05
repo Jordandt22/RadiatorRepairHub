@@ -11,12 +11,19 @@ import {
 export default function BusinessHeroBanner({
   src,
   placeId,
+  businessId,
+  imageId,
   cdnStored = false,
   alt,
   children,
   sizes = "(max-width: 768px) 100vw, 100vw",
 }) {
-  const publicId = getCloudinaryPublicId(placeId);
+  const publicId = getCloudinaryPublicId({
+    businessId,
+    imageId,
+    placeId,
+    cdnStored,
+  });
   const canUseCloudinary = Boolean(cdnStored && publicId);
   const hasRemote = Boolean(src);
 

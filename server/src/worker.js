@@ -2,9 +2,11 @@ import "dotenv/config";
 import { Worker } from "bullmq";
 import { getBullmqConnectionOptions } from "./ingest/bullmqRedis.js";
 import { QUEUE_NAMES } from "./ingest/queues.js";
+import { CDN_UPLOAD_QUEUE_NAME } from "./cdn-upload/queues.js";
 import { processFilterJob } from "./ingest/handlers/filterJob.js";
 import { processEnrichJob } from "./ingest/handlers/enrichJob.js";
 import { processInsertJob } from "./ingest/handlers/insertJob.js";
+import { processCdnUploadJob } from "./cdn-upload/handlers/cdnUploadJob.js";
 import { logger } from "./lib/logger.js";
 
 const connection = getBullmqConnectionOptions();
@@ -27,6 +29,12 @@ const insertWorker = new Worker(
   { connection, concurrency: 1 }
 );
 
+const cdnUploadWorker = new Worker(
+  CDN_UPLOAD_QUEUE_NAME,
+  async (job) => processCdnUploadJob(job.data),
+  { connection, concurrency: 2 }
+);
+
 function attachLogging(worker, label) {
   const log = logger.child({ worker: label });
   worker.on("completed", (job, result) => {
@@ -40,18 +48,22 @@ function attachLogging(worker, label) {
 attachLogging(filterWorker, "ingest-filter");
 attachLogging(enrichWorker, "ingest-enrich");
 attachLogging(insertWorker, "ingest-insert");
+attachLogging(cdnUploadWorker, "cdn-upload");
 
 logger.info(
-  { queues: Object.values(QUEUE_NAMES) },
-  "Ingest worker listening"
+  {
+    queues: [...Object.values(QUEUE_NAMES), CDN_UPLOAD_QUEUE_NAME],
+  },
+  "Worker listening"
 );
 
 async function shutdown() {
-  logger.info("Shutting down ingest worker...");
+  logger.info("Shutting down worker...");
   await Promise.all([
     filterWorker.close(),
     enrichWorker.close(),
     insertWorker.close(),
+    cdnUploadWorker.close(),
   ]);
   process.exit(0);
 }
