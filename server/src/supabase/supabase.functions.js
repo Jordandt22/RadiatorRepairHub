@@ -2997,7 +2997,7 @@ const mapOutreachHistoryListRow = (row) => {
 export const getOutreachHistory = async (
   page,
   limit,
-  { outreachType = null, q = null, emailChangedOrMissing = false } = {}
+  { outreachType = null, q = null, emailChangedOrMissing = null } = {}
 ) => {
   let query = supabase
     .from("outreach_history_list")
@@ -3008,8 +3008,10 @@ export const getOutreachHistory = async (
     query = query.eq("outreach_type", outreachType);
   }
 
-  if (emailChangedOrMissing) {
+  if (emailChangedOrMissing === true) {
     query = query.eq("email_changed_or_missing", true);
+  } else if (emailChangedOrMissing === false) {
+    query = query.eq("email_changed_or_missing", false);
   }
 
   const sanitized = sanitizeAdminBusinessSearch(q);
@@ -3040,7 +3042,7 @@ export const getOutreachHistory = async (
 export const getOutreachHistoryMatchingIds = async ({
   outreachType = null,
   q = null,
-  emailChangedOrMissing = false,
+  emailChangedOrMissing = null,
   limit = 30,
 } = {}) => {
   let query = supabase
@@ -3053,8 +3055,10 @@ export const getOutreachHistoryMatchingIds = async ({
     query = query.eq("outreach_type", outreachType);
   }
 
-  if (emailChangedOrMissing) {
+  if (emailChangedOrMissing === true) {
     query = query.eq("email_changed_or_missing", true);
+  } else if (emailChangedOrMissing === false) {
+    query = query.eq("email_changed_or_missing", false);
   }
 
   const sanitized = sanitizeAdminBusinessSearch(q);

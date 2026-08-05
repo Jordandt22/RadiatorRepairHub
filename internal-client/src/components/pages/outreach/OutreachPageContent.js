@@ -95,8 +95,7 @@ export default function OutreachPageContent() {
   );
   const [historyActionError, setHistoryActionError] = useState(null);
   const [removeSentConfirmOpen, setRemoveSentConfirmOpen] = useState(false);
-  const [historyEmailChangedOrMissing, setHistoryEmailChangedOrMissing] =
-    useState(false);
+  const [historyEmailFilter, setHistoryEmailFilter] = useState(null);
 
   const searchQuery = debouncedSearch.trim();
   const historySearchQuery = historyDebouncedSearch.trim();
@@ -108,6 +107,12 @@ export default function OutreachPageContent() {
   const outreachTypeId = outreachType?.id ?? null;
   const matchLimitValue = matchLimit?.value ?? 25;
   const historyTypeId = historyType?.id ?? null;
+  const historyEmailFilterValue =
+    historyEmailFilter?.id === "email_changed_or_missing"
+      ? true
+      : historyEmailFilter?.id === "same_email"
+        ? false
+        : null;
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -214,7 +219,7 @@ export default function OutreachPageContent() {
     historyPage,
     historyTypeId,
     historySearchQuery,
-    historyEmailChangedOrMissing,
+    historyEmailFilterValue,
   ];
 
   const historyQuery = useQuery({
@@ -226,8 +231,10 @@ export default function OutreachPageContent() {
       });
       if (historyTypeId) params.set("outreach_type", historyTypeId);
       if (historySearchQuery) params.set("q", historySearchQuery);
-      if (historyEmailChangedOrMissing) {
+      if (historyEmailFilterValue === true) {
         params.set("email_changed_or_missing", "true");
+      } else if (historyEmailFilterValue === false) {
+        params.set("email_changed_or_missing", "false");
       }
 
       const result = await fetchApi(
@@ -248,49 +255,6 @@ export default function OutreachPageContent() {
     enabled: isReady && !!accessToken && activeTab === "history",
     placeholderData: keepPreviousData,
     staleTime: 30_000,
-  });
-
-  const selectMatchingHistoryMutation = useMutation({
-    mutationFn: async () => {
-      const body = {
-        email_changed_or_missing: true,
-        limit: 100,
-      };
-      if (historyTypeId) body.outreach_type = historyTypeId;
-      if (historySearchQuery) body.q = historySearchQuery;
-
-      const result = await fetchApi("/admin/outreach/history/matching-ids", {
-        method: "POST",
-        accessToken,
-        body: JSON.stringify(body),
-      });
-
-      if (result.status === 401) {
-        logout();
-        throw new Error("Session expired");
-      }
-      if (result.error) {
-        throw new Error(
-          result.error.message || "Failed to select matching history",
-        );
-      }
-      return result.data;
-    },
-    onMutate: () => {
-      setHistoryActionError(null);
-      setLoading(true);
-    },
-    onSuccess: (data) => {
-      const ids = data?.outreach_history_ids ?? [];
-      setHistorySelectedIds(new Set(ids));
-      if (ids.length === 0) {
-        setHistoryActionError("No history rows match the current filters.");
-      }
-    },
-    onError: (err) => {
-      setHistoryActionError(err.message || "Failed to select matching history");
-    },
-    onSettled: () => setLoading(false),
   });
 
   const refreshBrowseMutation = useMutation({
@@ -612,16 +576,11 @@ export default function OutreachPageContent() {
     });
   };
 
-  const handleToggleEmailChangedOrMissing = () => {
-    const next = !historyEmailChangedOrMissing;
-    setHistoryEmailChangedOrMissing(next);
+  const handleHistoryEmailFilterChange = (value) => {
+    setHistoryEmailFilter(value);
     setHistoryPage(1);
     setHistorySelectedIds(new Set());
     setHistoryActionError(null);
-    if (next) {
-      // Filter list server-side, then select all matching IDs (up to 100).
-      selectMatchingHistoryMutation.mutate();
-    }
   };
 
   const handleRemoveSentClick = () => {
@@ -806,6 +765,8 @@ export default function OutreachPageContent() {
               setHistoryPage(1);
               setHistorySelectedIds(new Set());
             }}
+            emailFilter={historyEmailFilter}
+            onEmailFilterChange={handleHistoryEmailFilterChange}
             onRefresh={() => refreshHistoryMutation.mutate()}
             refreshPending={
               refreshHistoryMutation.isPending || historyQuery.isFetching
@@ -815,17 +776,7 @@ export default function OutreachPageContent() {
             selectedCount={historySelectedIds.size}
             onRemoveSent={handleRemoveSentClick}
             removeDisabled={
-              historySelectedIds.size === 0 ||
-              removeSentMutation.isPending ||
-              selectMatchingHistoryMutation.isPending
-            }
-            missingEmailOnly={historyEmailChangedOrMissing}
-            onToggleMissingEmail={handleToggleEmailChangedOrMissing}
-            missingEmailPending={selectMatchingHistoryMutation.isPending}
-            matchingTotal={
-              historyEmailChangedOrMissing
-                ? (historyQuery.data?.total ?? null)
-                : null
+              historySelectedIds.size === 0 || removeSentMutation.isPending
             }
             actionError={historyActionError}
           />
@@ -838,7 +789,7 @@ export default function OutreachPageContent() {
               hasFilters={Boolean(
                 historyTypeId ||
                   historySearchQuery ||
-                  historyEmailChangedOrMissing,
+                  historyEmailFilterValue !== null,
               )}
               selectedIds={historySelectedIds}
               onToggleId={handleHistoryToggleId}
