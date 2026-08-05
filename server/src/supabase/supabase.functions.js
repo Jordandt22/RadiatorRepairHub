@@ -11,8 +11,22 @@ import {
   getReviewTier,
 } from "../lib/adminBusinessTiers.js";
 
-const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*)`;
-const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*)`;
+const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*), business_images(image_id, is_primary)`;
+const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_images(image_id, is_primary)`;
+
+function attachPrimaryImageId(business) {
+  if (!business) return business;
+
+  const images = Array.isArray(business.business_images)
+    ? business.business_images
+    : [];
+  const primary =
+    images.find((image) => image?.is_primary) || images[0] || null;
+
+  business.primary_image_id = primary?.image_id ?? null;
+  delete business.business_images;
+  return business;
+}
 
 const formatBusinessListings = (data) => {
   data.map((business) => delete business.additional_info);
@@ -22,6 +36,7 @@ const formatBusinessListings = (data) => {
     delete business.features.id;
     delete business.features.business_id;
     business.is_claimed = Boolean(business?.is_claimed);
+    attachPrimaryImageId(business);
 
     if (business?.secondary_categories) {
       business.secondary_categories = business.secondary_categories.map(
@@ -66,6 +81,7 @@ const formatFullBusiness = (business) => {
 
   business.is_claimed = Boolean(business?.is_claimed);
   business.last_edited_at = business.last_edited_at ?? null;
+  attachPrimaryImageId(business);
 
   return business;
 };
@@ -2240,7 +2256,7 @@ export const getOwnedBusinesses = async (ownerUid, accessToken) => {
   const { data, error } = await client
     .from("businesses")
     .select(
-      "id, title, slug, address, image_url, place_id, cdn_stored, last_edited_at"
+      "id, title, slug, address, image_url, place_id, cdn_stored, last_edited_at, business_images(image_id, is_primary)"
     )
     .eq("owner_uid", ownerUid)
     .eq("is_claimed", true)
@@ -2250,7 +2266,10 @@ export const getOwnedBusinesses = async (ownerUid, accessToken) => {
     return { data: null, error };
   }
 
-  return { data: data ?? [], error: null };
+  return {
+    data: (data ?? []).map((business) => attachPrimaryImageId({ ...business })),
+    error: null,
+  };
 };
 
 export const getOwnedBusiness = async (businessId, ownerUid, accessToken) => {

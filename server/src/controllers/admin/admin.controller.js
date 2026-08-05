@@ -101,6 +101,16 @@ import {
   listIngestGroups,
 } from "../../ingest/db.js";
 import { enqueueFilterJob } from "../../ingest/queues.js";
+import {
+  countPendingCdnBusinesses,
+  deleteCdnUploadJobs,
+  getCdnUploadBatchDetail,
+  getCdnUploadJobDetail,
+  hasActiveCdnUploadJob,
+  listCdnUploadBusinesses,
+  listCdnUploadJobs,
+} from "../../cdn-upload/db.js";
+import { startCdnUploadJob } from "../../cdn-upload/startJob.js";
 import { normalizeWebsiteUrl } from "../../lib/websiteReachability.js";
 import { getSystemsHealthChecks } from "../../lib/systemsHealth.js";
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
@@ -3125,6 +3135,210 @@ export const getIngestBatchById = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "There was an error fetching the ingest batch.",
+          error
+        )
+      );
+  }
+};
+
+export const getCdnUploadPendingCount = async (req, res) => {
+  try {
+    const pending_count = await countPendingCdnBusinesses();
+    return res.status(200).json(successHandler({ pending_count }));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the pending CDN upload count.",
+          error
+        )
+      );
+  }
+};
+
+export const getCdnUploadBusinesses = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const q = rawQ ? rawQ.slice(0, 100) : null;
+
+  const parseBool = (value) => {
+    if (value === true || value === "true") return true;
+    if (value === false || value === "false") return false;
+    return null;
+  };
+  const cdnStored = parseBool(req.query.cdn_stored);
+  const hasAttempts = parseBool(req.query.has_attempts);
+
+  try {
+    const result = await listCdnUploadBusinesses(page, limit, {
+      q,
+      cdnStored,
+      hasAttempts,
+    });
+
+    const total = result.count ?? 0;
+    let totalPages = Math.ceil(total / result.limit) || 0;
+    if (totalPages > 0 && page > totalPages) {
+      page = totalPages;
+    }
+
+    return res.status(200).json(
+      successHandler({
+        businesses: result.businesses,
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          total,
+          totalPages,
+        },
+      })
+    );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching CDN upload businesses.",
+          error
+        )
+      );
+  }
+};
+
+export const getCdnUploadJobs = async (req, res) => {
+  try {
+    const jobs = await listCdnUploadJobs();
+    return res.status(200).json(successHandler({ jobs }));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching CDN upload jobs.",
+          error
+        )
+      );
+  }
+};
+
+export const getCdnUploadJobById = async (req, res) => {
+  const { jobId } = req.params;
+
+  try {
+    const detail = await getCdnUploadJobDetail(jobId);
+
+    if (!detail) {
+      return res
+        .status(404)
+        .json(customErrorHandler(SUPABASE_ERROR, "CDN upload job not found."));
+    }
+
+    return res.status(200).json(successHandler(detail));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the CDN upload job.",
+          error
+        )
+      );
+  }
+};
+
+export const getCdnUploadBatchById = async (req, res) => {
+  const { batchId } = req.params;
+
+  try {
+    const detail = await getCdnUploadBatchDetail(batchId);
+
+    if (!detail) {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(SUPABASE_ERROR, "CDN upload batch not found.")
+        );
+    }
+
+    return res.status(200).json(successHandler(detail));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the CDN upload batch.",
+          error
+        )
+      );
+  }
+};
+
+export const createCdnUploadJobHandler = async (req, res) => {
+  const limit =
+    typeof req.body?.limit === "number" && Number.isFinite(req.body.limit)
+      ? req.body.limit
+      : 300;
+
+  try {
+    const active = await hasActiveCdnUploadJob();
+    if (active) {
+      return res
+        .status(409)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "A CDN upload job is already pending or running."
+          )
+        );
+    }
+
+    const { job, batches } = await startCdnUploadJob({ limitCount: limit });
+
+    return res.status(201).json(
+      successHandler({
+        job,
+        batches,
+        batch_count: batches.length,
+      })
+    );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error creating the CDN upload job.",
+          error
+        )
+      );
+  }
+};
+
+export const deleteCdnUploadJobsHandler = async (req, res) => {
+  const { job_ids } = req.body;
+
+  try {
+    const data = await deleteCdnUploadJobs(job_ids);
+    return res.status(200).json(
+      successHandler({
+        deleted: data?.length ?? 0,
+        ids: (data ?? []).map((row) => row.id),
+      })
+    );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error deleting CDN upload jobs.",
           error
         )
       );

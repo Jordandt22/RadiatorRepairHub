@@ -28,6 +28,8 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
         <BusinessImage
           src={business.image_url}
           placeId={business.place_id}
+          businessId={business.id}
+          imageId={business.primary_image_id}
           cdnStored={Boolean(business.cdn_stored)}
           alt={business.title}
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"

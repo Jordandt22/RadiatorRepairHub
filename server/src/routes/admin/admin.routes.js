@@ -51,6 +51,13 @@ import {
   getIngestGroupById,
   getIngestBatchById,
   deleteIngestGroupsHandler,
+  getCdnUploadPendingCount,
+  getCdnUploadJobs,
+  getCdnUploadJobById,
+  getCdnUploadBatchById,
+  getCdnUploadBusinesses,
+  createCdnUploadJobHandler,
+  deleteCdnUploadJobsHandler,
 } from "../../controllers/admin/admin.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
 import {
@@ -100,6 +107,11 @@ import {
   GetIngestGroupParamsSchema,
   GetIngestBatchParamsSchema,
   DeleteIngestGroupsSchema,
+  CreateCdnUploadJobSchema,
+  GetCdnUploadJobParamsSchema,
+  GetCdnUploadBatchParamsSchema,
+  GetCdnUploadBusinessesQuerySchema,
+  DeleteCdnUploadJobsSchema,
 } from "../../schemas/admin.schemas.js";
 import {
   bodyValidator,
@@ -413,6 +425,46 @@ adminRouter.delete(
   "/ingest/groups",
   bodyValidator(DeleteIngestGroupsSchema),
   serverErrorCatcherWrapper(deleteIngestGroupsHandler)
+);
+
+adminRouter.get(
+  "/cdn-upload/pending-count",
+  serverErrorCatcherWrapper(getCdnUploadPendingCount)
+);
+
+adminRouter.get(
+  "/cdn-upload/businesses",
+  queryValidator(GetCdnUploadBusinessesQuerySchema),
+  serverErrorCatcherWrapper(getCdnUploadBusinesses)
+);
+
+adminRouter.get(
+  "/cdn-upload/jobs",
+  serverErrorCatcherWrapper(getCdnUploadJobs)
+);
+
+adminRouter.get(
+  "/cdn-upload/jobs/:jobId",
+  paramsValidator(GetCdnUploadJobParamsSchema),
+  serverErrorCatcherWrapper(getCdnUploadJobById)
+);
+
+adminRouter.get(
+  "/cdn-upload/batches/:batchId",
+  paramsValidator(GetCdnUploadBatchParamsSchema),
+  serverErrorCatcherWrapper(getCdnUploadBatchById)
+);
+
+adminRouter.post(
+  "/cdn-upload/jobs",
+  bodyValidator(CreateCdnUploadJobSchema),
+  serverErrorCatcherWrapper(createCdnUploadJobHandler)
+);
+
+adminRouter.delete(
+  "/cdn-upload/jobs",
+  bodyValidator(DeleteCdnUploadJobsSchema),
+  serverErrorCatcherWrapper(deleteCdnUploadJobsHandler)
 );
 
 export default adminRouter;

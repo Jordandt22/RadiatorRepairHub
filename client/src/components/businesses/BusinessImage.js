@@ -12,6 +12,8 @@ import {
 function BusinessImage({
   src,
   placeId,
+  businessId,
+  imageId,
   cdnStored = false,
   alt,
   fill = true,
@@ -24,7 +26,12 @@ function BusinessImage({
   fallback = "message",
   fallbackClassName = "bg-slate-900",
 }) {
-  const publicId = getCloudinaryPublicId(placeId);
+  const publicId = getCloudinaryPublicId({
+    businessId,
+    imageId,
+    placeId,
+    cdnStored,
+  });
   const canUseCloudinary = Boolean(cdnStored && publicId);
   const hasRemote = Boolean(src);
 
