@@ -257,6 +257,72 @@ export default function BusinessDetailPageContent() {
       </section>
 
       <section className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold tracking-tight">Content & SEO</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer rounded-full"
+            onClick={() => {
+              setEditError(null);
+              setEditOpen(true);
+            }}
+          >
+            <PencilIcon />
+            Edit
+          </Button>
+        </div>
+        <dl className="grid gap-3">
+          <DetailCard label="About description">
+            {data.description ? (
+              <p className="whitespace-pre-wrap leading-relaxed">
+                {data.description}
+              </p>
+            ) : (
+              "—"
+            )}
+          </DetailCard>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <DetailCard label="Title tag">{data.title_tag || "—"}</DetailCard>
+            <DetailCard label="Local note">
+              {data.local_note ? (
+                <p className="whitespace-pre-wrap leading-relaxed">
+                  {data.local_note}
+                </p>
+              ) : (
+                "—"
+              )}
+            </DetailCard>
+          </div>
+          <DetailCard label="Meta description">
+            {data.meta_description ? (
+              <p className="whitespace-pre-wrap leading-relaxed">
+                {data.meta_description}
+              </p>
+            ) : (
+              "—"
+            )}
+          </DetailCard>
+          <DetailCard label="Keywords">
+            {Array.isArray(data.keywords) && data.keywords.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {data.keywords.map((keyword, index) => (
+                  <span
+                    key={`${keyword}-${index}`}
+                    className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-xs"
+                  >
+                    {keyword}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              "—"
+            )}
+          </DetailCard>
+        </dl>
+      </section>
+
+      <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold tracking-tight">Owner</h2>
         {isClaimed && hasOwner ? (
           <dl className="grid gap-3 sm:grid-cols-2">
