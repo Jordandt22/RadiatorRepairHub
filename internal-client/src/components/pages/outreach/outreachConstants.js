@@ -33,6 +33,11 @@ export const SENT_FILTERS = [
   { id: "false", label: "Not sent" },
 ];
 
+export const HISTORY_EMAIL_FILTERS = [
+  { id: "email_changed_or_missing", label: "Email Changed/Missing" },
+  { id: "same_email", label: "Same Emails" },
+];
+
 export const CLAIM_ELIGIBILITY_LABELS = {
   able: "Able",
   no_email: "No Email",

@@ -18,8 +18,10 @@ export default function BusinessTierCombobox({
   ariaLabel = "Filter",
   disabled = false,
   className,
+  inputName,
 }) {
   const inputId = useId();
+  const resolvedName = inputName || `rrh-filter-${inputId}`;
 
   return (
     <Combobox
@@ -37,7 +39,7 @@ export default function BusinessTierCombobox({
         showClear={Boolean(value)}
         disabled={disabled}
         autoComplete="off"
-        name={`rrh-filter-${inputId}`}
+        name={resolvedName}
         id={`rrh-filter-${inputId}`}
         className={className ?? "w-full min-w-0 md:min-w-[10rem]"}
       />

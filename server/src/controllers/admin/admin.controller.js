@@ -2722,7 +2722,14 @@ export const getOutreachHistoryList = async (req, res) => {
     typeof req.query.q === "string" && req.query.q.trim()
       ? req.query.q.trim()
       : null;
-  const emailChangedOrMissing = req.query.email_changed_or_missing === true;
+  const emailChangedOrMissing =
+    req.query.email_changed_or_missing === true ||
+    req.query.email_changed_or_missing === "true"
+      ? true
+      : req.query.email_changed_or_missing === false ||
+          req.query.email_changed_or_missing === "false"
+        ? false
+        : null;
 
   const { data, count, error } = await fetchOutreachHistory(page, limit, {
     outreachType,
@@ -2771,7 +2778,12 @@ export const getOutreachHistoryMatchingIdsList = async (req, res) => {
     typeof req.body.q === "string" && req.body.q.trim()
       ? req.body.q.trim()
       : null;
-  const emailChangedOrMissing = req.body.email_changed_or_missing === true;
+  const emailChangedOrMissing =
+    req.body.email_changed_or_missing === true
+      ? true
+      : req.body.email_changed_or_missing === false
+        ? false
+        : null;
   const limit = Number(req.body.limit) || 100;
 
   const { data, error } = await fetchOutreachHistoryMatchingIds({
