@@ -22,9 +22,10 @@ export default function OutreachHistoryActions({
   selectedCount = 0,
   onRemoveSent,
   removeDisabled = false,
-  onSelectNoEmail,
-  selectNoEmailDisabled = false,
-  noEmailCount = 0,
+  missingEmailOnly = false,
+  onToggleMissingEmail,
+  missingEmailPending = false,
+  matchingTotal = null,
   actionError = null,
 }) {
   return (
@@ -52,18 +53,23 @@ export default function OutreachHistoryActions({
           />
         </div>
         <Button
-          variant="outline"
+          variant={missingEmailOnly ? "default" : "outline"}
           size="sm"
-          disabled={selectNoEmailDisabled}
-          onClick={onSelectNoEmail}
-          aria-label="Select history rows with no current email"
+          disabled={missingEmailPending}
+          onClick={onToggleMissingEmail}
+          aria-pressed={missingEmailOnly}
+          aria-label="Filter to history rows with changed or missing current email"
           className={cn(
-            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+            !missingEmailOnly && "hover:bg-gray-100",
           )}
         >
           <MailXIcon />
           <span className="hidden md:inline">
-            Select no email{noEmailCount > 0 ? ` (${noEmailCount})` : ""}
+            Email Changed/Missing
+            {missingEmailOnly && matchingTotal != null
+              ? ` (${matchingTotal})`
+              : ""}
           </span>
         </Button>
         <Button

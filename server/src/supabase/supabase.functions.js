@@ -2969,7 +2969,7 @@ export const deleteOutreachHistoryByIds = async (ids) => {
 };
 
 const OUTREACH_HISTORY_LIST_SELECT =
-  "outreach_history_id, business_id, message_type, outreach_type, recipient, subject, provider, provider_message_id, sent_at, metadata, created_at, title, slug, email";
+  "outreach_history_id, business_id, message_type, outreach_type, recipient, subject, provider, provider_message_id, sent_at, metadata, created_at, title, slug, email, email_changed_or_missing";
 
 const mapOutreachHistoryListRow = (row) => {
   if (!row) return row;
@@ -2978,11 +2978,13 @@ const mapOutreachHistoryListRow = (row) => {
     slug,
     email,
     business_id,
+    email_changed_or_missing,
     ...rest
   } = row;
   return {
     ...rest,
     business_id,
+    email_changed_or_missing: Boolean(email_changed_or_missing),
     business: {
       id: business_id,
       title: title ?? null,
@@ -2995,7 +2997,7 @@ const mapOutreachHistoryListRow = (row) => {
 export const getOutreachHistory = async (
   page,
   limit,
-  { outreachType = null, q = null } = {}
+  { outreachType = null, q = null, emailChangedOrMissing = false } = {}
 ) => {
   let query = supabase
     .from("outreach_history_list")
@@ -3004,6 +3006,10 @@ export const getOutreachHistory = async (
 
   if (outreachType) {
     query = query.eq("outreach_type", outreachType);
+  }
+
+  if (emailChangedOrMissing) {
+    query = query.eq("email_changed_or_missing", true);
   }
 
   const sanitized = sanitizeAdminBusinessSearch(q);
@@ -3026,6 +3032,46 @@ export const getOutreachHistory = async (
   return {
     data: (data ?? []).map(mapOutreachHistoryListRow),
     count,
+    error: null,
+  };
+};
+
+/** History row IDs matching the same filters as the history list (for bulk select). */
+export const getOutreachHistoryMatchingIds = async ({
+  outreachType = null,
+  q = null,
+  emailChangedOrMissing = false,
+  limit = 30,
+} = {}) => {
+  let query = supabase
+    .from("outreach_history_list")
+    .select("outreach_history_id")
+    .order("sent_at", { ascending: false })
+    .limit(limit);
+
+  if (outreachType) {
+    query = query.eq("outreach_type", outreachType);
+  }
+
+  if (emailChangedOrMissing) {
+    query = query.eq("email_changed_or_missing", true);
+  }
+
+  const sanitized = sanitizeAdminBusinessSearch(q);
+  if (sanitized) {
+    const pattern = `%${sanitized}%`;
+    query = query.or(
+      `title.ilike."${pattern}",slug.ilike."${pattern}",recipient.ilike."${pattern}",subject.ilike."${pattern}"`
+    );
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    return { data: null, error };
+  }
+
+  return {
+    data: (data ?? []).map((row) => row.outreach_history_id).filter(Boolean),
     error: null,
   };
 };

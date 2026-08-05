@@ -600,13 +600,36 @@ export const GetOutreachHistoryQuerySchema = Yup.object({
     })
     .nullable()
     .optional(),
+  email_changed_or_missing: optionalBoolQuery,
+});
+
+export const GetOutreachHistoryMatchingIdsSchema = Yup.object({
+  outreach_type: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...OUTREACH_TYPES, null], "Invalid outreach type")
+    .optional(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  email_changed_or_missing: optionalBoolQuery,
+  limit: Yup.number().min(1).max(100).optional(),
 });
 
 export const DeleteOutreachHistorySchema = Yup.object({
   outreach_history_ids: Yup.array()
     .of(Yup.string().uuid("Invalid outreach history ID").required())
     .min(1, "At least one outreach history ID is required")
-    .max(30, "At most 30 history rows can be removed at once")
+    .max(100, "At most 100 history rows can be removed at once")
     .required("Outreach history IDs are required"),
 });
 

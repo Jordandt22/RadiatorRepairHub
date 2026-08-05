@@ -43,6 +43,7 @@ import {
   getOutreachBusinessesByIds,
   insertOutreachHistory,
   getOutreachHistory as fetchOutreachHistory,
+  getOutreachHistoryMatchingIds as fetchOutreachHistoryMatchingIds,
   deleteOutreachHistoryByIds as removeOutreachHistory,
   getAffiliateProducts as fetchAffiliateProducts,
   createAffiliateProduct as insertAffiliateProduct,
@@ -2721,10 +2722,12 @@ export const getOutreachHistoryList = async (req, res) => {
     typeof req.query.q === "string" && req.query.q.trim()
       ? req.query.q.trim()
       : null;
+  const emailChangedOrMissing = req.query.email_changed_or_missing === true;
 
   const { data, count, error } = await fetchOutreachHistory(page, limit, {
     outreachType,
     q,
+    emailChangedOrMissing,
   });
 
   if (error) {
@@ -2754,6 +2757,50 @@ export const getOutreachHistoryList = async (req, res) => {
       limit,
       outreach_type: outreachType,
       q,
+      email_changed_or_missing: emailChangedOrMissing,
+    })
+  );
+};
+
+export const getOutreachHistoryMatchingIdsList = async (req, res) => {
+  const outreachType =
+    typeof req.body.outreach_type === "string" && req.body.outreach_type.trim()
+      ? req.body.outreach_type.trim()
+      : null;
+  const q =
+    typeof req.body.q === "string" && req.body.q.trim()
+      ? req.body.q.trim()
+      : null;
+  const emailChangedOrMissing = req.body.email_changed_or_missing === true;
+  const limit = Number(req.body.limit) || 100;
+
+  const { data, error } = await fetchOutreachHistoryMatchingIds({
+    outreachType,
+    q,
+    emailChangedOrMissing,
+    limit,
+  });
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching matching outreach history.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      outreach_history_ids: data ?? [],
+      count: (data ?? []).length,
+      limit,
+      outreach_type: outreachType,
+      q,
+      email_changed_or_missing: emailChangedOrMissing,
     })
   );
 };
