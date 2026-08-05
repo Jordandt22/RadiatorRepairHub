@@ -1,4 +1,9 @@
-import { RefreshCwIcon, SearchIcon } from "lucide-react";
+import {
+  MailXIcon,
+  RefreshCwIcon,
+  SearchIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -14,11 +19,18 @@ export default function OutreachHistoryActions({
   refreshPending = false,
   refreshError = null,
   listError = null,
+  selectedCount = 0,
+  onRemoveSent,
+  removeDisabled = false,
+  onSelectNoEmail,
+  selectNoEmailDisabled = false,
+  noEmailCount = 0,
+  actionError = null,
 }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
           <BusinessTierCombobox
             items={OUTREACH_TYPE_OPTIONS}
             value={outreachType}
@@ -42,11 +54,41 @@ export default function OutreachHistoryActions({
         <Button
           variant="outline"
           size="sm"
+          disabled={selectNoEmailDisabled}
+          onClick={onSelectNoEmail}
+          aria-label="Select history rows with no current email"
+          className={cn(
+            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+          )}
+        >
+          <MailXIcon />
+          <span className="hidden md:inline">
+            Select no email{noEmailCount > 0 ? ` (${noEmailCount})` : ""}
+          </span>
+        </Button>
+        <Button
+          variant="destructive"
+          size="sm"
+          disabled={removeDisabled}
+          onClick={onRemoveSent}
+          aria-label="Remove sent status for selected history rows"
+          className={cn(
+            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+          )}
+        >
+          <Trash2Icon />
+          <span className="hidden md:inline">
+            Remove Sent{selectedCount > 0 ? ` (${selectedCount})` : ""}
+          </span>
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
           disabled={refreshPending}
           onClick={onRefresh}
           aria-label="Refresh"
           className={cn(
-            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:translate-y-[-2px] hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:ml-auto md:px-6",
+            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:ml-auto md:px-6",
           )}
         >
           <RefreshCwIcon
@@ -60,6 +102,9 @@ export default function OutreachHistoryActions({
       ) : null}
       {refreshError ? (
         <p className="text-sm text-destructive">{refreshError}</p>
+      ) : null}
+      {actionError ? (
+        <p className="text-sm text-destructive">{actionError}</p>
       ) : null}
     </div>
   );
