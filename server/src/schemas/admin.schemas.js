@@ -405,6 +405,35 @@ export const UpdateBusinessListingSchema = Yup.object({
     .min(1, "Address is required")
     .max(500, "Address is too long")
     .required("Address is required"),
+  description: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Description is required")
+    .max(750, "Description must be 750 characters or fewer")
+    .required("Description is required"),
+  title_tag: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Title tag is required")
+    .max(100, "Title tag is too long")
+    .required("Title tag is required"),
+  meta_description: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Meta description is required")
+    .max(200, "Meta description is too long")
+    .required("Meta description is required"),
+  local_note: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Local note is required")
+    .max(500, "Local note is too long")
+    .required("Local note is required"),
+  keywords: Yup.array()
+    .of(
+      Yup.string()
+        .transform((value) => String(value ?? "").trim())
+        .min(1)
+        .max(100, "Keyword is too long")
+    )
+    .max(30, "At most 30 keywords")
+    .required("Keywords are required"),
 });
 
 export const GetAdminBusinessParamsSchema = Yup.object({

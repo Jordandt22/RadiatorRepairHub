@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
+const ABOUT_MAX_LENGTH = 750;
 
 const isValidPhone = (value) => {
   if (!value?.trim()) return false;
@@ -31,6 +34,23 @@ const normalizeWebsiteUrl = (raw) => {
   if (!trimmed) return null;
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://${trimmed}`;
+};
+
+const keywordsToInput = (keywords) => {
+  if (!Array.isArray(keywords)) return "";
+  return keywords
+    .map((keyword) => String(keyword ?? "").trim())
+    .filter(Boolean)
+    .join(", ");
+};
+
+const parseKeywordsInput = (raw) => {
+  if (typeof raw !== "string") return [];
+  return raw
+    .split(",")
+    .map((keyword) => keyword.trim())
+    .filter(Boolean)
+    .slice(0, 30);
 };
 
 const listingEditSchema = Yup.object({
@@ -66,6 +86,34 @@ const listingEditSchema = Yup.object({
     .min(1, "Address is required")
     .max(500, "Address is too long")
     .required("Address is required"),
+  description: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Description is required")
+    .max(ABOUT_MAX_LENGTH, `Description must be ${ABOUT_MAX_LENGTH} characters or fewer`)
+    .required("Description is required"),
+  title_tag: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Title tag is required")
+    .max(100, "Title tag is too long")
+    .required("Title tag is required"),
+  meta_description: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Meta description is required")
+    .max(200, "Meta description is too long")
+    .required("Meta description is required"),
+  local_note: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Local note is required")
+    .max(500, "Local note is too long")
+    .required("Local note is required"),
+  keywords: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .test("keywords-count", "At most 30 keywords", (value) => {
+      return parseKeywordsInput(value).length <= 30;
+    })
+    .test("keyword-length", "Each keyword must be 100 characters or fewer", (value) => {
+      return parseKeywordsInput(value).every((keyword) => keyword.length <= 100);
+    }),
 });
 
 function getInitialValues(business) {
@@ -75,6 +123,11 @@ function getInitialValues(business) {
     website: business?.website ?? "",
     phone: business?.phone ?? "",
     address: business?.address ?? "",
+    description: business?.description ?? "",
+    title_tag: business?.title_tag ?? "",
+    meta_description: business?.meta_description ?? "",
+    local_note: business?.local_note ?? "",
+    keywords: keywordsToInput(business?.keywords),
   };
 }
 
@@ -105,6 +158,11 @@ export default function BusinessListingEditDialog({
         website: websiteTrimmed ? normalizeWebsiteUrl(websiteTrimmed) : null,
         phone: values.phone.trim(),
         address: values.address.trim(),
+        description: values.description.trim(),
+        title_tag: values.title_tag.trim(),
+        meta_description: values.meta_description.trim(),
+        local_note: values.local_note.trim(),
+        keywords: parseKeywordsInput(values.keywords),
       });
     },
   });
@@ -126,11 +184,14 @@ export default function BusinessListingEditDialog({
         onOpenChange(next);
       }}
     >
-      <DialogContent className="sm:max-w-lg" showCloseButton={!submitPending}>
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"
+        showCloseButton={!submitPending}
+      >
         <DialogHeader>
           <DialogTitle>Edit listing</DialogTitle>
           <DialogDescription>
-            Update the business title, contact details, and address.
+            Update contact details, About text, and SEO fields for this listing.
           </DialogDescription>
         </DialogHeader>
 
@@ -253,6 +314,141 @@ export default function BusinessListingEditDialog({
             <FieldError
               touched={formik.touched.address}
               error={formik.errors.address}
+            />
+          </div>
+
+          <div className="grid gap-1.5 border-t border-border pt-4">
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="business-listing-description">
+                About description
+              </Label>
+              <span className="text-xs text-muted-foreground">
+                {formik.values.description.length} / {ABOUT_MAX_LENGTH}
+              </span>
+            </div>
+            <Textarea
+              id="business-listing-description"
+              name="description"
+              autoComplete="off"
+              disabled={submitPending}
+              value={formik.values.description}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              rows={5}
+              maxLength={ABOUT_MAX_LENGTH}
+              placeholder="About text shown on the public business page"
+              aria-invalid={
+                formik.touched.description && formik.errors.description
+                  ? true
+                  : undefined
+              }
+            />
+            <FieldError
+              touched={formik.touched.description}
+              error={formik.errors.description}
+            />
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="business-listing-title-tag">Title tag</Label>
+            <Input
+              id="business-listing-title-tag"
+              name="title_tag"
+              autoComplete="off"
+              disabled={submitPending}
+              value={formik.values.title_tag}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              placeholder="SEO page title"
+              aria-invalid={
+                formik.touched.title_tag && formik.errors.title_tag
+                  ? true
+                  : undefined
+              }
+            />
+            <FieldError
+              touched={formik.touched.title_tag}
+              error={formik.errors.title_tag}
+            />
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="business-listing-meta-description">
+              Meta description
+            </Label>
+            <Textarea
+              id="business-listing-meta-description"
+              name="meta_description"
+              autoComplete="off"
+              disabled={submitPending}
+              value={formik.values.meta_description}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              rows={3}
+              maxLength={200}
+              placeholder="SEO meta description"
+              aria-invalid={
+                formik.touched.meta_description &&
+                formik.errors.meta_description
+                  ? true
+                  : undefined
+              }
+            />
+            <FieldError
+              touched={formik.touched.meta_description}
+              error={formik.errors.meta_description}
+            />
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="business-listing-local-note">Local note</Label>
+            <Textarea
+              id="business-listing-local-note"
+              name="local_note"
+              autoComplete="off"
+              disabled={submitPending}
+              value={formik.values.local_note}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              rows={3}
+              maxLength={500}
+              placeholder="Local area note for the listing"
+              aria-invalid={
+                formik.touched.local_note && formik.errors.local_note
+                  ? true
+                  : undefined
+              }
+            />
+            <FieldError
+              touched={formik.touched.local_note}
+              error={formik.errors.local_note}
+            />
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="business-listing-keywords">Keywords</Label>
+            <Textarea
+              id="business-listing-keywords"
+              name="keywords"
+              autoComplete="off"
+              disabled={submitPending}
+              value={formik.values.keywords}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              rows={2}
+              placeholder="Comma-separated keywords"
+              aria-invalid={
+                formik.touched.keywords && formik.errors.keywords
+                  ? true
+                  : undefined
+              }
+            />
+            <p className="text-xs text-muted-foreground">
+              Separate keywords with commas (max 30).
+            </p>
+            <FieldError
+              touched={formik.touched.keywords}
+              error={formik.errors.keywords}
             />
           </div>
 

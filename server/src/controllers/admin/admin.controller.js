@@ -1722,7 +1722,19 @@ export const updateBusinessEmail = async (req, res) => {
 };
 
 export const updateBusinessListing = async (req, res) => {
-  const { business_id, title, email, website, phone, address } = req.body;
+  const {
+    business_id,
+    title,
+    email,
+    website,
+    phone,
+    address,
+    description,
+    title_tag,
+    meta_description,
+    local_note,
+    keywords,
+  } = req.body;
 
   const normalizedTitle = String(title ?? "").trim();
   const normalizedAddress = String(address ?? "").trim();
@@ -1733,6 +1745,15 @@ export const updateBusinessListing = async (req, res) => {
     typeof website === "string" && website.trim()
       ? normalizeWebsiteUrl(website.trim())
       : null;
+  const normalizedDescription = String(description ?? "").trim();
+  const normalizedTitleTag = String(title_tag ?? "").trim();
+  const normalizedMetaDescription = String(meta_description ?? "").trim();
+  const normalizedLocalNote = String(local_note ?? "").trim();
+  const normalizedKeywords = Array.isArray(keywords)
+    ? keywords
+        .map((keyword) => String(keyword ?? "").trim())
+        .filter(Boolean)
+    : [];
 
   const { data, error } = await patchBusinessListing(business_id, {
     title: normalizedTitle,
@@ -1740,6 +1761,11 @@ export const updateBusinessListing = async (req, res) => {
     website: normalizedWebsite,
     phone: normalizedPhone,
     address: normalizedAddress,
+    description: normalizedDescription,
+    title_tag: normalizedTitleTag,
+    meta_description: normalizedMetaDescription,
+    local_note: normalizedLocalNote,
+    keywords: normalizedKeywords,
   });
 
   if (error) {
@@ -1785,6 +1811,11 @@ export const updateBusinessListing = async (req, res) => {
       website: data.website,
       phone: data.phone,
       address: data.address,
+      description: data.description,
+      title_tag: data.title_tag,
+      meta_description: data.meta_description,
+      local_note: data.local_note,
+      keywords: data.keywords,
       last_edited_at: data.last_edited_at,
     })
   );

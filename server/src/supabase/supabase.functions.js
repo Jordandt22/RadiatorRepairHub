@@ -526,6 +526,8 @@ export const getListingReports = async (page, limit, status = null) => {
 const ADMIN_BUSINESS_SELECT =
   "id, title, slug, email, phone, address, website, is_claimed, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
+const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords`;
+
 const sanitizeAdminBusinessSearch = (q) => {
   if (!q) return null;
   // Strip LIKE wildcards and PostgREST .or() reserved chars. Keep "." and "@"
@@ -757,7 +759,7 @@ export const getAdminBusinessById = async (id) => {
 
   const { data, error } = await supabase
     .from("businesses")
-    .select(ADMIN_BUSINESS_SELECT)
+    .select(ADMIN_BUSINESS_DETAIL_SELECT)
     .eq("id", id)
     .maybeSingle();
 
@@ -902,11 +904,22 @@ export const updateBusinessEmail = async (id, email) => {
 };
 
 /**
- * Update listing contact fields for a business (admin business detail).
+ * Update listing contact + content/SEO fields for a business (admin business detail).
  */
 export const updateBusinessListing = async (
   id,
-  { title, email, website, phone, address }
+  {
+    title,
+    email,
+    website,
+    phone,
+    address,
+    description,
+    title_tag,
+    meta_description,
+    local_note,
+    keywords,
+  }
 ) => {
   const { data, error } = await supabase
     .from("businesses")
@@ -916,11 +929,16 @@ export const updateBusinessListing = async (
       website,
       phone,
       address,
+      description,
+      title_tag,
+      meta_description,
+      local_note,
+      keywords,
       last_edited_at: new Date().toISOString(),
     })
     .eq("id", id)
     .select(
-      "id, title, slug, email, website, phone, address, last_edited_at"
+      "id, title, slug, email, website, phone, address, description, title_tag, meta_description, local_note, keywords, last_edited_at"
     )
     .single();
 
