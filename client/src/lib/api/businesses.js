@@ -1,4 +1,5 @@
 import { fetchApi } from "./fetchApi";
+import { fetchAuthenticatedApi } from "./fetchAuthenticatedApi";
 
 const REFERENCE_CACHE = { cache: "no-store" };
 
@@ -76,11 +77,17 @@ export async function resendClaimCode(claimRequestId) {
   });
 }
 
-export async function completeClaimRequest(payload) {
-  return fetchApi("/businesses/claim", {
+export async function completeClaimRequest(payload, { authenticated = false } = {}) {
+  const options = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
     cache: "no-store",
-  });
+  };
+
+  if (authenticated) {
+    return fetchAuthenticatedApi("/businesses/claim", options);
+  }
+
+  return fetchApi("/businesses/claim", options);
 }

@@ -10,6 +10,7 @@ import {
   completeClaim,
   resendClaim,
   getOwnedBusinessesHandler,
+  unclaimOwnedBusinessHandler,
   updateBusinessContact,
   updateBusinessCategories,
   updateBusinessAmenities,
@@ -24,7 +25,9 @@ import {
   ClaimRequestIdSchema,
   CancelClaimSchema,
   CompleteClaimSchema,
+  CompleteClaimAuthenticatedSchema,
   UpdateBusinessContactSchema,
+  UnclaimOwnedBusinessSchema,
   UpdateBusinessCategoriesSchema,
   UpdateBusinessAmenitiesSchema,
   UpdateBusinessAboutSchema,
@@ -35,9 +38,10 @@ import {
   paramsValidator,
   queryValidator,
   bodyValidator,
+  bodyValidatorFor,
 } from "../middleware/validators.js";
 import { expireStaleClaimsOnBusinessFetch } from "../middleware/claim.mw.js";
-import { authUser } from "../middleware/auth.mw.js";
+import { authUser, optionalAuthUser } from "../middleware/auth.mw.js";
 
 const businessesRouter = Router();
 
@@ -52,6 +56,14 @@ businessesRouter.get(
   "/owned",
   authUser,
   serverErrorCatcherWrapper(getOwnedBusinessesHandler)
+);
+
+// Owner unclaim (must be before /:business_slug)
+businessesRouter.post(
+  "/unclaim",
+  authUser,
+  bodyValidator(UnclaimOwnedBusinessSchema),
+  serverErrorCatcherWrapper(unclaimOwnedBusinessHandler)
 );
 
 // Owner contact update (must be before /:business_slug)
@@ -121,7 +133,10 @@ businessesRouter.post(
 
 businessesRouter.post(
   "/claim",
-  bodyValidator(CompleteClaimSchema),
+  optionalAuthUser,
+  bodyValidatorFor((req) =>
+    req.user ? CompleteClaimAuthenticatedSchema : CompleteClaimSchema
+  ),
   serverErrorCatcherWrapper(completeClaim)
 );
 

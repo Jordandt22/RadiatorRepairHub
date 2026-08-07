@@ -18,6 +18,7 @@ export function useIsSignedIn() {
       const supabase = getSupabaseBrowserClient();
       const { data, error } = await supabase.auth.getUser();
       if (error || !data.user) {
+        await supabase.auth.signOut();
         setIsSignedIn(false);
         setUser(null);
         return null;
@@ -26,6 +27,12 @@ export function useIsSignedIn() {
       setUser(data.user);
       return data.user;
     } catch {
+      try {
+        const supabase = getSupabaseBrowserClient();
+        await supabase.auth.signOut();
+      } catch {
+        // ignore
+      }
       setIsSignedIn(false);
       setUser(null);
       return null;
@@ -47,10 +54,19 @@ export function useIsSignedIn() {
         setUser(nextUser ?? null);
       };
 
-      supabase.auth.getUser().then(({ data, error }) => {
+      const clearLocalSession = async () => {
+        try {
+          await supabase.auth.signOut();
+        } catch {
+          // ignore
+        }
+        applyUser(null);
+      };
+
+      supabase.auth.getUser().then(async ({ data, error }) => {
         if (!mounted) return;
         if (error || !data.user) {
-          applyUser(null);
+          await clearLocalSession();
         } else {
           applyUser(data.user);
         }
@@ -75,10 +91,10 @@ export function useIsSignedIn() {
           event === "TOKEN_REFRESHED" ||
           event === "USER_UPDATED"
         ) {
-          supabase.auth.getUser().then(({ data, error }) => {
+          supabase.auth.getUser().then(async ({ data, error }) => {
             if (!mounted) return;
             if (error || !data.user) {
-              applyUser(session.user ?? null);
+              await clearLocalSession();
             } else {
               applyUser(data.user);
             }

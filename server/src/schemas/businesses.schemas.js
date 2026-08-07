@@ -28,7 +28,7 @@ export const CancelClaimSchema = Yup.object({
     .required(),
 });
 
-export const CompleteClaimSchema = Yup.object({
+const ClaimVerificationCodeSchema = {
   claimRequestId: Yup.string()
     .trim()
     .uuid("Invalid claim request ID")
@@ -38,6 +38,16 @@ export const CompleteClaimSchema = Yup.object({
     .uppercase()
     .matches(/^[A-Z0-9]{6}$/, "Verification code must be 6 letters or numbers")
     .required(),
+};
+
+/** Signed-in owners: code only — attach business to current account. */
+export const CompleteClaimAuthenticatedSchema = Yup.object({
+  ...ClaimVerificationCodeSchema,
+});
+
+/** Unsigned: create account with password during claim. */
+export const CompleteClaimSchema = Yup.object({
+  ...ClaimVerificationCodeSchema,
   password: Yup.string()
     .required("Password is required")
     .test("password-strength", function (value) {
@@ -92,6 +102,10 @@ export const UpdateBusinessContactSchema = Yup.object({
         return false;
       }
     }),
+});
+
+export const UnclaimOwnedBusinessSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
 });
 
 export const UpdateBusinessCategoriesSchema = Yup.object({

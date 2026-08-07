@@ -32,6 +32,18 @@ export const bodyValidator = (schema) =>
     res.status(422).json(customErrorHandler(YUP_ERROR, errors));
   });
 
+/** Pick schema from the request (e.g. authenticated vs anonymous claim). */
+export const bodyValidatorFor = (getSchema) =>
+  serverErrorCatcherWrapper(async (req, res, next) => {
+    const schema = getSchema(req);
+    const { valid, errors } = await validator(schema, req.body);
+    if (valid && !errors) {
+      return next();
+    }
+
+    res.status(422).json(customErrorHandler(YUP_ERROR, errors));
+  });
+
 export const paramsValidator = (schema) =>
   serverErrorCatcherWrapper(async (req, res, next) => {
     const { valid, errors } = await validator(schema, req.params);
