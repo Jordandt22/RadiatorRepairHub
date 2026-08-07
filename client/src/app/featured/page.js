@@ -1,6 +1,5 @@
 import React from "react";
 import FeaturedBusinessesPage from "@/components/pages/featured/FeaturedBusinessesPage";
-import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 const title =
@@ -38,7 +37,6 @@ async function Page() {
         }}
       />
       <FeaturedBusinessesPage />
-      <BranchBoundBanner />
     </>
   );
 }

@@ -23,6 +23,7 @@ import {
   UploadIcon,
   ImageIcon,
   MailXIcon,
+  MailSearchIcon,
   UsersIcon,
   DatabaseIcon,
   HardDriveIcon,
@@ -99,6 +100,11 @@ const data = {
           title: "Email Cleaner",
           url: "/email-cleaner",
           icon: <MailXIcon />,
+        },
+        {
+          title: "Email Scrape",
+          url: "/email-scrape?tab=jobs",
+          icon: <MailSearchIcon />,
         },
         {
           title: "Locations",

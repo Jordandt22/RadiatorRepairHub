@@ -1,7 +1,6 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import CitiesPage from "@/components/pages/cities/CitiesPage";
-import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 
 // Data
 import STATES from "@/lib/data/states";
@@ -88,7 +87,6 @@ async function Page({ params }) {
         }}
       />
       <CitiesPage stateData={stateData} stateCities={sortedCities} />
-      <BranchBoundBanner />
     </>
   );
 }

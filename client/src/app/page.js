@@ -4,7 +4,6 @@ import Link from "next/link";
 // Components
 import HeroContent from "@/components/pages/home/HeroContent";
 import FeaturedBusinesses from "@/components/pages/home/FeaturedBusinesses";
-import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 import FeaturedCategories from "@/components/pages/home/FeaturedCategories";
 import PopularLocations from "@/components/pages/home/PopularLocations";
 import HowItWorks from "@/components/pages/home/HowItWorks";
@@ -130,8 +129,6 @@ export default async function Home() {
           </p>
         </div>
       </section>
-
-      <BranchBoundBanner />
 
       <FeaturedCategories />
 

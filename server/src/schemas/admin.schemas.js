@@ -801,3 +801,61 @@ export const DeleteCdnUploadJobsSchema = Yup.object({
     .min(1, "At least one job id is required")
     .required("Job ids are required"),
 });
+
+export const CreateEmailScrapeJobSchema = Yup.object({
+  limit: Yup.number()
+    .integer("Limit must be an integer")
+    .min(50, "Limit must be at least 50")
+    .max(500, "Limit cannot exceed 500")
+    .optional(),
+});
+
+export const GetEmailScrapeBusinessesQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(10000).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  has_email: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return null;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .nullable()
+    .optional(),
+  has_attempts: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return null;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .nullable()
+    .optional(),
+});
+
+export const GetEmailScrapeJobParamsSchema = Yup.object({
+  jobId: Yup.string()
+    .uuid("Invalid job id")
+    .required("Job id is required"),
+});
+
+export const GetEmailScrapeBatchParamsSchema = Yup.object({
+  batchId: Yup.string()
+    .uuid("Invalid batch id")
+    .required("Batch id is required"),
+});
+
+export const DeleteEmailScrapeJobsSchema = Yup.object({
+  job_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid job id").required())
+    .min(1, "At least one job id is required")
+    .required("Job ids are required"),
+});

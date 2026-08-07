@@ -23,7 +23,6 @@ import { useFilters } from "@/contexts/FilterProvider";
 // Components
 import FiltersWrapper from "./FiltersWrapper";
 import ListingsWrapper from "./listings/ListingsWrapper";
-import BranchBoundBanner from "../promo/BranchBoundBanner";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 
 function ContentWrapper({
@@ -218,8 +217,6 @@ function ContentWrapper({
           </div>
         </section>
       ) : null}
-
-      <BranchBoundBanner />
     </>
   );
 }
