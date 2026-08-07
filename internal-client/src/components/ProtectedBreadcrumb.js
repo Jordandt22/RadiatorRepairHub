@@ -23,6 +23,7 @@ const SEGMENT_LABELS = {
   cities: "Cities",
   outreach: "Outreach",
   "email-cleaner": "Email Cleaner",
+  "email-scrape": "Email Scrape",
   users: "Users",
   "affiliate-programs": "Affiliate Programs",
   "add-businesses": "Add Businesses",
@@ -48,6 +49,7 @@ const SEGMENT_HREF = {
   group: "/add-businesses?tab=groups",
   batch: "/add-businesses?tab=groups",
   "upload-photos": "/upload-photos?tab=jobs",
+  "email-scrape": "/email-scrape?tab=jobs",
   users: "/users",
   businesses: "/businesses?tab=all",
   systems: "/systems/cache/redis",
@@ -83,6 +85,13 @@ function formatSegment(segment, index, segments) {
   if (index === 2 && parent === "upload-photos" && segments[1] === "batch") {
     return "Details";
   }
+  if (index === 1 && parent === "email-scrape") {
+    if (segment === "batch") return "Batch";
+    return "Job";
+  }
+  if (index === 2 && parent === "email-scrape" && segments[1] === "batch") {
+    return "Details";
+  }
   if (index === 1 && parent === "users") {
     return "Details";
   }
@@ -110,6 +119,13 @@ function hrefForSegment(segments, index) {
     index === 1
   ) {
     return "/upload-photos?tab=jobs";
+  }
+  if (
+    segment === "batch" &&
+    segments[0] === "email-scrape" &&
+    index === 1
+  ) {
+    return "/email-scrape?tab=jobs";
   }
   if (segment === "cache" && segments[0] === "systems") {
     return "/systems/cache/redis";

@@ -3,10 +3,12 @@ import { Worker } from "bullmq";
 import { getBullmqConnectionOptions } from "./ingest/bullmqRedis.js";
 import { QUEUE_NAMES } from "./ingest/queues.js";
 import { CDN_UPLOAD_QUEUE_NAME } from "./cdn-upload/queues.js";
+import { EMAIL_SCRAPE_QUEUE_NAME } from "./email-scrape/queues.js";
 import { processFilterJob } from "./ingest/handlers/filterJob.js";
 import { processEnrichJob } from "./ingest/handlers/enrichJob.js";
 import { processInsertJob } from "./ingest/handlers/insertJob.js";
 import { processCdnUploadJob } from "./cdn-upload/handlers/cdnUploadJob.js";
+import { processEmailScrapeJob } from "./email-scrape/handlers/emailScrapeJob.js";
 import { logger } from "./lib/logger.js";
 
 const connection = getBullmqConnectionOptions();
@@ -35,6 +37,12 @@ const cdnUploadWorker = new Worker(
   { connection, concurrency: 2 }
 );
 
+const emailScrapeWorker = new Worker(
+  EMAIL_SCRAPE_QUEUE_NAME,
+  async (job) => processEmailScrapeJob(job.data),
+  { connection, concurrency: 2 }
+);
+
 function attachLogging(worker, label) {
   const log = logger.child({ worker: label });
   worker.on("completed", (job, result) => {
@@ -49,10 +57,15 @@ attachLogging(filterWorker, "ingest-filter");
 attachLogging(enrichWorker, "ingest-enrich");
 attachLogging(insertWorker, "ingest-insert");
 attachLogging(cdnUploadWorker, "cdn-upload");
+attachLogging(emailScrapeWorker, "email-scrape");
 
 logger.info(
   {
-    queues: [...Object.values(QUEUE_NAMES), CDN_UPLOAD_QUEUE_NAME],
+    queues: [
+      ...Object.values(QUEUE_NAMES),
+      CDN_UPLOAD_QUEUE_NAME,
+      EMAIL_SCRAPE_QUEUE_NAME,
+    ],
   },
   "Worker listening"
 );
@@ -64,6 +77,7 @@ async function shutdown() {
     enrichWorker.close(),
     insertWorker.close(),
     cdnUploadWorker.close(),
+    emailScrapeWorker.close(),
   ]);
   process.exit(0);
 }

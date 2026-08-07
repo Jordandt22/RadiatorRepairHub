@@ -58,6 +58,13 @@ import {
   getCdnUploadBusinesses,
   createCdnUploadJobHandler,
   deleteCdnUploadJobsHandler,
+  getEmailScrapePendingCount,
+  getEmailScrapeJobs,
+  getEmailScrapeJobById,
+  getEmailScrapeBatchById,
+  getEmailScrapeBusinesses,
+  createEmailScrapeJobHandler,
+  deleteEmailScrapeJobsHandler,
 } from "../../controllers/admin/admin.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
 import {
@@ -112,6 +119,11 @@ import {
   GetCdnUploadBatchParamsSchema,
   GetCdnUploadBusinessesQuerySchema,
   DeleteCdnUploadJobsSchema,
+  CreateEmailScrapeJobSchema,
+  GetEmailScrapeJobParamsSchema,
+  GetEmailScrapeBatchParamsSchema,
+  GetEmailScrapeBusinessesQuerySchema,
+  DeleteEmailScrapeJobsSchema,
 } from "../../schemas/admin.schemas.js";
 import {
   bodyValidator,
@@ -465,6 +477,46 @@ adminRouter.delete(
   "/cdn-upload/jobs",
   bodyValidator(DeleteCdnUploadJobsSchema),
   serverErrorCatcherWrapper(deleteCdnUploadJobsHandler)
+);
+
+adminRouter.get(
+  "/email-scrape/pending-count",
+  serverErrorCatcherWrapper(getEmailScrapePendingCount)
+);
+
+adminRouter.get(
+  "/email-scrape/businesses",
+  queryValidator(GetEmailScrapeBusinessesQuerySchema),
+  serverErrorCatcherWrapper(getEmailScrapeBusinesses)
+);
+
+adminRouter.get(
+  "/email-scrape/jobs",
+  serverErrorCatcherWrapper(getEmailScrapeJobs)
+);
+
+adminRouter.get(
+  "/email-scrape/jobs/:jobId",
+  paramsValidator(GetEmailScrapeJobParamsSchema),
+  serverErrorCatcherWrapper(getEmailScrapeJobById)
+);
+
+adminRouter.get(
+  "/email-scrape/batches/:batchId",
+  paramsValidator(GetEmailScrapeBatchParamsSchema),
+  serverErrorCatcherWrapper(getEmailScrapeBatchById)
+);
+
+adminRouter.post(
+  "/email-scrape/jobs",
+  bodyValidator(CreateEmailScrapeJobSchema),
+  serverErrorCatcherWrapper(createEmailScrapeJobHandler)
+);
+
+adminRouter.delete(
+  "/email-scrape/jobs",
+  bodyValidator(DeleteEmailScrapeJobsSchema),
+  serverErrorCatcherWrapper(deleteEmailScrapeJobsHandler)
 );
 
 export default adminRouter;
