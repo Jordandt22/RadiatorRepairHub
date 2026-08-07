@@ -10,6 +10,7 @@ import { ToastProvider, useToast } from "@/contexts/ToastProvider";
 import { loginOwner } from "@/lib/api/auth";
 import { persistSession } from "@/lib/auth/session";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { usePostHog } from "posthog-js/react";
 
 function safeRedirectPath(value) {
   if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) {
@@ -23,6 +24,7 @@ function LoginFormContent() {
   const searchParams = useSearchParams();
   const redirectTo = safeRedirectPath(searchParams.get("redirect")) || "/dashboard";
   const { showCustomError, showCustomSuccess } = useToast();
+  const posthog = usePostHog();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -111,6 +113,23 @@ function LoginFormContent() {
         return;
       }
 
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user?.id) {
+          posthog?.identify(userData.user.id, {
+            email: userData.user.email || email.trim() || undefined,
+          });
+        }
+      } catch {
+        // analytics best-effort
+      }
+
+      posthog?.capture("owner_login_succeeded", {
+        has_claimed_business: Boolean(data.slug),
+        redirect_to: data.slug ? `/business/${data.slug}` : redirectTo,
+      });
+
       showCustomSuccess("Signed in successfully.");
       if (data.slug) {
         router.push(`/business/${data.slug}`);
@@ -135,7 +154,7 @@ function LoginFormContent() {
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300">
       <h2 className="text-2xl font-bold text-gray-900 mb-2 font-heading">
-        Business owner login
+        Welcome Back!
       </h2>
       <p className="text-gray-600 mb-6">
         Sign in with the email and password from your claim to open your

@@ -26,27 +26,27 @@ export const metadata = buildPageMetadata({
 
 const BENEFITS = [
   {
-    title: "Update how your listing looks",
+    title: "Update How Your Listing Looks",
     description:
       "Add or edit your About section, service categories, and photos so customers see current information.",
     icon: ImageIcon,
   },
   {
-    title: "Keep contact details accurate",
+    title: "Keep Contact Details Accurate",
     description:
       "Update phone and email so customers can reach you, and inquiries go to the right place.",
     icon: BadgeCheck,
   },
   {
-    title: "Set accurate hours",
+    title: "Set Accurate Hours",
     description:
       "Show when you are open so people know when to call or stop by.",
     icon: Clock3,
   },
   {
-    title: "Add more listing details",
+    title: "Verified Badge and Priority Placement",
     description:
-      "Fill in payment methods, accessibility notes, and other details that help the right customers find you.",
+      "Claimed businesses get a verified badge and are prioritized in the featured section and search results.",
     icon: Search,
   },
 ];
@@ -54,10 +54,10 @@ const BENEFITS = [
 const CLAIM_STEPS = [
   "Open your business listing on RadiatorRepairHub.",
   "Click Claim on the listing.",
-  "Check the email on file for a verification code.",
-  "Open the verify link or enter the code on the claim page.",
-  "Create a password for your account.",
-  "You're signed in and the listing is claimed.",
+  "A verification code will be sent to that business's email.",
+  "Open the verification link sent in that same email.",
+  "Enter the code and create a password for your new account.",
+  "Congrats, you've successfully claimed your listing!",
 ];
 
 function buildClaimFaqs(supportEmail) {
@@ -115,7 +115,7 @@ export default function HowToClaimPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 font-heading mb-4">
-            Claim eligibility
+            Claim Eligibility
           </h2>
           <p className="text-gray-700 leading-relaxed mb-6">
             A listing is claimable when it has a unique email on file that is
@@ -172,7 +172,7 @@ export default function HowToClaimPage() {
 
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 font-heading mb-4">
-            How to claim (step-by-step)
+            How to Claim (Step-by-Step)
           </h2>
           <ol className="space-y-4">
             {CLAIM_STEPS.map((step, index) => (
@@ -188,7 +188,7 @@ export default function HowToClaimPage() {
 
         <section>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 font-heading mb-6">
-            Benefits of claiming
+            Benefits of Claiming
           </h2>
           <div className="flex flex-col gap-4">
             {BENEFITS.map(({ title, description, icon: Icon }) => (
@@ -216,7 +216,7 @@ export default function HowToClaimPage() {
 
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 font-heading mb-4">
-            Coming soon
+            Coming Soon
           </h2>
           <ul className="space-y-3 text-gray-700">
             <li className="flex gap-3">

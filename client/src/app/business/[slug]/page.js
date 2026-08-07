@@ -444,6 +444,8 @@ async function Page({ params }) {
 
                     <ClaimBusinessButton
                       businessId={business.id}
+                      businessSlug={business.slug}
+                      businessName={business.title}
                       email={business.email}
                       isClaimed={Boolean(business.is_claimed)}
                       hasDuplicateEmail={Boolean(business.has_duplicate_email)}

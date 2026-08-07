@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { signOut } from "@/lib/auth/session";
 
 export default function ProtectedAuthGate({ children }) {
   const router = useRouter();
@@ -12,22 +13,32 @@ export default function ProtectedAuthGate({ children }) {
   useEffect(() => {
     let mounted = true;
 
+    async function redirectToSignIn() {
+      await signOut();
+      if (!mounted) return;
+      const returnTo = pathname
+        ? `?redirect=${encodeURIComponent(pathname)}`
+        : "";
+      router.replace(`/signin${returnTo}`);
+    }
+
     async function checkSession() {
       try {
         const supabase = getSupabaseBrowserClient();
-        const { data } = await supabase.auth.getSession();
+        // Verify with Auth server — getSession() only reads local tokens and
+        // still looks valid after an admin deletes the user.
+        const { data, error } = await supabase.auth.getUser();
         if (!mounted) return;
 
-        if (!data.session) {
-          const returnTo = pathname ? `?redirect=${encodeURIComponent(pathname)}` : "";
-          router.replace(`/signin${returnTo}`);
+        if (error || !data.user) {
+          await redirectToSignIn();
           return;
         }
 
         setReady(true);
       } catch {
         if (!mounted) return;
-        router.replace("/signin");
+        await redirectToSignIn();
       }
     }
 

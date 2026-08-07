@@ -522,7 +522,7 @@ export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
 
   <p><strong>By claiming your listing, you can:</strong></p>
   <ul>
-    <li>Update your information about your business</li>
+    <li>Update information about your business</li>
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop with higher priority in search results</li>
     <li>Use your RadiatorRepairHub page as a website link for Google Business Profile, ads, and social profiles</li>

@@ -180,6 +180,7 @@ const Page = () => {
                     namePlaceholder="Enter your full business name"
                     nameLabel="Full Business Name"
                     showSubjectInput={false}
+                    analyticsPage="get-listed"
                   />
                 </ToastProvider>
               </div>

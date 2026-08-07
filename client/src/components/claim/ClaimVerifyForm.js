@@ -19,14 +19,19 @@ import {
   resendClaimCode,
 } from "@/lib/api/businesses";
 import { persistSession } from "@/lib/auth/session";
+import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import {
   getPasswordStrengthError,
   PASSWORD_REQUIREMENTS_HINT,
 } from "@/lib/validation/password";
+import { usePostHog } from "posthog-js/react";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 function ClaimVerifyFormContent({ claimRequestId, business }) {
   const router = useRouter();
   const { showCustomError, showCustomSuccess } = useToast();
+  const posthog = usePostHog();
+  const { isSignedIn, user, isLoading: isAuthLoading } = useIsSignedIn();
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -35,6 +40,35 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
   const [isCanceling, setIsCanceling] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [errors, setErrors] = useState({});
+
+  const capture = (event, props = {}) => {
+    posthog?.capture(event, {
+      business_id: business?.id || undefined,
+      business_slug: business?.slug || undefined,
+      business_name: business?.title || undefined,
+      signed_in: Boolean(isSignedIn),
+      source: "claim_verify",
+      ...props,
+    });
+  };
+
+  const identifyOwner = async (fallbackUser) => {
+    try {
+      let nextUser = fallbackUser;
+      if (!nextUser?.id) {
+        const supabase = getSupabaseBrowserClient();
+        const { data } = await supabase.auth.getUser();
+        nextUser = data?.user ?? null;
+      }
+      if (nextUser?.id) {
+        posthog?.identify(nextUser.id, {
+          email: nextUser.email || undefined,
+        });
+      }
+    } catch {
+      // analytics best-effort
+    }
+  };
 
   const goToBusinessPage = (slug) => {
     if (slug) {
@@ -61,12 +95,14 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
     if (!code || code.length !== 6) {
       next.code = "Enter the 6-character verification code.";
     }
-    const passwordError = getPasswordStrengthError(password);
-    if (passwordError) {
-      next.password = passwordError;
-    }
-    if (password !== confirmPassword) {
-      next.confirmPassword = "Passwords must match.";
+    if (!isSignedIn) {
+      const passwordError = getPasswordStrengthError(password);
+      if (passwordError) {
+        next.password = passwordError;
+      }
+      if (password !== confirmPassword) {
+        next.confirmPassword = "Passwords must match.";
+      }
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -130,26 +166,48 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSubmitting || isCanceling || isResending) return;
+    if (isSubmitting || isCanceling || isResending || isAuthLoading) return;
     if (!validate()) return;
 
     setIsSubmitting(true);
     try {
-      const { data, error } = await completeClaimRequest({
-        claimRequestId,
-        code: code.toUpperCase(),
-        password,
-        confirmPassword,
+      const payload = isSignedIn
+        ? {
+            claimRequestId,
+            code: code.toUpperCase(),
+          }
+        : {
+            claimRequestId,
+            code: code.toUpperCase(),
+            password,
+            confirmPassword,
+          };
+
+      const { data, error } = await completeClaimRequest(payload, {
+        authenticated: isSignedIn,
       });
 
       if (error) {
         if (isClaimUnavailableError(error)) {
+          capture("claim_failed", {
+            stage: "complete",
+            error_code: error.code,
+            error_message:
+              typeof error.message === "string" ? error.message : undefined,
+          });
           handleClaimUnavailable(error);
           return;
         }
         if (error.code === "form-error" && typeof error.message === "object") {
           setErrors(error.message);
         }
+        capture("claim_failed", {
+          stage: "complete",
+          error_code:
+            typeof error.code === "string" ? error.code : undefined,
+          error_message:
+            typeof error.message === "string" ? error.message : undefined,
+        });
         showCustomError(
           typeof error.message === "string"
             ? error.message
@@ -158,21 +216,39 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
         return;
       }
 
+      if (data?.alreadyAuthenticated) {
+        capture("claim_completed", { flow: "signed_in" });
+        await identifyOwner(user);
+        showCustomSuccess("Your business has been claimed successfully.");
+        goToBusinessPage(data?.slug || business.slug);
+        return;
+      }
+
       if (data?.session) {
         const { error: sessionError } = await persistSession(data.session);
         if (sessionError) {
+          capture("claim_completed", {
+            flow: "create_account",
+            requires_login: true,
+          });
           showCustomSuccess(
             "Your business has been claimed. Please sign in to continue."
           );
           router.push("/signin");
           return;
         }
+        capture("claim_completed", { flow: "create_account" });
+        await identifyOwner();
         showCustomSuccess("Your business has been claimed successfully.");
         goToBusinessPage(data?.slug || business.slug);
         return;
       }
 
       if (data?.requiresLogin) {
+        capture("claim_completed", {
+          flow: "create_account",
+          requires_login: true,
+        });
         showCustomSuccess(
           typeof data.message === "string"
             ? data.message
@@ -182,16 +258,31 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
         return;
       }
 
+      capture("claim_completed", {
+        flow: isSignedIn ? "signed_in" : "create_account",
+      });
       showCustomSuccess("Your business has been claimed successfully.");
       goToBusinessPage(data?.slug || business.slug);
     } catch {
+      capture("claim_failed", { stage: "complete" });
       showCustomError("Unable to complete your claim. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const busy = isSubmitting || isCanceling || isResending;
+  const busy = isSubmitting || isCanceling || isResending || isAuthLoading;
+
+  if (isAuthLoading) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2 font-heading">
+          Complete your claim
+        </h2>
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300">
@@ -199,8 +290,17 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
         Complete your claim
       </h2>
       <p className="text-gray-600 mb-6">
-        Create an account to claim{" "}
-        <span className="font-medium text-gray-900">{business.title}</span>.
+        {isSignedIn ? (
+          <>
+            Enter the verification code sent to the listing email to claim{" "}
+            <span className="font-medium text-gray-900">{business.title}</span>.
+          </>
+        ) : (
+          <>
+            Create an account to claim{" "}
+            <span className="font-medium text-gray-900">{business.title}</span>.
+          </>
+        )}
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -259,7 +359,7 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
             htmlFor="claim-email"
             className="text-sm font-medium text-foreground"
           >
-            Email <span className="text-destructive">*</span>
+            Listing email <span className="text-destructive">*</span>
           </label>
           <Input
             id="claim-email"
@@ -270,120 +370,147 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
             className="bg-muted"
           />
           <p className="text-xs text-muted-foreground">
-            Email can be changed after account creation
+            {isSignedIn
+              ? "Verification code is sent to this listing email. Your login email stays the same."
+              : "Email can be changed after account creation"}
           </p>
         </div>
 
-        <div className="grid gap-1.5">
-          <label
-            htmlFor="claim-password"
-            className="text-sm font-medium text-foreground"
-          >
-            Password <span className="text-destructive">*</span>
-          </label>
-          <div className="relative">
-            <Input
-              id="claim-password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (errors.password) {
-                  setErrors((prev) => {
-                    const next = { ...prev };
-                    delete next.password;
-                    return next;
-                  });
-                }
-              }}
-              disabled={busy}
-              autoComplete="new-password"
-              className="pr-10"
-            />
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              onClick={() => setShowPassword((prev) => !prev)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              disabled={busy}
+        {isSignedIn && user?.email ? (
+          <div className="grid gap-1.5">
+            <label
+              htmlFor="claim-account-email"
+              className="text-sm font-medium text-foreground"
             >
-              {showPassword ? (
-                <EyeOff className="size-4" />
-              ) : (
-                <Eye className="size-4" />
-              )}
-            </button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {PASSWORD_REQUIREMENTS_HINT}
-          </p>
-          {errors.password && (
-            <p className="text-xs text-destructive">{errors.password}</p>
-          )}
-        </div>
-
-        <div className="grid gap-1.5">
-          <label
-            htmlFor="claim-confirm-password"
-            className="text-sm font-medium text-foreground"
-          >
-            Confirm password <span className="text-destructive">*</span>
-          </label>
-          <div className="relative">
+              Signed in as
+            </label>
             <Input
-              id="claim-confirm-password"
-              type={showPassword ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                if (errors.confirmPassword) {
-                  setErrors((prev) => {
-                    const next = { ...prev };
-                    delete next.confirmPassword;
-                    return next;
-                  });
-                }
-              }}
-              disabled={busy}
-              autoComplete="new-password"
-              className="pr-10"
+              id="claim-account-email"
+              type="email"
+              value={user.email}
+              readOnly
+              disabled
+              className="bg-muted"
             />
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              onClick={() => setShowPassword((prev) => !prev)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              disabled={busy}
-            >
-              {showPassword ? (
-                <EyeOff className="size-4" />
-              ) : (
-                <Eye className="size-4" />
-              )}
-            </button>
           </div>
-          {errors.confirmPassword && (
-            <p className="text-xs text-destructive">{errors.confirmPassword}</p>
-          )}
-        </div>
+        ) : null}
 
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          By creating an account, you agree to our{" "}
-          <Link
-            href="/terms"
-            className="text-blue-600 hover:text-blue-800 underline"
-          >
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link
-            href="/privacy"
-            className="text-blue-600 hover:text-blue-800 underline"
-          >
-            Privacy Policy
-          </Link>
-          .
-        </p>
+        {!isSignedIn ? (
+          <>
+            <div className="grid gap-1.5">
+              <label
+                htmlFor="claim-password"
+                className="text-sm font-medium text-foreground"
+              >
+                Password <span className="text-destructive">*</span>
+              </label>
+              <div className="relative">
+                <Input
+                  id="claim-password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) {
+                      setErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.password;
+                        return next;
+                      });
+                    }
+                  }}
+                  disabled={busy}
+                  autoComplete="new-password"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  disabled={busy}
+                >
+                  {showPassword ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {PASSWORD_REQUIREMENTS_HINT}
+              </p>
+              {errors.password && (
+                <p className="text-xs text-destructive">{errors.password}</p>
+              )}
+            </div>
+
+            <div className="grid gap-1.5">
+              <label
+                htmlFor="claim-confirm-password"
+                className="text-sm font-medium text-foreground"
+              >
+                Confirm password <span className="text-destructive">*</span>
+              </label>
+              <div className="relative">
+                <Input
+                  id="claim-confirm-password"
+                  type={showPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    if (errors.confirmPassword) {
+                      setErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.confirmPassword;
+                        return next;
+                      });
+                    }
+                  }}
+                  disabled={busy}
+                  autoComplete="new-password"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  disabled={busy}
+                >
+                  {showPassword ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-xs text-destructive">
+                  {errors.confirmPassword}
+                </p>
+              )}
+            </div>
+
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              By creating an account, you agree to our{" "}
+              <Link
+                href="/terms"
+                className="text-blue-600 hover:text-blue-800 underline"
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy"
+                className="text-blue-600 hover:text-blue-800 underline"
+              >
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </>
+        ) : null}
 
         <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end pt-2">
           <Button
@@ -400,7 +527,13 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
             className="px-8 bg-blue-600 text-white hover:bg-blue-700"
             disabled={busy}
           >
-            {isSubmitting ? "Creating account..." : "Create account"}
+            {isSubmitting
+              ? isSignedIn
+                ? "Claiming..."
+                : "Creating account..."
+              : isSignedIn
+                ? "Claim business"
+                : "Create account"}
           </Button>
         </div>
       </form>

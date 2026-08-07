@@ -1,31 +1,46 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
 import OwnedBusinessCard from "@/components/dashboard/OwnedBusinessCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { signOut } from "@/lib/auth/session";
 
-export default function DashboardContent() {
+function DashboardContentInner() {
+  const router = useRouter();
+  const { showCustomSuccess } = useToast();
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const loadBusinesses = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const { data, error: fetchError, status } = await fetchOwnedBusinesses();
+
+    if (status === 401) {
+      await signOut();
+      router.replace("/signin?redirect=%2Fdashboard");
+      return;
+    }
+
+    if (fetchError) {
+      setError(fetchError.message || "Failed to load businesses.");
+      setBusinesses([]);
+    } else {
+      setBusinesses(Array.isArray(data) ? data : []);
+    }
+    setLoading(false);
+  }, [router]);
 
   useEffect(() => {
     let mounted = true;
 
     async function load() {
-      setLoading(true);
-      setError(null);
-      const { data, error: fetchError } = await fetchOwnedBusinesses();
+      await loadBusinesses();
       if (!mounted) return;
-
-      if (fetchError) {
-        setError(fetchError.message || "Failed to load businesses.");
-        setBusinesses([]);
-      } else {
-        setBusinesses(Array.isArray(data) ? data : []);
-      }
-      setLoading(false);
     }
 
     load();
@@ -33,9 +48,28 @@ export default function DashboardContent() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [loadBusinesses]);
 
-  const tabsTriggerClassNames = "px-6 cursor-pointer hover:translate-y-[-2px] transition-all duration-300"
+  const handleUnclaimed = async (result) => {
+    if (result?.unauthorized) {
+      await signOut();
+      router.replace("/signin?redirect=%2Fdashboard");
+      return;
+    }
+
+    if (result?.businessId) {
+      setBusinesses((prev) =>
+        prev.filter((business) => business.id !== result.businessId)
+      );
+    }
+
+    if (result?.message) {
+      showCustomSuccess(result.message);
+    }
+  };
+
+  const tabsTriggerClassNames =
+    "px-6 cursor-pointer hover:translate-y-[-2px] transition-all duration-300";
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
       <div>
@@ -49,9 +83,18 @@ export default function DashboardContent() {
 
       <Tabs defaultValue="my-businesses" className="gap-6">
         <TabsList>
-          <TabsTrigger value="my-businesses" className={tabsTriggerClassNames}>My Businesses</TabsTrigger>
-          <TabsTrigger value="inbox" className={tabsTriggerClassNames}>Inbox</TabsTrigger>
-          <TabsTrigger value="analytics" className={tabsTriggerClassNames}>Analytics</TabsTrigger>
+          <TabsTrigger
+            value="my-businesses"
+            className={tabsTriggerClassNames}
+          >
+            My Businesses
+          </TabsTrigger>
+          <TabsTrigger value="inbox" className={tabsTriggerClassNames}>
+            Inbox
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className={tabsTriggerClassNames}>
+            Analytics
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-businesses">
@@ -82,7 +125,11 @@ export default function DashboardContent() {
             {!loading && !error && businesses.length > 0 && (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {businesses.map((business) => (
-                  <OwnedBusinessCard key={business.id} business={business} />
+                  <OwnedBusinessCard
+                    key={business.id}
+                    business={business}
+                    onUnclaimed={handleUnclaimed}
+                  />
                 ))}
               </div>
             )}
@@ -108,5 +155,13 @@ export default function DashboardContent() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function DashboardContent() {
+  return (
+    <ToastProvider>
+      <DashboardContentInner />
+    </ToastProvider>
   );
 }

@@ -38,6 +38,7 @@ import {
   incrementClaimAttempts,
   getOwnedBusinesses,
   getOwnedBusiness,
+  unclaimOwnedBusiness,
   updateOwnedBusinessContact,
   updateOwnedBusinessPrimaryCategory,
   updateOwnedBusinessAmenities,
@@ -607,32 +608,42 @@ export const completeClaim = async (req, res) => {
       .json(customErrorHandler(YUP_ERROR, "Incorrect verification code."));
   }
 
-  const { data: authData, error: authError } = await createAuthUser({
-    email,
-    password,
-  });
+  const authenticatedUser = req.user ?? null;
+  let uid = authenticatedUser?.id ?? null;
+  let createdAuthUser = false;
 
-  if (authError || !authData?.user?.id) {
-    const message =
-      authError?.message?.toLowerCase?.().includes("already") ||
-      authError?.status === 422
-        ? "An account with this email already exists."
-        : "There was an error creating your account.";
+  if (!uid) {
+    const { data: authData, error: authError } = await createAuthUser({
+      email,
+      password,
+    });
 
-    return res
-      .status(authError?.message?.toLowerCase?.().includes("already") ? 409 : 500)
-      .json(
-        customErrorHandler(
-          authError?.message?.toLowerCase?.().includes("already")
-            ? ACCESS_DENIED
-            : SERVER_ERROR,
-          message,
-          authError
+    if (authError || !authData?.user?.id) {
+      const message =
+        authError?.message?.toLowerCase?.().includes("already") ||
+        authError?.status === 422
+          ? "An account with this email already exists."
+          : "There was an error creating your account.";
+
+      return res
+        .status(
+          authError?.message?.toLowerCase?.().includes("already") ? 409 : 500
         )
-      );
+        .json(
+          customErrorHandler(
+            authError?.message?.toLowerCase?.().includes("already")
+              ? ACCESS_DENIED
+              : SERVER_ERROR,
+            message,
+            authError
+          )
+        );
+    }
+
+    uid = authData.user.id;
+    createdAuthUser = true;
   }
 
-  const uid = authData.user.id;
   const { error: rpcError } = await completeBusinessClaimRpc(
     claimRequestId,
     business.id,
@@ -640,10 +651,12 @@ export const completeClaim = async (req, res) => {
   );
 
   if (rpcError) {
-    try {
-      await deleteAuthUser(uid);
-    } catch {
-      // best-effort cleanup
+    if (createdAuthUser) {
+      try {
+        await deleteAuthUser(uid);
+      } catch {
+        // best-effort cleanup
+      }
     }
 
     return res
@@ -708,6 +721,16 @@ export const completeClaim = async (req, res) => {
         thankYouSendError
       );
     }
+  }
+
+  if (authenticatedUser) {
+    return res.status(201).json(
+      successHandler({
+        slug: business.slug,
+        alreadyAuthenticated: true,
+        session: null,
+      })
+    );
   }
 
   const { data: signInData, error: signInError } = await signInWithPassword({
@@ -958,6 +981,89 @@ export const getOwnedBusinessesHandler = async (req, res) => {
   }
 
   return res.status(200).json(successHandler(data ?? []));
+};
+
+export const unclaimOwnedBusinessHandler = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId } = req.body;
+
+  const { data: profile, error: profileError } = await getOwnedBusiness(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const { data: unclaimed, error: unclaimError } = await unclaimOwnedBusiness(
+    businessId,
+    ownerUid
+  );
+
+  if (unclaimError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error unclaiming this business.",
+          unclaimError
+        )
+      );
+  }
+
+  if (!unclaimed) {
+    return res
+      .status(409)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "This business is no longer claimed by your account."
+        )
+      );
+  }
+
+  try {
+    await invalidateBusinessCache(unclaimed);
+  } catch {
+    // best-effort cache cleanup
+  }
+
+  return res.status(200).json(
+    successHandler({
+      business_id: unclaimed.id,
+      slug: unclaimed.slug,
+      message: "Your listing has been unclaimed.",
+    })
+  );
 };
 
 export const updateBusinessContact = async (req, res) => {

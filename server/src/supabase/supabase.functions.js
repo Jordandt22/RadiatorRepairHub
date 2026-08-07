@@ -1857,6 +1857,33 @@ export const unclaimBusinessesByOwnerUid = async (ownerUid) => {
   return { data: data ?? [], error: null };
 };
 
+/**
+ * Owner self-serve unclaim for a single business they own.
+ */
+export const unclaimOwnedBusiness = async (businessId, ownerUid) => {
+  if (!businessId || !ownerUid) {
+    return { data: null, error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({
+      owner_uid: null,
+      is_claimed: false,
+    })
+    .eq("id", businessId)
+    .eq("owner_uid", ownerUid)
+    .eq("is_claimed", true)
+    .select("id, slug")
+    .maybeSingle();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  return { data: data ?? null, error: null };
+};
+
 export const deletePublicUserByUid = async (uid) => {
   if (!uid || typeof uid !== "string") {
     return { data: null, error: null };
