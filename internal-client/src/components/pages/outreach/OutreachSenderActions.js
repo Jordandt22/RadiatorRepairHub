@@ -58,13 +58,14 @@ export default function OutreachSenderActions({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
           <BusinessTierCombobox
             items={OUTREACH_TYPE_OPTIONS}
             value={outreachType}
             onValueChange={onOutreachTypeChange}
             placeholder="Campaign type"
             ariaLabel="Outreach campaign type"
+            inputName="rrh-outreach-campaign-type"
             disabled={selectMatchingPending}
           />
         </div>
@@ -75,6 +76,7 @@ export default function OutreachSenderActions({
             onValueChange={onMatchLimitChange}
             placeholder="Limit"
             ariaLabel="Match limit"
+            inputName="rrh-outreach-match-limit"
             disabled={selectMatchingPending}
             className="w-full min-w-0"
           />

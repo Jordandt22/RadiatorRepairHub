@@ -18,8 +18,8 @@ export const OUTREACH_TYPE_OPTIONS = [
 
 export const CLAIM_ELIGIBILITY_FILTERS = [
   { id: "able", label: "Able" },
-  { id: "no_email", label: "No Email" },
-  { id: "duplicate_email", label: "Duplicate Email" },
+  { id: "no_email", label: "No contact" },
+  { id: "duplicate_email", label: "Duplicate contact" },
   { id: "claimed", label: "Claimed" },
 ];
 
@@ -34,14 +34,14 @@ export const SENT_FILTERS = [
 ];
 
 export const HISTORY_EMAIL_FILTERS = [
-  { id: "email_changed_or_missing", label: "Email Changed/Missing" },
-  { id: "same_email", label: "Same Emails" },
+  { id: "email_changed_or_missing", label: "Contact changed/missing" },
+  { id: "same_email", label: "Same contact" },
 ];
 
 export const CLAIM_ELIGIBILITY_LABELS = {
   able: "Able",
-  no_email: "No Email",
-  duplicate_email: "Duplicate Email",
+  no_email: "No contact",
+  duplicate_email: "Duplicate contact",
   claimed: "Claimed",
 };
 

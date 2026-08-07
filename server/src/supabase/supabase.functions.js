@@ -10,6 +10,7 @@ import {
   getScoreTier,
   getReviewTier,
 } from "../lib/adminBusinessTiers.js";
+import { getSuspiciousEmailReasons } from "../lib/suspiciousEmail.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*), business_images(image_id, is_primary)`;
 const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_images(image_id, is_primary)`;
@@ -782,11 +783,12 @@ const EMAIL_CLEANER_BUSINESS_SELECT = "id, title, slug, email";
 
 /**
  * Paginated businesses that have a non-empty email, with outreach emails_sent_count.
+ * Optional suspicious filter scores emails in JS (correct counts across pages).
  */
 export const getAdminBusinessesWithEmails = async (
   page,
   limit,
-  { q = null, emailsSent = null } = {}
+  { q = null, emailsSent = null, suspicious = null } = {}
 ) => {
   let sentBusinessIds = null;
 
@@ -812,6 +814,8 @@ export const getAdminBusinessesWithEmails = async (
     }
   }
 
+  const needsFullScan = suspicious === true || suspicious === false;
+
   let query = supabase
     .from("businesses")
     .select(EMAIL_CLEANER_BUSINESS_SELECT, { count: "exact" })
@@ -833,16 +837,56 @@ export const getAdminBusinessesWithEmails = async (
     );
   }
 
-  const { data, count, error } = await query.range(
-    (page - 1) * limit,
-    page * limit - 1
-  );
+  let rows = [];
+  let count = 0;
 
-  if (error) {
-    return { data: null, count, error };
+  if (needsFullScan) {
+    // Load all matching rows, score, then paginate in memory.
+    const PAGE_SIZE = 1000;
+    let start = 0;
+    const allRows = [];
+
+    for (;;) {
+      const { data, error } = await query.range(start, start + PAGE_SIZE - 1);
+      if (error) {
+        return { data: null, count: null, error };
+      }
+      allRows.push(...(data ?? []));
+      if (!data || data.length < PAGE_SIZE) break;
+      start += PAGE_SIZE;
+    }
+
+    const scored = allRows.map((row) => {
+      const suspicion_reasons = getSuspiciousEmailReasons(row.email, row.title);
+      return { ...row, suspicion_reasons };
+    });
+
+    const filtered =
+      suspicious === true
+        ? scored.filter((row) => row.suspicion_reasons.length > 0)
+        : scored.filter((row) => row.suspicion_reasons.length === 0);
+
+    count = filtered.length;
+    const safePage = Math.max(1, Number(page) || 1);
+    const safeLimit = Math.max(1, Number(limit) || 20);
+    rows = filtered.slice((safePage - 1) * safeLimit, safePage * safeLimit);
+  } else {
+    const { data, count: total, error } = await query.range(
+      (page - 1) * limit,
+      page * limit - 1
+    );
+
+    if (error) {
+      return { data: null, count: total, error };
+    }
+
+    rows = (data ?? []).map((row) => ({
+      ...row,
+      suspicion_reasons: getSuspiciousEmailReasons(row.email, row.title),
+    }));
+    count = total ?? 0;
   }
 
-  const rows = data ?? [];
   const ids = rows.map((row) => row.id);
   const emailsSentByBusinessId = new Map();
 
@@ -868,6 +912,7 @@ export const getAdminBusinessesWithEmails = async (
   const businesses = rows.map((row) => ({
     ...row,
     emails_sent_count: emailsSentByBusinessId.get(row.id) ?? 0,
+    suspicion_reasons: row.suspicion_reasons ?? [],
   }));
 
   return { data: businesses, count, error: null };

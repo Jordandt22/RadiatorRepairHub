@@ -15,6 +15,6 @@ export const REVIEW_TIERS = [
 ];
 
 export const EMAIL_FILTERS = [
-  { id: "has", label: "Has email" },
-  { id: "none", label: "No email" },
+  { id: "has", label: "Has contact" },
+  { id: "none", label: "No contact" },
 ];

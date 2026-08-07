@@ -1599,11 +1599,12 @@ export const getBusinessesWithEmails = async (req, res) => {
     return null;
   };
   const emailsSent = parseBool(req.query.emails_sent);
+  const suspicious = parseBool(req.query.suspicious);
 
   const { data, count, error } = await fetchAdminBusinessesWithEmails(
     page,
     limit,
-    { q, emailsSent }
+    { q, emailsSent, suspicious }
   );
 
   if (error) {
@@ -1633,6 +1634,7 @@ export const getBusinessesWithEmails = async (req, res) => {
       limit,
       q,
       emails_sent: emailsSent,
+      suspicious,
     })
   );
 };

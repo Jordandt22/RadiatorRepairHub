@@ -171,8 +171,9 @@ export default function OutreachAddBusinessesSheet({
               type="search"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search title, slug, email, phone…"
+              placeholder="Search title, slug, contact, phone…"
               aria-label="Search businesses to add"
+              name="rrh-outreach-add-search"
               className="rounded-full pl-9"
               autoComplete="off"
             />

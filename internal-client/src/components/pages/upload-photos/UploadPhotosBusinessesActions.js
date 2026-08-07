@@ -61,6 +61,7 @@ export default function UploadPhotosBusinessesActions({
             onValueChange={onCdnStoredFilterChange}
             placeholder="All CDN status"
             ariaLabel="Filter by CDN stored status"
+            inputName="rrh-cdn-stored-filter"
             disabled={refreshPending}
           />
         </div>
@@ -71,6 +72,7 @@ export default function UploadPhotosBusinessesActions({
             onValueChange={onAttemptsFilterChange}
             placeholder="All attempts"
             ariaLabel="Filter by CDN attempts"
+            inputName="rrh-cdn-attempts-filter"
             disabled={refreshPending}
           />
         </div>
@@ -82,6 +84,8 @@ export default function UploadPhotosBusinessesActions({
             onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder="Search title, slug…"
             aria-label="Search businesses"
+            name="rrh-upload-photos-search"
+            autoComplete="off"
             className="rounded-full pl-9"
           />
         </div>
