@@ -1,6 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
+import LastPathTracker from "@/components/LastPathTracker";
 import ProtectedBreadcrumb from "@/components/ProtectedBreadcrumb";
 import PageFadeIn from "@/components/PageFadeIn";
 import {
@@ -12,6 +14,9 @@ import {
 export default function ProtectedLayout({ children }) {
   return (
     <SidebarProvider>
+      <Suspense fallback={null}>
+        <LastPathTracker />
+      </Suspense>
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -13,6 +13,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { debounce } from "@/lib/debounce";
+import useUrlQueryState from "@/hooks/useUrlQueryState";
 import PageFadeIn from "@/components/PageFadeIn";
 import { Button } from "@/components/ui/button";
 import BusinessActions from "@/components/pages/businesses/BusinessActions";
@@ -62,12 +63,16 @@ export default function LocationBusinessesPageContent({ kind, param }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
-  const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { q, page, setField } = useUrlQueryState({
+    q: { type: "string", param: "q" },
+    page: { type: "page" },
+  });
+  const [searchInput, setSearchInput] = useState(() => q || "");
   const [refreshError, setRefreshError] = useState(null);
+  const setFieldRef = useRef(setField);
+  setFieldRef.current = setField;
 
-  const searchQuery = debouncedSearch.trim();
+  const searchQuery = (q || "").trim();
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -75,11 +80,14 @@ export default function LocationBusinessesPageContent({ kind, param }) {
     }
   }, [isReady, accessToken, router]);
 
+  useEffect(() => {
+    setSearchInput(q || "");
+  }, [q]);
+
   const debouncedSetSearch = useMemo(
     () =>
       debounce((value) => {
-        setDebouncedSearch(value);
-        setPage(1);
+        setFieldRef.current("q", value);
       }, SEARCH_DEBOUNCE_MS),
     [],
   );
@@ -229,8 +237,8 @@ export default function LocationBusinessesPageContent({ kind, param }) {
         displayPage={data?.page ?? page}
         total={data?.total}
         isFetching={isFetching}
-        onPrevious={() => setPage((prev) => Math.max(1, prev - 1))}
-        onNext={() => setPage((prev) => prev + 1)}
+        onPrevious={() => setField("page", Math.max(1, page - 1))}
+        onNext={() => setField("page", page + 1)}
       />
     </PageFadeIn>
   );

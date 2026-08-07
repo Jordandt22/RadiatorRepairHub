@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/Auth.context";
 import { useLoading } from "@/contexts/Loading.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
+import { ensureQueryParam } from "@/lib/urlQueryState";
+import useUrlQueryState from "@/hooks/useUrlQueryState";
 import ListingReportStatusFilterTabs, {
   TAB_STATUS,
   VALID_TABS,
@@ -34,7 +36,10 @@ export default function ListingReportsPageContent() {
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
   const { setLoading } = useLoading();
-  const [page, setPage] = useState(1);
+  const { page, setField } = useUrlQueryState(
+    { page: { type: "page" } },
+    { pathname: "/listing-reports" },
+  );
   const [activeTab, setActiveTab] = useState(() =>
     resolveTab(searchParams.get("tab")),
   );
@@ -53,22 +58,16 @@ export default function ListingReportsPageContent() {
   }, [isReady, accessToken, router]);
 
   useEffect(() => {
-    if (!searchParams.get("tab")) {
-      window.history.replaceState(
-        window.history.state,
-        "",
-        "/listing-reports?tab=pending",
-      );
-    }
+    ensureQueryParam("tab", "pending", "/listing-reports");
   }, [searchParams]);
 
   useEffect(() => {
     return subscribeToDashboardTab((tab) => {
       setActiveTab(resolveTab(tab));
       setSelectedIds(new Set());
-      setPage(1);
+      setField("page", 1);
     });
-  }, []);
+  }, [setField]);
 
   const handleTabChange = (tab) => {
     const nextTab = resolveTab(tab);
@@ -77,12 +76,12 @@ export default function ListingReportsPageContent() {
   };
 
   const handlePreviousPage = () => {
-    setPage((prev) => Math.max(1, prev - 1));
+    setField("page", Math.max(1, page - 1));
     setSelectedIds(new Set());
   };
 
   const handleNextPage = () => {
-    setPage((prev) => prev + 1);
+    setField("page", page + 1);
     setSelectedIds(new Set());
   };
 

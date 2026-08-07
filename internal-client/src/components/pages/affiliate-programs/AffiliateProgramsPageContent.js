@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/Auth.context";
 import { useLoading } from "@/contexts/Loading.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
+import { ensureQueryParam } from "@/lib/urlQueryState";
+import useUrlQueryState from "@/hooks/useUrlQueryState";
 import Pagination from "@/components/pages/dashboard/Pagination";
 import AffiliateProgramsFilterTabs, {
   VALID_AFFILIATE_TABS,
@@ -33,7 +35,10 @@ export default function AffiliateProgramsPageContent() {
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
   const { setLoading } = useLoading();
-  const [page, setPage] = useState(1);
+  const { page, setField } = useUrlQueryState(
+    { page: { type: "page" } },
+    { pathname: "/affiliate-programs" },
+  );
   const [activeTab, setActiveTab] = useState(() =>
     resolveTab(searchParams.get("tab")),
   );
@@ -50,22 +55,16 @@ export default function AffiliateProgramsPageContent() {
   }, [isReady, accessToken, router]);
 
   useEffect(() => {
-    if (!searchParams.get("tab")) {
-      window.history.replaceState(
-        window.history.state,
-        "",
-        "/affiliate-programs?tab=products",
-      );
-    }
+    ensureQueryParam("tab", "products", "/affiliate-programs");
   }, [searchParams]);
 
   useEffect(() => {
     return subscribeToDashboardTab((tab) => {
       setActiveTab(resolveTab(tab));
-      setPage(1);
+      setField("page", 1);
       setSelectedIds(new Set());
     });
-  }, []);
+  }, [setField]);
 
   const handleTabChange = (tab) => {
     const nextTab = resolveTab(tab);
@@ -366,11 +365,11 @@ export default function AffiliateProgramsPageContent() {
           isFetching={isFetching}
           onPrevious={() => {
             setSelectedIds(new Set());
-            setPage((prev) => Math.max(1, prev - 1));
+            setField("page", Math.max(1, page - 1));
           }}
           onNext={() => {
             setSelectedIds(new Set());
-            setPage((prev) => prev + 1);
+            setField("page", page + 1);
           }}
         />
       ) : null}

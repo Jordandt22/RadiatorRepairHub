@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isTokenExpired } from "@/lib/auth";
+import { saveCurrentPath } from "@/lib/lastPath";
 
 const AuthContext = createContext(null);
 
@@ -26,6 +27,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+    saveCurrentPath();
     setAccessToken(null);
     router.replace("/");
   };

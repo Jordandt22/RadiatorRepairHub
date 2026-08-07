@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   useMutation,
@@ -11,6 +11,8 @@ import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { debounce } from "@/lib/debounce";
 import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
+import { ensureQueryParam } from "@/lib/urlQueryState";
+import useUrlQueryState from "@/hooks/useUrlQueryState";
 import PageFadeIn from "@/components/PageFadeIn";
 import LocationFilterTabs, {
   VALID_TABS,
@@ -45,19 +47,41 @@ export default function LocationsPageContent() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
-  const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState(() =>
     resolveTab(searchParams.get("tab")),
   );
-  const [searchInput, setSearchInput] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [stateId, setStateId] = useState(null);
-  const [cityId, setCityId] = useState(null);
-  const [sort, setSort] = useState(DEFAULT_SORT);
+  const {
+    q,
+    page,
+    state: stateIdRaw,
+    city: cityIdRaw,
+    sort: sortRaw,
+    setField,
+    setFields,
+  } = useUrlQueryState(
+    {
+      q: { type: "string", param: "q" },
+      page: { type: "page" },
+      state: { type: "string", param: "state" },
+      city: { type: "string", param: "city" },
+      sort: {
+        type: "string",
+        param: "sort",
+        defaultValue: DEFAULT_SORT,
+      },
+    },
+    { pathname: "/locations" },
+  );
+  const [searchInput, setSearchInput] = useState(() => q || "");
   const [exportOpen, setExportOpen] = useState(false);
   const [refreshError, setRefreshError] = useState(null);
+  const setFieldRef = useRef(setField);
+  setFieldRef.current = setField;
 
-  const searchQuery = debouncedSearch.trim();
+  const stateId = stateIdRaw || null;
+  const cityId = cityIdRaw || null;
+  const sort = resolveSort(sortRaw || DEFAULT_SORT);
+  const searchQuery = (q || "").trim();
   const activeStateId =
     activeTab === "cities" || activeTab === "postal-codes" ? stateId : null;
   const activeCityId = activeTab === "postal-codes" ? cityId : null;
@@ -69,31 +93,23 @@ export default function LocationsPageContent() {
   }, [isReady, accessToken, router]);
 
   useEffect(() => {
-    if (!searchParams.get("tab")) {
-      window.history.replaceState(
-        window.history.state,
-        "",
-        "/locations?tab=states",
-      );
-    }
+    ensureQueryParam("tab", "states", "/locations");
   }, [searchParams]);
 
   useEffect(() => {
     return subscribeToDashboardTab((tab) => {
       setActiveTab(resolveTab(tab));
-      setPage(1);
-      setSearchInput("");
-      setDebouncedSearch("");
-      setStateId(null);
-      setCityId(null);
     });
   }, []);
+
+  useEffect(() => {
+    setSearchInput(q || "");
+  }, [q]);
 
   const debouncedSetSearch = useMemo(
     () =>
       debounce((value) => {
-        setDebouncedSearch(value);
-        setPage(1);
+        setFieldRef.current("q", value);
       }, SEARCH_DEBOUNCE_MS),
     [],
   );
@@ -108,42 +124,42 @@ export default function LocationsPageContent() {
   };
 
   const handleStateChange = (state) => {
-    setStateId(state?.id ?? null);
     if (activeTab === "postal-codes") {
-      setCityId(null);
+      setFields({ state: state?.id ?? "", city: "", page: 1 });
+    } else {
+      setField("state", state?.id ?? "");
     }
-    setPage(1);
   };
 
   const handleCityChange = (city) => {
-    setCityId(city?.id ?? null);
-    setPage(1);
+    setField("city", city?.id ?? "");
   };
 
   const handleSortChange = (value) => {
     const nextSort = resolveSort(value);
     if (nextSort === sort) return;
-    setSort(nextSort);
-    setPage(1);
+    setField("sort", nextSort);
   };
 
   const handleTabChange = (tab) => {
     const nextTab = resolveTab(tab);
     if (nextTab === activeTab) return;
     setSearchInput("");
-    setDebouncedSearch("");
-    setStateId(null);
-    setCityId(null);
-    setPage(1);
+    setFields({
+      q: "",
+      state: "",
+      city: "",
+      page: 1,
+    });
     replaceTab(nextTab, "/locations");
   };
 
   const handlePreviousPage = () => {
-    setPage((prev) => Math.max(1, prev - 1));
+    setField("page", Math.max(1, page - 1));
   };
 
   const handleNextPage = () => {
-    setPage((prev) => prev + 1);
+    setField("page", page + 1);
   };
 
   const { data: statesData } = useQuery({

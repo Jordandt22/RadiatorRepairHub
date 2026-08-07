@@ -7,6 +7,7 @@ import { RefreshCwIcon } from "lucide-react";
 import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
+import { ensureQueryParam } from "@/lib/urlQueryState";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import DashboardFilterTabs, {
@@ -72,13 +73,7 @@ export default function OverviewDashboardPageContent() {
   }, [isReady, accessToken, router]);
 
   useEffect(() => {
-    if (!searchParams.get("tab")) {
-      window.history.replaceState(
-        window.history.state,
-        "",
-        "/dashboard?tab=inbox",
-      );
-    }
+    ensureQueryParam("tab", "inbox", "/dashboard");
   }, [searchParams]);
 
   useEffect(() => {
