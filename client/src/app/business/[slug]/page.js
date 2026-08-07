@@ -278,7 +278,7 @@ async function Page({ params }) {
 
             <div className="w-full p-3 sm:p-4 md:p-6 text-white max-w-7xl mx-auto">
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-2 md:mb-4 leading-tight">
-                {business.title} - Radiator Repair Services
+                {business.title}
               </h1>
               {business.local_note && (
                 <p className="text-sm md:text-base italic text-gray-200 mb-2 md:mb-4">
