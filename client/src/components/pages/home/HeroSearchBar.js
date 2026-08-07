@@ -4,14 +4,17 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
 
 // Contexts
 import { useToast } from "@/contexts/ToastProvider";
+import { getBusinessSearchAnalyticsProps } from "@/lib/analytics/businessSearch";
 
 function HeroSearchBar({ heroInView }) {
   const [search, setSearch] = useState("");
   const { showCustomError } = useToast();
   const router = useRouter();
+  const posthog = usePostHog();
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
@@ -19,7 +22,15 @@ function HeroSearchBar({ heroInView }) {
 
   const submitSearch = () => {
     if (search === "") {
+      posthog?.capture(
+        "business_search_submitted",
+        getBusinessSearchAnalyticsProps(
+          { title: "" },
+          { source: "hero", page: 1, sort_option: "most_reviews" }
+        )
+      );
       router.push(`/search?page=1&sort=most_reviews`);
+      return;
     }
 
     // Check Max Length
@@ -42,7 +53,15 @@ function HeroSearchBar({ heroInView }) {
       );
     }
 
-    router.push(`/search?title=${search}&page=1&sort=most_reviews`);
+    const title = search.trim();
+    posthog?.capture(
+      "business_search_submitted",
+      getBusinessSearchAnalyticsProps(
+        { title },
+        { source: "hero", page: 1, sort_option: "most_reviews" }
+      )
+    );
+    router.push(`/search?title=${encodeURIComponent(title)}&page=1&sort=most_reviews`);
   };
 
   const handleKeyPress = (e) => {

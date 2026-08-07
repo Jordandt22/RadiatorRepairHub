@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { unclaimOwnedBusiness } from "@/lib/api/ownedBusinesses";
+import { usePostHog } from "posthog-js/react";
 
 function formatLastEdited(value) {
   if (!value) return "Not edited yet";
@@ -27,6 +28,7 @@ function formatLastEdited(value) {
 }
 
 export default function OwnedBusinessCard({ business, onUnclaimed }) {
+  const posthog = usePostHog();
   const [open, setOpen] = useState(false);
   const [isUnclaiming, setIsUnclaiming] = useState(false);
   const [error, setError] = useState("");
@@ -51,6 +53,11 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
         );
         return;
       }
+      posthog?.capture("owner_unclaimed_business", {
+        business_id: business.id,
+        business_slug: business.slug || undefined,
+        business_name: business.title || undefined,
+      });
       setOpen(false);
       onUnclaimed?.({
         businessId: business.id,

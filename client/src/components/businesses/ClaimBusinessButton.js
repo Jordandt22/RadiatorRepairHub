@@ -16,6 +16,8 @@ import {
 import { ToastProvider, useToast } from "@/contexts/ToastProvider";
 import { claimBusiness } from "@/lib/api/businesses";
 import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
+import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
+import { usePostHog } from "posthog-js/react";
 
 function ClaimStatusLabel({ children, reason, showHowToClaim = false }) {
   return (
@@ -36,20 +38,45 @@ function ClaimStatusLabel({ children, reason, showHowToClaim = false }) {
   );
 }
 
-function ClaimBusinessButtonContent({ businessId }) {
+function ClaimBusinessButtonContent({
+  businessId,
+  businessSlug,
+  businessName,
+}) {
   const { showCustomError } = useToast();
+  const posthog = usePostHog();
+  const { isSignedIn } = useIsSignedIn();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [maskedEmail, setMaskedEmail] = useState("");
+
+  const capture = (event, props = {}) => {
+    posthog?.capture(event, {
+      business_id: businessId || undefined,
+      business_slug: businessSlug || undefined,
+      business_name: businessName || undefined,
+      signed_in: Boolean(isSignedIn),
+      source: "listing",
+      ...props,
+    });
+  };
 
   const handleClaim = async () => {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
+    capture("claim_started");
     try {
       const { data, error } = await claimBusiness(businessId);
 
       if (error) {
+        capture("claim_failed", {
+          stage: "start",
+          error_code:
+            typeof error.code === "string" ? error.code : undefined,
+          error_message:
+            typeof error.message === "string" ? error.message : undefined,
+        });
         showCustomError(
           typeof error.message === "string"
             ? error.message
@@ -58,9 +85,11 @@ function ClaimBusinessButtonContent({ businessId }) {
         return;
       }
 
+      capture("claim_code_sent");
       setMaskedEmail(data?.maskedEmail || "");
       setSuccessOpen(true);
     } catch {
+      capture("claim_failed", { stage: "start" });
       showCustomError("Unable to start the claim process. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -148,6 +177,8 @@ function ClaimedBusinessStatus({ businessId, lastEditedAt = null }) {
 
 export default function ClaimBusinessButton({
   businessId,
+  businessSlug,
+  businessName,
   email,
   isClaimed = false,
   hasDuplicateEmail = false,
@@ -186,7 +217,11 @@ export default function ClaimBusinessButton({
 
   return (
     <ToastProvider>
-      <ClaimBusinessButtonContent businessId={businessId} />
+      <ClaimBusinessButtonContent
+        businessId={businessId}
+        businessSlug={businessSlug}
+        businessName={businessName}
+      />
     </ToastProvider>
   );
 }

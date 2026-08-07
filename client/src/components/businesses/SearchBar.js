@@ -31,7 +31,10 @@ function SearchBar({ stateData, cityData, page }) {
       );
     }
 
-    applyFilters(filters, appliedFilters, stateData, cityData, page);
+    applyFilters(filters, appliedFilters, stateData, cityData, page, {
+      analyticsEvent: "business_search_submitted",
+      source: "search_bar",
+    });
   };
 
   const handleKeyPress = (e) => {

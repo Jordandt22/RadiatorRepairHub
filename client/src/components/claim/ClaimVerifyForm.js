@@ -24,10 +24,13 @@ import {
   getPasswordStrengthError,
   PASSWORD_REQUIREMENTS_HINT,
 } from "@/lib/validation/password";
+import { usePostHog } from "posthog-js/react";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 function ClaimVerifyFormContent({ claimRequestId, business }) {
   const router = useRouter();
   const { showCustomError, showCustomSuccess } = useToast();
+  const posthog = usePostHog();
   const { isSignedIn, user, isLoading: isAuthLoading } = useIsSignedIn();
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -37,6 +40,35 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
   const [isCanceling, setIsCanceling] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [errors, setErrors] = useState({});
+
+  const capture = (event, props = {}) => {
+    posthog?.capture(event, {
+      business_id: business?.id || undefined,
+      business_slug: business?.slug || undefined,
+      business_name: business?.title || undefined,
+      signed_in: Boolean(isSignedIn),
+      source: "claim_verify",
+      ...props,
+    });
+  };
+
+  const identifyOwner = async (fallbackUser) => {
+    try {
+      let nextUser = fallbackUser;
+      if (!nextUser?.id) {
+        const supabase = getSupabaseBrowserClient();
+        const { data } = await supabase.auth.getUser();
+        nextUser = data?.user ?? null;
+      }
+      if (nextUser?.id) {
+        posthog?.identify(nextUser.id, {
+          email: nextUser.email || undefined,
+        });
+      }
+    } catch {
+      // analytics best-effort
+    }
+  };
 
   const goToBusinessPage = (slug) => {
     if (slug) {
@@ -157,12 +189,25 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
 
       if (error) {
         if (isClaimUnavailableError(error)) {
+          capture("claim_failed", {
+            stage: "complete",
+            error_code: error.code,
+            error_message:
+              typeof error.message === "string" ? error.message : undefined,
+          });
           handleClaimUnavailable(error);
           return;
         }
         if (error.code === "form-error" && typeof error.message === "object") {
           setErrors(error.message);
         }
+        capture("claim_failed", {
+          stage: "complete",
+          error_code:
+            typeof error.code === "string" ? error.code : undefined,
+          error_message:
+            typeof error.message === "string" ? error.message : undefined,
+        });
         showCustomError(
           typeof error.message === "string"
             ? error.message
@@ -172,6 +217,8 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
       }
 
       if (data?.alreadyAuthenticated) {
+        capture("claim_completed", { flow: "signed_in" });
+        await identifyOwner(user);
         showCustomSuccess("Your business has been claimed successfully.");
         goToBusinessPage(data?.slug || business.slug);
         return;
@@ -180,18 +227,28 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
       if (data?.session) {
         const { error: sessionError } = await persistSession(data.session);
         if (sessionError) {
+          capture("claim_completed", {
+            flow: "create_account",
+            requires_login: true,
+          });
           showCustomSuccess(
             "Your business has been claimed. Please sign in to continue."
           );
           router.push("/signin");
           return;
         }
+        capture("claim_completed", { flow: "create_account" });
+        await identifyOwner();
         showCustomSuccess("Your business has been claimed successfully.");
         goToBusinessPage(data?.slug || business.slug);
         return;
       }
 
       if (data?.requiresLogin) {
+        capture("claim_completed", {
+          flow: "create_account",
+          requires_login: true,
+        });
         showCustomSuccess(
           typeof data.message === "string"
             ? data.message
@@ -201,9 +258,13 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
         return;
       }
 
+      capture("claim_completed", {
+        flow: isSignedIn ? "signed_in" : "create_account",
+      });
       showCustomSuccess("Your business has been claimed successfully.");
       goToBusinessPage(data?.slug || business.slug);
     } catch {
+      capture("claim_failed", { stage: "complete" });
       showCustomError("Unable to complete your claim. Please try again.");
     } finally {
       setIsSubmitting(false);

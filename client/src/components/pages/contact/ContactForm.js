@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import emailjs from "@emailjs/browser";
 import { Send } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
 
 // Contexts
 import { useToast } from "@/contexts/ToastProvider";
@@ -17,10 +18,12 @@ const ContactForm = ({
   namePlaceholder = "Enter your full name",
   nameLabel = "Full Name",
   showSubjectInput = true,
+  analyticsPage = "contact",
   className = "",
 }) => {
   const { showCustomSuccess, showCustomError } = useToast();
-  const { user } = useIsSignedIn();
+  const { user, isSignedIn } = useIsSignedIn();
+  const posthog = usePostHog();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -173,12 +176,18 @@ const ContactForm = ({
         process.env.NEXT_PUBLIC_EMAILJS_API_KEY
       );
 
+      posthog?.capture("contact_page_submitted", {
+        subject: formData.subject || undefined,
+        page: analyticsPage,
+        signed_in: Boolean(isSignedIn),
+      });
+
       // Success - clear form and show success message
       setFormData({
         name: "",
         email: authEmail,
         phone: "",
-        subject: "",
+        subject: lockSubject ? prefilledSubject : "",
         message: "",
       });
       setErrors({});

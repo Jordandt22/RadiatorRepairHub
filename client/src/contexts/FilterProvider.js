@@ -2,14 +2,17 @@
 
 import React, { createContext, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
+import { usePostHog } from "posthog-js/react";
 
 // Utils
 import { formatFeatures } from "@/lib/utils/utils";
+import { getBusinessSearchAnalyticsProps } from "@/lib/analytics/businessSearch";
 
 const FilterContext = createContext();
 export const useFilters = () => useContext(FilterContext);
 export function FilterProvider({ children }) {
   const router = useRouter();
+  const posthog = usePostHog();
 
   // Filter visibility state
   const [showFilters, setShowFilters] = useState(false);
@@ -137,10 +140,24 @@ export function FilterProvider({ children }) {
 
   // Clear all filters
   const clearAllFilters = (stateData, cityData, appliedFilters) => {
+    const sort_option = appliedFilters?.sort_option || 1;
+    posthog?.capture(
+      "business_search_filtered",
+      getBusinessSearchAnalyticsProps(
+        { ...defaultFilters, sort_option },
+        {
+          source: "clear",
+          page: 1,
+          sort_option,
+          stateData,
+          cityData,
+        }
+      )
+    );
     clearAllFiltersHelper();
     updateURL(stateData, cityData, 1, {
       ...defaultFilters,
-      sort_option: appliedFilters?.sort_option || 1,
+      sort_option,
     });
   };
 
@@ -158,6 +175,19 @@ export function FilterProvider({ children }) {
 
   // Update Sort Option
   const updateSortOption = (stateData, cityData, filters, sortNum) => {
+    posthog?.capture(
+      "business_search_filtered",
+      getBusinessSearchAnalyticsProps(
+        { ...filters, sort_option: sortNum },
+        {
+          source: "sort",
+          page: 1,
+          sort_option: getSortOption(sortNum),
+          stateData,
+          cityData,
+        }
+      )
+    );
     updateAppliedFilters(filters, sortNum);
     updateURL(stateData, cityData, 1, {
       ...filters,
@@ -215,7 +245,14 @@ export function FilterProvider({ children }) {
   };
 
   // Apply filters
-  const applyFilters = (filters, appliedFilters, stateData, cityData, page) => {
+  const applyFilters = (
+    filters,
+    appliedFilters,
+    stateData,
+    cityData,
+    page,
+    options = {}
+  ) => {
     const formattedFilters = formatFilters(filters);
     setShowFilters(false);
     setFilters((prev) => ({
@@ -224,6 +261,24 @@ export function FilterProvider({ children }) {
     }));
 
     const sort_option = appliedFilters?.sort_option || 1;
+    const analyticsEvent =
+      options.analyticsEvent || "business_search_filtered";
+    const source = options.source || "filters";
+
+    posthog?.capture(
+      analyticsEvent,
+      getBusinessSearchAnalyticsProps(
+        { ...formattedFilters, sort_option },
+        {
+          source,
+          page,
+          sort_option: getSortOption(sort_option),
+          stateData,
+          cityData,
+        }
+      )
+    );
+
     updateAppliedFilters(formattedFilters, sort_option);
     updateURL(stateData, cityData, page, {
       ...formattedFilters,
