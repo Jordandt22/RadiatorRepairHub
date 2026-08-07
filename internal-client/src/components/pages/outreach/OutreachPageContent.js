@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   useMutation,
@@ -13,6 +13,8 @@ import { useLoading } from "@/contexts/Loading.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { debounce } from "@/lib/debounce";
 import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
+import { ensureQueryParam } from "@/lib/urlQueryState";
+import useUrlQueryState from "@/hooks/useUrlQueryState";
 import OutreachFilterTabs, {
   VALID_OUTREACH_TABS,
 } from "@/components/pages/outreach/OutreachFilterTabs";
@@ -28,9 +30,13 @@ import OutreachPreviewSheet from "@/components/pages/outreach/OutreachPreviewShe
 import OutreachAddBusinessesSheet from "@/components/pages/outreach/OutreachAddBusinessesSheet";
 import Pagination from "@/components/pages/dashboard/Pagination";
 import {
+  CLAIM_ELIGIBILITY_FILTERS,
+  HISTORY_EMAIL_FILTERS,
   OUTREACH_LIMIT_OPTIONS,
   OUTREACH_SEND_SELECTION_CAP,
   OUTREACH_TYPE_OPTIONS,
+  SENT_FILTERS,
+  WEBSITE_FILTERS,
 } from "@/components/pages/outreach/outreachConstants";
 
 const PAGE_LIMIT = 20;
@@ -58,24 +64,94 @@ export default function OutreachPageContent() {
     resolveTab(searchParams.get("tab")),
   );
 
-  // All tab state
-  const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [claimEligibility, setClaimEligibility] = useState(null);
-  const [websiteFilter, setWebsiteFilter] = useState(null);
-  const [claimInviteSent, setClaimInviteSent] = useState(null);
-  const [claimFollowupSent, setClaimFollowupSent] = useState(null);
-  const [websiteOfferSent, setWebsiteOfferSent] = useState(null);
+  const {
+    q,
+    page,
+    eligibility: claimEligibility,
+    website: websiteFilter,
+    invite: claimInviteSent,
+    followup: claimFollowupSent,
+    offer: websiteOfferSent,
+    hq,
+    hpage: historyPage,
+    htype: historyType,
+    hstatus: historyEmailFilter,
+    type: outreachTypeFromUrl,
+    limit: matchLimitFromUrl,
+    setField,
+    setFields,
+  } = useUrlQueryState(
+    {
+      q: { type: "string", param: "q" },
+      page: { type: "page" },
+      eligibility: {
+        type: "option",
+        param: "eligibility",
+        options: CLAIM_ELIGIBILITY_FILTERS,
+      },
+      website: {
+        type: "option",
+        param: "website",
+        options: WEBSITE_FILTERS,
+      },
+      invite: {
+        type: "option",
+        param: "invite",
+        options: SENT_FILTERS,
+      },
+      followup: {
+        type: "option",
+        param: "followup",
+        options: SENT_FILTERS,
+      },
+      offer: {
+        type: "option",
+        param: "offer",
+        options: SENT_FILTERS,
+      },
+      hq: { type: "string", param: "hq", resetPageOnChange: false },
+      hpage: {
+        type: "page",
+        param: "hpage",
+        resetPageOnChange: false,
+      },
+      htype: {
+        type: "option",
+        param: "htype",
+        options: OUTREACH_TYPE_OPTIONS,
+        resetPageOnChange: false,
+      },
+      hstatus: {
+        type: "option",
+        param: "hstatus",
+        options: HISTORY_EMAIL_FILTERS,
+        resetPageOnChange: false,
+      },
+      type: {
+        type: "option",
+        param: "type",
+        options: OUTREACH_TYPE_OPTIONS,
+        resetPageOnChange: false,
+      },
+      limit: {
+        type: "option",
+        param: "limit",
+        options: OUTREACH_LIMIT_OPTIONS,
+        resetPageOnChange: false,
+      },
+    },
+    { pathname: "/outreach", pageKey: "page" },
+  );
+
+  const [searchInput, setSearchInput] = useState(() => q || "");
+  const [historySearchInput, setHistorySearchInput] = useState(
+    () => hq || "",
+  );
   const [refreshError, setRefreshError] = useState(null);
 
-  // Sender tab state
-  const [outreachType, setOutreachType] = useState(
-    () => OUTREACH_TYPE_OPTIONS[0],
-  );
-  const [matchLimit, setMatchLimit] = useState(
-    () => OUTREACH_LIMIT_OPTIONS[1],
-  );
+  // Sender working set (not URL-persisted)
+  const outreachType = outreachTypeFromUrl ?? OUTREACH_TYPE_OPTIONS[0];
+  const matchLimit = matchLimitFromUrl ?? OUTREACH_LIMIT_OPTIONS[1];
   const [matchedSet, setMatchedSet] = useState([]);
   const [manualSet, setManualSet] = useState([]);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -84,21 +160,15 @@ export default function OutreachPageContent() {
   const [previewData, setPreviewData] = useState(null);
   const [addOpen, setAddOpen] = useState(false);
 
-  // History tab state
-  const [historyPage, setHistoryPage] = useState(1);
-  const [historySearchInput, setHistorySearchInput] = useState("");
-  const [historyDebouncedSearch, setHistoryDebouncedSearch] = useState("");
-  const [historyType, setHistoryType] = useState(null);
   const [historyRefreshError, setHistoryRefreshError] = useState(null);
   const [historySelectedIds, setHistorySelectedIds] = useState(
     () => new Set(),
   );
   const [historyActionError, setHistoryActionError] = useState(null);
   const [removeSentConfirmOpen, setRemoveSentConfirmOpen] = useState(false);
-  const [historyEmailFilter, setHistoryEmailFilter] = useState(null);
 
-  const searchQuery = debouncedSearch.trim();
-  const historySearchQuery = historyDebouncedSearch.trim();
+  const searchQuery = (q || "").trim();
+  const historySearchQuery = (hq || "").trim();
   const claimEligibilityId = claimEligibility?.id ?? null;
   const websiteFilterId = websiteFilter?.id ?? null;
   const claimInviteSentValue = parseSentFilter(claimInviteSent);
@@ -114,6 +184,9 @@ export default function OutreachPageContent() {
         ? false
         : null;
 
+  const setFieldRef = useRef(setField);
+  setFieldRef.current = setField;
+
   useEffect(() => {
     if (isReady && !accessToken) {
       router.replace("/");
@@ -121,13 +194,7 @@ export default function OutreachPageContent() {
   }, [isReady, accessToken, router]);
 
   useEffect(() => {
-    if (!searchParams.get("tab")) {
-      window.history.replaceState(
-        window.history.state,
-        "",
-        "/outreach?tab=all",
-      );
-    }
+    ensureQueryParam("tab", "all", "/outreach");
   }, [searchParams]);
 
   useEffect(() => {
@@ -137,22 +204,36 @@ export default function OutreachPageContent() {
   }, []);
 
   useEffect(() => {
-    const run = debounce((value) => {
-      setDebouncedSearch(value);
-      setPage(1);
-    }, SEARCH_DEBOUNCE_MS);
-    run(searchInput);
-    return () => run.cancel();
-  }, [searchInput]);
+    setSearchInput(q || "");
+  }, [q]);
 
   useEffect(() => {
-    const run = debounce((value) => {
-      setHistoryDebouncedSearch(value);
-      setHistoryPage(1);
-    }, SEARCH_DEBOUNCE_MS);
-    run(historySearchInput);
-    return () => run.cancel();
-  }, [historySearchInput]);
+    setHistorySearchInput(hq || "");
+  }, [hq]);
+
+  const debouncedSetBrowseSearch = useMemo(
+    () =>
+      debounce((value) => {
+        setFieldRef.current("q", value);
+      }, SEARCH_DEBOUNCE_MS),
+    [],
+  );
+
+  const debouncedSetHistorySearch = useMemo(
+    () =>
+      debounce((value) => {
+        setFields({ hq: value, hpage: 1 });
+        setHistorySelectedIds(new Set());
+      }, SEARCH_DEBOUNCE_MS),
+    [setFields],
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedSetBrowseSearch.cancel();
+      debouncedSetHistorySearch.cancel();
+    };
+  }, [debouncedSetBrowseSearch, debouncedSetHistorySearch]);
 
   const handleTabChange = (tab) => {
     const nextTab = resolveTab(tab);
@@ -540,8 +621,6 @@ export default function OutreachPageContent() {
     setActionError(null);
   };
 
-  const resetBrowsePage = () => setPage(1);
-
   const businesses = browseQuery.data?.businesses ?? [];
   const totalPages = browseQuery.data?.totalPages ?? 0;
   const hasBrowseFilters = Boolean(
@@ -577,8 +656,7 @@ export default function OutreachPageContent() {
   };
 
   const handleHistoryEmailFilterChange = (value) => {
-    setHistoryEmailFilter(value);
-    setHistoryPage(1);
+    setFields({ hstatus: value, hpage: 1 });
     setHistorySelectedIds(new Set());
     setHistoryActionError(null);
   };
@@ -620,31 +698,29 @@ export default function OutreachPageContent() {
         <>
           <OutreachBrowseActions
             searchValue={searchInput}
-            onSearchChange={setSearchInput}
+            onSearchChange={(value) => {
+              setSearchInput(value);
+              debouncedSetBrowseSearch(value);
+            }}
             claimEligibility={claimEligibility}
             onClaimEligibilityChange={(value) => {
-              setClaimEligibility(value);
-              resetBrowsePage();
+              setField("eligibility", value);
             }}
             websiteFilter={websiteFilter}
             onWebsiteFilterChange={(value) => {
-              setWebsiteFilter(value);
-              resetBrowsePage();
+              setField("website", value);
             }}
             claimInviteSent={claimInviteSent}
             onClaimInviteSentChange={(value) => {
-              setClaimInviteSent(value);
-              resetBrowsePage();
+              setField("invite", value);
             }}
             claimFollowupSent={claimFollowupSent}
             onClaimFollowupSentChange={(value) => {
-              setClaimFollowupSent(value);
-              resetBrowsePage();
+              setField("followup", value);
             }}
             websiteOfferSent={websiteOfferSent}
             onWebsiteOfferSentChange={(value) => {
-              setWebsiteOfferSent(value);
-              resetBrowsePage();
+              setField("offer", value);
             }}
             onRefresh={() => refreshBrowseMutation.mutate()}
             refreshPending={
@@ -674,8 +750,8 @@ export default function OutreachPageContent() {
               isFetching={
                 browseQuery.isFetching || browseQuery.isPlaceholderData
               }
-              onPrevious={() => setPage((prev) => Math.max(1, prev - 1))}
-              onNext={() => setPage((prev) => prev + 1)}
+              onPrevious={() => setField("page", Math.max(1, page - 1))}
+              onNext={() => setField("page", page + 1)}
             />
           ) : null}
         </>
@@ -686,11 +762,11 @@ export default function OutreachPageContent() {
           <OutreachSenderActions
             outreachType={outreachType}
             onOutreachTypeChange={(value) => {
-              setOutreachType(value);
+              setField("type", value);
               clearWorkingSet();
             }}
             matchLimit={matchLimit}
-            onMatchLimitChange={setMatchLimit}
+            onMatchLimitChange={(value) => setField("limit", value)}
             selectedCount={selectedIds.size}
             workingSetCount={workingSetCount}
             onSelectMatching={() => matchingMutation.mutate()}
@@ -758,11 +834,13 @@ export default function OutreachPageContent() {
         <>
           <OutreachHistoryActions
             searchValue={historySearchInput}
-            onSearchChange={setHistorySearchInput}
+            onSearchChange={(value) => {
+              setHistorySearchInput(value);
+              debouncedSetHistorySearch(value);
+            }}
             outreachType={historyType}
             onOutreachTypeChange={(value) => {
-              setHistoryType(value);
-              setHistoryPage(1);
+              setFields({ htype: value, hpage: 1 });
               setHistorySelectedIds(new Set());
             }}
             emailFilter={historyEmailFilter}
@@ -808,11 +886,11 @@ export default function OutreachPageContent() {
               }
               onPrevious={() => {
                 setHistorySelectedIds(new Set());
-                setHistoryPage((prev) => Math.max(1, prev - 1));
+                setField("hpage", Math.max(1, historyPage - 1));
               }}
               onNext={() => {
                 setHistorySelectedIds(new Set());
-                setHistoryPage((prev) => prev + 1);
+                setField("hpage", historyPage + 1);
               }}
             />
           ) : null}

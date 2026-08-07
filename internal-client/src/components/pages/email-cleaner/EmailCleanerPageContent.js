@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   useMutation,
@@ -12,7 +12,11 @@ import { useAuth } from "@/contexts/Auth.context";
 import { useLoading } from "@/contexts/Loading.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { debounce } from "@/lib/debounce";
-import EmailCleanerActions from "@/components/pages/email-cleaner/EmailCleanerActions";
+import useUrlQueryState from "@/hooks/useUrlQueryState";
+import EmailCleanerActions, {
+  EMAILS_SENT_FILTERS,
+  SUSPICIOUS_FILTERS,
+} from "@/components/pages/email-cleaner/EmailCleanerActions";
 import EmailCleanerConfirmDialog from "@/components/pages/email-cleaner/EmailCleanerConfirmDialog";
 import EmailCleanerEditDialog from "@/components/pages/email-cleaner/EmailCleanerEditDialog";
 import EmailCleanerTable from "@/components/pages/email-cleaner/EmailCleanerTable";
@@ -34,11 +38,27 @@ export default function EmailCleanerPageContent() {
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
   const { setLoading } = useLoading();
-  const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [emailsSent, setEmailsSent] = useState(null);
-  const [suspicious, setSuspicious] = useState(null);
+  const {
+    q,
+    page,
+    sent: emailsSent,
+    suspicious,
+    setField,
+  } = useUrlQueryState(
+    {
+      q: { type: "string", param: "q" },
+      page: { type: "page" },
+      sent: { type: "option", param: "sent", options: EMAILS_SENT_FILTERS },
+      suspicious: {
+        type: "option",
+        param: "suspicious",
+        options: SUSPICIOUS_FILTERS,
+      },
+    },
+    { pathname: "/email-cleaner" },
+  );
+
+  const [searchInput, setSearchInput] = useState(() => q || "");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -47,9 +67,11 @@ export default function EmailCleanerPageContent() {
   const [actionError, setActionError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
 
-  const searchQuery = debouncedSearch.trim();
+  const searchQuery = (q || "").trim();
   const emailsSentValue = parseBoolFilter(emailsSent);
   const suspiciousValue = parseBoolFilter(suspicious);
+  const setFieldRef = useRef(setField);
+  setFieldRef.current = setField;
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -57,11 +79,14 @@ export default function EmailCleanerPageContent() {
     }
   }, [isReady, accessToken, router]);
 
+  useEffect(() => {
+    setSearchInput(q || "");
+  }, [q]);
+
   const debouncedSetSearch = useMemo(
     () =>
       debounce((value) => {
-        setDebouncedSearch(value);
-        setPage(1);
+        setFieldRef.current("q", value);
         setSelectedIds(new Set());
       }, SEARCH_DEBOUNCE_MS),
     [],
@@ -77,24 +102,22 @@ export default function EmailCleanerPageContent() {
   };
 
   const handleEmailsSentChange = (value) => {
-    setEmailsSent(value);
-    setPage(1);
+    setField("sent", value);
     setSelectedIds(new Set());
   };
 
   const handleSuspiciousChange = (value) => {
-    setSuspicious(value);
-    setPage(1);
+    setField("suspicious", value);
     setSelectedIds(new Set());
   };
 
   const handlePreviousPage = () => {
-    setPage((prev) => Math.max(1, prev - 1));
+    setField("page", Math.max(1, page - 1));
     setSelectedIds(new Set());
   };
 
   const handleNextPage = () => {
-    setPage((prev) => prev + 1);
+    setField("page", page + 1);
     setSelectedIds(new Set());
   };
 

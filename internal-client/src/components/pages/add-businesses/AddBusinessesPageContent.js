@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
+import { ensureQueryParam } from "@/lib/urlQueryState";
 import AddBusinessesFilterTabs, {
   VALID_TABS,
 } from "@/components/pages/add-businesses/AddBusinessesFilterTabs";
@@ -43,13 +44,7 @@ export default function AddBusinessesPageContent() {
   }, [isReady, accessToken, router]);
 
   useEffect(() => {
-    if (!searchParams.get("tab")) {
-      window.history.replaceState(
-        window.history.state,
-        "",
-        "/add-businesses?tab=groups",
-      );
-    }
+    ensureQueryParam("tab", "groups", "/add-businesses");
   }, [searchParams]);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   keepPreviousData,
@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { debounce } from "@/lib/debounce";
 import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
+import { ensureQueryParam } from "@/lib/urlQueryState";
+import useUrlQueryState from "@/hooks/useUrlQueryState";
 import UploadPhotosFilterTabs, {
   VALID_TABS,
 } from "@/components/pages/upload-photos/UploadPhotosFilterTabs";
@@ -19,7 +21,10 @@ import UploadPhotosJobsTable from "@/components/pages/upload-photos/UploadPhotos
 import UploadPhotosActions from "@/components/pages/upload-photos/UploadPhotosActions";
 import UploadPhotosTableSkeleton from "@/components/pages/upload-photos/UploadPhotosTableSkeleton";
 import UploadPhotosStartDialog from "@/components/pages/upload-photos/UploadPhotosStartDialog";
-import UploadPhotosBusinessesActions from "@/components/pages/upload-photos/UploadPhotosBusinessesActions";
+import UploadPhotosBusinessesActions, {
+  CDN_STORED_FILTERS,
+  ATTEMPTS_FILTERS,
+} from "@/components/pages/upload-photos/UploadPhotosBusinessesActions";
 import UploadPhotosBusinessesTable from "@/components/pages/upload-photos/UploadPhotosBusinessesTable";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
@@ -65,14 +70,31 @@ export default function UploadPhotosPageContent() {
   const [actionError, setActionError] = useState(null);
   const [startError, setStartError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
-  const [businessesPage, setBusinessesPage] = useState(1);
-  const [searchInput, setSearchInput] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [cdnStoredFilter, setCdnStoredFilter] = useState(null);
-  const [attemptsFilter, setAttemptsFilter] = useState(null);
   const [businessesRefreshError, setBusinessesRefreshError] = useState(null);
+  const {
+    q,
+    page: businessesPage,
+    cdn: cdnStoredFilter,
+    attempts: attemptsFilter,
+    setField,
+  } = useUrlQueryState(
+    {
+      q: { type: "string", param: "q" },
+      page: { type: "page" },
+      cdn: { type: "option", param: "cdn", options: CDN_STORED_FILTERS },
+      attempts: {
+        type: "option",
+        param: "attempts",
+        options: ATTEMPTS_FILTERS,
+      },
+    },
+    { pathname: "/upload-photos" },
+  );
+  const [searchInput, setSearchInput] = useState(() => q || "");
+  const setFieldRef = useRef(setField);
+  setFieldRef.current = setField;
 
-  const searchQuery = debouncedSearch.trim();
+  const searchQuery = (q || "").trim();
   const cdnStoredValue = parseCdnStoredFilter(cdnStoredFilter);
   const hasAttemptsValue = parseAttemptsFilter(attemptsFilter);
 
@@ -83,13 +105,7 @@ export default function UploadPhotosPageContent() {
   }, [isReady, accessToken, router]);
 
   useEffect(() => {
-    if (!searchParams.get("tab")) {
-      window.history.replaceState(
-        window.history.state,
-        "",
-        "/upload-photos?tab=jobs",
-      );
-    }
+    ensureQueryParam("tab", "jobs", "/upload-photos");
   }, [searchParams]);
 
   useEffect(() => {
@@ -99,11 +115,14 @@ export default function UploadPhotosPageContent() {
     });
   }, []);
 
+  useEffect(() => {
+    setSearchInput(q || "");
+  }, [q]);
+
   const debouncedSetSearch = useMemo(
     () =>
       debounce((value) => {
-        setDebouncedSearch(value);
-        setBusinessesPage(1);
+        setFieldRef.current("q", value);
       }, SEARCH_DEBOUNCE_MS),
     [],
   );
@@ -125,13 +144,11 @@ export default function UploadPhotosPageContent() {
   };
 
   const handleCdnStoredFilterChange = (value) => {
-    setCdnStoredFilter(value);
-    setBusinessesPage(1);
+    setField("cdn", value);
   };
 
   const handleAttemptsFilterChange = (value) => {
-    setAttemptsFilter(value);
-    setBusinessesPage(1);
+    setField("attempts", value);
   };
 
   const jobsQuery = useQuery({
@@ -471,11 +488,15 @@ export default function UploadPhotosPageContent() {
                 total={businessesPagination.total || 0}
                 isFetching={businessesQuery.isFetching}
                 onPrevious={() =>
-                  setBusinessesPage((page) => Math.max(1, page - 1))
+                  setField("page", Math.max(1, businessesPage - 1))
                 }
                 onNext={() =>
-                  setBusinessesPage((page) =>
-                    Math.min(businessesPagination.totalPages || 1, page + 1),
+                  setField(
+                    "page",
+                    Math.min(
+                      businessesPagination.totalPages || 1,
+                      businessesPage + 1,
+                    ),
                   )
                 }
               />

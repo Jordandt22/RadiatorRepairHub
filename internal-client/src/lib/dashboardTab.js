@@ -1,16 +1,17 @@
+import { getSearchParams, setSearchParams } from "./urlQueryState";
+
 const TAB_CHANGE_EVENT = "dashboard-tabchange";
 
 export function getTabFromLocation() {
   if (typeof window === "undefined") return null;
-  return new URLSearchParams(window.location.search).get("tab");
+  return getSearchParams().get("tab");
 }
 
 export function replaceTab(tab, pathname) {
   const path =
     pathname ??
     (typeof window !== "undefined" ? window.location.pathname : "/contact-form");
-  const url = `${path}?tab=${tab}`;
-  window.history.replaceState(window.history.state, "", url);
+  setSearchParams({ tab }, { pathname: path });
   window.dispatchEvent(new Event(TAB_CHANGE_EVENT));
 }
 

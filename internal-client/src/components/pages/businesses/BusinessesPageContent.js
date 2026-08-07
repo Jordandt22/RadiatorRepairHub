@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   useMutation,
@@ -13,6 +13,13 @@ import { useLoading } from "@/contexts/Loading.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { debounce } from "@/lib/debounce";
 import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
+import { ensureQueryParam } from "@/lib/urlQueryState";
+import useUrlQueryState from "@/hooks/useUrlQueryState";
+import {
+  SCORE_TIERS,
+  REVIEW_TIERS,
+  EMAIL_FILTERS,
+} from "@/lib/businessTiers";
 import BusinessFilterTabs, {
   TAB_CLAIMED,
   VALID_TABS,
@@ -36,27 +43,43 @@ export default function BusinessesPageContent() {
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
   const { setLoading } = useLoading();
-  const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState(() =>
     resolveTab(searchParams.get("tab")),
   );
-  const [searchInput, setSearchInput] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [scoreTier, setScoreTier] = useState(null);
-  const [reviewsTier, setReviewsTier] = useState(null);
-  const [emailFilter, setEmailFilter] = useState(null);
+  const {
+    q,
+    page,
+    score: scoreTier,
+    reviews: reviewsTier,
+    contact: emailFilter,
+    setField,
+    setFields,
+  } = useUrlQueryState(
+    {
+      q: { type: "string", param: "q" },
+      page: { type: "page" },
+      score: { type: "option", param: "score", options: SCORE_TIERS },
+      reviews: { type: "option", param: "reviews", options: REVIEW_TIERS },
+      contact: { type: "option", param: "contact", options: EMAIL_FILTERS },
+    },
+    { pathname: "/businesses" },
+  );
+
+  const [searchInput, setSearchInput] = useState(() => q || "");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
 
   const claimedFilter = TAB_CLAIMED[activeTab] ?? null;
-  const searchQuery = debouncedSearch.trim();
+  const searchQuery = (q || "").trim();
   const scoreTierId = scoreTier?.id ?? null;
   const reviewsTierId = reviewsTier?.id ?? null;
   const emailFilterId = emailFilter?.id ?? null;
   const showTierFilters = activeTab === "all";
   const showReverseClaim = activeTab === "claimed";
+  const setFieldRef = useRef(setField);
+  setFieldRef.current = setField;
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -65,32 +88,25 @@ export default function BusinessesPageContent() {
   }, [isReady, accessToken, router]);
 
   useEffect(() => {
-    if (!searchParams.get("tab")) {
-      window.history.replaceState(
-        window.history.state,
-        "",
-        "/businesses?tab=all",
-      );
-    }
+    ensureQueryParam("tab", "all", "/businesses");
   }, [searchParams]);
 
   useEffect(() => {
     return subscribeToDashboardTab((tab) => {
       setActiveTab(resolveTab(tab));
-      setPage(1);
-      setScoreTier(null);
-      setReviewsTier(null);
-      setEmailFilter(null);
       setSelectedIds(new Set());
       setActionError(null);
     });
   }, []);
 
+  useEffect(() => {
+    setSearchInput(q || "");
+  }, [q]);
+
   const debouncedSetSearch = useMemo(
     () =>
       debounce((value) => {
-        setDebouncedSearch(value);
-        setPage(1);
+        setFieldRef.current("q", value);
         setSelectedIds(new Set());
       }, SEARCH_DEBOUNCE_MS),
     [],
@@ -108,36 +124,41 @@ export default function BusinessesPageContent() {
   const handleTabChange = (tab) => {
     const nextTab = resolveTab(tab);
     if (nextTab === activeTab) return;
-    setScoreTier(null);
-    setReviewsTier(null);
-    setEmailFilter(null);
     setSelectedIds(new Set());
     setActionError(null);
+    setFields(
+      {
+        q: "",
+        page: 1,
+        score: null,
+        reviews: null,
+        contact: null,
+      },
+      { resetPage: false },
+    );
+    setSearchInput("");
     replaceTab(nextTab, "/businesses");
   };
 
   const handleScoreTierChange = (tier) => {
-    setScoreTier(tier);
-    setPage(1);
+    setField("score", tier);
   };
 
   const handleReviewsTierChange = (tier) => {
-    setReviewsTier(tier);
-    setPage(1);
+    setField("reviews", tier);
   };
 
   const handleEmailFilterChange = (filter) => {
-    setEmailFilter(filter);
-    setPage(1);
+    setField("contact", filter);
   };
 
   const handlePreviousPage = () => {
-    setPage((prev) => Math.max(1, prev - 1));
+    setField("page", Math.max(1, page - 1));
     setSelectedIds(new Set());
   };
 
   const handleNextPage = () => {
-    setPage((prev) => prev + 1);
+    setField("page", page + 1);
     setSelectedIds(new Set());
   };
 

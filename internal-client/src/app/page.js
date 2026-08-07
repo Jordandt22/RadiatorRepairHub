@@ -10,11 +10,18 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/Auth.context";
 import { useLoading } from "@/contexts/Loading.context";
 import { fetchApi } from "@/lib/api/fetchApi";
+import { consumeLastPath } from "@/lib/lastPath";
 import PageFadeIn from "@/components/PageFadeIn";
 
 const loginSchema = Yup.object({
   password: Yup.string().trim().required("Password is required"),
 });
+
+const DEFAULT_POST_LOGIN = "/dashboard?tab=inbox";
+
+function resolvePostLoginPath() {
+  return consumeLastPath() ?? DEFAULT_POST_LOGIN;
+}
 
 export default function Home() {
   const router = useRouter();
@@ -23,7 +30,8 @@ export default function Home() {
 
   useEffect(() => {
     if (isReady && accessToken) {
-      router.replace("/dashboard?tab=inbox");
+      // Single consume so login + already-authed paths do not race to dashboard.
+      router.replace(resolvePostLoginPath());
     }
   }, [isReady, accessToken, router]);
 
@@ -46,7 +54,7 @@ export default function Home() {
         }
 
         setAccessToken(data.token);
-        router.push("/dashboard?tab=inbox");
+        // Redirect handled by the accessToken effect above.
       } finally {
         hideLoading();
         setSubmitting(false);

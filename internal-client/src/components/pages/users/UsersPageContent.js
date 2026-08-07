@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   useMutation,
@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/Auth.context";
 import { useLoading } from "@/contexts/Loading.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { debounce } from "@/lib/debounce";
+import useUrlQueryState from "@/hooks/useUrlQueryState";
 import UsersActions from "@/components/pages/users/UsersActions";
 import UsersDeleteConfirmDialog from "@/components/pages/users/UsersDeleteConfirmDialog";
 import UsersTable from "@/components/pages/users/UsersTable";
@@ -26,15 +27,23 @@ export default function UsersPageContent() {
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
   const { setLoading } = useLoading();
-  const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { q, page, setField } = useUrlQueryState(
+    {
+      q: { type: "string", param: "q" },
+      page: { type: "page" },
+    },
+    { pathname: "/users" },
+  );
+
+  const [searchInput, setSearchInput] = useState(() => q || "");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
 
-  const searchQuery = debouncedSearch.trim();
+  const searchQuery = (q || "").trim();
+  const setFieldRef = useRef(setField);
+  setFieldRef.current = setField;
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -42,11 +51,14 @@ export default function UsersPageContent() {
     }
   }, [isReady, accessToken, router]);
 
+  useEffect(() => {
+    setSearchInput(q || "");
+  }, [q]);
+
   const debouncedSetSearch = useMemo(
     () =>
       debounce((value) => {
-        setDebouncedSearch(value);
-        setPage(1);
+        setFieldRef.current("q", value);
         setSelectedIds(new Set());
       }, SEARCH_DEBOUNCE_MS),
     [],
@@ -62,12 +74,12 @@ export default function UsersPageContent() {
   };
 
   const handlePreviousPage = () => {
-    setPage((prev) => Math.max(1, prev - 1));
+    setField("page", Math.max(1, page - 1));
     setSelectedIds(new Set());
   };
 
   const handleNextPage = () => {
-    setPage((prev) => prev + 1);
+    setField("page", page + 1);
     setSelectedIds(new Set());
   };
 
@@ -183,14 +195,14 @@ export default function UsersPageContent() {
     });
   };
 
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
   const handleDeleteClick = () => {
     if (selectedIds.size === 0 || deleteMutation.isPending) return;
     setActionError(null);
     setConfirmOpen(true);
-  };
-
-  const handleClearSelection = () => {
-    setSelectedIds(new Set());
   };
 
   const handleConfirmDelete = () => {
