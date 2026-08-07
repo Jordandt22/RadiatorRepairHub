@@ -34,6 +34,7 @@ export default function OutreachHistoryActions({
             onValueChange={onOutreachTypeChange}
             placeholder="All campaign types"
             ariaLabel="Filter history by campaign type"
+            inputName="rrh-history-campaign-type"
             disabled={refreshPending}
           />
         </div>

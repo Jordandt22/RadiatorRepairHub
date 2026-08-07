@@ -30,53 +30,58 @@ export default function OutreachBrowseActions({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
           <BusinessTierCombobox
             items={CLAIM_ELIGIBILITY_FILTERS}
             value={claimEligibility}
             onValueChange={onClaimEligibilityChange}
             placeholder="All eligibility"
             ariaLabel="Filter by claim eligibility"
+            inputName="rrh-outreach-eligibility-filter"
             disabled={refreshPending}
           />
         </div>
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
           <BusinessTierCombobox
             items={WEBSITE_FILTERS}
             value={websiteFilter}
             onValueChange={onWebsiteFilterChange}
             placeholder="All websites"
             ariaLabel="Filter by website"
+            inputName="rrh-outreach-website-filter"
             disabled={refreshPending}
           />
         </div>
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
           <BusinessTierCombobox
             items={SENT_FILTERS}
             value={claimInviteSent}
             onValueChange={onClaimInviteSentChange}
             placeholder="Claim invite"
             ariaLabel="Filter by claim invite sent"
+            inputName="rrh-outreach-claim-invite-sent"
             disabled={refreshPending}
           />
         </div>
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
           <BusinessTierCombobox
             items={SENT_FILTERS}
             value={claimFollowupSent}
             onValueChange={onClaimFollowupSentChange}
             placeholder="Claim follow-up"
             ariaLabel="Filter by claim follow-up sent"
+            inputName="rrh-outreach-claim-followup-sent"
             disabled={refreshPending}
           />
         </div>
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
           <BusinessTierCombobox
             items={SENT_FILTERS}
             value={websiteOfferSent}
             onValueChange={onWebsiteOfferSentChange}
             placeholder="Website offer"
             ariaLabel="Filter by website offer sent"
+            inputName="rrh-outreach-website-offer-sent"
             disabled={refreshPending}
           />
         </div>
@@ -86,8 +91,10 @@ export default function OutreachBrowseActions({
             type="search"
             value={searchValue}
             onChange={(e) => onSearchChange?.(e.target.value)}
-            placeholder="Search title, slug, email, phone…"
+            placeholder="Search title, slug, contact, phone…"
             aria-label="Search outreach businesses"
+            name="rrh-outreach-browse-search"
+            autoComplete="off"
             className="rounded-full pl-9"
           />
         </div>
@@ -98,7 +105,7 @@ export default function OutreachBrowseActions({
           onClick={onRefresh}
           aria-label="Refresh"
           className={cn(
-            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:translate-y-[-2px] hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:ml-auto md:px-6",
+            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:ml-auto md:px-6",
           )}
         >
           <RefreshCwIcon

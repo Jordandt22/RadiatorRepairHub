@@ -22,7 +22,7 @@ import Pagination from "@/components/pages/dashboard/Pagination";
 const PAGE_LIMIT = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
-function parseEmailsSentFilter(item) {
+function parseBoolFilter(item) {
   if (!item?.id) return null;
   if (item.id === "true") return true;
   if (item.id === "false") return false;
@@ -38,6 +38,7 @@ export default function EmailCleanerPageContent() {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [emailsSent, setEmailsSent] = useState(null);
+  const [suspicious, setSuspicious] = useState(null);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -47,7 +48,8 @@ export default function EmailCleanerPageContent() {
   const [refreshError, setRefreshError] = useState(null);
 
   const searchQuery = debouncedSearch.trim();
-  const emailsSentValue = parseEmailsSentFilter(emailsSent);
+  const emailsSentValue = parseBoolFilter(emailsSent);
+  const suspiciousValue = parseBoolFilter(suspicious);
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -80,6 +82,12 @@ export default function EmailCleanerPageContent() {
     setSelectedIds(new Set());
   };
 
+  const handleSuspiciousChange = (value) => {
+    setSuspicious(value);
+    setPage(1);
+    setSelectedIds(new Set());
+  };
+
   const handlePreviousPage = () => {
     setPage((prev) => Math.max(1, prev - 1));
     setSelectedIds(new Set());
@@ -96,6 +104,7 @@ export default function EmailCleanerPageContent() {
       page,
       searchQuery,
       emailsSentValue,
+      suspiciousValue,
     ],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -107,6 +116,9 @@ export default function EmailCleanerPageContent() {
       }
       if (emailsSentValue !== null) {
         params.set("emails_sent", String(emailsSentValue));
+      }
+      if (suspiciousValue !== null) {
+        params.set("suspicious", String(suspiciousValue));
       }
 
       const result = await fetchApi(
@@ -264,9 +276,14 @@ export default function EmailCleanerPageContent() {
   const totalPages = data?.totalPages ?? 0;
   const hasSelection = selectedIds.size > 0;
   const actionDisabled = !hasSelection || clearEmailsMutation.isPending;
+  const suspiciousOnPage = businesses.filter(
+    (row) => (row.suspicion_reasons ?? []).length > 0,
+  );
+  const selectSuspiciousDisabled =
+    suspiciousOnPage.length === 0 || clearEmailsMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
   const hasSearch = Boolean(searchQuery);
-  const hasFilters = emailsSentValue !== null;
+  const hasFilters = emailsSentValue !== null || suspiciousValue !== null;
 
   const handleToggleId = (id, checked) => {
     setSelectedIds((prev) => {
@@ -283,6 +300,16 @@ export default function EmailCleanerPageContent() {
       for (const row of businesses) {
         if (checked) next.add(row.id);
         else next.delete(row.id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectSuspicious = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      for (const row of suspiciousOnPage) {
+        next.add(row.id);
       }
       return next;
     });
@@ -338,9 +365,13 @@ export default function EmailCleanerPageContent() {
           onSearchChange={handleSearchChange}
           emailsSent={emailsSent}
           onEmailsSentChange={handleEmailsSentChange}
+          suspicious={suspicious}
+          onSuspiciousChange={handleSuspiciousChange}
           selectedCount={selectedIds.size}
           actionDisabled={actionDisabled}
+          selectSuspiciousDisabled={selectSuspiciousDisabled}
           onDeleteEmails={handleDeleteEmailsClick}
+          onSelectSuspicious={handleSelectSuspicious}
           onClearSelection={handleClearSelection}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}

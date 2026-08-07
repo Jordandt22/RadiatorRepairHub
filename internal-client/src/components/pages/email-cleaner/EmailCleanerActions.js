@@ -1,12 +1,23 @@
-import { MailXIcon, RefreshCwIcon, SearchIcon, XIcon } from "lucide-react";
+import {
+  MailXIcon,
+  RefreshCwIcon,
+  SearchIcon,
+  ShieldAlertIcon,
+  XIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
 
 export const EMAILS_SENT_FILTERS = [
-  { id: "true", label: "Emails Sent" },
-  { id: "false", label: "No Emails Sent" },
+  { id: "true", label: "Outreach sent" },
+  { id: "false", label: "Not sent" },
+];
+
+export const SUSPICIOUS_FILTERS = [
+  { id: "true", label: "Suspicious" },
+  { id: "false", label: "Looks fine" },
 ];
 
 function ActionButton({
@@ -26,7 +37,7 @@ function ActionButton({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:translate-y-[-2px] hover:shadow-md max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+        "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
         className,
       )}
     >
@@ -41,9 +52,13 @@ export default function EmailCleanerActions({
   onSearchChange,
   emailsSent = null,
   onEmailsSentChange,
+  suspicious = null,
+  onSuspiciousChange,
   selectedCount = 0,
   actionDisabled = true,
+  selectSuspiciousDisabled = true,
   onDeleteEmails,
+  onSelectSuspicious,
   onClearSelection,
   onRefresh,
   refreshPending = false,
@@ -62,6 +77,12 @@ export default function EmailCleanerActions({
           className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
         />
         <ActionButton
+          label="Select suspicious"
+          icon={ShieldAlertIcon}
+          disabled={selectSuspiciousDisabled || deletePending}
+          onClick={onSelectSuspicious}
+        />
+        <ActionButton
           label="Clear"
           icon={XIcon}
           disabled={selectedCount === 0 || deletePending}
@@ -72,13 +93,25 @@ export default function EmailCleanerActions({
             {selectedCount} selected
           </span>
         ) : null}
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:ml-auto md:max-w-xs">
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-36 md:ml-auto md:max-w-44">
           <BusinessTierCombobox
             items={EMAILS_SENT_FILTERS}
             value={emailsSent}
             onValueChange={onEmailsSentChange}
             placeholder="All sent status"
             ariaLabel="Filter by sent status"
+            inputName="rrh-cleaner-sent-filter"
+            disabled={refreshPending || deletePending}
+          />
+        </div>
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-36 md:max-w-44">
+          <BusinessTierCombobox
+            items={SUSPICIOUS_FILTERS}
+            value={suspicious}
+            onValueChange={onSuspiciousChange}
+            placeholder="All contacts"
+            ariaLabel="Filter by suspicious contacts"
+            inputName="rrh-cleaner-suspicious-filter"
             disabled={refreshPending || deletePending}
           />
         </div>
@@ -88,8 +121,10 @@ export default function EmailCleanerActions({
             type="search"
             value={searchValue}
             onChange={(e) => onSearchChange?.(e.target.value)}
-            placeholder="Search title, slug, email…"
-            aria-label="Search businesses with emails"
+            placeholder="Search title, slug, contact…"
+            aria-label="Search businesses with contacts"
+            name="rrh-cleaner-search"
+            autoComplete="off"
             className="rounded-full pl-9"
           />
         </div>

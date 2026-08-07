@@ -41,7 +41,7 @@ export default function BusinessActions({
               onClick={onReverseClaim}
               aria-label="Reverse claim"
               className={cn(
-                "shrink-0 cursor-pointer rounded-full border-destructive text-destructive transition-all duration-300 hover:translate-y-[-2px] hover:bg-destructive/10 hover:text-destructive hover:shadow-md max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+                "shrink-0 cursor-pointer rounded-full border-destructive text-destructive transition-all duration-300 hover:-translate-y-0.5 hover:bg-destructive/10 hover:text-destructive hover:shadow-md max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
               )}
             >
               <Undo2Icon />
@@ -56,33 +56,36 @@ export default function BusinessActions({
         ) : null}
         {showTierFilters ? (
           <>
-            <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+            <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
               <BusinessTierCombobox
                 items={SCORE_TIERS}
                 value={scoreTier}
                 onValueChange={onScoreTierChange}
                 placeholder="All scores"
                 ariaLabel="Filter by score"
+                inputName="rrh-business-score-filter"
                 disabled={refreshPending}
               />
             </div>
-            <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+            <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
               <BusinessTierCombobox
                 items={REVIEW_TIERS}
                 value={reviewsTier}
                 onValueChange={onReviewsTierChange}
                 placeholder="All reviews"
                 ariaLabel="Filter by reviews"
+                inputName="rrh-business-reviews-filter"
                 disabled={refreshPending}
               />
             </div>
-            <div className="min-w-0 w-full sm:w-auto sm:min-w-[10rem] md:max-w-xs">
+            <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
               <BusinessTierCombobox
                 items={EMAIL_FILTERS}
                 value={emailFilter}
                 onValueChange={onEmailFilterChange}
-                placeholder="All emails"
-                ariaLabel="Filter by email"
+                placeholder="All contacts"
+                ariaLabel="Filter by contact"
+                inputName="rrh-listing-contact-filter"
                 disabled={refreshPending}
               />
             </div>
@@ -99,7 +102,9 @@ export default function BusinessActions({
             type="search"
             value={searchValue}
             onChange={(e) => onSearchChange?.(e.target.value)}
-            placeholder="Search title, slug, email, phone…"
+            placeholder="Search title, slug, contact, phone…"
+            name="rrh-businesses-search"
+            autoComplete="off"
             aria-label="Search businesses"
             className="rounded-full pl-9"
           />
@@ -111,7 +116,7 @@ export default function BusinessActions({
           onClick={onRefresh}
           aria-label="Refresh"
           className={cn(
-            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:translate-y-[-2px] hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
             !showReverseClaim && "md:ml-auto",
           )}
         >
