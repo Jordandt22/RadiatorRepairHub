@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import FAQSection from "@/components/seo/FAQSection";
 import PageHeader from "@/components/layout/Header/PageHeader";
-import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import { FAQ_KEYWORDS } from "@/lib/seo/keywords";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -332,8 +331,6 @@ export default async function FAQPage() {
           </div>
         </div>
       </section>
-
-      <BranchBoundBanner />
     </div>
   );
 }

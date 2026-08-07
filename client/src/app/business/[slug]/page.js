@@ -19,7 +19,6 @@ import AboutSection from "@/components/businesses/AboutSection";
 import BusinessHoursSection from "@/components/businesses/BusinessHoursSection";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
-import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 import {
   DEFAULT_OG_IMAGE,
@@ -483,8 +482,6 @@ async function Page({ params }) {
             <DirectoryDisclaimer className="mt-8" />
           </div>
         </div>
-
-        <BranchBoundBanner />
       </>
     );
   } catch {

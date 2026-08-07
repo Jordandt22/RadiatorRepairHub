@@ -1,6 +1,5 @@
 import React from "react";
 import StatesPage from "@/components/pages/states/StatesPage";
-import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 import STATES from "@/lib/data/states";
 
 export const metadata = {
@@ -70,7 +69,6 @@ async function Page() {
         }}
       />
       <StatesPage />
-      <BranchBoundBanner />
     </>
   );
 }

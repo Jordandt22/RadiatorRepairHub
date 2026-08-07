@@ -1,6 +1,5 @@
 import React from "react";
 import CategoriesPage from "@/components/pages/categories/CategoriesPage";
-import BranchBoundBanner from "@/components/promo/BranchBoundBanner";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import { fetchPrimaryCategories } from "@/lib/api/categories";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
@@ -98,8 +97,6 @@ async function Page() {
           </div>
         </section>
       ) : null}
-
-      <BranchBoundBanner />
     </>
   );
 }
