@@ -13,6 +13,7 @@ import { formatFullDate } from "@/components/pages/dashboard/formatDate";
 
 const REASON_LABELS = {
   wrong_claim_contact: "Wrong claim contact",
+  incorrect_outdated: "Incorrect or outdated info",
   inappropriate: "Inappropriate or misleading content",
 };
 

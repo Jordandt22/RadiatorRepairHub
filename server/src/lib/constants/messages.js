@@ -245,12 +245,64 @@ export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
 
 const LISTING_REPORT_REASON_LABELS = {
   wrong_claim_contact: "Wrong claim contact info",
+  incorrect_outdated: "Incorrect or outdated info",
   inappropriate: "Inappropriate or misleading content",
 };
 
 export const formatListingReportReasonLabel = (reason) => {
   return LISTING_REPORT_REASON_LABELS[reason] ?? reason ?? "N/A";
 };
+
+const escapeEmailHtml = (value) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+// Confirmation email sent to the reporter after a listing report is submitted
+export const LISTING_REPORT_RECEIVED_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `We received your report for ${businessName ?? "a listing"}`,
+  html: (
+    reporterName,
+    businessName,
+    { reason, details, businessPageUrl } = {},
+  ) => {
+    const safeName = escapeEmailHtml(reporterName?.trim() || "there");
+    const safeBusiness = escapeEmailHtml(businessName ?? "the listing");
+    const reasonLabel = escapeEmailHtml(formatListingReportReasonLabel(reason));
+    const safeDetails = escapeEmailHtml(details ?? "").replace(/\n/g, "<br>");
+    const listingLink = businessPageUrl
+      ? `<p>View the listing:<br>
+  <a href="${escapeEmailHtml(businessPageUrl)}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl)}</a></p>`
+      : "";
+
+    return `
+  <p>Hi ${safeName},</p>
+
+  <p>Thanks for reporting info through RadiatorRepairHub. We received your report for <strong>${safeBusiness}</strong> and will review it soon.</p>
+
+  <p><strong>What You Submitted:</strong></p>
+  <table style="width: 100%; border-collapse: collapse; margin: 12px 0 20px;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 100px; vertical-align: top;">Reason:</td>
+      <td style="padding: 8px 0;">${reasonLabel}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Details:</td>
+      <td style="padding: 8px 0;">${safeDetails || "N/A"}</td>
+    </tr>
+  </table>
+
+  <p>If the listing needs an update, we'll make the change when appropriate.</p>
+
+  ${listingLink}
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `;
+  },
+});
 
 // Admin notification when a listing report is submitted
 export const ADMIN_NEW_LISTING_REPORT_MESSAGE = Object.freeze({

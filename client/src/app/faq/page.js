@@ -140,7 +140,7 @@ export default async function FAQPage() {
     {
       question: "How do I report incorrect or inappropriate listing information?",
       answer:
-        "On the business page, use Report Info under Contact Information. You can report wrong claim contact details (and suggest corrections) or inappropriate listing content. You can also reach us through the contact page and choose Report a Listing Problem.",
+        "On the business page, use Report Info under Contact Information. You can report wrong claim contact details (and suggest corrections), incorrect or outdated listing info, or inappropriate listing content. You can also reach us through the contact page and choose Report a Listing Problem.",
     },
     {
       question: "What's included in radiator servicing?",

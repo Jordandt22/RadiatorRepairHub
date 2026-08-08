@@ -12,6 +12,7 @@ import { verifyEmailReputation } from "../abstract/emailReputation.js";
 import { resendClient } from "../resend/resend.js";
 import {
   ADMIN_NEW_LISTING_REPORT_MESSAGE,
+  LISTING_REPORT_RECEIVED_MESSAGE,
   SENDER_NAME,
   buildBusinessClaimLink,
 } from "../lib/constants/messages.js";
@@ -98,36 +99,61 @@ export const createListingReport = async (req, res) => {
   const { SENDER_EMAIL, RESEND_API_KEY, ADMIN_EMAIL, INTERNAL_CLIENT_URL } =
     process.env;
 
-  if (RESEND_API_KEY && SENDER_EMAIL && ADMIN_EMAIL) {
-    const adminQueueBase = (INTERNAL_CLIENT_URL || "").replace(/\/$/, "");
-    const adminQueueUrl = adminQueueBase
-      ? `${adminQueueBase}/listing-reports?tab=pending`
-      : null;
+  if (RESEND_API_KEY && SENDER_EMAIL) {
     const businessPageUrl = buildBusinessClaimLink(business.slug);
 
-    const { error: adminSendError } = await resendClient().emails.send({
+    const { error: reporterSendError } = await resendClient().emails.send({
       from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
-      to: [ADMIN_EMAIL],
-      subject: ADMIN_NEW_LISTING_REPORT_MESSAGE.subject(business.title),
-      html: ADMIN_NEW_LISTING_REPORT_MESSAGE.html(business.title, {
-        reason,
-        details: payload.details,
-        reporterName: payload.reporter_name,
-        reporterEmail: trimmedEmail,
-        suggestedPhone: payload.suggested_phone,
-        suggestedEmail: payload.suggested_email,
-        businessPageUrl,
-        adminQueueUrl,
-        listingPhone: business.phone ?? null,
-        listingEmail: business.email ?? null,
-      }),
+      to: [trimmedEmail],
+      subject: LISTING_REPORT_RECEIVED_MESSAGE.subject(business.title),
+      html: LISTING_REPORT_RECEIVED_MESSAGE.html(
+        payload.reporter_name,
+        business.title,
+        {
+          reason,
+          details: payload.details,
+          businessPageUrl,
+        }
+      ),
     });
 
-    if (adminSendError && process.env.NODE_ENV === "development") {
+    if (reporterSendError && process.env.NODE_ENV === "development") {
       console.error(
-        "Failed to send listing report admin email:",
-        adminSendError
+        "Failed to send listing report confirmation email:",
+        reporterSendError
       );
+    }
+
+    if (ADMIN_EMAIL) {
+      const adminQueueBase = (INTERNAL_CLIENT_URL || "").replace(/\/$/, "");
+      const adminQueueUrl = adminQueueBase
+        ? `${adminQueueBase}/listing-reports?tab=pending`
+        : null;
+
+      const { error: adminSendError } = await resendClient().emails.send({
+        from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+        to: [ADMIN_EMAIL],
+        subject: ADMIN_NEW_LISTING_REPORT_MESSAGE.subject(business.title),
+        html: ADMIN_NEW_LISTING_REPORT_MESSAGE.html(business.title, {
+          reason,
+          details: payload.details,
+          reporterName: payload.reporter_name,
+          reporterEmail: trimmedEmail,
+          suggestedPhone: payload.suggested_phone,
+          suggestedEmail: payload.suggested_email,
+          businessPageUrl,
+          adminQueueUrl,
+          listingPhone: business.phone ?? null,
+          listingEmail: business.email ?? null,
+        }),
+      });
+
+      if (adminSendError && process.env.NODE_ENV === "development") {
+        console.error(
+          "Failed to send listing report admin email:",
+          adminSendError
+        );
+      }
     }
   }
 

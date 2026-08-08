@@ -48,7 +48,7 @@ function TermsPage() {
     "General contact forms for directory questions, listing help, and feedback",
     "Quick Contact, a tool to submit service inquiries to listed businesses",
     "Business claiming, so eligible owners can verify listing email access and create an account to manage their listing",
-    "Report Info, a tool to report incorrect claim contact details or inappropriate listing content",
+    "Report Info, a tool to report incorrect claim contact details, incorrect or outdated listing info, or inappropriate listing content",
   ];
 
   const quickContactTermsPoints = [
@@ -92,7 +92,7 @@ function TermsPage() {
     "Submit general inquiries through our site contact forms",
     "Submit service inquiries to listed businesses through Quick Contact, subject to review",
     "Claim an eligible business listing you are authorized to represent, and manage that listing through your account",
-    "Report incorrect claim contact information or inappropriate listing content through Report Info",
+    "Report incorrect claim contact information, incorrect or outdated listing info, or inappropriate listing content through Report Info",
     "Access publicly available information about listed businesses",
   ];
 
@@ -539,9 +539,10 @@ function TermsPage() {
           </h2>
           <p className="mt-4 text-gray-700 leading-relaxed">
             Our Service includes Report Info on business listing pages so users
-            can report wrong claim contact information or inappropriate listing
-            content. You may also report listing problems through our contact
-            form. By submitting a report, you agree to the following:
+            can report wrong claim contact information, incorrect or outdated
+            listing details, or inappropriate listing content. You may also
+            report listing problems through our contact form. By submitting a
+            report, you agree to the following:
           </p>
           <ul className="mt-4 text-gray-700 space-y-2">
             {listingReportTermsPoints.map((point, index) => (
