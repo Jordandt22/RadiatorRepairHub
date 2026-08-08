@@ -10,6 +10,7 @@ import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EmailScrapeStatusBadge from "@/components/pages/email-scrape/EmailScrapeStatusBadge";
+import EmailCleanerStatusBadge from "@/components/pages/email-cleaner/EmailCleanerStatusBadge";
 import EmailScrapeTableSkeleton from "@/components/pages/email-scrape/EmailScrapeTableSkeleton";
 import IngestCountBadge from "@/components/pages/add-businesses/IngestCountBadge";
 import IngestPayloadTable from "@/components/pages/add-businesses/IngestPayloadTable";
@@ -22,7 +23,7 @@ const OUTCOME_COLUMNS = [
   {
     key: "title",
     label: "Title",
-    className: "w-[24%]",
+    className: "w-[20%]",
     render: (row) => (
       <span className="block truncate font-semibold">{row.title || "—"}</span>
     ),
@@ -30,19 +31,30 @@ const OUTCOME_COLUMNS = [
   {
     key: "website",
     label: "Website",
-    className: "w-[20%]",
+    className: "w-[16%]",
     getValue: (row) => row.website || "—",
   },
   {
     key: "status",
-    label: "Status",
-    className: "w-[14%]",
+    label: "Outcome",
+    className: "w-[12%]",
     render: (row) => <EmailScrapeStatusBadge status={row.status} />,
+  },
+  {
+    key: "email_status",
+    label: "Email status",
+    className: "w-[14%]",
+    render: (row) =>
+      row.email_status ? (
+        <EmailCleanerStatusBadge status={row.email_status} />
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
   },
   {
     key: "email",
     label: "Email",
-    className: "w-[22%]",
+    className: "w-[18%]",
     getValue: (row) => row.email || "—",
   },
   {

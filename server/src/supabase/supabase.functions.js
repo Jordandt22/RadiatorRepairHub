@@ -11,6 +11,10 @@ import {
   getReviewTier,
 } from "../lib/adminBusinessTiers.js";
 import { getSuspiciousEmailReasons } from "../lib/suspiciousEmail.js";
+import {
+  buildIlikeOrFilter,
+  sanitizeIlikeSearch,
+} from "../lib/sanitizeSearch.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*), business_images(image_id, is_primary)`;
 const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_images(image_id, is_primary)`;
@@ -529,16 +533,7 @@ const ADMIN_BUSINESS_SELECT =
 
 const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords`;
 
-const sanitizeAdminBusinessSearch = (q) => {
-  if (!q) return null;
-  // Strip LIKE wildcards and PostgREST .or() reserved chars. Keep "." and "@"
-  // so full emails/domains still match.
-  return q
-    .replace(/[%_,()\"'\\]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 100);
-};
+const sanitizeAdminBusinessSearch = (q) => sanitizeIlikeSearch(q);
 
 const getAuthEmailsByUids = async (uids) => {
   const unique = [...new Set((uids ?? []).filter(Boolean))];
@@ -722,9 +717,8 @@ export const getAdminBusinesses = async (
 
   const sanitized = sanitizeAdminBusinessSearch(q);
   if (sanitized) {
-    const pattern = `%${sanitized}%`;
     query = query.or(
-      `title.ilike."${pattern}",slug.ilike."${pattern}",email.ilike."${pattern}",phone.ilike."${pattern}"`
+      buildIlikeOrFilter(["title", "slug", "email", "phone"], sanitized)
     );
   }
 
@@ -850,10 +844,7 @@ export const getAdminBusinessesWithEmails = async (
 
   const sanitized = sanitizeAdminBusinessSearch(q);
   if (sanitized) {
-    const pattern = `%${sanitized}%`;
-    query = query.or(
-      `title.ilike."${pattern}",slug.ilike."${pattern}",email.ilike."${pattern}"`
-    );
+    query = query.or(buildIlikeOrFilter(["title", "slug", "email"], sanitized));
   }
 
   let rows = [];
@@ -2929,9 +2920,8 @@ const applyOutreachBusinessFilters = (
 
   const sanitized = sanitizeAdminBusinessSearch(q);
   if (sanitized) {
-    const pattern = `%${sanitized}%`;
     next = next.or(
-      `title.ilike."${pattern}",slug.ilike."${pattern}",email.ilike."${pattern}",phone.ilike."${pattern}"`
+      buildIlikeOrFilter(["title", "slug", "email", "phone"], sanitized)
     );
   }
 
@@ -3181,9 +3171,11 @@ export const getOutreachHistory = async (
 
   const sanitized = sanitizeAdminBusinessSearch(q);
   if (sanitized) {
-    const pattern = `%${sanitized}%`;
     query = query.or(
-      `title.ilike."${pattern}",slug.ilike."${pattern}",recipient.ilike."${pattern}",subject.ilike."${pattern}"`
+      buildIlikeOrFilter(
+        ["title", "slug", "recipient", "subject"],
+        sanitized
+      )
     );
   }
 
@@ -3228,9 +3220,11 @@ export const getOutreachHistoryMatchingIds = async ({
 
   const sanitized = sanitizeAdminBusinessSearch(q);
   if (sanitized) {
-    const pattern = `%${sanitized}%`;
     query = query.or(
-      `title.ilike."${pattern}",slug.ilike."${pattern}",recipient.ilike."${pattern}",subject.ilike."${pattern}"`
+      buildIlikeOrFilter(
+        ["title", "slug", "recipient", "subject"],
+        sanitized
+      )
     );
   }
 

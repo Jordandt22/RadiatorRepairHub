@@ -90,6 +90,7 @@ async function processBusiness(business) {
       ...base,
       status,
       reason,
+      email_status: reason === "no_email_found" ? "unable_to_find" : null,
       error: result.error ?? null,
       pages_scraped: result.pages_scraped ?? [],
     };

@@ -37,6 +37,7 @@ const JUNK_DOMAINS = new Set([
   "indiantypefoundry.com",
   "latofonts.com",
   "mhtml.blink",
+  "paradox.ai",
 ]);
 
 const JUNK_DOMAIN_SUFFIXES = [
@@ -53,9 +54,11 @@ const DIRECTORY_DOMAIN_TOKENS = [
   "locmaps",
   "uscmaps",
   "pixelmotion",
+  "pixelspread",
   "webador",
   "bfrc",
   "bbemail",
+  "sansoxygen",
 ];
 
 const PLACEHOLDER_EMAILS = new Set([
@@ -67,6 +70,8 @@ const PLACEHOLDER_EMAILS = new Set([
   "your@email.com",
   "someone@example.com",
   "test@test.com",
+  "smshelp@paradox.ai",
+  "name@hotmail.com",
 ]);
 
 /** @returns {string|null} reason if junk, otherwise null */
@@ -83,7 +88,11 @@ export function getJunkReason(email) {
 
   // Accessibility widget / overlay vendor addresses (e.g. accessiBe-style)
   if (lower.includes("accessibility")) return "accessibility_vendor";
-  if (lower.includes("testaccount") || lower.includes("webmaster")) {
+  if (
+    lower.includes("testaccount") ||
+    lower.includes("webmaster") ||
+    lower.includes("your.email")
+  ) {
     return "junk_local";
   }
 
