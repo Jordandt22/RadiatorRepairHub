@@ -6,6 +6,7 @@ import BusinessImage from "@/components/businesses/BusinessImage";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
 import VerifiedBadge from "@/components/businesses/VerifiedBadge";
 import { Button } from "@/components/ui/button";
+import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 
 function DetailedBusinessCard({ business }) {
   return (
@@ -19,7 +20,7 @@ function DetailedBusinessCard({ business }) {
           imageId={business.primary_image_id}
           cdnStored={Boolean(business.cdn_stored)}
           alt={business.title}
-          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+          sizes={BUSINESS_CARD_IMAGE_SIZES}
         />
         {business.is_claimed ? (
           <div className="absolute top-3 left-3 z-10">

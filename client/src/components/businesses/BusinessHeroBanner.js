@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CldImage } from "next-cloudinary";
 import {
   bypassImageOptimizer,
+  BUSINESS_HERO_IMAGE_SIZES,
   getCloudinaryPublicId,
 } from "@/lib/images";
 
@@ -16,7 +17,7 @@ export default function BusinessHeroBanner({
   cdnStored = false,
   alt,
   children,
-  sizes = "(max-width: 768px) 100vw, 100vw",
+  sizes = BUSINESS_HERO_IMAGE_SIZES,
 }) {
   const publicId = getCloudinaryPublicId({
     businessId,
@@ -46,7 +47,9 @@ export default function BusinessHeroBanner({
               className="object-cover object-center"
               priority
               crop="fill"
-              gravity="auto"
+              gravity="center"
+              format="auto"
+              quality="auto:good"
               onError={() => setSource(hasRemote ? "remote" : "none")}
             />
           ) : (

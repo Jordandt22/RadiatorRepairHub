@@ -91,7 +91,9 @@ function BusinessImage({
         className={className}
         priority={priority}
         crop="fill"
-        gravity="auto"
+        gravity="center"
+        format="auto"
+        quality="auto:eco"
         onError={() => setSource(hasRemote ? "remote" : "none")}
       />
     );

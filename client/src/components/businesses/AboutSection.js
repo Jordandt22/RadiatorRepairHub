@@ -16,6 +16,7 @@ import { ToastProvider, useToast } from "@/contexts/ToastProvider";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import { updateBusinessAbout } from "@/lib/api/businessAbout";
+import { BUSINESS_ABOUT_IMAGE_SIZES } from "@/lib/images";
 
 export const ABOUT_MAX_LENGTH = 750;
 
@@ -154,7 +155,7 @@ function AboutSectionContent({
             imageId={imageId}
             cdnStored={Boolean(cdnStored)}
             alt={imageAlt}
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            sizes={BUSINESS_ABOUT_IMAGE_SIZES}
             className="object-cover object-center"
             iconSize="sm"
           />

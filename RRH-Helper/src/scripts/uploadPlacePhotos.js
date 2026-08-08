@@ -250,6 +250,10 @@ function uploadBufferToCloudinary(buffer, placeId) {
         public_id: `business/${placeId}`,
         overwrite: true,
         resource_type: "image",
+        // Keep stored originals small (storage + future bandwidth).
+        transformation: [
+          { width: 1200, crop: "limit", quality: "auto:good" },
+        ],
       },
       (err, result) => {
         if (err) reject(err);

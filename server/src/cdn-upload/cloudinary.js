@@ -2,6 +2,11 @@ import { v2 as cloudinary } from "cloudinary";
 
 let configured = false;
 
+/** Cap stored originals so storage/bandwidth stay bounded. */
+export const BUSINESS_IMAGE_UPLOAD_TRANSFORMATION = [
+  { width: 1200, crop: "limit", quality: "auto:good" },
+];
+
 export function getCloudinaryEnvFolder() {
   return process.env.NODE_ENV === "production" ? "prod" : "dev";
 }
@@ -36,6 +41,7 @@ export function configureCloudinary() {
 /**
  * Upload with both public_id (delivery path) and asset_folder (Media Library tree).
  * Dynamic-folder Cloudinary accounts need asset_folder to show env/business folders.
+ * Incoming transform recompresses/resizes so the stored original stays small.
  */
 export function uploadBufferToCloudinary(buffer, { publicId, assetFolder }) {
   configureCloudinary();
@@ -47,6 +53,7 @@ export function uploadBufferToCloudinary(buffer, { publicId, assetFolder }) {
         asset_folder: assetFolder,
         overwrite: true,
         resource_type: "image",
+        transformation: BUSINESS_IMAGE_UPLOAD_TRANSFORMATION,
       },
       (err, result) => {
         if (err) reject(err);
