@@ -8,6 +8,7 @@ const JUNK_LOCAL_PARTS = new Set([
   "bootstrap",
   "bootstrap-icons",
   "intl-segmenter",
+  "maplibre-gl",
 ]);
 
 const JUNK_DOMAINS = new Set([
@@ -38,6 +39,7 @@ const JUNK_DOMAINS = new Set([
   "latofonts.com",
   "mhtml.blink",
   "paradox.ai",
+  "yocale.com",
 ]);
 
 const JUNK_DOMAIN_SUFFIXES = [
@@ -59,6 +61,7 @@ const DIRECTORY_DOMAIN_TOKENS = [
   "bfrc",
   "bbemail",
   "sansoxygen",
+  "wylerleads",
 ];
 
 const PLACEHOLDER_EMAILS = new Set([
@@ -72,6 +75,13 @@ const PLACEHOLDER_EMAILS = new Set([
   "test@test.com",
   "smshelp@paradox.ai",
   "name@hotmail.com",
+  "office@legit.com",
+  "johnsmith@gmail.com",
+  "news@drivenbrands.com",
+  "leads@loho.wylerleads.com",
+  "maplibre-gl@4.x",
+  "john@advancedlocal.com",
+  "websitecontact@maah.global",
 ]);
 
 /** @returns {string|null} reason if junk, otherwise null */
@@ -141,11 +151,13 @@ export function getJunkReason(email) {
     }
   }
 
-  // npm/CDN version strings mistaken for emails: bootstrap@5.3.3
+  // npm/CDN version strings mistaken for emails: bootstrap@5.3.3, maplibre-gl@4.x
   const labels = domain.split(".");
   const tld = labels[labels.length - 1];
   if (/^\d+$/.test(tld)) return "version_string";
   if (/^\d+(\.\d+)+$/.test(domain)) return "version_string";
+  if (/^\d+\.x$/i.test(domain)) return "version_string";
+  if (/^[a-z0-9._-]+@\d+(\.\d+)*\.?x?$/i.test(lower)) return "version_string";
 
   if (
     domain.endsWith(".png") ||
