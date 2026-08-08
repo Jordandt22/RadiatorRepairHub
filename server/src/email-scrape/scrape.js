@@ -11,10 +11,8 @@ import {
 import { isJunkEmail } from "./emailFilters.js";
 import { getSuspiciousEmailReasons } from "../lib/suspiciousEmail.js";
 
-const HIGH_CONFIDENCE_SUSPICIOUS = new Set([
+const HARD_REJECT_SUSPICIOUS = new Set([
   "invalid_format",
-  "mostly_digits",
-  "long_digit_run",
   "disposable_domain",
 ]);
 
@@ -77,11 +75,14 @@ export function buildPageUrls(websiteUrl) {
   return urls;
 }
 
-/** Reject helper-junk plus high-confidence digit/disposable spam. */
+/**
+ * Hard-reject junk plus clearly unusable addresses.
+ * Soft signals (digits, random local, unrelated, etc.) are kept for review.
+ */
 export function isRejectedEmail(email, businessTitle = "") {
   if (isJunkEmail(email)) return true;
   const reasons = getSuspiciousEmailReasons(email, businessTitle);
-  return reasons.some((code) => HIGH_CONFIDENCE_SUSPICIOUS.has(code));
+  return reasons.some((code) => HARD_REJECT_SUSPICIOUS.has(code));
 }
 
 function extractEmailsFromHtml(html, businessTitle = "") {
@@ -118,6 +119,16 @@ export function pickBestEmail(candidates, websiteUrl) {
   if (domainMatch) return domainMatch;
 
   return candidates[0];
+}
+
+function successResult(email, sourcePage, pagesScraped, businessTitle) {
+  return {
+    ok: true,
+    email,
+    suspicion_reasons: getSuspiciousEmailReasons(email, businessTitle),
+    source_page: sourcePage,
+    pages_scraped: pagesScraped,
+  };
 }
 
 function looksBlocked(status, html) {
@@ -166,7 +177,8 @@ async function fetchPage(url) {
 
 /**
  * Scrape a business website for a usable email.
- * @returns {{ ok: true, email: string, source_page: string, pages_scraped: string[] }
+ * Soft-suspicious addresses are returned with suspicion_reasons (caller may mark status).
+ * @returns {{ ok: true, email: string, suspicion_reasons: string[], source_page: string, pages_scraped: string[] }
  *   | { ok: false, reason: string, pages_scraped: string[], error?: string }}
  */
 export async function scrapeBusinessWebsite(websiteRaw, businessTitle = "") {
@@ -238,12 +250,7 @@ export async function scrapeBusinessWebsite(websiteRaw, businessTitle = "") {
         websiteUrl
       );
       if (email) {
-        return {
-          ok: true,
-          email,
-          source_page: sourcePage,
-          pages_scraped: pagesScraped,
-        };
+        return successResult(email, sourcePage, pagesScraped, businessTitle);
       }
     }
   }
@@ -252,12 +259,12 @@ export async function scrapeBusinessWebsite(websiteRaw, businessTitle = "") {
   if (allCandidates.length > 0) {
     const email = pickBestEmail(allCandidates, websiteUrl);
     if (email) {
-      return {
-        ok: true,
+      return successResult(
         email,
-        source_page: sourcePage || pagesScraped[0],
-        pages_scraped: pagesScraped,
-      };
+        sourcePage || pagesScraped[0],
+        pagesScraped,
+        businessTitle
+      );
     }
   }
 

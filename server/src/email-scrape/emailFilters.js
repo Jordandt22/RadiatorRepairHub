@@ -49,7 +49,14 @@ const JUNK_DOMAIN_SUFFIXES = [
 ];
 
 /** Directory / map sites that publish listing emails (substring match on domain). */
-const DIRECTORY_DOMAIN_TOKENS = ["locmaps", "uscmaps"];
+const DIRECTORY_DOMAIN_TOKENS = [
+  "locmaps",
+  "uscmaps",
+  "pixelmotion",
+  "webador",
+  "bfrc",
+  "bbemail",
+];
 
 const PLACEHOLDER_EMAILS = new Set([
   "info@mysite.com",
@@ -73,6 +80,12 @@ export function getJunkReason(email) {
 
   if (PLACEHOLDER_EMAILS.has(lower)) return "placeholder";
   if (JUNK_LOCAL_PARTS.has(local)) return "junk_local";
+
+  // Accessibility widget / overlay vendor addresses (e.g. accessiBe-style)
+  if (lower.includes("accessibility")) return "accessibility_vendor";
+  if (lower.includes("testaccount") || lower.includes("webmaster")) {
+    return "junk_local";
+  }
 
   // Chrome/Blink MHTML frame IDs: frame-<hex>@mhtml.blink
   if (domain === "mhtml.blink" || domain.endsWith(".blink")) {
