@@ -82,7 +82,56 @@ const PLACEHOLDER_EMAILS = new Set([
   "maplibre-gl@4.x",
   "john@advancedlocal.com",
   "websitecontact@maah.global",
+  "hosting@treadpartners.com",
+  "wweeiihhuuaanngg@gmail.com",
 ]);
+
+const STRICT_EMAIL_RE =
+  /^[a-z0-9._+-]+@[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/i;
+
+/**
+ * Decode URL-encoding / trim junk so "%20name@domain.com" → "name@domain.com".
+ * Returns null if the result is not a usable email.
+ */
+export function normalizeScrapedEmail(raw) {
+  if (!raw || typeof raw !== "string") return null;
+
+  let value = raw.trim();
+  if (!value) return null;
+
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      const decoded = decodeURIComponent(value.replace(/\+/g, "%20"));
+      if (decoded === value) break;
+      value = decoded;
+    } catch {
+      value = value.replace(/%[0-9a-f]{2}/gi, (seq) => {
+        try {
+          return decodeURIComponent(seq);
+        } catch {
+          return "";
+        }
+      });
+      break;
+    }
+  }
+
+  value = value.trim().toLowerCase();
+  if (!value) return null;
+
+  if (value.includes("%")) {
+    value = value
+      .replace(/%[0-9a-f]{2}/gi, "")
+      .replace(/%/g, "")
+      .trim();
+  }
+
+  if (!value || /\s/.test(value)) return null;
+  if (!STRICT_EMAIL_RE.test(value)) return null;
+  if (value.length > 254) return null;
+
+  return value;
+}
 
 /** @returns {string|null} reason if junk, otherwise null */
 export function getJunkReason(email) {
@@ -92,6 +141,7 @@ export function getJunkReason(email) {
   const [local, domain] = lower.split("@");
   if (!local || !domain) return "invalid";
   if (local.length > 64 || domain.length > 255) return "invalid";
+  if (/%|\s/.test(lower)) return "invalid";
 
   if (PLACEHOLDER_EMAILS.has(lower)) return "placeholder";
   if (JUNK_LOCAL_PARTS.has(local)) return "junk_local";
