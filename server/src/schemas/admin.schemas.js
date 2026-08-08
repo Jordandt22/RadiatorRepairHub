@@ -503,6 +503,7 @@ export const OUTREACH_TYPES = [
   "claim_invite",
   "ownership_claim_invite",
   "lead_claim_invite",
+  "custom_claim_invite",
   "claim_followup",
   "website_offer",
 ];
@@ -615,6 +616,17 @@ export const OutreachSendSchema = Yup.object({
     .of(Yup.string().uuid("Invalid business ID").required())
     .min(1, "At least one business ID is required")
     .max(75, "At most 75 businesses can be sent at once")
+    .required("Business IDs are required"),
+});
+
+export const OutreachMarkSentSchema = Yup.object({
+  outreach_type: Yup.string()
+    .oneOf(OUTREACH_TYPES, "Invalid outreach type")
+    .required("Outreach type is required"),
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(75, "At most 75 businesses can be marked at once")
     .required("Business IDs are required"),
 });
 

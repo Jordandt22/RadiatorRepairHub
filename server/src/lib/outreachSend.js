@@ -2,6 +2,7 @@ import {
   CLAIM_INVITE_OUTREACH_MESSAGE,
   OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE,
   LEAD_CLAIM_INVITE_OUTREACH_MESSAGE,
+  CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE,
   CLAIM_FOLLOWUP_OUTREACH_MESSAGE,
   WEBSITE_OFFER_OUTREACH_MESSAGE,
   SENDER_NAME,
@@ -13,6 +14,7 @@ export const OUTREACH_TYPES = Object.freeze({
   CLAIM_INVITE: "claim_invite",
   OWNERSHIP_CLAIM_INVITE: "ownership_claim_invite",
   LEAD_CLAIM_INVITE: "lead_claim_invite",
+  CUSTOM_CLAIM_INVITE: "custom_claim_invite",
   CLAIM_FOLLOWUP: "claim_followup",
   WEBSITE_OFFER: "website_offer",
 });
@@ -22,6 +24,7 @@ export const CLAIM_INVITE_OUTREACH_TYPES = Object.freeze([
   OUTREACH_TYPES.CLAIM_INVITE,
   OUTREACH_TYPES.OWNERSHIP_CLAIM_INVITE,
   OUTREACH_TYPES.LEAD_CLAIM_INVITE,
+  OUTREACH_TYPES.CUSTOM_CLAIM_INVITE,
 ]);
 
 export const isClaimInviteOutreachType = (outreachType) =>
@@ -151,6 +154,16 @@ export const buildOutreachEmailContent = (business, outreachType) => {
     return {
       subject: LEAD_CLAIM_INVITE_OUTREACH_MESSAGE.subject(businessName),
       html: LEAD_CLAIM_INVITE_OUTREACH_MESSAGE.html(businessName, {
+        businessPageUrl,
+        howToClaimUrl,
+      }),
+    };
+  }
+
+  if (outreachType === OUTREACH_TYPES.CUSTOM_CLAIM_INVITE) {
+    return {
+      subject: CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE.subject(businessName),
+      html: CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE.html(businessName, {
         businessPageUrl,
         howToClaimUrl,
       }),

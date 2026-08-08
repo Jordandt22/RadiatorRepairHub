@@ -1046,6 +1046,7 @@ const OUTREACH_TYPE_STAT_LABELS = {
   claim_invite: "Claim invite (website)",
   ownership_claim_invite: "Claim invite (ownership)",
   lead_claim_invite: "Claim invite (leads)",
+  custom_claim_invite: "Claim invite (custom)",
   claim_followup: "Claim follow-up",
   website_offer: "Website offer",
 };
@@ -1075,6 +1076,7 @@ export const getAdminDashboardStats = async () => {
     claimInviteRes,
     ownershipClaimRes,
     leadClaimRes,
+    customClaimRes,
     claimFollowupRes,
     websiteOfferRes,
   ] = await Promise.all([
@@ -1153,6 +1155,12 @@ export const getAdminDashboardStats = async () => {
       supabase
         .from("outreach_history")
         .select("outreach_history_id", { count: "exact", head: true })
+        .eq("outreach_type", "custom_claim_invite")
+    ),
+    countExact(
+      supabase
+        .from("outreach_history")
+        .select("outreach_history_id", { count: "exact", head: true })
         .eq("outreach_type", "claim_followup")
     ),
     countExact(
@@ -1176,6 +1184,7 @@ export const getAdminDashboardStats = async () => {
     claimInviteRes.error ||
     ownershipClaimRes.error ||
     leadClaimRes.error ||
+    customClaimRes.error ||
     claimFollowupRes.error ||
     websiteOfferRes.error;
 
@@ -1247,6 +1256,11 @@ export const getAdminDashboardStats = async () => {
       key: "lead_claim_invite",
       label: OUTREACH_TYPE_STAT_LABELS.lead_claim_invite,
       count: leadClaimRes.count,
+    },
+    {
+      key: "custom_claim_invite",
+      label: OUTREACH_TYPE_STAT_LABELS.custom_claim_invite,
+      count: customClaimRes.count,
     },
     {
       key: "claim_followup",
@@ -2951,7 +2965,8 @@ export const getOutreachMatchingBusinessIds = async ({
   const isClaimInviteType =
     outreachType === "claim_invite" ||
     outreachType === "ownership_claim_invite" ||
-    outreachType === "lead_claim_invite";
+    outreachType === "lead_claim_invite" ||
+    outreachType === "custom_claim_invite";
 
   if (isClaimInviteType) {
     filters.claimEligibility = claimEligibility || "able";

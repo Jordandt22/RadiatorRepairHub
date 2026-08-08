@@ -1,90 +1,80 @@
-import { RefreshCwIcon, SearchIcon } from "lucide-react";
+import {
+  CheckCheckIcon,
+  ListFilterIcon,
+  RefreshCwIcon,
+  SearchIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
-import {
-  CLAIM_ELIGIBILITY_FILTERS,
-  SENT_FILTERS,
-  WEBSITE_FILTERS,
-} from "@/components/pages/outreach/outreachConstants";
+
+function ActionButton({
+  label,
+  icon: Icon,
+  variant = "outline",
+  disabled,
+  onClick,
+  className,
+  iconClassName,
+}) {
+  return (
+    <Button
+      variant={variant}
+      size="sm"
+      disabled={disabled}
+      onClick={onClick}
+      aria-label={label}
+      className={cn(
+        "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+        className,
+      )}
+    >
+      <Icon className={iconClassName} />
+      <span className="hidden md:inline">{label}</span>
+    </Button>
+  );
+}
 
 export default function OutreachBrowseActions({
   searchValue = "",
   onSearchChange,
-  claimEligibility = null,
-  onClaimEligibilityChange,
-  websiteFilter = null,
-  onWebsiteFilterChange,
-  claimInviteSent = null,
-  onClaimInviteSentChange,
-  claimFollowupSent = null,
-  onClaimFollowupSentChange,
-  websiteOfferSent = null,
-  onWebsiteOfferSentChange,
+  filtersActive = false,
+  onOpenFilters,
+  selectedCount = 0,
+  onMarkSent,
+  markSentDisabled = true,
+  markSentPending = false,
   onRefresh,
   refreshPending = false,
   refreshError = null,
   listError = null,
+  actionError = null,
 }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
-          <BusinessTierCombobox
-            items={CLAIM_ELIGIBILITY_FILTERS}
-            value={claimEligibility}
-            onValueChange={onClaimEligibilityChange}
-            placeholder="All eligibility"
-            ariaLabel="Filter by claim eligibility"
-            inputName="rrh-outreach-eligibility-filter"
-            disabled={refreshPending}
-          />
-        </div>
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
-          <BusinessTierCombobox
-            items={WEBSITE_FILTERS}
-            value={websiteFilter}
-            onValueChange={onWebsiteFilterChange}
-            placeholder="All websites"
-            ariaLabel="Filter by website"
-            inputName="rrh-outreach-website-filter"
-            disabled={refreshPending}
-          />
-        </div>
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
-          <BusinessTierCombobox
-            items={SENT_FILTERS}
-            value={claimInviteSent}
-            onValueChange={onClaimInviteSentChange}
-            placeholder="Claim invite"
-            ariaLabel="Filter by claim invite sent"
-            inputName="rrh-outreach-claim-invite-sent"
-            disabled={refreshPending}
-          />
-        </div>
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
-          <BusinessTierCombobox
-            items={SENT_FILTERS}
-            value={claimFollowupSent}
-            onValueChange={onClaimFollowupSentChange}
-            placeholder="Claim follow-up"
-            ariaLabel="Filter by claim follow-up sent"
-            inputName="rrh-outreach-claim-followup-sent"
-            disabled={refreshPending}
-          />
-        </div>
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
-          <BusinessTierCombobox
-            items={SENT_FILTERS}
-            value={websiteOfferSent}
-            onValueChange={onWebsiteOfferSentChange}
-            placeholder="Website offer"
-            ariaLabel="Filter by website offer sent"
-            inputName="rrh-outreach-website-offer-sent"
-            disabled={refreshPending}
-          />
-        </div>
+        <ActionButton
+          label="Mark Sent"
+          icon={CheckCheckIcon}
+          disabled={markSentDisabled || markSentPending}
+          onClick={onMarkSent}
+        />
+        {selectedCount > 0 ? (
+          <span className="hidden shrink-0 text-sm text-muted-foreground md:inline">
+            {selectedCount} selected
+          </span>
+        ) : null}
+        <ActionButton
+          label="Filters"
+          icon={ListFilterIcon}
+          disabled={refreshPending}
+          onClick={onOpenFilters}
+          className={
+            filtersActive
+              ? "border-foreground/40 bg-muted/60 hover:bg-muted"
+              : "hover:bg-gray-100"
+          }
+        />
         <div className="relative min-w-0 flex-1 md:max-w-sm">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -98,24 +88,20 @@ export default function OutreachBrowseActions({
             className="rounded-full pl-9"
           />
         </div>
-        <Button
-          variant="outline"
-          size="sm"
+        <ActionButton
+          label="Refresh"
+          icon={RefreshCwIcon}
           disabled={refreshPending}
           onClick={onRefresh}
-          aria-label="Refresh"
-          className={cn(
-            "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:ml-auto md:px-6",
-          )}
-        >
-          <RefreshCwIcon
-            className={refreshPending ? "animate-spin" : undefined}
-          />
-          <span className="hidden md:inline">Refresh</span>
-        </Button>
+          className="md:ml-auto hover:bg-gray-100"
+          iconClassName={refreshPending ? "animate-spin" : undefined}
+        />
       </div>
       {listError ? (
         <p className="text-sm text-destructive">{listError}</p>
+      ) : null}
+      {actionError ? (
+        <p className="text-sm text-destructive">{actionError}</p>
       ) : null}
       {refreshError ? (
         <p className="text-sm text-destructive">{refreshError}</p>

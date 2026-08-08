@@ -2763,6 +2763,85 @@ export const sendOutreachEmails = async (req, res) => {
   );
 };
 
+/** Record outreach as sent without delivering email (manual / external send). */
+export const markOutreachEmailsSent = async (req, res) => {
+  const { business_ids, outreach_type } = req.body;
+
+  const { data: businesses, error: fetchError } =
+    await getOutreachBusinessesByIds(business_ids);
+
+  if (fetchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching businesses.",
+          fetchError
+        )
+      );
+  }
+
+  const { skipped, eligible } = planOutreachBatch(
+    business_ids,
+    businesses,
+    outreach_type
+  );
+
+  if (eligible.length === 0) {
+    return res.status(200).json(
+      successHandler({
+        marked: [],
+        skipped,
+      })
+    );
+  }
+
+  const sentAt = new Date().toISOString();
+  const historyRows = eligible.map(({ business, recipient }) => {
+    const content = buildOutreachEmailContent(business, outreach_type);
+    return {
+      business_id: business.id,
+      message_type: "email",
+      outreach_type,
+      recipient,
+      subject: content?.subject ?? null,
+      provider: "manual",
+      provider_message_id: null,
+      sent_at: sentAt,
+      sent_by: null,
+      metadata: {
+        marked_sent: true,
+        no_email: true,
+      },
+    };
+  });
+
+  const { data: inserted, error: insertError } =
+    await insertOutreachHistory(historyRows);
+
+  if (insertError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error saving outreach history.",
+          insertError
+        )
+      );
+  }
+
+  const markedIds = (inserted ?? []).map((row) => row.business_id);
+
+  return res.status(200).json(
+    successHandler({
+      marked: markedIds,
+      skipped,
+    })
+  );
+};
+
 export const getOutreachHistoryList = async (req, res) => {
   let page = Number(req.query.page);
   const limit = Number(req.query.limit);

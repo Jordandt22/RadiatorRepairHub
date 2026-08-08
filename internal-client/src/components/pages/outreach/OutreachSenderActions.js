@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
 import {
   OUTREACH_LIMIT_OPTIONS,
-  OUTREACH_TYPE_OPTIONS,
+  OUTREACH_SENDER_TYPE_OPTIONS,
 } from "@/components/pages/outreach/outreachConstants";
 
 function ActionButton({
@@ -60,7 +60,7 @@ export default function OutreachSenderActions({
       <div className="flex flex-wrap items-center gap-2">
         <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
           <BusinessTierCombobox
-            items={OUTREACH_TYPE_OPTIONS}
+            items={OUTREACH_SENDER_TYPE_OPTIONS}
             value={outreachType}
             onValueChange={onOutreachTypeChange}
             placeholder="Campaign type"

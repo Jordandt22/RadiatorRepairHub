@@ -39,6 +39,7 @@ import {
   getOutreachMatchingIds,
   previewOutreachEmails,
   sendOutreachEmails,
+  markOutreachEmailsSent,
   getOutreachHistoryList,
   getOutreachHistoryMatchingIdsList,
   deleteOutreachHistory,
@@ -104,6 +105,7 @@ import {
   OutreachMatchingIdsSchema,
   OutreachPreviewSchema,
   OutreachSendSchema,
+  OutreachMarkSentSchema,
   GetOutreachHistoryQuerySchema,
   GetOutreachHistoryMatchingIdsSchema,
   DeleteOutreachHistorySchema,
@@ -266,6 +268,12 @@ adminRouter.post(
   "/outreach/send",
   bodyValidator(OutreachSendSchema),
   serverErrorCatcherWrapper(sendOutreachEmails)
+);
+
+adminRouter.post(
+  "/outreach/mark-sent",
+  bodyValidator(OutreachMarkSentSchema),
+  serverErrorCatcherWrapper(markOutreachEmailsSent)
 );
 
 adminRouter.get(

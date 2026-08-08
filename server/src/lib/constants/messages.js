@@ -436,6 +436,7 @@ const OUTREACH_TYPE_ADMIN_LABELS = {
   claim_invite: "Claim invite",
   ownership_claim_invite: "Claim invite (ownership)",
   lead_claim_invite: "Claim invite (leads)",
+  custom_claim_invite: "Claim invite (custom)",
   claim_followup: "Claim follow-up",
   website_offer: "Website offer",
 };
@@ -556,6 +557,32 @@ export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
+// Outreach: claim-focused invite for manual/custom claim outreach
+export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Claim your listing on RadiatorRepairHub${
+      businessName ? `: ${businessName}` : ""
+    }`,
+  html: (businessName, { businessPageUrl, howToClaimUrl }) => `
+  <p>Hi there,</p>
+
+  <p><strong>${businessName ?? "Your business"}</strong> has a free listing on RadiatorRepairHub, where customers look for radiator repair shops near them.</p>
+
+  <p>Claiming your listing only takes a few minutes and lets you:</p>
+  <ul>
+    <li>Update your business information</li>
+    <li>Keep contact details accurate so customers can reach you</li>
+    <li>Show as a verified shop with higher priority in search results</li>
+  </ul>
+
+  <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
+
+  <p>Need help? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `,

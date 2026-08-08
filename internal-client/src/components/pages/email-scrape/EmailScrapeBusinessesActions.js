@@ -61,7 +61,7 @@ export default function EmailScrapeBusinessesActions({
             onValueChange={onHasEmailFilterChange}
             placeholder="All email status"
             ariaLabel="Filter by email status"
-            inputName="rrh-email-scrape-has-email-filter"
+            inputName="rrh-scrape-has-contact-filter"
             disabled={refreshPending}
           />
         </div>
@@ -72,7 +72,7 @@ export default function EmailScrapeBusinessesActions({
             onValueChange={onAttemptsFilterChange}
             placeholder="All attempts"
             ariaLabel="Filter by scrape attempts"
-            inputName="rrh-email-scrape-attempts-filter"
+            inputName="rrh-scrape-attempts-filter"
             disabled={refreshPending}
           />
         </div>
@@ -84,7 +84,7 @@ export default function EmailScrapeBusinessesActions({
             onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder="Search title, slug…"
             aria-label="Search businesses"
-            name="rrh-email-scrape-search"
+            name="rrh-scrape-business-search"
             autoComplete="off"
             className="rounded-full pl-9"
           />
