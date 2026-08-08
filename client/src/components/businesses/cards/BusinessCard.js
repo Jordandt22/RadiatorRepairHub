@@ -11,6 +11,7 @@ import { Info, Clock } from "lucide-react";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import VerifiedBadge from "@/components/businesses/VerifiedBadge";
+import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 
 function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
   const router = useRouter();
@@ -32,7 +33,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
           imageId={business.primary_image_id}
           cdnStored={Boolean(business.cdn_stored)}
           alt={business.title}
-          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+          sizes={BUSINESS_CARD_IMAGE_SIZES}
           showIcon={false}
         />
 

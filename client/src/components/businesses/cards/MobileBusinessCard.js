@@ -3,6 +3,7 @@ import Link from "next/link";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import VerifiedBadge from "@/components/businesses/VerifiedBadge";
+import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 
 function MobileBusinessCard({ business }) {
   return (
@@ -20,7 +21,7 @@ function MobileBusinessCard({ business }) {
             imageId={business.primary_image_id}
             cdnStored={Boolean(business.cdn_stored)}
             alt={business.title}
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            sizes={BUSINESS_CARD_IMAGE_SIZES}
             showIcon={false}
           />
           {business.is_claimed ? (

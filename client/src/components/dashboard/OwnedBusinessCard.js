@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { unclaimOwnedBusiness } from "@/lib/api/ownedBusinesses";
 import { usePostHog } from "posthog-js/react";
+import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 
 function formatLastEdited(value) {
   if (!value) return "Not edited yet";
@@ -86,7 +87,7 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
             imageId={business.primary_image_id}
             cdnStored={Boolean(business.cdn_stored)}
             alt={business.title}
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            sizes={BUSINESS_CARD_IMAGE_SIZES}
             showIcon={false}
           />
         </div>
