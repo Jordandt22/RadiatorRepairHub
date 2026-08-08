@@ -98,7 +98,7 @@ const data = {
         },
         {
           title: "Email Cleaner",
-          url: "/email-cleaner",
+          url: "/email-cleaner?tab=cleaner",
           icon: <MailXIcon />,
         },
         {

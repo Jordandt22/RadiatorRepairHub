@@ -22,6 +22,7 @@ import {
   getBusinessById,
   getBusinessesWithEmails,
   clearBusinessEmails,
+  markBusinessEmailStatus,
   updateBusinessEmail,
   updateBusinessListing,
   unclaimBusinesses,
@@ -39,6 +40,7 @@ import {
   getOutreachMatchingIds,
   previewOutreachEmails,
   sendOutreachEmails,
+  markOutreachEmailsSent,
   getOutreachHistoryList,
   getOutreachHistoryMatchingIdsList,
   deleteOutreachHistory,
@@ -89,6 +91,7 @@ import {
   GetAdminBusinessesWithEmailsQuerySchema,
   GetAdminBusinessParamsSchema,
   ClearBusinessEmailsSchema,
+  MarkBusinessEmailStatusSchema,
   UpdateBusinessEmailSchema,
   UpdateBusinessListingSchema,
   UnclaimBusinessesSchema,
@@ -104,6 +107,7 @@ import {
   OutreachMatchingIdsSchema,
   OutreachPreviewSchema,
   OutreachSendSchema,
+  OutreachMarkSentSchema,
   GetOutreachHistoryQuerySchema,
   GetOutreachHistoryMatchingIdsSchema,
   DeleteOutreachHistorySchema,
@@ -209,6 +213,12 @@ adminRouter.patch(
 );
 
 adminRouter.patch(
+  "/businesses/email-status",
+  bodyValidator(MarkBusinessEmailStatusSchema),
+  serverErrorCatcherWrapper(markBusinessEmailStatus)
+);
+
+adminRouter.patch(
   "/businesses/email",
   bodyValidator(UpdateBusinessEmailSchema),
   serverErrorCatcherWrapper(updateBusinessEmail)
@@ -266,6 +276,12 @@ adminRouter.post(
   "/outreach/send",
   bodyValidator(OutreachSendSchema),
   serverErrorCatcherWrapper(sendOutreachEmails)
+);
+
+adminRouter.post(
+  "/outreach/mark-sent",
+  bodyValidator(OutreachMarkSentSchema),
+  serverErrorCatcherWrapper(markOutreachEmailsSent)
 );
 
 adminRouter.get(

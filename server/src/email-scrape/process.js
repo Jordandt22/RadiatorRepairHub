@@ -35,6 +35,14 @@ async function processBusiness(business) {
     };
   }
 
+  if (business.email_status === "unable_to_find") {
+    return {
+      ...base,
+      status: "skipped",
+      reason: "unable_to_find",
+    };
+  }
+
   await incrementEmailScrapedAttempts(
     business.id,
     business.email_scraped_attempts ?? 0

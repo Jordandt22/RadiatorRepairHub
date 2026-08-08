@@ -2,6 +2,7 @@ import * as Yup from "yup";
 
 export const LISTING_REPORT_REASONS = [
   "wrong_claim_contact",
+  "incorrect_outdated",
   "inappropriate",
 ];
 

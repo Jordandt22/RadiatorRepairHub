@@ -26,6 +26,10 @@ const REASON_OPTIONS = [
     label: "Contact info is wrong, I own this business and can't claim it",
   },
   {
+    value: "incorrect_outdated",
+    label: "Incorrect or outdated listing information",
+  },
+  {
     value: "inappropriate",
     label: "Inappropriate or misleading listing content",
   },

@@ -12,6 +12,7 @@ import ListingReportStatusBadge from "@/components/pages/listing-reports/Listing
 
 const REASON_LABELS = {
   wrong_claim_contact: "Wrong claim contact",
+  incorrect_outdated: "Incorrect/outdated",
   inappropriate: "Inappropriate",
 };
 

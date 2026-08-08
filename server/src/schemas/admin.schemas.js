@@ -321,6 +321,13 @@ export const ExportAdminLocationPostalCodesQuerySchema = Yup.object({
   city_id: Yup.string().uuid("Invalid city ID").required(),
   sort: locationSortQuery,
 });
+export const BUSINESS_EMAIL_STATUSES = [
+  "suspicious",
+  "checked",
+  "unable_to_find",
+  "not_checked",
+];
+
 export const GetAdminBusinessesWithEmailsQuerySchema = Yup.object({
   page: Yup.number().min(1).max(100).required(),
   limit: Yup.number().min(1).max(30).required(),
@@ -350,6 +357,24 @@ export const GetAdminBusinessesWithEmailsQuerySchema = Yup.object({
     })
     .nullable()
     .optional(),
+  email_status: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...BUSINESS_EMAIL_STATUSES, null], "Invalid status")
+    .optional(),
+  require_email: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return true;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .default(true)
+    .optional(),
 });
 
 export const ClearBusinessEmailsSchema = Yup.object({
@@ -358,6 +383,17 @@ export const ClearBusinessEmailsSchema = Yup.object({
     .min(1, "At least one business ID is required")
     .max(30, "At most 30 businesses can be cleared at once")
     .required("Business IDs are required"),
+});
+
+export const MarkBusinessEmailStatusSchema = Yup.object({
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(30, "At most 30 businesses can be marked at once")
+    .required("Business IDs are required"),
+  email_status: Yup.string()
+    .oneOf(BUSINESS_EMAIL_STATUSES, "Invalid email status")
+    .required("Status is required"),
 });
 
 export const UpdateBusinessEmailSchema = Yup.object({
@@ -503,6 +539,7 @@ export const OUTREACH_TYPES = [
   "claim_invite",
   "ownership_claim_invite",
   "lead_claim_invite",
+  "custom_claim_invite",
   "claim_followup",
   "website_offer",
 ];
@@ -615,6 +652,17 @@ export const OutreachSendSchema = Yup.object({
     .of(Yup.string().uuid("Invalid business ID").required())
     .min(1, "At least one business ID is required")
     .max(75, "At most 75 businesses can be sent at once")
+    .required("Business IDs are required"),
+});
+
+export const OutreachMarkSentSchema = Yup.object({
+  outreach_type: Yup.string()
+    .oneOf(OUTREACH_TYPES, "Invalid outreach type")
+    .required("Outreach type is required"),
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(75, "At most 75 businesses can be marked at once")
     .required("Business IDs are required"),
 });
 
@@ -838,6 +886,15 @@ export const GetEmailScrapeBusinessesQuerySchema = Yup.object({
       return value;
     })
     .nullable()
+    .optional(),
+  email_status: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...BUSINESS_EMAIL_STATUSES, null], "Invalid status")
     .optional(),
 });
 

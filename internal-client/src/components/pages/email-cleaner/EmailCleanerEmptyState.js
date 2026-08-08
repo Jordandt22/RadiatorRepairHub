@@ -7,6 +7,12 @@ const EMPTY = {
     "Listings that have an email on file will appear here for review.",
 };
 
+const REVIEW_EMPTY = {
+  icon: MailIcon,
+  title: "No businesses",
+  description: "Business listings will appear here for status review.",
+};
+
 const SEARCH_EMPTY = {
   icon: SearchIcon,
   title: "No matches",
@@ -22,8 +28,11 @@ const FILTER_EMPTY = {
 export default function EmailCleanerEmptyState({
   hasSearch = false,
   hasFilters = false,
+  variant = "cleaner",
 }) {
-  const content = hasSearch || hasFilters ? (hasSearch ? SEARCH_EMPTY : FILTER_EMPTY) : EMPTY;
+  const empty = variant === "review" ? REVIEW_EMPTY : EMPTY;
+  const content =
+    hasSearch || hasFilters ? (hasSearch ? SEARCH_EMPTY : FILTER_EMPTY) : empty;
   const Icon = content.icon;
 
   return (

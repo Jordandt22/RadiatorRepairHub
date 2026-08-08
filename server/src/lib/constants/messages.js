@@ -245,12 +245,64 @@ export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
 
 const LISTING_REPORT_REASON_LABELS = {
   wrong_claim_contact: "Wrong claim contact info",
+  incorrect_outdated: "Incorrect or outdated info",
   inappropriate: "Inappropriate or misleading content",
 };
 
 export const formatListingReportReasonLabel = (reason) => {
   return LISTING_REPORT_REASON_LABELS[reason] ?? reason ?? "N/A";
 };
+
+const escapeEmailHtml = (value) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+// Confirmation email sent to the reporter after a listing report is submitted
+export const LISTING_REPORT_RECEIVED_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `We received your report for ${businessName ?? "a listing"}`,
+  html: (
+    reporterName,
+    businessName,
+    { reason, details, businessPageUrl } = {},
+  ) => {
+    const safeName = escapeEmailHtml(reporterName?.trim() || "there");
+    const safeBusiness = escapeEmailHtml(businessName ?? "the listing");
+    const reasonLabel = escapeEmailHtml(formatListingReportReasonLabel(reason));
+    const safeDetails = escapeEmailHtml(details ?? "").replace(/\n/g, "<br>");
+    const listingLink = businessPageUrl
+      ? `<p>View the listing:<br>
+  <a href="${escapeEmailHtml(businessPageUrl)}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl)}</a></p>`
+      : "";
+
+    return `
+  <p>Hi ${safeName},</p>
+
+  <p>Thanks for reporting info through RadiatorRepairHub. We received your report for <strong>${safeBusiness}</strong> and will review it soon.</p>
+
+  <p><strong>What You Submitted:</strong></p>
+  <table style="width: 100%; border-collapse: collapse; margin: 12px 0 20px;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 100px; vertical-align: top;">Reason:</td>
+      <td style="padding: 8px 0;">${reasonLabel}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Details:</td>
+      <td style="padding: 8px 0;">${safeDetails || "N/A"}</td>
+    </tr>
+  </table>
+
+  <p>If the listing needs an update, we'll make the change when appropriate.</p>
+
+  ${listingLink}
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `;
+  },
+});
 
 // Admin notification when a listing report is submitted
 export const ADMIN_NEW_LISTING_REPORT_MESSAGE = Object.freeze({
@@ -384,6 +436,7 @@ const OUTREACH_TYPE_ADMIN_LABELS = {
   claim_invite: "Claim invite",
   ownership_claim_invite: "Claim invite (ownership)",
   lead_claim_invite: "Claim invite (leads)",
+  custom_claim_invite: "Claim invite (custom)",
   claim_followup: "Claim follow-up",
   website_offer: "Website offer",
 };
@@ -504,6 +557,32 @@ export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
+// Outreach: claim-focused invite for manual/custom claim outreach
+export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Claim your listing on RadiatorRepairHub${
+      businessName ? `: ${businessName}` : ""
+    }`,
+  html: (businessName, { businessPageUrl, howToClaimUrl }) => `
+  <p>Hi there,</p>
+
+  <p><strong>${businessName ?? "Your business"}</strong> has a free listing on RadiatorRepairHub, where customers look for radiator repair shops near them.</p>
+
+  <p>Claiming your listing only takes a few minutes and lets you:</p>
+  <ul>
+    <li>Update your business information</li>
+    <li>Keep contact details accurate so customers can reach you</li>
+    <li>Show as a verified shop with higher priority in search results</li>
+  </ul>
+
+  <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
+
+  <p>Need help? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `,

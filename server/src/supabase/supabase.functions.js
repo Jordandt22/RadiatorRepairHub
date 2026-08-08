@@ -779,16 +779,24 @@ export const getAdminBusinessById = async (id) => {
   return { data: business, error: null };
 };
 
-const EMAIL_CLEANER_BUSINESS_SELECT = "id, title, slug, email";
+const EMAIL_CLEANER_BUSINESS_SELECT =
+  "id, title, slug, email, email_status, email_status_marked_at";
 
 /**
- * Paginated businesses that have a non-empty email, with outreach emails_sent_count.
+ * Paginated businesses for email cleaner / review, with outreach emails_sent_count.
+ * When requireEmail is true (default), only rows with a non-empty email are returned.
  * Optional suspicious filter scores emails in JS (correct counts across pages).
  */
 export const getAdminBusinessesWithEmails = async (
   page,
   limit,
-  { q = null, emailsSent = null, suspicious = null } = {}
+  {
+    q = null,
+    emailsSent = null,
+    suspicious = null,
+    emailStatus = null,
+    requireEmail = true,
+  } = {}
 ) => {
   let sentBusinessIds = null;
 
@@ -814,19 +822,26 @@ export const getAdminBusinessesWithEmails = async (
     }
   }
 
-  const needsFullScan = suspicious === true || suspicious === false;
+  const needsFullScan =
+    requireEmail && (suspicious === true || suspicious === false);
 
   let query = supabase
     .from("businesses")
     .select(EMAIL_CLEANER_BUSINESS_SELECT, { count: "exact" })
-    .not("email", "is", null)
-    .neq("email", "")
     .order("title", { ascending: true });
+
+  if (requireEmail) {
+    query = query.not("email", "is", null).neq("email", "");
+  }
 
   if (emailsSent === true) {
     query = query.in("id", sentBusinessIds);
   } else if (emailsSent === false && sentBusinessIds.length > 0) {
     query = query.not("id", "in", `(${sentBusinessIds.join(",")})`);
+  }
+
+  if (emailStatus) {
+    query = query.eq("email_status", emailStatus);
   }
 
   const sanitized = sanitizeAdminBusinessSearch(q);
@@ -930,6 +945,24 @@ export const clearBusinessEmails = async (ids) => {
     .in("id", ids)
     .not("email", "is", null)
     .select("id");
+
+  return { data, error };
+};
+
+/**
+ * Set email_status (+ marked_at) for Email Cleaner review.
+ */
+export const updateBusinessesEmailStatus = async (ids, emailStatus) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({
+      email_status: emailStatus,
+      email_status_marked_at: new Date().toISOString(),
+    })
+    .in("id", ids)
+    .select("id, email_status, email_status_marked_at");
 
   return { data, error };
 };
@@ -1046,6 +1079,7 @@ const OUTREACH_TYPE_STAT_LABELS = {
   claim_invite: "Claim invite (website)",
   ownership_claim_invite: "Claim invite (ownership)",
   lead_claim_invite: "Claim invite (leads)",
+  custom_claim_invite: "Claim invite (custom)",
   claim_followup: "Claim follow-up",
   website_offer: "Website offer",
 };
@@ -1075,6 +1109,7 @@ export const getAdminDashboardStats = async () => {
     claimInviteRes,
     ownershipClaimRes,
     leadClaimRes,
+    customClaimRes,
     claimFollowupRes,
     websiteOfferRes,
   ] = await Promise.all([
@@ -1153,6 +1188,12 @@ export const getAdminDashboardStats = async () => {
       supabase
         .from("outreach_history")
         .select("outreach_history_id", { count: "exact", head: true })
+        .eq("outreach_type", "custom_claim_invite")
+    ),
+    countExact(
+      supabase
+        .from("outreach_history")
+        .select("outreach_history_id", { count: "exact", head: true })
         .eq("outreach_type", "claim_followup")
     ),
     countExact(
@@ -1176,6 +1217,7 @@ export const getAdminDashboardStats = async () => {
     claimInviteRes.error ||
     ownershipClaimRes.error ||
     leadClaimRes.error ||
+    customClaimRes.error ||
     claimFollowupRes.error ||
     websiteOfferRes.error;
 
@@ -1247,6 +1289,11 @@ export const getAdminDashboardStats = async () => {
       key: "lead_claim_invite",
       label: OUTREACH_TYPE_STAT_LABELS.lead_claim_invite,
       count: leadClaimRes.count,
+    },
+    {
+      key: "custom_claim_invite",
+      label: OUTREACH_TYPE_STAT_LABELS.custom_claim_invite,
+      count: customClaimRes.count,
     },
     {
       key: "claim_followup",
@@ -2951,7 +2998,8 @@ export const getOutreachMatchingBusinessIds = async ({
   const isClaimInviteType =
     outreachType === "claim_invite" ||
     outreachType === "ownership_claim_invite" ||
-    outreachType === "lead_claim_invite";
+    outreachType === "lead_claim_invite" ||
+    outreachType === "custom_claim_invite";
 
   if (isClaimInviteType) {
     filters.claimEligibility = claimEligibility || "able";

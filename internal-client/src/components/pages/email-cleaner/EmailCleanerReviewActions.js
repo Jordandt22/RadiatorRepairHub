@@ -1,11 +1,13 @@
 import {
-  CheckCheckIcon,
-  ListFilterIcon,
   RefreshCwIcon,
   SearchIcon,
+  TagIcon,
+  XIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
+import { EMAILS_SENT_FILTERS } from "@/components/pages/email-cleaner/EmailCleanerActions";
 import { cn } from "@/lib/utils";
 
 function ActionButton({
@@ -35,55 +37,61 @@ function ActionButton({
   );
 }
 
-export default function OutreachBrowseActions({
+export default function EmailCleanerReviewActions({
   searchValue = "",
   onSearchChange,
-  filtersActive = false,
-  onOpenFilters,
+  emailsSent = null,
+  onEmailsSentChange,
   selectedCount = 0,
-  onMarkSent,
-  markSentDisabled = true,
-  markSentPending = false,
+  markStatusDisabled = true,
+  onMarkStatus,
+  onClearSelection,
   onRefresh,
   refreshPending = false,
-  refreshError = null,
-  listError = null,
+  markStatusPending = false,
   actionError = null,
+  refreshError = null,
 }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
         <ActionButton
-          label="Mark Sent"
-          icon={CheckCheckIcon}
-          disabled={markSentDisabled || markSentPending}
-          onClick={onMarkSent}
+          label="Mark Status"
+          icon={TagIcon}
+          disabled={markStatusDisabled || markStatusPending}
+          onClick={onMarkStatus}
+        />
+        <ActionButton
+          label="Clear"
+          icon={XIcon}
+          disabled={selectedCount === 0 || markStatusPending}
+          onClick={onClearSelection}
         />
         {selectedCount > 0 ? (
           <span className="hidden shrink-0 text-sm text-muted-foreground md:inline">
             {selectedCount} selected
           </span>
         ) : null}
-        <ActionButton
-          label="Filters"
-          icon={ListFilterIcon}
-          disabled={refreshPending}
-          onClick={onOpenFilters}
-          className={
-            filtersActive
-              ? "border-foreground/40 bg-muted/60 hover:bg-muted"
-              : "hover:bg-gray-100"
-          }
-        />
+        <div className="w-full min-w-0 sm:w-auto sm:min-w-[10rem] md:ml-auto">
+          <BusinessTierCombobox
+            items={EMAILS_SENT_FILTERS}
+            value={emailsSent}
+            onValueChange={onEmailsSentChange}
+            placeholder="Outreach sent"
+            ariaLabel="Filter by outreach sent"
+            disabled={refreshPending || markStatusPending}
+            inputName="rrh-cleaner-review-sent"
+          />
+        </div>
         <div className="relative min-w-0 flex-1 md:max-w-sm">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
             value={searchValue}
             onChange={(e) => onSearchChange?.(e.target.value)}
-            placeholder="Search title, slug, contact, phone…"
-            aria-label="Search outreach businesses"
-            name="rrh-outreach-browse-search"
+            placeholder="Search title, slug, contact…"
+            aria-label="Search businesses"
+            name="rrh-cleaner-review-search"
             autoComplete="off"
             className="rounded-full pl-9"
           />
@@ -93,13 +101,11 @@ export default function OutreachBrowseActions({
           icon={RefreshCwIcon}
           disabled={refreshPending}
           onClick={onRefresh}
-          className="md:ml-auto hover:bg-gray-100"
+          className="hover:bg-gray-100"
           iconClassName={refreshPending ? "animate-spin" : undefined}
         />
       </div>
-      {listError ? (
-        <p className="text-sm text-destructive">{listError}</p>
-      ) : null}
+
       {actionError ? (
         <p className="text-sm text-destructive">{actionError}</p>
       ) : null}

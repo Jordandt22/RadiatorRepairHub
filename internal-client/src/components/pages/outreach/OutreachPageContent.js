@@ -19,6 +19,8 @@ import OutreachFilterTabs, {
   VALID_OUTREACH_TABS,
 } from "@/components/pages/outreach/OutreachFilterTabs";
 import OutreachBrowseActions from "@/components/pages/outreach/OutreachBrowseActions";
+import OutreachBrowseFiltersDialog from "@/components/pages/outreach/OutreachBrowseFiltersDialog";
+import OutreachMarkSentDialog from "@/components/pages/outreach/OutreachMarkSentDialog";
 import OutreachSenderActions from "@/components/pages/outreach/OutreachSenderActions";
 import OutreachHistoryActions from "@/components/pages/outreach/OutreachHistoryActions";
 import OutreachTable from "@/components/pages/outreach/OutreachTable";
@@ -34,6 +36,7 @@ import {
   HISTORY_EMAIL_FILTERS,
   OUTREACH_LIMIT_OPTIONS,
   OUTREACH_SEND_SELECTION_CAP,
+  OUTREACH_SENDER_TYPE_OPTIONS,
   OUTREACH_TYPE_OPTIONS,
   SENT_FILTERS,
   WEBSITE_FILTERS,
@@ -130,7 +133,7 @@ export default function OutreachPageContent() {
       type: {
         type: "option",
         param: "type",
-        options: OUTREACH_TYPE_OPTIONS,
+        options: OUTREACH_SENDER_TYPE_OPTIONS,
         resetPageOnChange: false,
       },
       limit: {
@@ -148,9 +151,15 @@ export default function OutreachPageContent() {
     () => hq || "",
   );
   const [refreshError, setRefreshError] = useState(null);
+  const [browseSelectedIds, setBrowseSelectedIds] = useState(
+    () => new Set(),
+  );
+  const [browseActionError, setBrowseActionError] = useState(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [markSentOpen, setMarkSentOpen] = useState(false);
 
   // Sender working set (not URL-persisted)
-  const outreachType = outreachTypeFromUrl ?? OUTREACH_TYPE_OPTIONS[0];
+  const outreachType = outreachTypeFromUrl ?? OUTREACH_SENDER_TYPE_OPTIONS[0];
   const matchLimit = matchLimitFromUrl ?? OUTREACH_LIMIT_OPTIONS[1];
   const [matchedSet, setMatchedSet] = useState([]);
   const [manualSet, setManualSet] = useState([]);
@@ -240,6 +249,10 @@ export default function OutreachPageContent() {
     if (nextTab === activeTab) return;
     replaceTab(nextTab, "/outreach");
     setActiveTab(nextTab);
+    setBrowseSelectedIds(new Set());
+    setBrowseActionError(null);
+    setMarkSentOpen(false);
+    setFiltersOpen(false);
   };
 
   const browseQueryKey = [
@@ -547,6 +560,56 @@ export default function OutreachPageContent() {
     onSettled: () => setLoading(false),
   });
 
+  const markSentMutation = useMutation({
+    mutationFn: async (outreachTypeIdToMark) => {
+      const result = await fetchApi("/admin/outreach/mark-sent", {
+        method: "POST",
+        accessToken,
+        body: JSON.stringify({
+          outreach_type: outreachTypeIdToMark,
+          business_ids: Array.from(browseSelectedIds),
+        }),
+      });
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to mark as sent");
+      }
+      return result.data;
+    },
+    onMutate: () => {
+      setBrowseActionError(null);
+      setLoading(true);
+    },
+    onSuccess: async (payload) => {
+      setMarkSentOpen(false);
+      setBrowseSelectedIds(new Set());
+      const markedCount = payload?.marked?.length ?? 0;
+      const skippedCount = payload?.skipped?.length ?? 0;
+      if (markedCount === 0 && skippedCount > 0) {
+        setBrowseActionError(
+          `Nothing marked. ${skippedCount} business${skippedCount === 1 ? "" : "es"} skipped.`,
+        );
+      } else if (skippedCount > 0) {
+        setBrowseActionError(
+          `Marked ${markedCount}. ${skippedCount} skipped (ineligible or already sent).`,
+        );
+      } else {
+        setBrowseActionError(null);
+      }
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["outreach-businesses"] }),
+        queryClient.invalidateQueries({ queryKey: ["outreach-history"] }),
+      ]);
+    },
+    onError: (err) => {
+      setBrowseActionError(err.message || "Failed to mark as sent");
+    },
+    onSettled: () => setLoading(false),
+  });
+
   const workingSetCount = matchedSet.length + manualSet.length;
   const existingIds = useMemo(() => {
     const ids = new Set();
@@ -596,9 +659,42 @@ export default function OutreachPageContent() {
     setActionError(null);
   };
 
-  const handleAddManual = (businesses) => {
+  const handleBrowseToggleId = (id, checked) => {
+    setBrowseSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        if (next.size >= OUTREACH_SEND_SELECTION_CAP && !next.has(id)) {
+          return prev;
+        }
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+  };
+
+  const handleApplyBrowseFilters = ({
+    eligibility,
+    website,
+    invite,
+    followup,
+    offer,
+  }) => {
+    setFields({
+      eligibility,
+      website,
+      invite,
+      followup,
+      offer,
+      page: 1,
+    });
+    setBrowseSelectedIds(new Set());
+  };
+
+  const handleAddManual = (businessesToAdd) => {
     const toAdd = [];
-    for (const business of businesses) {
+    for (const business of businessesToAdd) {
       if (existingIds.has(business.id)) continue;
       if (
         matchedSet.length + manualSet.length + toAdd.length >=
@@ -631,6 +727,21 @@ export default function OutreachPageContent() {
       claimFollowupSentValue !== null ||
       websiteOfferSentValue !== null,
   );
+
+  const handleBrowseTogglePage = (checked) => {
+    setBrowseSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (!checked) {
+        for (const row of businesses) next.delete(row.id);
+        return next;
+      }
+      for (const row of businesses) {
+        if (next.size >= OUTREACH_SEND_SELECTION_CAP) break;
+        next.add(row.id);
+      }
+      return next;
+    });
+  };
 
   const historyRows = historyQuery.data?.history ?? [];
   const historyTotalPages = historyQuery.data?.totalPages ?? 0;
@@ -678,7 +789,7 @@ export default function OutreachPageContent() {
   );
 
   const tabDescription = {
-    all: "Browse businesses, claim eligibility, and outreach send status.",
+    all: "Browse businesses, select rows to mark campaigns sent, and filter eligibility or send status.",
     sender: `Match up to your chosen limit, then manually add more (total max ${OUTREACH_SEND_SELECTION_CAP}).`,
     history: "Review previously sent outreach emails.",
   }[activeTab];
@@ -702,32 +813,30 @@ export default function OutreachPageContent() {
               setSearchInput(value);
               debouncedSetBrowseSearch(value);
             }}
-            claimEligibility={claimEligibility}
-            onClaimEligibilityChange={(value) => {
-              setField("eligibility", value);
+            filtersActive={Boolean(
+              claimEligibilityId ||
+                websiteFilterId ||
+                claimInviteSentValue !== null ||
+                claimFollowupSentValue !== null ||
+                websiteOfferSentValue !== null,
+            )}
+            onOpenFilters={() => setFiltersOpen(true)}
+            selectedCount={browseSelectedIds.size}
+            onMarkSent={() => {
+              setBrowseActionError(null);
+              setMarkSentOpen(true);
             }}
-            websiteFilter={websiteFilter}
-            onWebsiteFilterChange={(value) => {
-              setField("website", value);
-            }}
-            claimInviteSent={claimInviteSent}
-            onClaimInviteSentChange={(value) => {
-              setField("invite", value);
-            }}
-            claimFollowupSent={claimFollowupSent}
-            onClaimFollowupSentChange={(value) => {
-              setField("followup", value);
-            }}
-            websiteOfferSent={websiteOfferSent}
-            onWebsiteOfferSentChange={(value) => {
-              setField("offer", value);
-            }}
+            markSentDisabled={
+              browseSelectedIds.size === 0 || markSentMutation.isPending
+            }
+            markSentPending={markSentMutation.isPending}
             onRefresh={() => refreshBrowseMutation.mutate()}
             refreshPending={
               refreshBrowseMutation.isPending || browseQuery.isFetching
             }
             refreshError={refreshError}
             listError={browseQuery.error?.message ?? null}
+            actionError={browseActionError}
           />
 
           {browseQuery.isLoading && !browseQuery.data ? (
@@ -735,9 +844,13 @@ export default function OutreachPageContent() {
           ) : (
             <OutreachTable
               businesses={businesses}
-              selectable={false}
+              selectable
+              selectedIds={browseSelectedIds}
+              onToggleId={handleBrowseToggleId}
+              onTogglePage={handleBrowseTogglePage}
               hasFilters={hasBrowseFilters}
               emptyVariant="browse"
+              selectionCap={OUTREACH_SEND_SELECTION_CAP}
             />
           )}
 
@@ -750,8 +863,14 @@ export default function OutreachPageContent() {
               isFetching={
                 browseQuery.isFetching || browseQuery.isPlaceholderData
               }
-              onPrevious={() => setField("page", Math.max(1, page - 1))}
-              onNext={() => setField("page", page + 1)}
+              onPrevious={() => {
+                setBrowseSelectedIds(new Set());
+                setField("page", Math.max(1, page - 1));
+              }}
+              onNext={() => {
+                setBrowseSelectedIds(new Set());
+                setField("page", page + 1);
+              }}
             />
           ) : null}
         </>
@@ -903,6 +1022,29 @@ export default function OutreachPageContent() {
         selectedCount={historySelectedIds.size}
         onConfirm={handleRemoveSentConfirm}
         confirmPending={removeSentMutation.isPending}
+      />
+
+      <OutreachBrowseFiltersDialog
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        claimEligibility={claimEligibility}
+        websiteFilter={websiteFilter}
+        claimInviteSent={claimInviteSent}
+        claimFollowupSent={claimFollowupSent}
+        websiteOfferSent={websiteOfferSent}
+        onApply={handleApplyBrowseFilters}
+      />
+
+      <OutreachMarkSentDialog
+        open={markSentOpen}
+        onOpenChange={(open) => {
+          if (markSentMutation.isPending) return;
+          setMarkSentOpen(open);
+        }}
+        selectedCount={browseSelectedIds.size}
+        onConfirm={(typeId) => markSentMutation.mutate(typeId)}
+        confirmPending={markSentMutation.isPending}
+        confirmError={browseActionError}
       />
 
       <OutreachPreviewSheet

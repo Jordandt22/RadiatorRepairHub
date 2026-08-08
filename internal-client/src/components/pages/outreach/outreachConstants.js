@@ -12,9 +12,15 @@ export const OUTREACH_TYPE_OPTIONS = [
   { id: "claim_invite", label: "Claim invite (website)" },
   { id: "ownership_claim_invite", label: "Claim invite (ownership)" },
   { id: "lead_claim_invite", label: "Claim invite (leads)" },
+  { id: "custom_claim_invite", label: "Claim invite (custom)" },
   { id: "claim_followup", label: "Claim follow-up" },
   { id: "website_offer", label: "Website offer" },
 ];
+
+/** Sender campaigns only — custom is recorded via Mark Sent on All. */
+export const OUTREACH_SENDER_TYPE_OPTIONS = OUTREACH_TYPE_OPTIONS.filter(
+  (option) => option.id !== "custom_claim_invite",
+);
 
 export const CLAIM_ELIGIBILITY_FILTERS = [
   { id: "able", label: "Able" },
@@ -49,6 +55,7 @@ export const OUTREACH_TYPE_LABELS = {
   claim_invite: "Claim invite (website)",
   ownership_claim_invite: "Claim invite (ownership)",
   lead_claim_invite: "Claim invite (leads)",
+  custom_claim_invite: "Claim invite (custom)",
   claim_followup: "Claim follow-up",
   website_offer: "Website offer",
 };
@@ -57,6 +64,7 @@ export const CLAIM_INVITE_OUTREACH_TYPES = [
   "claim_invite",
   "ownership_claim_invite",
   "lead_claim_invite",
+  "custom_claim_invite",
 ];
 
 export const isClaimInviteOutreachType = (outreachType) =>
