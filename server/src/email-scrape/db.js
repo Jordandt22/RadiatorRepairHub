@@ -287,7 +287,8 @@ export async function countPendingEmailScrapeBusinesses() {
     .not("website", "is", null)
     .neq("website", "")
     .or("email.is.null,email.eq.")
-    .lt("email_scraped_attempts", MAX_EMAIL_SCRAPED_ATTEMPTS);
+    .lt("email_scraped_attempts", MAX_EMAIL_SCRAPED_ATTEMPTS)
+    .neq("email_status", "unable_to_find");
 
   if (error) throw error;
   return count ?? 0;
@@ -303,6 +304,7 @@ export async function selectPendingEmailScrapeBusinesses(limitCount) {
     .neq("website", "")
     .or("email.is.null,email.eq.")
     .lt("email_scraped_attempts", MAX_EMAIL_SCRAPED_ATTEMPTS)
+    .neq("email_status", "unable_to_find")
     .order("email_scraped_attempts", { ascending: true })
     .order("created_at", { ascending: false })
     .limit(limitCount);
@@ -317,7 +319,7 @@ export async function getBusinessesByIds(businessIds) {
   const { data, error } = await supabase
     .from("businesses")
     .select(
-      "id, website, slug, title, email, email_scraped_attempts"
+      "id, website, slug, title, email, email_scraped_attempts, email_status"
     )
     .in("id", businessIds);
 
@@ -464,7 +466,7 @@ function sanitizeEmailScrapeBusinessSearch(q) {
 export async function listEmailScrapeBusinesses(
   page = 1,
   limit = 20,
-  { q = null, hasEmail = null, hasAttempts = null } = {}
+  { q = null, hasEmail = null, hasAttempts = null, emailStatus = null } = {}
 ) {
   const safePage = Math.max(1, Number(page) || 1);
   const safeLimit = Math.min(30, Math.max(1, Number(limit) || 20));
@@ -473,7 +475,7 @@ export async function listEmailScrapeBusinesses(
   let query = supabase
     .from("businesses")
     .select(
-      "id, title, slug, website, email, email_scraped_attempts, created_at",
+      "id, title, slug, website, email, email_scraped_attempts, email_status, email_status_marked_at, created_at",
       { count: "exact" }
     )
     .order("created_at", { ascending: false });
@@ -488,6 +490,10 @@ export async function listEmailScrapeBusinesses(
     query = query.gt("email_scraped_attempts", 0);
   } else if (hasAttempts === false) {
     query = query.eq("email_scraped_attempts", 0);
+  }
+
+  if (emailStatus) {
+    query = query.eq("email_status", emailStatus);
   }
 
   if (search) {

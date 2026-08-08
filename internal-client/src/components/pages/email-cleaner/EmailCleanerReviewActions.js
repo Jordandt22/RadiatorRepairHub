@@ -1,25 +1,14 @@
 import {
-  ListFilterIcon,
-  MailXIcon,
   RefreshCwIcon,
   SearchIcon,
-  ShieldAlertIcon,
   TagIcon,
   XIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
+import { EMAILS_SENT_FILTERS } from "@/components/pages/email-cleaner/EmailCleanerActions";
 import { cn } from "@/lib/utils";
-
-export const EMAILS_SENT_FILTERS = [
-  { id: "true", label: "Outreach sent" },
-  { id: "false", label: "Not sent" },
-];
-
-export const SUSPICIOUS_FILTERS = [
-  { id: "true", label: "Suspicious" },
-  { id: "false", label: "Looks fine" },
-];
 
 function ActionButton({
   label,
@@ -48,22 +37,17 @@ function ActionButton({
   );
 }
 
-export default function EmailCleanerActions({
+export default function EmailCleanerReviewActions({
   searchValue = "",
   onSearchChange,
-  filtersActive = false,
-  onOpenFilters,
+  emailsSent = null,
+  onEmailsSentChange,
   selectedCount = 0,
-  actionDisabled = true,
-  selectSuspiciousDisabled = true,
   markStatusDisabled = true,
-  onDeleteEmails,
-  onSelectSuspicious,
   onMarkStatus,
   onClearSelection,
   onRefresh,
   refreshPending = false,
-  deletePending = false,
   markStatusPending = false,
   actionError = null,
   refreshError = null,
@@ -72,28 +56,15 @@ export default function EmailCleanerActions({
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
         <ActionButton
-          label="Delete email"
-          icon={MailXIcon}
-          disabled={actionDisabled || deletePending}
-          onClick={onDeleteEmails}
-          className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
-        />
-        <ActionButton
           label="Mark Status"
           icon={TagIcon}
           disabled={markStatusDisabled || markStatusPending}
           onClick={onMarkStatus}
         />
         <ActionButton
-          label="Select suspicious"
-          icon={ShieldAlertIcon}
-          disabled={selectSuspiciousDisabled || deletePending}
-          onClick={onSelectSuspicious}
-        />
-        <ActionButton
           label="Clear"
           icon={XIcon}
-          disabled={selectedCount === 0 || deletePending || markStatusPending}
+          disabled={selectedCount === 0 || markStatusPending}
           onClick={onClearSelection}
         />
         {selectedCount > 0 ? (
@@ -101,17 +72,17 @@ export default function EmailCleanerActions({
             {selectedCount} selected
           </span>
         ) : null}
-        <ActionButton
-          label="Filters"
-          icon={ListFilterIcon}
-          disabled={refreshPending || deletePending || markStatusPending}
-          onClick={onOpenFilters}
-          className={
-            filtersActive
-              ? "border-foreground/40 bg-muted/60 hover:bg-muted md:ml-auto"
-              : "hover:bg-gray-100 md:ml-auto"
-          }
-        />
+        <div className="w-full min-w-0 sm:w-auto sm:min-w-[10rem] md:ml-auto">
+          <BusinessTierCombobox
+            items={EMAILS_SENT_FILTERS}
+            value={emailsSent}
+            onValueChange={onEmailsSentChange}
+            placeholder="Outreach sent"
+            ariaLabel="Filter by outreach sent"
+            disabled={refreshPending || markStatusPending}
+            inputName="rrh-cleaner-review-sent"
+          />
+        </div>
         <div className="relative min-w-0 flex-1 md:max-w-sm">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -119,8 +90,8 @@ export default function EmailCleanerActions({
             value={searchValue}
             onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder="Search title, slug, contact…"
-            aria-label="Search businesses with contacts"
-            name="rrh-cleaner-search"
+            aria-label="Search businesses"
+            name="rrh-cleaner-review-search"
             autoComplete="off"
             className="rounded-full pl-9"
           />

@@ -25,6 +25,7 @@ import {
   getAdminBusinessById as fetchAdminBusinessById,
   getAdminBusinessesWithEmails as fetchAdminBusinessesWithEmails,
   clearBusinessEmails as clearEmailsOnBusinesses,
+  updateBusinessesEmailStatus as patchBusinessesEmailStatus,
   updateBusinessEmail as patchBusinessEmail,
   updateBusinessListing as patchBusinessListing,
   unclaimBusinessesByIds,
@@ -1610,11 +1611,23 @@ export const getBusinessesWithEmails = async (req, res) => {
   };
   const emailsSent = parseBool(req.query.emails_sent);
   const suspicious = parseBool(req.query.suspicious);
+  const emailStatus =
+    typeof req.query.email_status === "string" && req.query.email_status.trim()
+      ? req.query.email_status.trim()
+      : null;
+  const requireEmail = parseBool(req.query.require_email);
+  const requireEmailValue = requireEmail === null ? true : requireEmail;
 
   const { data, count, error } = await fetchAdminBusinessesWithEmails(
     page,
     limit,
-    { q, emailsSent, suspicious }
+    {
+      q,
+      emailsSent,
+      suspicious: requireEmailValue ? suspicious : null,
+      emailStatus,
+      requireEmail: requireEmailValue,
+    }
   );
 
   if (error) {
@@ -1644,7 +1657,8 @@ export const getBusinessesWithEmails = async (req, res) => {
       limit,
       q,
       emails_sent: emailsSent,
-      suspicious,
+      suspicious: requireEmailValue ? suspicious : null,
+      require_email: requireEmailValue,
     })
   );
 };
@@ -1676,6 +1690,40 @@ export const clearBusinessEmails = async (req, res) => {
     successHandler({
       cleared: clearedIds.length,
       business_ids: clearedIds,
+    })
+  );
+};
+
+export const markBusinessEmailStatus = async (req, res) => {
+  const { business_ids, email_status } = req.body;
+
+  const { data, error } = await patchBusinessesEmailStatus(
+    business_ids,
+    email_status
+  );
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating email status.",
+          error
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+
+  const markedIds = (data ?? []).map((row) => row.id);
+
+  return res.status(200).json(
+    successHandler({
+      marked: markedIds.length,
+      business_ids: markedIds,
+      email_status,
+      email_status_marked_at: data?.[0]?.email_status_marked_at ?? null,
     })
   );
 };
@@ -3497,12 +3545,17 @@ export const getEmailScrapeBusinesses = async (req, res) => {
   };
   const hasEmail = parseBool(req.query.has_email);
   const hasAttempts = parseBool(req.query.has_attempts);
+  const emailStatus =
+    typeof req.query.email_status === "string" && req.query.email_status.trim()
+      ? req.query.email_status.trim()
+      : null;
 
   try {
     const result = await listEmailScrapeBusinesses(page, limit, {
       q,
       hasEmail,
       hasAttempts,
+      emailStatus,
     });
 
     const total = result.count ?? 0;

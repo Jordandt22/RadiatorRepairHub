@@ -22,10 +22,12 @@ import EmailScrapeActions from "@/components/pages/email-scrape/EmailScrapeActio
 import EmailScrapeTableSkeleton from "@/components/pages/email-scrape/EmailScrapeTableSkeleton";
 import EmailScrapeStartDialog from "@/components/pages/email-scrape/EmailScrapeStartDialog";
 import EmailScrapeBusinessesActions, {
-  HAS_EMAIL_FILTERS,
+  HAS_CONTACT_FILTERS,
   ATTEMPTS_FILTERS,
 } from "@/components/pages/email-scrape/EmailScrapeBusinessesActions";
+import EmailScrapeBusinessesFiltersDialog from "@/components/pages/email-scrape/EmailScrapeBusinessesFiltersDialog";
 import EmailScrapeBusinessesTable from "@/components/pages/email-scrape/EmailScrapeBusinessesTable";
+import { EMAIL_STATUS_OPTIONS } from "@/components/pages/email-cleaner/EmailCleanerMarkStatusDialog";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
 const PAGE_LIMIT = 20;
@@ -64,25 +66,33 @@ export default function EmailScrapePageContent() {
   const [startError, setStartError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
   const [businessesRefreshError, setBusinessesRefreshError] = useState(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const {
     q,
     page: businessesPage,
-    hasEmail: hasEmailFilter,
+    hasEmail: hasContactFilter,
     attempts: attemptsFilter,
+    status: statusFilter,
     setField,
+    setFields,
   } = useUrlQueryState(
     {
       q: { type: "string", param: "q" },
       page: { type: "page" },
       hasEmail: {
         type: "option",
-        param: "has_email",
-        options: HAS_EMAIL_FILTERS,
+        param: "has_contact",
+        options: HAS_CONTACT_FILTERS,
       },
       attempts: {
         type: "option",
         param: "attempts",
         options: ATTEMPTS_FILTERS,
+      },
+      status: {
+        type: "option",
+        param: "status",
+        options: EMAIL_STATUS_OPTIONS,
       },
     },
     { pathname: "/email-scrape" },
@@ -92,8 +102,9 @@ export default function EmailScrapePageContent() {
   setFieldRef.current = setField;
 
   const searchQuery = (q || "").trim();
-  const hasEmailValue = parseBooleanFilter(hasEmailFilter);
+  const hasContactValue = parseBooleanFilter(hasContactFilter);
   const hasAttemptsValue = parseBooleanFilter(attemptsFilter);
+  const statusFilterId = statusFilter?.id ?? null;
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -140,12 +151,17 @@ export default function EmailScrapePageContent() {
     debouncedSetSearch(value);
   };
 
-  const handleHasEmailFilterChange = (value) => {
-    setField("hasEmail", value);
-  };
-
-  const handleAttemptsFilterChange = (value) => {
-    setField("attempts", value);
+  const handleApplyBusinessFilters = ({
+    hasContact,
+    attempts,
+    status,
+  }) => {
+    setFields({
+      hasEmail: hasContact,
+      attempts,
+      status,
+      page: 1,
+    });
   };
 
   const jobsQuery = useQuery({
@@ -195,8 +211,9 @@ export default function EmailScrapePageContent() {
       "email-scrape-businesses",
       businessesPage,
       searchQuery,
-      hasEmailValue,
+      hasContactValue,
       hasAttemptsValue,
+      statusFilterId,
     ],
     enabled: Boolean(accessToken) && activeTab === "businesses",
     placeholderData: keepPreviousData,
@@ -208,11 +225,14 @@ export default function EmailScrapePageContent() {
       if (searchQuery) {
         params.set("q", searchQuery);
       }
-      if (hasEmailValue !== null) {
-        params.set("has_email", String(hasEmailValue));
+      if (hasContactValue !== null) {
+        params.set("has_email", String(hasContactValue));
       }
       if (hasAttemptsValue !== null) {
         params.set("has_attempts", String(hasAttemptsValue));
+      }
+      if (statusFilterId) {
+        params.set("email_status", statusFilterId);
       }
 
       const result = await fetchApi(
@@ -402,8 +422,8 @@ export default function EmailScrapePageContent() {
               Each run scrapes websites for businesses with a website and no
               email (50–500 businesses), split into batches of 20. Home,
               contact, and about pages are checked; junk emails are discarded.
-              Never-tried listings are prioritized; after 5 failed attempts a
-              business is skipped.
+              Never-tried listings are prioritized; after 3 attempts a business
+              is skipped. Listings marked Unable to Find are also excluded.
             </p>
           </div>
 
@@ -460,10 +480,12 @@ export default function EmailScrapePageContent() {
           <EmailScrapeBusinessesActions
             searchValue={searchInput}
             onSearchChange={handleSearchChange}
-            hasEmailFilter={hasEmailFilter}
-            onHasEmailFilterChange={handleHasEmailFilterChange}
-            attemptsFilter={attemptsFilter}
-            onAttemptsFilterChange={handleAttemptsFilterChange}
+            filtersActive={Boolean(
+              hasContactValue !== null ||
+                hasAttemptsValue !== null ||
+                statusFilterId,
+            )}
+            onOpenFilters={() => setFiltersOpen(true)}
             onRefresh={() => businessesRefreshMutation.mutate()}
             refreshPending={
               businessesRefreshMutation.isPending || businessesQuery.isFetching
@@ -474,6 +496,15 @@ export default function EmailScrapePageContent() {
                 ? businessesQuery.error?.message || "Failed to load businesses"
                 : null)
             }
+          />
+
+          <EmailScrapeBusinessesFiltersDialog
+            open={filtersOpen}
+            onOpenChange={setFiltersOpen}
+            hasContactFilter={hasContactFilter}
+            attemptsFilter={attemptsFilter}
+            statusFilter={statusFilter}
+            onApply={handleApplyBusinessFilters}
           />
 
           {businessesQuery.isLoading ? (

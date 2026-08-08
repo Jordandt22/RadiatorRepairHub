@@ -22,6 +22,7 @@ import {
   getBusinessById,
   getBusinessesWithEmails,
   clearBusinessEmails,
+  markBusinessEmailStatus,
   updateBusinessEmail,
   updateBusinessListing,
   unclaimBusinesses,
@@ -90,6 +91,7 @@ import {
   GetAdminBusinessesWithEmailsQuerySchema,
   GetAdminBusinessParamsSchema,
   ClearBusinessEmailsSchema,
+  MarkBusinessEmailStatusSchema,
   UpdateBusinessEmailSchema,
   UpdateBusinessListingSchema,
   UnclaimBusinessesSchema,
@@ -208,6 +210,12 @@ adminRouter.patch(
   "/businesses/clear-emails",
   bodyValidator(ClearBusinessEmailsSchema),
   serverErrorCatcherWrapper(clearBusinessEmails)
+);
+
+adminRouter.patch(
+  "/businesses/email-status",
+  bodyValidator(MarkBusinessEmailStatusSchema),
+  serverErrorCatcherWrapper(markBusinessEmailStatus)
 );
 
 adminRouter.patch(

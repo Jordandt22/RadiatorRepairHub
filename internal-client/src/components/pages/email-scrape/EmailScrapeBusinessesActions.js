@@ -1,13 +1,19 @@
-import { RefreshCwIcon, SearchIcon } from "lucide-react";
+import {
+  ListFilterIcon,
+  RefreshCwIcon,
+  SearchIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
 
-export const HAS_EMAIL_FILTERS = [
-  { id: "true", label: "Has Email" },
-  { id: "false", label: "No Email" },
+export const HAS_CONTACT_FILTERS = [
+  { id: "true", label: "Has contact" },
+  { id: "false", label: "No contact" },
 ];
+
+/** @deprecated Use HAS_CONTACT_FILTERS */
+export const HAS_EMAIL_FILTERS = HAS_CONTACT_FILTERS;
 
 export const ATTEMPTS_FILTERS = [
   { id: "false", label: "No Attempts" },
@@ -43,10 +49,8 @@ function ActionButton({
 export default function EmailScrapeBusinessesActions({
   searchValue = "",
   onSearchChange,
-  hasEmailFilter = null,
-  onHasEmailFilterChange,
-  attemptsFilter = null,
-  onAttemptsFilterChange,
+  filtersActive = false,
+  onOpenFilters,
   onRefresh,
   refreshPending = false,
   refreshError = null,
@@ -54,29 +58,18 @@ export default function EmailScrapeBusinessesActions({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
-          <BusinessTierCombobox
-            items={HAS_EMAIL_FILTERS}
-            value={hasEmailFilter}
-            onValueChange={onHasEmailFilterChange}
-            placeholder="All email status"
-            ariaLabel="Filter by email status"
-            inputName="rrh-scrape-has-contact-filter"
-            disabled={refreshPending}
-          />
-        </div>
-        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
-          <BusinessTierCombobox
-            items={ATTEMPTS_FILTERS}
-            value={attemptsFilter}
-            onValueChange={onAttemptsFilterChange}
-            placeholder="All attempts"
-            ariaLabel="Filter by scrape attempts"
-            inputName="rrh-scrape-attempts-filter"
-            disabled={refreshPending}
-          />
-        </div>
-        <div className="relative min-w-0 flex-1 md:ml-auto md:max-w-sm">
+        <ActionButton
+          label="Filters"
+          icon={ListFilterIcon}
+          disabled={refreshPending}
+          onClick={onOpenFilters}
+          className={
+            filtersActive
+              ? "border-foreground/40 bg-muted/60 hover:bg-muted"
+              : "hover:bg-gray-100"
+          }
+        />
+        <div className="relative min-w-0 flex-1 md:max-w-sm">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
@@ -94,7 +87,7 @@ export default function EmailScrapeBusinessesActions({
           icon={RefreshCwIcon}
           disabled={refreshPending}
           onClick={onRefresh}
-          className="hover:bg-gray-100"
+          className="md:ml-auto hover:bg-gray-100"
           iconClassName={refreshPending ? "animate-spin" : undefined}
         />
       </div>
