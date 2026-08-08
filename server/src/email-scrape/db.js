@@ -442,12 +442,22 @@ export async function incrementEmailScrapedAttempts(
   return data;
 }
 
-export async function setBusinessEmail(businessId, email) {
+export async function setBusinessEmail(
+  businessId,
+  email,
+  { emailStatus = null } = {}
+) {
+  const update = { email };
+  if (emailStatus) {
+    update.email_status = emailStatus;
+    update.email_status_marked_at = new Date().toISOString();
+  }
+
   const { data, error } = await supabase
     .from("businesses")
-    .update({ email })
+    .update(update)
     .eq("id", businessId)
-    .select("id, email")
+    .select("id, email, email_status, email_status_marked_at")
     .single();
 
   if (error) throw error;

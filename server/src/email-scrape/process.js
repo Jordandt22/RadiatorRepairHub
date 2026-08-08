@@ -56,11 +56,19 @@ async function processBusiness(business) {
     );
 
     if (result.ok && result.email) {
-      await setBusinessEmail(business.id, result.email);
+      const suspicionReasons = Array.isArray(result.suspicion_reasons)
+        ? result.suspicion_reasons
+        : [];
+      const emailStatus =
+        suspicionReasons.length > 0 ? "suspicious" : null;
+
+      await setBusinessEmail(business.id, result.email, { emailStatus });
       return {
         ...base,
         status: "succeeded",
         email: result.email,
+        email_status: emailStatus ?? "not_checked",
+        suspicion_reasons: suspicionReasons,
         source_page: result.source_page ?? null,
         pages_scraped: result.pages_scraped ?? [],
       };
