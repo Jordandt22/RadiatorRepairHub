@@ -8,7 +8,7 @@ import {
   TRACKING_PARAMS,
   USER_AGENT,
 } from "./constants.js";
-import { isJunkEmail } from "./emailFilters.js";
+import { isJunkEmail, normalizeScrapedEmail } from "./emailFilters.js";
 import { getSuspiciousEmailReasons } from "../lib/suspiciousEmail.js";
 
 const HARD_REJECT_SUSPICIOUS = new Set([
@@ -92,14 +92,14 @@ function extractEmailsFromHtml(html, businessTitle = "") {
   let match;
   MAILTO_REGEX.lastIndex = 0;
   while ((match = MAILTO_REGEX.exec(html)) !== null) {
-    const email = match[1].toLowerCase();
-    if (!isRejectedEmail(email, businessTitle)) mailto.push(email);
+    const email = normalizeScrapedEmail(match[1]);
+    if (email && !isRejectedEmail(email, businessTitle)) mailto.push(email);
   }
 
   EMAIL_REGEX.lastIndex = 0;
   while ((match = EMAIL_REGEX.exec(html)) !== null) {
-    const email = match[0].toLowerCase();
-    if (!isRejectedEmail(email, businessTitle)) body.push(email);
+    const email = normalizeScrapedEmail(match[0]);
+    if (email && !isRejectedEmail(email, businessTitle)) body.push(email);
   }
 
   return { mailto: [...new Set(mailto)], body: [...new Set(body)] };

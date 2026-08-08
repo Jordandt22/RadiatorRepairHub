@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { isJunkEmail } from "./emailFilters.js";
+import { isJunkEmail, normalizeScrapedEmail } from "./emailFilters.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC_ROOT = path.join(__dirname, "..");
@@ -158,14 +158,14 @@ function extractEmailsFromHtml(html) {
   let match;
   MAILTO_REGEX.lastIndex = 0;
   while ((match = MAILTO_REGEX.exec(html)) !== null) {
-    const email = match[1].toLowerCase();
-    if (!isJunkEmail(email)) mailto.push(email);
+    const email = normalizeScrapedEmail(match[1]);
+    if (email && !isJunkEmail(email)) mailto.push(email);
   }
 
   EMAIL_REGEX.lastIndex = 0;
   while ((match = EMAIL_REGEX.exec(html)) !== null) {
-    const email = match[0].toLowerCase();
-    if (!isJunkEmail(email)) body.push(email);
+    const email = normalizeScrapedEmail(match[0]);
+    if (email && !isJunkEmail(email)) body.push(email);
   }
 
   return { mailto: [...new Set(mailto)], body: [...new Set(body)] };

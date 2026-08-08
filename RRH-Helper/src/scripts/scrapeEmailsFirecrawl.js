@@ -3,7 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { Firecrawl } from "firecrawl";
-import { isJunkEmail } from "./emailFilters.js";
+import { isJunkEmail, normalizeScrapedEmail } from "./emailFilters.js";
 
 dotenv.config();
 
@@ -216,14 +216,14 @@ function extractEmailsFromText(text) {
   let match;
   MAILTO_REGEX.lastIndex = 0;
   while ((match = MAILTO_REGEX.exec(text)) !== null) {
-    const email = match[1].toLowerCase();
-    if (!isJunkEmail(email)) mailto.push(email);
+    const email = normalizeScrapedEmail(match[1]);
+    if (email && !isJunkEmail(email)) mailto.push(email);
   }
 
   EMAIL_REGEX.lastIndex = 0;
   while ((match = EMAIL_REGEX.exec(text)) !== null) {
-    const email = match[0].toLowerCase();
-    if (!isJunkEmail(email)) body.push(email);
+    const email = normalizeScrapedEmail(match[0]);
+    if (email && !isJunkEmail(email)) body.push(email);
   }
 
   return { mailto: [...new Set(mailto)], body: [...new Set(body)] };
