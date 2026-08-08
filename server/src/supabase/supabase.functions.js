@@ -785,6 +785,7 @@ const EMAIL_CLEANER_BUSINESS_SELECT =
 /**
  * Paginated businesses for email cleaner / review, with outreach emails_sent_count.
  * When requireEmail is true (default), only rows with a non-empty email are returned.
+ * When requireEmail is false, optional hasEmail filters Has Email / No Email / all.
  * Optional suspicious filter scores emails in JS (correct counts across pages).
  */
 export const getAdminBusinessesWithEmails = async (
@@ -796,6 +797,7 @@ export const getAdminBusinessesWithEmails = async (
     suspicious = null,
     emailStatus = null,
     requireEmail = true,
+    hasEmail = null,
   } = {}
 ) => {
   let sentBusinessIds = null;
@@ -830,8 +832,10 @@ export const getAdminBusinessesWithEmails = async (
     .select(EMAIL_CLEANER_BUSINESS_SELECT, { count: "exact" })
     .order("title", { ascending: true });
 
-  if (requireEmail) {
+  if (requireEmail || hasEmail === true) {
     query = query.not("email", "is", null).neq("email", "");
+  } else if (hasEmail === false) {
+    query = query.or("email.is.null,email.eq.");
   }
 
   if (emailsSent === true) {

@@ -1,4 +1,5 @@
 import {
+  ListFilterIcon,
   RefreshCwIcon,
   SearchIcon,
   TagIcon,
@@ -6,9 +7,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
-import { EMAILS_SENT_FILTERS } from "@/components/pages/email-cleaner/EmailCleanerActions";
 import { cn } from "@/lib/utils";
+
+export const HAS_EMAIL_FILTERS = [
+  { id: "true", label: "Has contact" },
+  { id: "false", label: "No contact" },
+];
 
 function ActionButton({
   label,
@@ -40,8 +44,8 @@ function ActionButton({
 export default function EmailCleanerReviewActions({
   searchValue = "",
   onSearchChange,
-  emailsSent = null,
-  onEmailsSentChange,
+  filtersActive = false,
+  onOpenFilters,
   selectedCount = 0,
   markStatusDisabled = true,
   onMarkStatus,
@@ -72,17 +76,17 @@ export default function EmailCleanerReviewActions({
             {selectedCount} selected
           </span>
         ) : null}
-        <div className="w-full min-w-0 sm:w-auto sm:min-w-[10rem] md:ml-auto">
-          <BusinessTierCombobox
-            items={EMAILS_SENT_FILTERS}
-            value={emailsSent}
-            onValueChange={onEmailsSentChange}
-            placeholder="Outreach sent"
-            ariaLabel="Filter by outreach sent"
-            disabled={refreshPending || markStatusPending}
-            inputName="rrh-cleaner-review-sent"
-          />
-        </div>
+        <ActionButton
+          label="Filters"
+          icon={ListFilterIcon}
+          disabled={refreshPending || markStatusPending}
+          onClick={onOpenFilters}
+          className={
+            filtersActive
+              ? "border-foreground/40 bg-muted/60 hover:bg-muted md:ml-auto"
+              : "hover:bg-gray-100 md:ml-auto"
+          }
+        />
         <div className="relative min-w-0 flex-1 md:max-w-sm">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input

@@ -1617,6 +1617,7 @@ export const getBusinessesWithEmails = async (req, res) => {
       : null;
   const requireEmail = parseBool(req.query.require_email);
   const requireEmailValue = requireEmail === null ? true : requireEmail;
+  const hasEmail = parseBool(req.query.has_email);
 
   const { data, count, error } = await fetchAdminBusinessesWithEmails(
     page,
@@ -1627,6 +1628,7 @@ export const getBusinessesWithEmails = async (req, res) => {
       suspicious: requireEmailValue ? suspicious : null,
       emailStatus,
       requireEmail: requireEmailValue,
+      hasEmail: requireEmailValue ? null : hasEmail,
     }
   );
 
@@ -1659,6 +1661,7 @@ export const getBusinessesWithEmails = async (req, res) => {
       emails_sent: emailsSent,
       suspicious: requireEmailValue ? suspicious : null,
       require_email: requireEmailValue,
+      has_email: requireEmailValue ? null : hasEmail,
     })
   );
 };

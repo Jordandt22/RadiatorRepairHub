@@ -28,7 +28,10 @@ import EmailCleanerFiltersDialog from "@/components/pages/email-cleaner/EmailCle
 import EmailCleanerMarkStatusDialog, {
   EMAIL_STATUS_OPTIONS,
 } from "@/components/pages/email-cleaner/EmailCleanerMarkStatusDialog";
-import EmailCleanerReviewActions from "@/components/pages/email-cleaner/EmailCleanerReviewActions";
+import EmailCleanerReviewActions, {
+  HAS_EMAIL_FILTERS,
+} from "@/components/pages/email-cleaner/EmailCleanerReviewActions";
+import EmailCleanerReviewFiltersDialog from "@/components/pages/email-cleaner/EmailCleanerReviewFiltersDialog";
 import EmailCleanerTable from "@/components/pages/email-cleaner/EmailCleanerTable";
 import EmailCleanerTableSkeleton from "@/components/pages/email-cleaner/EmailCleanerTableSkeleton";
 import Pagination from "@/components/pages/dashboard/Pagination";
@@ -56,6 +59,7 @@ async function fetchWithEmailsList({
   suspiciousValue,
   statusFilterId,
   requireEmail,
+  hasEmailValue = null,
 }) {
   const params = new URLSearchParams({
     page: String(page),
@@ -70,6 +74,9 @@ async function fetchWithEmailsList({
   }
   if (requireEmail && suspiciousValue !== null) {
     params.set("suspicious", String(suspiciousValue));
+  }
+  if (!requireEmail && hasEmailValue !== null) {
+    params.set("has_email", String(hasEmailValue));
   }
   if (statusFilterId) {
     params.set("email_status", statusFilterId);
@@ -132,12 +139,25 @@ export default function EmailCleanerPageContent() {
     q: reviewQ,
     page: reviewPage,
     sent: reviewEmailsSent,
+    hasEmail: reviewHasEmail,
+    status: reviewStatusFilter,
     setField: setReviewField,
+    setFields: setReviewFields,
   } = useUrlQueryState(
     {
       q: { type: "string", param: "rq" },
       page: { type: "page", param: "rpage" },
       sent: { type: "option", param: "rsent", options: EMAILS_SENT_FILTERS },
+      hasEmail: {
+        type: "option",
+        param: "rhas_email",
+        options: HAS_EMAIL_FILTERS,
+      },
+      status: {
+        type: "option",
+        param: "rstatus",
+        options: EMAIL_STATUS_OPTIONS,
+      },
     },
     { pathname: "/email-cleaner", pageKey: "page" },
   );
@@ -149,6 +169,7 @@ export default function EmailCleanerPageContent() {
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [reviewFiltersOpen, setReviewFiltersOpen] = useState(false);
   const [markStatusOpen, setMarkStatusOpen] = useState(false);
   const [markStatusError, setMarkStatusError] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -161,8 +182,10 @@ export default function EmailCleanerPageContent() {
   const reviewSearchQuery = (reviewQ || "").trim();
   const emailsSentValue = parseBoolFilter(emailsSent);
   const reviewEmailsSentValue = parseBoolFilter(reviewEmailsSent);
+  const reviewHasEmailValue = parseBoolFilter(reviewHasEmail);
   const suspiciousValue = parseBoolFilter(suspicious);
   const statusFilterId = statusFilter?.id ?? null;
+  const reviewStatusFilterId = reviewStatusFilter?.id ?? null;
   const setFieldRef = useRef(setField);
   setFieldRef.current = setField;
   const setReviewFieldRef = useRef(setReviewField);
@@ -188,6 +211,7 @@ export default function EmailCleanerPageContent() {
       setRefreshError(null);
       setMarkStatusOpen(false);
       setFiltersOpen(false);
+      setReviewFiltersOpen(false);
       setConfirmOpen(false);
     });
   }, []);
@@ -233,6 +257,7 @@ export default function EmailCleanerPageContent() {
     setRefreshError(null);
     setMarkStatusOpen(false);
     setFiltersOpen(false);
+    setReviewFiltersOpen(false);
     setConfirmOpen(false);
     replaceTab(nextTab, "/email-cleaner");
   };
@@ -255,6 +280,20 @@ export default function EmailCleanerPageContent() {
     setFields({
       sent,
       suspicious: nextSuspicious,
+      status,
+      page: 1,
+    });
+    setSelectedIds(new Set());
+  };
+
+  const handleApplyReviewFilters = ({
+    sent,
+    hasEmail,
+    status,
+  }) => {
+    setReviewFields({
+      sent,
+      hasEmail,
       status,
       page: 1,
     });
@@ -314,6 +353,8 @@ export default function EmailCleanerPageContent() {
       reviewPage,
       reviewSearchQuery,
       reviewEmailsSentValue,
+      reviewHasEmailValue,
+      reviewStatusFilterId,
     ],
     queryFn: () =>
       fetchWithEmailsList({
@@ -323,8 +364,9 @@ export default function EmailCleanerPageContent() {
         searchQuery: reviewSearchQuery,
         emailsSentValue: reviewEmailsSentValue,
         suspiciousValue: null,
-        statusFilterId: null,
+        statusFilterId: reviewStatusFilterId,
         requireEmail: false,
+        hasEmailValue: reviewHasEmailValue,
       }),
     enabled: isReady && !!accessToken && !isCleanerTab,
     placeholderData: keepPreviousData,
@@ -535,7 +577,9 @@ export default function EmailCleanerPageContent() {
     ? emailsSentValue !== null ||
       suspiciousValue !== null ||
       Boolean(statusFilterId)
-    : reviewEmailsSentValue !== null;
+    : reviewEmailsSentValue !== null ||
+      reviewHasEmailValue !== null ||
+      Boolean(reviewStatusFilterId);
 
   const handleToggleId = (id, checked) => {
     setSelectedIds((prev) => {
@@ -649,11 +693,8 @@ export default function EmailCleanerPageContent() {
           <EmailCleanerReviewActions
             searchValue={reviewSearchInput}
             onSearchChange={handleReviewSearchChange}
-            emailsSent={reviewEmailsSent}
-            onEmailsSentChange={(value) => {
-              setReviewField("sent", value);
-              setSelectedIds(new Set());
-            }}
+            filtersActive={hasFilters}
+            onOpenFilters={() => setReviewFiltersOpen(true)}
             selectedCount={selectedIds.size}
             markStatusDisabled={markStatusDisabled}
             onMarkStatus={handleMarkStatusClick}
@@ -714,6 +755,15 @@ export default function EmailCleanerPageContent() {
         suspicious={suspicious}
         statusFilter={statusFilter}
         onApply={handleApplyFilters}
+      />
+
+      <EmailCleanerReviewFiltersDialog
+        open={reviewFiltersOpen}
+        onOpenChange={setReviewFiltersOpen}
+        emailsSent={reviewEmailsSent}
+        hasEmail={reviewHasEmail}
+        statusFilter={reviewStatusFilter}
+        onApply={handleApplyReviewFilters}
       />
 
       <EmailCleanerMarkStatusDialog

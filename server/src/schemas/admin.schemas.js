@@ -375,6 +375,15 @@ export const GetAdminBusinessesWithEmailsQuerySchema = Yup.object({
     })
     .default(true)
     .optional(),
+  has_email: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return null;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .nullable()
+    .optional(),
 });
 
 export const ClearBusinessEmailsSchema = Yup.object({
