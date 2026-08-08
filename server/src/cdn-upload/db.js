@@ -1,4 +1,8 @@
 import { supabase } from "../supabase/supabase.js";
+import {
+  buildIlikeOrFilter,
+  sanitizeIlikeSearch,
+} from "../lib/sanitizeSearch.js";
 import { MAX_CDN_STORED_ATTEMPTS } from "./constants.js";
 
 function summarizeBatchStatuses(batches = []) {
@@ -461,12 +465,7 @@ export async function markBusinessCdnStored(businessId) {
 }
 
 function sanitizeCdnBusinessSearch(q) {
-  if (!q) return null;
-  return String(q)
-    .replace(/[%_,()\"'\\]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 100);
+  return sanitizeIlikeSearch(q);
 }
 
 export async function listCdnUploadBusinesses(
@@ -497,7 +496,7 @@ export async function listCdnUploadBusinesses(
   }
 
   if (search) {
-    query = query.or(`title.ilike.%${search}%,slug.ilike.%${search}%`);
+    query = query.or(buildIlikeOrFilter(["title", "slug"], search));
   }
 
   const from = (safePage - 1) * safeLimit;

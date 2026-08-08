@@ -1,4 +1,8 @@
 import { supabase } from "../supabase/supabase.js";
+import {
+  buildIlikeOrFilter,
+  sanitizeIlikeSearch,
+} from "../lib/sanitizeSearch.js";
 import { MAX_EMAIL_SCRAPED_ATTEMPTS } from "./constants.js";
 
 function summarizeBatchStatuses(batches = []) {
@@ -349,6 +353,7 @@ async function hydrateEmailScrapeBatchBusinesses(batch) {
       slug: row.slug ?? null,
       website: row.website ?? null,
       email: row.email ?? null,
+      email_status: row.email_status ?? null,
       email_scraped_attempts: null,
       outcome_status: row.status ?? null,
       outcome_email: row.email ?? null,
@@ -359,7 +364,7 @@ async function hydrateEmailScrapeBatchBusinesses(batch) {
   const { data, error } = await supabase
     .from("businesses")
     .select(
-      "id, title, slug, website, email, email_scraped_attempts, address"
+      "id, title, slug, website, email, email_status, email_scraped_attempts, address"
     )
     .in("id", businessIds);
 
@@ -379,6 +384,7 @@ async function hydrateEmailScrapeBatchBusinesses(batch) {
       website: live?.website ?? outcome?.website ?? null,
       address: live?.address ?? null,
       email: live?.email ?? null,
+      email_status: live?.email_status ?? outcome?.email_status ?? null,
       email_scraped_attempts: live?.email_scraped_attempts ?? null,
       outcome_status: outcome?.status ?? null,
       outcome_email: outcome?.email ?? null,
@@ -480,12 +486,7 @@ export async function setBusinessEmailUnableToFind(businessId) {
 }
 
 function sanitizeEmailScrapeBusinessSearch(q) {
-  if (!q) return null;
-  return String(q)
-    .replace(/[%_,()\"'\\]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 100);
+  return sanitizeIlikeSearch(q);
 }
 
 export async function listEmailScrapeBusinesses(
@@ -523,7 +524,7 @@ export async function listEmailScrapeBusinesses(
 
   if (search) {
     query = query.or(
-      `title.ilike.%${search}%,slug.ilike.%${search}%,website.ilike.%${search}%,email.ilike.%${search}%`
+      buildIlikeOrFilter(["title", "slug", "website", "email"], search)
     );
   }
 

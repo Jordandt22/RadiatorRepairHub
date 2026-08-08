@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
 import EmailScrapeStatusBadge from "@/components/pages/email-scrape/EmailScrapeStatusBadge";
+import EmailCleanerStatusBadge from "@/components/pages/email-cleaner/EmailCleanerStatusBadge";
 import EmailScrapeTableSkeleton from "@/components/pages/email-scrape/EmailScrapeTableSkeleton";
 import IngestCountBadge from "@/components/pages/add-businesses/IngestCountBadge";
 import IngestPayloadTable from "@/components/pages/add-businesses/IngestPayloadTable";
@@ -40,7 +41,7 @@ const BUSINESS_COLUMNS = [
   {
     key: "title",
     label: "Business",
-    className: "w-[24%]",
+    className: "w-[20%]",
     render: (row) => (
       <BusinessTitleLink
         id={row.id}
@@ -52,7 +53,7 @@ const BUSINESS_COLUMNS = [
   },
   {
     key: "outcome",
-    label: "Status",
+    label: "Outcome",
     className: "w-[12%]",
     render: (row) =>
       row.outcome_status ? (
@@ -62,21 +63,32 @@ const BUSINESS_COLUMNS = [
       ),
   },
   {
+    key: "email_status",
+    label: "Email status",
+    className: "w-[14%]",
+    render: (row) =>
+      row.email_status ? (
+        <EmailCleanerStatusBadge status={row.email_status} />
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
+  },
+  {
     key: "email",
     label: "Email",
-    className: "w-[22%]",
+    className: "w-[18%]",
     getValue: (row) => row.outcome_email || row.email || "—",
   },
   {
     key: "reason",
     label: "Reason",
-    className: "w-[18%]",
+    className: "w-[14%]",
     getValue: (row) => row.reason || "—",
   },
   {
     key: "attempts",
     label: "Attempts",
-    className: "w-[10%]",
+    className: "w-[8%]",
     getValue: (row) =>
       row.email_scraped_attempts == null
         ? "—"
