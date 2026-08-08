@@ -3,6 +3,7 @@ import {
   getBusinessesByIds,
   incrementEmailScrapedAttempts,
   setBusinessEmail,
+  setBusinessEmailUnableToFind,
 } from "./db.js";
 import { scrapeBusinessWebsite } from "./scrape.js";
 
@@ -72,6 +73,10 @@ async function processBusiness(business) {
       "no_email_found",
     ]);
     const status = skipReasons.has(reason) ? "skipped" : "failed";
+
+    if (reason === "no_email_found") {
+      await setBusinessEmailUnableToFind(business.id);
+    }
 
     return {
       ...base,

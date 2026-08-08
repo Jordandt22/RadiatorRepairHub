@@ -938,14 +938,18 @@ export const getAdminBusinessesWithEmails = async (
 };
 
 /**
- * Set business email to null for the given IDs (admin email cleaner).
+ * Set business email to null and mark unable_to_find for the given IDs (admin email cleaner).
  */
 export const clearBusinessEmails = async (ids) => {
   if (!ids?.length) return { data: [], error: null };
 
   const { data, error } = await supabase
     .from("businesses")
-    .update({ email: null })
+    .update({
+      email: null,
+      email_status: "unable_to_find",
+      email_status_marked_at: new Date().toISOString(),
+    })
     .in("id", ids)
     .not("email", "is", null)
     .select("id");
