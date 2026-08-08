@@ -48,6 +48,9 @@ const JUNK_DOMAIN_SUFFIXES = [
   ".blink",
 ];
 
+/** Directory / map sites that publish listing emails (substring match on domain). */
+const DIRECTORY_DOMAIN_TOKENS = ["locmaps", "uscmaps"];
+
 const PLACEHOLDER_EMAILS = new Set([
   "info@mysite.com",
   "ex@mple.com",
@@ -77,6 +80,10 @@ export function getJunkReason(email) {
   }
   if (/^frame-[0-9a-f]{8,}$/i.test(local)) {
     return "browser_artifact";
+  }
+
+  if (DIRECTORY_DOMAIN_TOKENS.some((token) => domain.includes(token))) {
+    return "directory_site";
   }
 
   if (JUNK_DOMAINS.has(domain)) {

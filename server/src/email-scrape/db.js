@@ -454,6 +454,21 @@ export async function setBusinessEmail(businessId, email) {
   return data;
 }
 
+export async function setBusinessEmailUnableToFind(businessId) {
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({
+      email_status: "unable_to_find",
+      email_status_marked_at: new Date().toISOString(),
+    })
+    .eq("id", businessId)
+    .select("id, email_status, email_status_marked_at")
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 function sanitizeEmailScrapeBusinessSearch(q) {
   if (!q) return null;
   return String(q)
