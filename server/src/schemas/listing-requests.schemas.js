@@ -1,4 +1,5 @@
 import * as Yup from "yup";
+import { normalizeGoogleMapsUrl } from "../lib/normalizeGoogleMapsUrl.js";
 
 const isValidOptionalPhone = (value) => {
   if (!value?.trim()) return true;
@@ -8,6 +9,41 @@ const isValidOptionalPhone = (value) => {
     digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
 
   return /^[2-9]\d{2}[2-9]\d{6}$/.test(local);
+};
+
+const isGoogleMapsUrl = (value) => {
+  if (!value?.trim()) return false;
+
+  let parsed;
+  try {
+    parsed = new URL(value.trim());
+  } catch {
+    return false;
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    return false;
+  }
+
+  const host = parsed.hostname.toLowerCase();
+  const path = parsed.pathname.toLowerCase();
+
+  if (host === "maps.app.goo.gl" || host === "goo.gl") return true;
+  if (host === "maps.google.com" || host.endsWith(".maps.google.com")) {
+    return true;
+  }
+  if (host === "business.google.com" || host.endsWith(".business.google.com")) {
+    return true;
+  }
+  if (host === "google.com" || host.endsWith(".google.com")) {
+    return (
+      path.includes("/maps") ||
+      path.includes("/search") ||
+      Boolean(parsed.searchParams.get("cid"))
+    );
+  }
+
+  return false;
 };
 
 export const CreateListingRequestSchema = Yup.object({
@@ -30,9 +66,26 @@ export const CreateListingRequestSchema = Yup.object({
       "Please enter a valid phone number",
       isValidOptionalPhone
     ),
+  googleMapsUrl: Yup.string()
+    .trim()
+    .transform((value) => normalizeGoogleMapsUrl(value))
+    .url("Please enter a valid Google Maps or Google Business link")
+    .max(2000, "Link must be 2000 characters or fewer")
+    .required("Google Maps or Google Business link is required")
+    .test(
+      "google-maps-url",
+      "Please paste a Google Maps or Google Business Profile link",
+      isGoogleMapsUrl
+    ),
   message: Yup.string()
     .trim()
-    .min(10, "Message must be at least 10 characters")
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .notRequired()
     .max(5000, "Message must be 5000 characters or fewer")
-    .required("Message is required"),
+    .test(
+      "optional-min",
+      "Message must be at least 10 characters when provided",
+      (value) => value == null || value.length >= 10
+    ),
 });

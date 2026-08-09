@@ -231,6 +231,22 @@ export const UpdateListingRequestsStatusSchema = Yup.object({
     .of(Yup.string().uuid("Invalid listing request ID").required())
     .min(1, "At least one listing request ID is required")
     .required("Listing request IDs are required"),
+  business_slug: Yup.string()
+    .trim()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .when("status", {
+      is: "listed",
+      then: (schema) =>
+        schema
+          .required("Business slug is required when marking as listed")
+          .matches(
+            /^[a-z0-9]+(?:-[a-z0-9]+)*$/i,
+            "Enter a valid business slug"
+          )
+          .max(220, "Business slug must be 220 characters or fewer"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
 });
 
 export const GetAdminBusinessesQuerySchema = Yup.object({

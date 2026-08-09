@@ -26,6 +26,7 @@ import {
   getListingRequests as fetchListingRequests,
   updateListingRequestsStatus as updateListingRequestsStatusFn,
   markListingRequestsLiveEmailSent,
+  getBusinessExistsBySlug,
   getAdminBusinesses as fetchAdminBusinesses,
   getAdminBusinessById as fetchAdminBusinessById,
   getAdminBusinessesWithEmails as fetchAdminBusinessesWithEmails,
@@ -99,8 +100,8 @@ import {
   buildNearbyRecommendationsHtml,
   DECLINED_RECOMMENDATIONS_FALLBACK,
   SENDER_NAME,
-  ADMIN_OUTREACH_SENT_MESSAGE,
   LISTING_REQUEST_LIVE_MESSAGE,
+  buildBusinessClaimLink,
 } from "../../lib/constants/messages.js";
 import {
   createIngestGroup as insertIngestGroup,
@@ -1589,7 +1590,40 @@ export const getListingRequests = async (req, res) => {
 };
 
 export const updateListingRequestsStatus = async (req, res) => {
-  const { status, listing_request_ids } = req.body;
+  const { status, listing_request_ids, business_slug } = req.body;
+
+  let verifiedBusinessSlug = business_slug;
+
+  if (status === "listed") {
+    const { data: business, error: businessError } =
+      await getBusinessExistsBySlug(business_slug);
+
+    if (businessError) {
+      if (businessError.code === "PGRST116") {
+        return res
+          .status(404)
+          .json(
+            customErrorHandler(
+              YUP_ERROR,
+              "No business found with that slug.",
+              businessError
+            )
+          );
+      }
+
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            "There was an error verifying the business slug.",
+            businessError
+          )
+        );
+    }
+
+    verifiedBusinessSlug = business.slug;
+  }
 
   const { data, error } = await updateListingRequestsStatusFn(
     listing_request_ids,
@@ -1621,6 +1655,7 @@ export const updateListingRequestsStatus = async (req, res) => {
     );
 
     const { SENDER_EMAIL, RESEND_API_KEY } = process.env;
+    const businessPageUrl = buildBusinessClaimLink(verifiedBusinessSlug);
 
     if (RESEND_API_KEY && SENDER_EMAIL && toNotify.length > 0) {
       const sentIds = [];
@@ -1630,7 +1665,9 @@ export const updateListingRequestsStatus = async (req, res) => {
           from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
           to: [row.email.trim()],
           subject: LISTING_REQUEST_LIVE_MESSAGE.subject(row.business_name),
-          html: LISTING_REQUEST_LIVE_MESSAGE.html(row.business_name),
+          html: LISTING_REQUEST_LIVE_MESSAGE.html(row.business_name, {
+            businessPageUrl,
+          }),
         });
 
         if (!sendError) {
@@ -2991,35 +3028,6 @@ export const sendOutreachEmails = async (req, res) => {
   }
 
   const sentIds = (inserted ?? []).map((row) => row.business_id);
-  const sentCount = sentIds.length;
-  const skippedCount = skipped.length;
-  const { ADMIN_EMAIL, INTERNAL_CLIENT_URL } = process.env;
-
-  if (ADMIN_EMAIL && sentCount > 0) {
-    const historyUrl = INTERNAL_CLIENT_URL
-      ? `${String(INTERNAL_CLIENT_URL).replace(/\/$/, "")}/outreach?tab=history`
-      : null;
-
-    const { error: adminSendError } = await resendClient().emails.send({
-      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
-      to: [ADMIN_EMAIL],
-      subject: ADMIN_OUTREACH_SENT_MESSAGE.subject(outreach_type, sentCount),
-      html: ADMIN_OUTREACH_SENT_MESSAGE.html({
-        outreachType: outreach_type,
-        sentCount,
-        skippedCount,
-        historyUrl,
-        devRedirect: isOutreachDevRedirect(),
-      }),
-    });
-
-    if (adminSendError && process.env.NODE_ENV === "development") {
-      console.error(
-        "Failed to send admin outreach summary email:",
-        adminSendError
-      );
-    }
-  }
 
   return res.status(200).json(
     successHandler({

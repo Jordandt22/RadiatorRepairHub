@@ -22,6 +22,7 @@ import ListingRequestActions from "@/components/pages/get-listed-requests/Listin
 import ListingRequestsTable from "@/components/pages/get-listed-requests/ListingRequestsTable";
 import ListingRequestsTableSkeleton from "@/components/pages/get-listed-requests/ListingRequestsTableSkeleton";
 import ListingRequestDrawer from "@/components/pages/get-listed-requests/ListingRequestDrawer";
+import MarkListedDialog from "@/components/pages/get-listed-requests/MarkListedDialog";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
 const PAGE_LIMIT = 10;
@@ -48,6 +49,8 @@ export default function ListingRequestsPageContent() {
   const [refreshError, setRefreshError] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [markListedOpen, setMarkListedOpen] = useState(false);
+  const [markListedError, setMarkListedError] = useState(null);
 
   const statusFilter = TAB_STATUS[activeTab] ?? "pending";
 
@@ -115,11 +118,15 @@ export default function ListingRequestsPageContent() {
   });
 
   const statusMutation = useMutation({
-    mutationFn: async ({ status, listing_request_ids }) => {
+    mutationFn: async ({ status, listing_request_ids, business_slug }) => {
       const result = await fetchApi("/admin/listing-requests/status", {
         method: "PATCH",
         accessToken,
-        body: JSON.stringify({ status, listing_request_ids }),
+        body: JSON.stringify({
+          status,
+          listing_request_ids,
+          ...(business_slug ? { business_slug } : {}),
+        }),
       });
 
       if (result.status === 401) {
@@ -131,19 +138,29 @@ export default function ListingRequestsPageContent() {
         const message =
           typeof result.error.message === "string"
             ? result.error.message
-            : "Failed to update status";
-        throw new Error(message);
+            : result.error?.message?.business_slug ||
+              "Failed to update status";
+        throw new Error(
+          typeof message === "string" ? message : "Failed to update status",
+        );
       }
 
       return result.data;
     },
     onSuccess: async () => {
       setActionError(null);
+      setMarkListedError(null);
       setSelectedIds(new Set());
+      setMarkListedOpen(false);
       await queryClient.invalidateQueries({ queryKey: ["listing-requests"] });
     },
-    onError: (err) => {
-      setActionError(err.message || "Failed to update status");
+    onError: (err, variables) => {
+      const message = err.message || "Failed to update status";
+      if (variables?.status === "listed") {
+        setMarkListedError(message);
+        return;
+      }
+      setActionError(message);
     },
   });
 
@@ -190,6 +207,12 @@ export default function ListingRequestsPageContent() {
     [data?.listingRequests],
   );
 
+  const selectedMarkListedRequest = useMemo(() => {
+    if (selectedIds.size !== 1) return null;
+    const id = Array.from(selectedIds)[0];
+    return listingRequests.find((row) => row.listing_request_id === id) ?? null;
+  }, [selectedIds, listingRequests]);
+
   if (!isReady || !accessToken) {
     return null;
   }
@@ -219,11 +242,22 @@ export default function ListingRequestsPageContent() {
     });
   };
 
-  const mutateSelectedStatus = (status) => {
+  const mutateSelectedStatus = (status, business_slug) => {
     const listing_request_ids = Array.from(selectedIds);
     if (listing_request_ids.length === 0 || statusMutation.isPending) return;
     setActionError(null);
-    statusMutation.mutate({ status, listing_request_ids });
+    statusMutation.mutate({ status, listing_request_ids, business_slug });
+  };
+
+  const handleMarkListedClick = () => {
+    if (selectedIds.size === 0 || statusMutation.isPending) return;
+    if (selectedIds.size !== 1) {
+      setActionError("Select exactly one request to mark as listed.");
+      return;
+    }
+    setActionError(null);
+    setMarkListedError(null);
+    setMarkListedOpen(true);
   };
 
   const handleViewClick = (request) => {
@@ -248,7 +282,7 @@ export default function ListingRequestsPageContent() {
             activeTab === "duplicate"
           }
           actionDisabled={actionDisabled}
-          onMarkListed={() => mutateSelectedStatus("listed")}
+          onMarkListed={handleMarkListedClick}
           onReject={() => mutateSelectedStatus("rejected")}
           onMarkDuplicate={() => mutateSelectedStatus("duplicate")}
           onReopen={() => mutateSelectedStatus("pending")}
@@ -290,6 +324,22 @@ export default function ListingRequestsPageContent() {
         request={selectedRequest}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
+      />
+
+      <MarkListedDialog
+        open={markListedOpen}
+        onOpenChange={(open) => {
+          setMarkListedOpen(open);
+          if (!open) setMarkListedError(null);
+        }}
+        businessName={selectedMarkListedRequest?.business_name || ""}
+        selectedCount={selectedIds.size}
+        confirmPending={statusMutation.isPending}
+        submitError={markListedError}
+        onClearSubmitError={() => setMarkListedError(null)}
+        onConfirm={(businessSlug) =>
+          mutateSelectedStatus("listed", businessSlug)
+        }
       />
     </div>
   );

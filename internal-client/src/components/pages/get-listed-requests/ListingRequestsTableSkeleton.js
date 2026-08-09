@@ -52,7 +52,7 @@ export default function ListingRequestsTableSkeleton({ rows = 8 }) {
             </TableHead>
             <TableHead>Business</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
+            <TableHead>Google Link</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created</TableHead>
             <TableHead className="w-24 text-right">

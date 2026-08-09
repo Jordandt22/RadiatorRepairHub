@@ -33,8 +33,21 @@ export default function OverviewListingRequestsTable({
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
               <dt className="text-muted-foreground">Email</dt>
               <dd className="truncate">{row.email ?? "—"}</dd>
-              <dt className="text-muted-foreground">Phone</dt>
-              <dd className="truncate">{row.phone || "—"}</dd>
+              <dt className="text-muted-foreground">Google</dt>
+              <dd className="truncate">
+                {row.google_maps_url ? (
+                  <a
+                    href={row.google_maps_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline underline-offset-2"
+                  >
+                    Open link
+                  </a>
+                ) : (
+                  "—"
+                )}
+              </dd>
               <dt className="text-muted-foreground">Created</dt>
               <dd>{formatDate(row.created_at)}</dd>
             </dl>
@@ -46,11 +59,11 @@ export default function OverviewListingRequestsTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[24%]">Business</TableHead>
-              <TableHead className="w-[24%]">Email</TableHead>
-              <TableHead className="w-[16%]">Phone</TableHead>
+              <TableHead className="w-[22%]">Business</TableHead>
+              <TableHead className="w-[20%]">Email</TableHead>
+              <TableHead className="w-[26%]">Google Link</TableHead>
               <TableHead className="w-[14%]">Status</TableHead>
-              <TableHead className="w-[22%]">Created</TableHead>
+              <TableHead className="w-[18%]">Created</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -70,7 +83,19 @@ export default function OverviewListingRequestsTable({
                   </span>
                 </TableCell>
                 <TableCell className="max-w-0">
-                  <span className="block truncate">{row.phone || "—"}</span>
+                  {row.google_maps_url ? (
+                    <a
+                      href={row.google_maps_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block truncate text-sm text-blue-600 underline underline-offset-2 hover:text-blue-800"
+                      title={row.google_maps_url}
+                    >
+                      {row.google_maps_url}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <ListingRequestStatusBadge status={row.status} />

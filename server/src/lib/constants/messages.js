@@ -459,9 +459,22 @@ export const ADMIN_NEW_CONTACT_INQUIRY_MESSAGE = Object.freeze({
 // Confirmation email sent after a get-listed request is submitted
 export const LISTING_REQUEST_RECEIVED_MESSAGE = Object.freeze({
   subject: "We received your listing request",
-  html: (businessName, { message } = {}) => {
+  html: (businessName, { googleMapsUrl, message } = {}) => {
     const safeName = escapeEmailHtml(businessName?.trim() || "there");
+    const safeMapsUrl = escapeEmailHtml(googleMapsUrl ?? "");
     const safeMessage = escapeEmailHtml(message ?? "").replace(/\n/g, "<br>");
+    const mapsRow = safeMapsUrl
+      ? `<tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Google listing:</td>
+      <td style="padding: 8px 0;"><a href="${safeMapsUrl}" style="color: #1a73e8;">${safeMapsUrl}</a></td>
+    </tr>`
+      : "";
+    const messageRow = safeMessage
+      ? `<tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Notes:</td>
+      <td style="padding: 8px 0;">${safeMessage}</td>
+    </tr>`
+      : "";
 
     return `
   <p>Hi ${safeName},</p>
@@ -474,10 +487,8 @@ export const LISTING_REQUEST_RECEIVED_MESSAGE = Object.freeze({
       <td style="padding: 8px 0; font-weight: bold; width: 120px; vertical-align: top;">Business:</td>
       <td style="padding: 8px 0;">${safeName}</td>
     </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Details:</td>
-      <td style="padding: 8px 0;">${safeMessage || "N/A"}</td>
-    </tr>
+    ${mapsRow}
+    ${messageRow}
   </table>
 
   <p>Once your listing is approved and live, we'll send another email with a link to your page.</p>
@@ -496,6 +507,8 @@ export const ADMIN_NEW_LISTING_REQUEST_MESSAGE = Object.freeze({
       businessName,
       email,
       phone,
+      googleMapsUrl,
+      placeId,
       message,
       adminQueueUrl,
     } = {},
@@ -516,7 +529,19 @@ export const ADMIN_NEW_LISTING_REQUEST_MESSAGE = Object.freeze({
       <td style="padding: 8px 0;">${phone ?? "N/A"}</td>
     </tr>
     <tr>
-      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Message:</td>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Google listing:</td>
+      <td style="padding: 8px 0;">${
+        googleMapsUrl
+          ? `<a href="${googleMapsUrl}" style="color: #1a73e8;">${googleMapsUrl}</a>`
+          : "N/A"
+      }</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Place ID:</td>
+      <td style="padding: 8px 0;">${placeId ?? "Unresolved"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Notes:</td>
       <td style="padding: 8px 0;">${message ?? "N/A"}</td>
     </tr>
   </table>
@@ -534,20 +559,35 @@ export const LISTING_REQUEST_LIVE_MESSAGE = Object.freeze({
   subject: (businessName) =>
     `Your listing is live${businessName ? `: ${businessName}` : ""}`,
   html: (businessName, { businessPageUrl } = {}) => {
-    const safeName = escapeEmailHtml(businessName?.trim() || "your business");
-    const listingLink = businessPageUrl
-      ? `<p>View your listing:<br>
+    const safeName = escapeEmailHtml(businessName?.trim() || "there");
+    const greetingName = businessName?.trim()
+      ? escapeEmailHtml(`${businessName.trim()} Team`)
+      : "there";
+    const howToClaimUrl = `${getWebBaseUrl()}/how-to-claim`;
+    const listingBlock = businessPageUrl
+      ? `<p>Here is the listing:<br>
   <a href="${escapeEmailHtml(businessPageUrl)}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl)}</a></p>`
-      : `<p>Your listing is now live on RadiatorRepairHub. Search for your business name on the site to find your page.</p>`;
+      : `<p>Your listing is now live on RadiatorRepairHub. Search for <strong>${safeName}</strong> on the site to find your page.</p>`;
 
     return `
-  <p>Hi there,</p>
+  <p>Hi ${greetingName},</p>
 
-  <p>Good news! <strong>${safeName}</strong> is now listed on RadiatorRepairHub.</p>
+  <p>We just updated the business information for your listing! Please take a look and let us know if anything else is incorrect or outdated.</p>
 
-  ${listingLink}
+  ${listingBlock}
 
-  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  <p>We also recommend claiming your business, which can be done on your business page provided above, and it's completely free. Here's a guide if needed: <a href="${escapeEmailHtml(howToClaimUrl)}" style="color: #1a73e8;">How to Claim</a>.</p>
+
+  <p>By claiming your listing, you can:</p>
+  <ul>
+    <li>Update information about your business</li>
+    <li>Keep contact info accurate so customers can reach you</li>
+    <li>Show as a verified shop with higher priority in search results</li>
+  </ul>
+
+  <p>If you have any questions or need assistance, don't hesitate to reach out! You can also reply to this email.</p>
+
+  <p>Thank you,<br>RadiatorRepairHub Team</p>
   `;
   },
 });
@@ -602,68 +642,6 @@ export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `,
-});
-
-const OUTREACH_TYPE_ADMIN_LABELS = {
-  claim_invite: "Claim invite",
-  ownership_claim_invite: "Claim invite (ownership)",
-  lead_claim_invite: "Claim invite (leads)",
-  custom_claim_invite: "Claim invite (custom)",
-  claim_followup: "Claim follow-up",
-  website_offer: "Website offer",
-};
-
-// Admin notification after a bulk outreach send
-export const ADMIN_OUTREACH_SENT_MESSAGE = Object.freeze({
-  subject: (outreachType, sentCount) => {
-    const label =
-      OUTREACH_TYPE_ADMIN_LABELS[outreachType] ?? outreachType ?? "Outreach";
-    return `Outreach sent: ${sentCount} ${label} email${
-      sentCount === 1 ? "" : "s"
-    }`;
-  },
-  html: ({
-    outreachType,
-    sentCount,
-    skippedCount,
-    historyUrl,
-    devRedirect,
-  }) => {
-    const label =
-      OUTREACH_TYPE_ADMIN_LABELS[outreachType] ?? outreachType ?? "Outreach";
-    return `
-  <p>A bulk outreach send completed on RadiatorRepairHub.</p>
-
-  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold; width: 160px;">Email type:</td>
-      <td style="padding: 8px 0;">${label}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Sent:</td>
-      <td style="padding: 8px 0;">${sentCount ?? 0}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Skipped:</td>
-      <td style="padding: 8px 0;">${skippedCount ?? 0}</td>
-    </tr>
-    ${
-      devRedirect
-        ? `<tr>
-      <td style="padding: 8px 0; font-weight: bold;">Mode:</td>
-      <td style="padding: 8px 0;">Development redirect (test recipient)</td>
-    </tr>`
-        : ""
-    }
-  </table>
-
-  <p>${
-    historyUrl
-      ? `Review sends in the <a href="${historyUrl}" style="color: #1a73e8;">outreach history</a>.`
-      : "Review sends in the admin outreach history."
-  }</p>
-  `;
-  },
 });
 
 // Outreach: invite unclaimed businesses to claim their listing (A — control)

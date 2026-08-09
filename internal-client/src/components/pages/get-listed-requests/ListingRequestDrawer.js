@@ -49,10 +49,33 @@ export default function ListingRequestDrawer({ request, open, onOpenChange }) {
                 )}
               </DetailRow>
               <DetailRow label="Phone">{request.phone || "—"}</DetailRow>
+              <DetailRow label="Google listing">
+                {request.google_maps_url ? (
+                  <a
+                    href={request.google_maps_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="break-all underline underline-offset-2"
+                  >
+                    {request.google_maps_url}
+                  </a>
+                ) : (
+                  "—"
+                )}
+              </DetailRow>
+              <DetailRow label="Place ID">
+                {request.place_id ? (
+                  <span className="break-all font-mono text-xs">
+                    {request.place_id}
+                  </span>
+                ) : (
+                  "—"
+                )}
+              </DetailRow>
               <DetailRow label="Status">
                 <ListingRequestStatusBadge status={request.status} />
               </DetailRow>
-              <DetailRow label="Message">
+              <DetailRow label="Notes">
                 <p className="whitespace-pre-wrap">{request.message || "—"}</p>
               </DetailRow>
               <DetailRow label="Created">

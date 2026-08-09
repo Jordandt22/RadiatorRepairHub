@@ -47,7 +47,12 @@ function PrivacyPage() {
         {
           label: "General Contact Form Submissions:",
           description:
-            "When you use our site contact form (for example on the Contact or Get Listed pages), we collect your name, email address, optional phone number, inquiry subject (for Contact), and message. We store submissions in our database, verify your email address, send you a confirmation email, and notify our team through Resend.",
+            "When you use our site Contact form, we collect your name, email address, optional phone number, inquiry subject, and message. We store submissions in our database, verify your email address, send you a confirmation email, and notify our team through Resend.",
+        },
+        {
+          label: "Get Listed Submissions:",
+          description:
+            "When you use the Get Listed form, we collect your business name, email address, optional phone number, Google Maps or Google Business Profile link, and optional notes. We store submissions in our database, verify your email address, send you a confirmation email, and notify our team through Resend so we can review and create your listing.",
         },
         {
           label: "Quick Contact Submissions:",
@@ -62,7 +67,7 @@ function PrivacyPage() {
         {
           label: "Business Information:",
           description:
-            "If you're a business owner requesting to be listed, we may collect business name, address, contact details, business description, hours of operation, and services offered.",
+            "If you're a business owner requesting to be listed, we may collect business name, Google listing link, contact details, and related information needed to create or update a directory listing.",
         },
         {
           label: "Business Claim Information:",
@@ -229,7 +234,7 @@ function PrivacyPage() {
         {
           label: "Data Collected:",
           description:
-            "Name, email address, phone number, inquiry subject, vehicle information, issue details, urgency, message content, claim verification details, listing request details, and listing report details needed to process and deliver those emails.",
+            "Name, email address, phone number, inquiry subject, Google listing links, vehicle information, issue details, urgency, message content, claim verification details, listing request details, and listing report details needed to process and deliver those emails.",
         },
         {
           label: "Privacy Policy:",

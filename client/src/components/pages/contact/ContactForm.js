@@ -11,6 +11,42 @@ import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { submitContactInquiry } from "@/lib/api/contact-inquiries";
 import { submitListingRequest } from "@/lib/api/listing-requests";
 
+const isLikelyGoogleMapsUrl = (value) => {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+
+  let parsed;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return false;
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    return false;
+  }
+
+  const host = parsed.hostname.toLowerCase();
+  const path = parsed.pathname.toLowerCase();
+
+  if (host === "maps.app.goo.gl" || host === "goo.gl") return true;
+  if (host === "maps.google.com" || host.endsWith(".maps.google.com")) {
+    return true;
+  }
+  if (host === "business.google.com" || host.endsWith(".business.google.com")) {
+    return true;
+  }
+  if (host === "google.com" || host.endsWith(".google.com")) {
+    return (
+      path.includes("/maps") ||
+      path.includes("/search") ||
+      Boolean(parsed.searchParams.get("cid"))
+    );
+  }
+
+  return false;
+};
+
 const ContactForm = ({
   prefilledSubject = "",
   lockSubject = false,
@@ -26,12 +62,14 @@ const ContactForm = ({
   const { showCustomSuccess, showCustomError } = useToast();
   const { user, isSignedIn } = useIsSignedIn();
   const posthog = usePostHog();
+  const isGetListed = submissionKind === "get-listed";
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     subject: prefilledSubject,
+    googleMapsUrl: "",
     message: "",
   });
   const [errors, setErrors] = useState({});
@@ -60,14 +98,16 @@ const ContactForm = ({
   const validateForm = () => {
     const newErrors = {};
 
-    // Name validation
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = isGetListed
+        ? "Business name is required"
+        : "Name is required";
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = "Name must be at least 2 characters";
+      newErrors.name = isGetListed
+        ? "Business name must be at least 2 characters"
+        : "Name must be at least 2 characters";
     }
 
-    // Email validation
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (
@@ -78,7 +118,6 @@ const ContactForm = ({
       newErrors.email = "Please enter a valid email address";
     }
 
-    // Phone validation (optional; US/Canada 10-digit when provided)
     if (formData.phone.trim()) {
       const digits = formData.phone.replace(/\D/g, "");
       const local =
@@ -90,13 +129,26 @@ const ContactForm = ({
       }
     }
 
-    // Subject validation (contact form only)
     if (showSubjectInput && !formData.subject) {
       newErrors.subject = "Please select an inquiry type";
     }
 
-    // Message validation
-    if (!formData.message.trim()) {
+    if (isGetListed) {
+      if (!formData.googleMapsUrl.trim()) {
+        newErrors.googleMapsUrl =
+          "Google Maps or Google Business link is required";
+      } else if (!isLikelyGoogleMapsUrl(formData.googleMapsUrl)) {
+        newErrors.googleMapsUrl =
+          "Please paste a Google Maps or Google Business Profile link";
+      }
+
+      if (
+        formData.message.trim() &&
+        formData.message.trim().length < 10
+      ) {
+        newErrors.message = "Message must be at least 10 characters";
+      }
+    } else if (!formData.message.trim()) {
       newErrors.message = "Message is required";
     } else if (formData.message.trim().length < 10) {
       newErrors.message = "Message must be at least 10 characters";
@@ -106,7 +158,6 @@ const ContactForm = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  // Helper function to check if a field is valid
   const isFieldValid = (fieldName) => {
     const fieldValue = formData[fieldName];
 
@@ -118,14 +169,18 @@ const ContactForm = ({
           fieldValue.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fieldValue)
         );
       case "phone":
-        // Only show green if user has entered something AND it's valid
         return (
           fieldValue.trim() &&
           /^[\+]?[1-9][\d]{0,15}$/.test(fieldValue.replace(/[\s\-\(\)]/g, ""))
         );
       case "subject":
         return !!fieldValue;
+      case "googleMapsUrl":
+        return isLikelyGoogleMapsUrl(fieldValue);
       case "message":
+        if (isGetListed) {
+          return !fieldValue.trim() || fieldValue.trim().length >= 10;
+        }
         return fieldValue.trim().length >= 10;
       default:
         return false;
@@ -139,7 +194,6 @@ const ContactForm = ({
       [name]: value,
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -162,21 +216,21 @@ const ContactForm = ({
     setIsSubmitting(true);
 
     try {
-      const result =
-        submissionKind === "get-listed"
-          ? await submitListingRequest({
-              businessName: formData.name.trim(),
-              email: formData.email.trim(),
-              phone: formData.phone.trim() || null,
-              message: formData.message.trim(),
-            })
-          : await submitContactInquiry({
-              name: formData.name.trim(),
-              email: formData.email.trim(),
-              phone: formData.phone.trim() || null,
-              subject: formData.subject,
-              message: formData.message.trim(),
-            });
+      const result = isGetListed
+        ? await submitListingRequest({
+            businessName: formData.name.trim(),
+            email: formData.email.trim(),
+            phone: formData.phone.trim() || null,
+            googleMapsUrl: formData.googleMapsUrl.trim(),
+            message: formData.message.trim() || null,
+          })
+        : await submitContactInquiry({
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            phone: formData.phone.trim() || null,
+            subject: formData.subject,
+            message: formData.message.trim(),
+          });
 
       if (result.error) {
         const fieldErrors = result.error?.message;
@@ -185,11 +239,19 @@ const ContactForm = ({
           for (const [key, value] of Object.entries(fieldErrors)) {
             if (typeof value === "string") {
               if (key === "businessName") nextErrors.name = value;
+              else if (key === "googleMapsUrl") nextErrors.googleMapsUrl = value;
               else nextErrors[key] = value;
             }
           }
           if (Object.keys(nextErrors).length > 0) {
             setErrors((prev) => ({ ...prev, ...nextErrors }));
+            const firstFieldMessage = Object.values(nextErrors)[0];
+            showCustomError(
+              firstFieldMessage ||
+                "Please fix the errors below before submitting.",
+              result.status === 409 ? "Already Submitted" : "Sending Failed"
+            );
+            return;
           }
         }
 
@@ -197,7 +259,10 @@ const ContactForm = ({
           typeof result.error.message === "string"
             ? result.error.message
             : "Sorry, there was an error sending your message. Please try again or contact us directly.";
-        showCustomError(message, "Sending Failed");
+        showCustomError(
+          message,
+          result.status === 409 ? "Already Submitted" : "Sending Failed"
+        );
         return;
       }
 
@@ -213,12 +278,13 @@ const ContactForm = ({
         email: authEmail,
         phone: "",
         subject: lockSubject ? prefilledSubject : "",
+        googleMapsUrl: "",
         message: "",
       });
       setErrors({});
 
       showCustomSuccess(
-        submissionKind === "get-listed"
+        isGetListed
           ? "Thank you! We received your listing request and will review it within 2-3 business days."
           : "Thank you for your message! We'll get back to you within 24 hours.",
         "Message Sent Successfully"
@@ -246,9 +312,8 @@ const ContactForm = ({
         onSubmit={handleSubmit}
         className="space-y-6"
         role="form"
-        aria-label="Contact form"
+        aria-label={isGetListed ? "Get listed form" : "Contact form"}
       >
-        {/* Name Field */}
         <div>
           <label
             htmlFor="name"
@@ -266,8 +331,8 @@ const ContactForm = ({
               errors.name
                 ? "border-red-500"
                 : isFieldValid("name")
-                ? "border-green-500"
-                : "border-gray-300"
+                  ? "border-green-500"
+                  : "border-gray-300"
             }`}
             placeholder={namePlaceholder || "Enter your full name"}
             aria-describedby={errors.name ? "name-error" : undefined}
@@ -286,7 +351,6 @@ const ContactForm = ({
           )}
         </div>
 
-        {/* Email Field */}
         <div>
           <label
             htmlFor="email"
@@ -304,8 +368,8 @@ const ContactForm = ({
               errors.email
                 ? "border-red-500"
                 : isFieldValid("email")
-                ? "border-green-500"
-                : "border-gray-300"
+                  ? "border-green-500"
+                  : "border-gray-300"
             }`}
             placeholder="Enter your email address"
             aria-describedby={errors.email ? "email-error" : undefined}
@@ -324,7 +388,6 @@ const ContactForm = ({
           )}
         </div>
 
-        {/* Phone Field */}
         <div>
           <label
             htmlFor="phone"
@@ -342,8 +405,8 @@ const ContactForm = ({
               errors.phone
                 ? "border-red-500"
                 : isFieldValid("phone")
-                ? "border-green-500"
-                : "border-gray-300"
+                  ? "border-green-500"
+                  : "border-gray-300"
             }`}
             placeholder="Enter your phone number (optional)"
             aria-describedby={errors.phone ? "phone-error" : undefined}
@@ -361,7 +424,6 @@ const ContactForm = ({
           )}
         </div>
 
-        {/* Subject Dropdown */}
         {showSubjectInput && (
           <div>
             <label
@@ -382,8 +444,8 @@ const ContactForm = ({
                 errors.subject
                   ? "border-red-500"
                   : isFieldValid("subject")
-                  ? "border-green-500"
-                  : "border-gray-300"
+                    ? "border-green-500"
+                    : "border-gray-300"
               }`}
               aria-describedby={errors.subject ? "subject-error" : undefined}
               aria-invalid={errors.subject ? "true" : "false"}
@@ -409,31 +471,85 @@ const ContactForm = ({
           </div>
         )}
 
-        {/* Message Field */}
+        {isGetListed && (
+          <div>
+            <label
+              htmlFor="googleMapsUrl"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Google Maps or Google Business Link *
+            </label>
+            <input
+              type="url"
+              id="googleMapsUrl"
+              name="googleMapsUrl"
+              value={formData.googleMapsUrl}
+              onChange={handleInputChange}
+              className={`w-full px-4 py-3 border-2 rounded-lg focus:border-blue-500 hover:border-blue-500 outline-none transition-colors ${
+                errors.googleMapsUrl
+                  ? "border-red-500"
+                  : isFieldValid("googleMapsUrl")
+                    ? "border-green-500"
+                    : "border-gray-300"
+              }`}
+              placeholder="https://maps.google.com/... or maps.app.goo.gl/..."
+              aria-describedby={
+                errors.googleMapsUrl
+                  ? "googleMapsUrl-error googleMapsUrl-help"
+                  : "googleMapsUrl-help"
+              }
+              aria-invalid={errors.googleMapsUrl ? "true" : "false"}
+              required
+            />
+            <p
+              id="googleMapsUrl-help"
+              className="mt-1 text-xs text-gray-500"
+            >
+              Open your business in Google Maps, tap Share, then paste the link
+              here.
+            </p>
+            {errors.googleMapsUrl && (
+              <p
+                id="googleMapsUrl-error"
+                className="mt-1 text-sm text-red-600"
+                role="alert"
+                aria-live="polite"
+              >
+                {errors.googleMapsUrl}
+              </p>
+            )}
+          </div>
+        )}
+
         <div>
           <label
             htmlFor="message"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Message *
+            {isGetListed ? "Additional Notes" : "Message"}
+            {isGetListed ? "" : " *"}
           </label>
           <textarea
             id="message"
             name="message"
             value={formData.message}
             onChange={handleInputChange}
-            rows={6}
+            rows={isGetListed ? 4 : 6}
             className={`w-full px-4 py-3 border-2 rounded-lg focus:border-blue-500 hover:border-blue-500 outline-none resize-none transition-colors ${
               errors.message
                 ? "border-red-500"
-                : isFieldValid("message")
-                ? "border-green-500"
-                : "border-gray-300"
+                : formData.message.trim() && isFieldValid("message")
+                  ? "border-green-500"
+                  : "border-gray-300"
             }`}
-            placeholder={messagePlaceholder || "Tell us how we can help you..."}
+            placeholder={
+              isGetListed
+                ? "Anything else we should know? (optional)"
+                : messagePlaceholder || "Tell us how we can help you..."
+            }
             aria-describedby={errors.message ? "message-error" : undefined}
             aria-invalid={errors.message ? "true" : "false"}
-            required
+            required={!isGetListed}
           />
           {errors.message && (
             <p
@@ -449,18 +565,24 @@ const ContactForm = ({
 
         <p className="text-xs text-gray-500 leading-relaxed">
           By submitting this form, you agree to our{" "}
-          <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline">
+          <Link
+            href="/terms"
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link href="/privacy" className="text-blue-600 hover:text-blue-800 underline">
+          <Link
+            href="/privacy"
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
             Privacy Policy
           </Link>
-          , and consent to us processing your name, email, optional phone number,
-          and message so we can respond to your inquiry.
+          {isGetListed
+            ? ", and consent to us processing your business name, email, optional phone number, Google listing link, and optional notes so we can review your listing request."
+            : ", and consent to us processing your name, email, optional phone number, and message so we can respond to your inquiry."}
         </p>
 
-        {/* Submit Button */}
         <div className="pt-4">
           {isSubmitting ? (
             <div
@@ -472,7 +594,7 @@ const ContactForm = ({
                 className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400 mr-4"
                 aria-hidden="true"
               ></div>
-              Sending Message...
+              {isGetListed ? "Submitting..." : "Sending Message..."}
             </div>
           ) : (
             <button
@@ -481,10 +603,12 @@ const ContactForm = ({
               className={
                 "w-full flex items-center justify-center px-6 py-4 rounded-lg font-semibold text-white transition-all duration-300 cursor-pointer bg-blue-600 hover:bg-blue-700 hover:scale-95 shadow-lg hover:shadow-xl"
               }
-              aria-label="Send contact message"
+              aria-label={
+                isGetListed ? "Submit listing request" : "Send contact message"
+              }
             >
               <Send className="w-5 h-5 mr-2" aria-hidden="true" />
-              Send Message
+              {isGetListed ? "Submit Listing Request" : "Send Message"}
             </button>
           )}
         </div>
