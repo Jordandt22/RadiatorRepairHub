@@ -47,7 +47,12 @@ function PrivacyPage() {
         {
           label: "General Contact Form Submissions:",
           description:
-            "When you use our site contact form (for example on the Contact or Get Listed pages), we collect your name, email address, optional phone number, inquiry subject, and message. Submissions are processed through EmailJS to deliver your message to our team.",
+            "When you use our site Contact form, we collect your name, email address, optional phone number, inquiry subject, and message. We store submissions in our database, verify your email address, send you a confirmation email, and notify our team through Resend.",
+        },
+        {
+          label: "Get Listed Submissions:",
+          description:
+            "When you use the Get Listed form, we collect your business name, email address, optional phone number, Google Maps or Google Business Profile link, and optional notes. We store submissions in our database, verify your email address, send you a confirmation email, and notify our team through Resend so we can review and create your listing.",
         },
         {
           label: "Quick Contact Submissions:",
@@ -62,7 +67,7 @@ function PrivacyPage() {
         {
           label: "Business Information:",
           description:
-            "If you're a business owner requesting to be listed, we may collect business name, address, contact details, business description, hours of operation, and services offered.",
+            "If you're a business owner requesting to be listed, we may collect business name, Google listing link, contact details, and related information needed to create or update a directory listing.",
         },
         {
           label: "Business Claim Information:",
@@ -215,29 +220,6 @@ function PrivacyPage() {
       ],
     },
     {
-      title: "EmailJS",
-      bulletPoints: [
-        {
-          label: "Provider:",
-          description: "EmailJS (Pidigo LLC)",
-        },
-        {
-          label: "Purpose:",
-          description:
-            "Deliver general site contact form submissions to our team by email.",
-        },
-        {
-          label: "Data Collected:",
-          description:
-            "Name, email address, optional phone number, inquiry subject, and message content you submit through our general contact form.",
-        },
-        {
-          label: "Privacy Policy:",
-          description: "https://www.emailjs.com/legal/privacy-policy/",
-        },
-      ],
-    },
-    {
       title: "Resend",
       bulletPoints: [
         {
@@ -247,12 +229,12 @@ function PrivacyPage() {
         {
           label: "Purpose:",
           description:
-            "Send transactional emails, including Quick Contact acknowledgments and status updates, forwarding inquiries to listed businesses, business claim verification emails and codes, and internal admin notifications for listing reports and completed claims.",
+            "Send transactional emails, including general Contact and Get Listed confirmations and admin notifications, Quick Contact acknowledgments and status updates, forwarding inquiries to listed businesses, business claim verification emails and codes, listing-live notices, and internal admin notifications for listing reports and completed claims.",
         },
         {
           label: "Data Collected:",
           description:
-            "Name, email address, phone number, vehicle information, issue details, urgency, message content, claim verification details, and listing report details needed to process and deliver those emails.",
+            "Name, email address, phone number, inquiry subject, Google listing links, vehicle information, issue details, urgency, message content, claim verification details, listing request details, and listing report details needed to process and deliver those emails.",
         },
         {
           label: "Privacy Policy:",
@@ -270,7 +252,7 @@ function PrivacyPage() {
         {
           label: "Purpose:",
           description:
-            "Database hosting and backend data storage for our directory, Quick Contact messages, user accounts, business claim requests, listing reports, and related operational records.",
+            "Database hosting and backend data storage for our directory, Contact and Get Listed submissions, Quick Contact messages, user accounts, business claim requests, listing reports, and related operational records.",
         },
         {
           label: "Data Collected:",
@@ -411,9 +393,6 @@ function PrivacyPage() {
       label: "Website analytics (Google Analytics, PostHog)",
     },
     {
-      label: "General contact form delivery (EmailJS)",
-    },
-    {
       label: "Transactional email delivery (Resend)",
     },
     {
@@ -462,7 +441,7 @@ function PrivacyPage() {
     {
       label: "Contact Inquiries:",
       description:
-        "General contact form and Quick Contact submissions are retained for up to 3 years after resolution or last related activity.",
+        "General Contact, Get Listed, and Quick Contact submissions are retained for up to 3 years after resolution or last related activity.",
     },
     {
       label: "Business Claims:",
@@ -565,7 +544,7 @@ function PrivacyPage() {
     {
       title: "Third-Party Links and Services",
       content:
-        "Our directory contains links to third-party websites and businesses. This Privacy Policy does not apply to those third-party sites or services. We are not responsible for the privacy practices or content of third-party websites. We encourage you to review the privacy policies of any third-party sites you visit. For third-party services we use to operate our website (such as Google Analytics, PostHog, Cloudflare, EmailJS, Resend, Supabase, and Abstract API), see the Third-Party Services section above.",
+        "Our directory contains links to third-party websites and businesses. This Privacy Policy does not apply to those third-party sites or services. We are not responsible for the privacy practices or content of third-party websites. We encourage you to review the privacy policies of any third-party sites you visit. For third-party services we use to operate our website (such as Google Analytics, PostHog, Cloudflare, Resend, Supabase, and Abstract API), see the Third-Party Services section above.",
     },
     {
       title: "International Data Transfers",

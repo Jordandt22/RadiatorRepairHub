@@ -16,6 +16,8 @@ import DashboardFilterTabs, {
 import OverviewContactMessagesTable from "@/components/pages/overview/OverviewContactMessagesTable";
 import OverviewClaimRequestsTable from "@/components/pages/overview/OverviewClaimRequestsTable";
 import OverviewListingReportsTable from "@/components/pages/overview/OverviewListingReportsTable";
+import OverviewInquiriesTable from "@/components/pages/overview/OverviewInquiriesTable";
+import OverviewListingRequestsTable from "@/components/pages/overview/OverviewListingRequestsTable";
 import OverviewDashboardCharts, {
   OverviewDashboardChartsSkeleton,
 } from "@/components/pages/overview/OverviewDashboardCharts";
@@ -23,6 +25,8 @@ import OverviewSystemsPanel from "@/components/pages/overview/OverviewSystemsPan
 import ContactMessagesTableSkeleton from "@/components/pages/dashboard/ContactMessagesTableSkeleton";
 import ClaimRequestsTableSkeleton from "@/components/pages/claim-requests/ClaimRequestsTableSkeleton";
 import ListingReportsTableSkeleton from "@/components/pages/listing-reports/ListingReportsTableSkeleton";
+import InquiriesTableSkeleton from "@/components/pages/inquiries/InquiriesTableSkeleton";
+import ListingRequestsTableSkeleton from "@/components/pages/get-listed-requests/ListingRequestsTableSkeleton";
 
 const PAGE_LIMIT = 10;
 
@@ -60,6 +64,9 @@ export default function OverviewDashboardPageContent() {
   const [contactRefreshError, setContactRefreshError] = useState(null);
   const [claimsRefreshError, setClaimsRefreshError] = useState(null);
   const [reportsRefreshError, setReportsRefreshError] = useState(null);
+  const [inquiriesRefreshError, setInquiriesRefreshError] = useState(null);
+  const [listingRequestsRefreshError, setListingRequestsRefreshError] =
+    useState(null);
   const [statsRefreshError, setStatsRefreshError] = useState(null);
 
   const inboxEnabled = activeTab === "inbox";
@@ -179,6 +186,60 @@ export default function OverviewDashboardPageContent() {
       if (result.error) {
         throw new Error(
           result.error.message || "Failed to fetch listing reports",
+        );
+      }
+      return result.data;
+    },
+    enabled: Boolean(isReady && accessToken && inboxEnabled),
+    staleTime: 30_000,
+  });
+
+  const inquiriesQuery = useQuery({
+    queryKey: ["dashboard-contact-inquiries"],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: "1",
+        limit: String(PAGE_LIMIT),
+      });
+
+      const result = await fetchApi(
+        `/admin/contact-inquiries?${params.toString()}`,
+        { accessToken },
+      );
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+      if (result.error) {
+        throw new Error(
+          result.error.message || "Failed to fetch contact inquiries",
+        );
+      }
+      return result.data;
+    },
+    enabled: Boolean(isReady && accessToken && inboxEnabled),
+    staleTime: 30_000,
+  });
+
+  const listingRequestsQuery = useQuery({
+    queryKey: ["dashboard-listing-requests"],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: "1",
+        limit: String(PAGE_LIMIT),
+      });
+
+      const result = await fetchApi(
+        `/admin/listing-requests?${params.toString()}`,
+        { accessToken },
+      );
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+      if (result.error) {
+        throw new Error(
+          result.error.message || "Failed to fetch listing requests",
         );
       }
       return result.data;
@@ -323,6 +384,74 @@ export default function OverviewDashboardPageContent() {
     },
   });
 
+  const inquiriesRefreshMutation = useMutation({
+    mutationFn: async () => {
+      const result = await fetchApi("/admin/cache/invalidate", {
+        method: "POST",
+        accessToken,
+        body: JSON.stringify({ resource: "contact-inquiries" }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to refresh cache",
+        );
+      }
+
+      return result.data;
+    },
+    onMutate: () => setInquiriesRefreshError(null),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["dashboard-contact-inquiries"],
+      });
+    },
+    onError: (err) => {
+      setInquiriesRefreshError(err.message || "Failed to refresh");
+    },
+  });
+
+  const listingRequestsRefreshMutation = useMutation({
+    mutationFn: async () => {
+      const result = await fetchApi("/admin/cache/invalidate", {
+        method: "POST",
+        accessToken,
+        body: JSON.stringify({ resource: "listing-requests" }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to refresh cache",
+        );
+      }
+
+      return result.data;
+    },
+    onMutate: () => setListingRequestsRefreshError(null),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["dashboard-listing-requests"],
+      });
+    },
+    onError: (err) => {
+      setListingRequestsRefreshError(err.message || "Failed to refresh");
+    },
+  });
+
   if (!isReady || !accessToken) {
     return null;
   }
@@ -335,6 +464,10 @@ export default function OverviewDashboardPageContent() {
     claimsRefreshMutation.isPending || claimsQuery.isFetching;
   const reportsRefreshPending =
     reportsRefreshMutation.isPending || reportsQuery.isFetching;
+  const inquiriesRefreshPending =
+    inquiriesRefreshMutation.isPending || inquiriesQuery.isFetching;
+  const listingRequestsRefreshPending =
+    listingRequestsRefreshMutation.isPending || listingRequestsQuery.isFetching;
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-4 py-4 md:gap-4 md:px-8 md:py-6">
@@ -470,6 +603,79 @@ export default function OverviewDashboardPageContent() {
               ) : !reportsQuery.error ? (
                 <OverviewListingReportsTable
                   listingReports={reportsQuery.data?.listingReports ?? []}
+                />
+              ) : null}
+            </section>
+
+            <section className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight">
+                    Inquiries
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Latest Contact page messages across all statuses
+                  </p>
+                </div>
+                <RefreshButton
+                  onClick={() => inquiriesRefreshMutation.mutate()}
+                  pending={inquiriesRefreshPending}
+                />
+              </div>
+              {inquiriesRefreshError ? (
+                <p className="text-sm text-destructive">
+                  {inquiriesRefreshError}
+                </p>
+              ) : null}
+              {inquiriesQuery.error && !inquiriesQuery.isFetching ? (
+                <p className="text-sm text-destructive">
+                  {inquiriesQuery.error.message}
+                </p>
+              ) : null}
+              {inquiriesQuery.isLoading ? (
+                <InquiriesTableSkeleton rows={5} />
+              ) : !inquiriesQuery.error ? (
+                <OverviewInquiriesTable
+                  contactInquiries={
+                    inquiriesQuery.data?.contactInquiries ?? []
+                  }
+                />
+              ) : null}
+            </section>
+
+            <section className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight">
+                    Get Listed
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Latest listing requests across all statuses
+                  </p>
+                </div>
+                <RefreshButton
+                  onClick={() => listingRequestsRefreshMutation.mutate()}
+                  pending={listingRequestsRefreshPending}
+                />
+              </div>
+              {listingRequestsRefreshError ? (
+                <p className="text-sm text-destructive">
+                  {listingRequestsRefreshError}
+                </p>
+              ) : null}
+              {listingRequestsQuery.error &&
+              !listingRequestsQuery.isFetching ? (
+                <p className="text-sm text-destructive">
+                  {listingRequestsQuery.error.message}
+                </p>
+              ) : null}
+              {listingRequestsQuery.isLoading ? (
+                <ListingRequestsTableSkeleton rows={5} />
+              ) : !listingRequestsQuery.error ? (
+                <OverviewListingRequestsTable
+                  listingRequests={
+                    listingRequestsQuery.data?.listingRequests ?? []
+                  }
                 />
               ) : null}
             </section>

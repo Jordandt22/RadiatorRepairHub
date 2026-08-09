@@ -171,6 +171,35 @@ export const getBusinessBySlug = async (business_slug) => {
   return { data: formatFullBusiness(data), error };
 };
 
+/** Lightweight slug existence check (id + slug + title only). */
+export const getBusinessExistsBySlug = async (business_slug) => {
+  if (!business_slug || typeof business_slug !== "string") {
+    return {
+      data: null,
+      error: { code: "PGRST116", message: "Business not found" },
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, slug, title")
+    .eq("slug", business_slug)
+    .maybeSingle();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  if (!data) {
+    return {
+      data: null,
+      error: { code: "PGRST116", message: "Business not found" },
+    };
+  }
+
+  return { data, error: null };
+};
+
 export const getBusinessLastEditedAt = async (business_id) => {
   const { data, error } = await supabase
     .from("businesses")
@@ -1717,6 +1746,190 @@ export const updateListingReportsStatus = async (
     .update(patch)
     .in("listing_report_id", ids)
     .select("listing_report_id");
+
+  return { data, error };
+};
+
+export const insertContactInquiry = async (payload) => {
+  const { data, error } = await supabase
+    .from("contact_inquiries")
+    .insert(payload)
+    .select("contact_inquiry_id")
+    .single();
+
+  return { data, error };
+};
+
+export const getContactInquiries = async (page, limit, status = null) => {
+  let query = supabase
+    .from("contact_inquiries")
+    .select(
+      "contact_inquiry_id, name, email, phone, subject, message, status, created_at, resolved_at, resolved_by",
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};
+
+export const updateContactInquiriesStatus = async (
+  ids,
+  status,
+  resolvedBy = "admin"
+) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const patch =
+    status === "pending"
+      ? {
+          status,
+          resolved_at: null,
+          resolved_by: null,
+        }
+      : {
+          status,
+          resolved_at: new Date().toISOString(),
+          resolved_by: resolvedBy,
+        };
+
+  const { data, error } = await supabase
+    .from("contact_inquiries")
+    .update(patch)
+    .in("contact_inquiry_id", ids)
+    .select("contact_inquiry_id");
+
+  return { data, error };
+};
+
+export const insertListingRequest = async (payload) => {
+  const { data, error } = await supabase
+    .from("listing_requests")
+    .insert(payload)
+    .select("listing_request_id")
+    .single();
+
+  return { data, error };
+};
+
+export const findPendingListingRequestByGoogleMapsUrl = async (
+  googleMapsUrl
+) => {
+  const trimmed = typeof googleMapsUrl === "string" ? googleMapsUrl.trim() : "";
+  if (!trimmed) return { data: null, error: null };
+
+  const { data, error } = await supabase
+    .from("listing_requests")
+    .select("listing_request_id, google_maps_url, place_id, status, created_at")
+    .eq("status", "pending")
+    .eq("google_maps_url", trimmed)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const findPendingListingRequestByPlaceId = async (placeId) => {
+  const trimmed = typeof placeId === "string" ? placeId.trim() : "";
+  if (!trimmed) return { data: null, error: null };
+
+  const { data, error } = await supabase
+    .from("listing_requests")
+    .select(
+      "listing_request_id, google_maps_url, place_id, status, created_at"
+    )
+    .eq("status", "pending")
+    .eq("place_id", trimmed)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const getBusinessByPlaceId = async (placeId) => {
+  const trimmed = typeof placeId === "string" ? placeId.trim() : "";
+  if (!trimmed) return { data: null, error: null };
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, title, slug, place_id")
+    .eq("place_id", trimmed)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const getListingRequests = async (page, limit, status = null) => {
+  let query = supabase
+    .from("listing_requests")
+    .select(
+      "listing_request_id, business_name, email, phone, google_maps_url, place_id, message, status, created_at, resolved_at, resolved_by, live_email_sent_at",
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};
+
+export const updateListingRequestsStatus = async (
+  ids,
+  status,
+  resolvedBy = "admin"
+) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const patch =
+    status === "pending"
+      ? {
+          status,
+          resolved_at: null,
+          resolved_by: null,
+          // Allow the live email to send again after reopen → mark listed
+          live_email_sent_at: null,
+        }
+      : {
+          status,
+          resolved_at: new Date().toISOString(),
+          resolved_by: resolvedBy,
+        };
+
+  const { data, error } = await supabase
+    .from("listing_requests")
+    .update(patch)
+    .in("listing_request_id", ids)
+    .select("listing_request_id, business_name, email, live_email_sent_at");
+
+  return { data, error };
+};
+
+export const markListingRequestsLiveEmailSent = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("listing_requests")
+    .update({ live_email_sent_at: new Date().toISOString() })
+    .in("listing_request_id", ids)
+    .is("live_email_sent_at", null)
+    .select("listing_request_id, live_email_sent_at");
 
   return { data, error };
 };

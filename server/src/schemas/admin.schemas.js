@@ -184,6 +184,71 @@ export const UpdateListingReportsStatusSchema = Yup.object({
     .required("Listing report IDs are required"),
 });
 
+export const CONTACT_INQUIRY_STATUSES = ["pending", "resolved", "dismissed"];
+
+export const GetContactInquiriesQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  status: Yup.string()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .oneOf([...CONTACT_INQUIRY_STATUSES, null], "Invalid status")
+    .optional(),
+});
+
+export const UpdateContactInquiriesStatusSchema = Yup.object({
+  status: Yup.string()
+    .oneOf(CONTACT_INQUIRY_STATUSES, "Invalid status")
+    .required("Status is required"),
+  contact_inquiry_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid contact inquiry ID").required())
+    .min(1, "At least one contact inquiry ID is required")
+    .required("Contact inquiry IDs are required"),
+});
+
+export const LISTING_REQUEST_STATUSES = [
+  "pending",
+  "listed",
+  "rejected",
+  "duplicate",
+];
+
+export const GetListingRequestsQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  status: Yup.string()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .oneOf([...LISTING_REQUEST_STATUSES, null], "Invalid status")
+    .optional(),
+});
+
+export const UpdateListingRequestsStatusSchema = Yup.object({
+  status: Yup.string()
+    .oneOf(LISTING_REQUEST_STATUSES, "Invalid status")
+    .required("Status is required"),
+  listing_request_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid listing request ID").required())
+    .min(1, "At least one listing request ID is required")
+    .required("Listing request IDs are required"),
+  business_slug: Yup.string()
+    .trim()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .when("status", {
+      is: "listed",
+      then: (schema) =>
+        schema
+          .required("Business slug is required when marking as listed")
+          .matches(
+            /^[a-z0-9]+(?:-[a-z0-9]+)*$/i,
+            "Enter a valid business slug"
+          )
+          .max(220, "Business slug must be 220 characters or fewer"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+});
+
 export const GetAdminBusinessesQuerySchema = Yup.object({
   page: Yup.number().min(1).max(100).required(),
   limit: Yup.number().min(1).max(30).required(),
@@ -529,8 +594,10 @@ export const GetAdminUserParamsSchema = Yup.object({
 
 export const CACHE_INVALIDATE_RESOURCES = [
   "contact-messages",
+  "contact-inquiries",
   "claim-requests",
   "listing-reports",
+  "listing-requests",
   "businesses",
   "locations",
   "dashboard",

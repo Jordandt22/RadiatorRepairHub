@@ -18,6 +18,10 @@ import {
   deleteClaimRequests,
   getListingReports,
   updateListingReportsStatus,
+  getContactInquiries,
+  updateContactInquiriesStatus,
+  getListingRequests,
+  updateListingRequestsStatus,
   getBusinesses,
   getBusinessById,
   getBusinessesWithEmails,
@@ -87,6 +91,10 @@ import {
   DeleteClaimRequestsSchema,
   GetListingReportsQuerySchema,
   UpdateListingReportsStatusSchema,
+  GetContactInquiriesQuerySchema,
+  UpdateContactInquiriesStatusSchema,
+  GetListingRequestsQuerySchema,
+  UpdateListingRequestsStatusSchema,
   GetAdminBusinessesQuerySchema,
   GetAdminBusinessesWithEmailsQuerySchema,
   GetAdminBusinessParamsSchema,
@@ -186,6 +194,30 @@ adminRouter.patch(
   "/listing-reports/status",
   bodyValidator(UpdateListingReportsStatusSchema),
   serverErrorCatcherWrapper(updateListingReportsStatus)
+);
+
+adminRouter.get(
+  "/contact-inquiries",
+  queryValidator(GetContactInquiriesQuerySchema),
+  serverErrorCatcherWrapper(getContactInquiries)
+);
+
+adminRouter.patch(
+  "/contact-inquiries/status",
+  bodyValidator(UpdateContactInquiriesStatusSchema),
+  serverErrorCatcherWrapper(updateContactInquiriesStatus)
+);
+
+adminRouter.get(
+  "/listing-requests",
+  queryValidator(GetListingRequestsQuerySchema),
+  serverErrorCatcherWrapper(getListingRequests)
+);
+
+adminRouter.patch(
+  "/listing-requests/status",
+  bodyValidator(UpdateListingRequestsStatusSchema),
+  serverErrorCatcherWrapper(updateListingRequestsStatus)
 );
 
 adminRouter.get(

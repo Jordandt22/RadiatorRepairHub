@@ -15,8 +15,14 @@ const CACHE_RESOURCES = [
     id: "dashboard",
     title: "Dashboard",
     description: "Admin dashboard stats cache.",
-    queryKeys: [["dashboard-stats"], ["dashboard-contact-messages"]],
+    queryKeys: [
+      ["dashboard-stats"],
+      ["dashboard-contact-messages"],
+      ["dashboard-contact-inquiries"],
+      ["dashboard-listing-requests"],
+    ],
   },
+
   {
     id: "businesses",
     title: "Businesses",
@@ -51,6 +57,19 @@ const CACHE_RESOURCES = [
     description: "Listing report inbox lists.",
     queryKeys: [["listing-reports"]],
   },
+  {
+    id: "contact-inquiries",
+    title: "Contact inquiries",
+    description: "Site Contact form inquiry lists.",
+    queryKeys: [["contact-inquiries"], ["dashboard-contact-inquiries"]],
+  },
+  {
+    id: "listing-requests",
+    title: "Listing requests",
+    description: "Get Listed request inbox lists.",
+    queryKeys: [["listing-requests"], ["dashboard-listing-requests"]],
+  },
+
   {
     id: "reference",
     title: "Reference data",

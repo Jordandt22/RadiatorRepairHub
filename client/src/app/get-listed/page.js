@@ -176,11 +176,11 @@ const Page = () => {
                     prefilledSubject="Business Listing Request"
                     lockSubject={true}
                     formTitle="Submit Your Business"
-                    messagePlaceholder="Let us know about your business..."
                     namePlaceholder="Enter your full business name"
                     nameLabel="Full Business Name"
                     showSubjectInput={false}
                     analyticsPage="get-listed"
+                    submissionKind="get-listed"
                   />
                 </ToastProvider>
               </div>

@@ -483,11 +483,12 @@ function TermsPage() {
             ))}
           </ul>
           <p className="mt-4 text-gray-700 leading-relaxed">
-            General contact form submissions are delivered to our team through
-            EmailJS. Quick Contact submissions are stored in our systems,
-            processed through our API, and may trigger transactional emails
-            through Resend. Details about the information collected and how it
-            is used are described in our{" "}
+            General Contact and Get Listed submissions are stored in our
+            systems, processed through our API, and trigger confirmation and
+            admin notification emails through Resend. Quick Contact submissions
+            are stored in our systems, processed through our API, and may
+            trigger transactional emails through Resend. Details about the
+            information collected and how it is used are described in our{" "}
             <a
               href="/privacy"
               className="text-blue-600 hover:text-blue-800 underline"
@@ -640,20 +641,18 @@ function TermsPage() {
               and bot protection
             </li>
             <li className="mb-2 ml-6">
-              • <strong>EmailJS</strong> - general contact form delivery
-            </li>
-            <li className="mb-2 ml-6">
-              • <strong>Resend</strong> - transactional email for Quick Contact,
-              claim verification, listing report notifications, and related
-              communications
+              • <strong>Resend</strong> - transactional email for Contact, Get
+              Listed, Quick Contact, claim verification, listing report
+              notifications, and related communications
             </li>
             <li className="mb-2 ml-6">
               • <strong>Supabase</strong> - database storage for directory,
-              contact messages, accounts, claim requests, and listing reports
+              contact inquiries, listing requests, contact messages, accounts,
+              claim requests, and listing reports
             </li>
             <li className="mb-2 ml-6">
               • <strong>Abstract API</strong> - email address verification for
-              Quick Contact and listing report submissions
+              Contact, Get Listed, Quick Contact, and listing report submissions
             </li>
           </ul>
           <p className="mt-4 text-gray-700 leading-relaxed">
