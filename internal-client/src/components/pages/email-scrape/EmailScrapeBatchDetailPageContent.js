@@ -3,13 +3,22 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeftIcon, EyeIcon } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  ArrowLeftIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  EyeIcon,
+  TagIcon,
+  XIcon,
+} from "lucide-react";
 import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import EmailScrapeStatusBadge from "@/components/pages/email-scrape/EmailScrapeStatusBadge";
 import EmailCleanerStatusBadge from "@/components/pages/email-cleaner/EmailCleanerStatusBadge";
+import EmailCleanerMarkStatusDialog from "@/components/pages/email-cleaner/EmailCleanerMarkStatusDialog";
 import EmailScrapeTableSkeleton from "@/components/pages/email-scrape/EmailScrapeTableSkeleton";
 import IngestCountBadge from "@/components/pages/add-businesses/IngestCountBadge";
 import IngestPayloadTable from "@/components/pages/add-businesses/IngestPayloadTable";
@@ -18,6 +27,12 @@ import Pagination from "@/components/pages/dashboard/Pagination";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 
 const PAGE_SIZE = 20;
+
+const OUTCOME_SORT_ORDER = {
+  succeeded: 0,
+  skipped: 1,
+  failed: 2,
+};
 
 function isActiveStatus(status) {
   return ["pending", "running"].includes(status);
@@ -37,95 +52,31 @@ function paginateItems(items, page, pageSize) {
   };
 }
 
-const BUSINESS_COLUMNS = [
-  {
-    key: "title",
-    label: "Business",
-    className: "w-[20%]",
-    render: (row) => (
-      <BusinessTitleLink
-        id={row.id}
-        title={row.title}
-        slug={row.slug}
-        titleClassName="font-semibold"
-      />
-    ),
-  },
-  {
-    key: "outcome",
-    label: "Outcome",
-    className: "w-[12%]",
-    render: (row) =>
-      row.outcome_status ? (
-        <EmailScrapeStatusBadge status={row.outcome_status} />
-      ) : (
-        <span className="text-muted-foreground">—</span>
-      ),
-  },
-  {
-    key: "email_status",
-    label: "Email status",
-    className: "w-[14%]",
-    render: (row) =>
-      row.email_status ? (
-        <EmailCleanerStatusBadge status={row.email_status} />
-      ) : (
-        <span className="text-muted-foreground">—</span>
-      ),
-  },
-  {
-    key: "email",
-    label: "Email",
-    className: "w-[18%]",
-    getValue: (row) => row.outcome_email || row.email || "—",
-  },
-  {
-    key: "reason",
-    label: "Reason",
-    className: "w-[14%]",
-    getValue: (row) => row.reason || "—",
-  },
-  {
-    key: "attempts",
-    label: "Attempts",
-    className: "w-[8%]",
-    getValue: (row) =>
-      row.email_scraped_attempts == null
-        ? "—"
-        : String(row.email_scraped_attempts),
-  },
-  {
-    key: "actions",
-    label: "",
-    className: "w-[10%] text-right",
-    cellClassName: "text-right",
-    render: (row) =>
-      row.id ? (
-        <Button
-          variant="outline"
-          size="sm"
-          className="cursor-pointer"
-          nativeButton={false}
-          render={<Link href={`/businesses/${row.id}`} />}
-        >
-          <EyeIcon />
-          View
-        </Button>
-      ) : null,
-  },
-];
+function sortBusinessesByOutcome(businesses) {
+  return [...businesses].sort((a, b) => {
+    const aRank = OUTCOME_SORT_ORDER[a.outcome_status] ?? 99;
+    const bRank = OUTCOME_SORT_ORDER[b.outcome_status] ?? 99;
+    if (aRank !== bRank) return aRank - bRank;
+    return String(a.title ?? "").localeCompare(String(b.title ?? ""));
+  });
+}
 
 export default function EmailScrapeBatchDetailPageContent() {
   const router = useRouter();
   const params = useParams();
   const batchId = params?.["batch_id"];
   const { accessToken, isReady, logout } = useAuth();
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [paginationBatchId, setPaginationBatchId] = useState(batchId);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [markStatusOpen, setMarkStatusOpen] = useState(false);
+  const [markStatusError, setMarkStatusError] = useState(null);
 
   if (batchId !== paginationBatchId) {
     setPaginationBatchId(batchId);
     setPage(1);
+    setSelectedIds(new Set());
   }
 
   useEffect(() => {
@@ -158,7 +109,15 @@ export default function EmailScrapeBatchDetailPageContent() {
 
   const batch = detailQuery.data?.batch;
   const job = detailQuery.data?.job;
-  const businesses = detailQuery.data?.businesses ?? [];
+  const navigation = detailQuery.data?.navigation;
+  const rawBusinesses = detailQuery.data?.businesses ?? [];
+
+  const businesses = useMemo(() => {
+    if (batch?.status === "completed") {
+      return sortBusinessesByOutcome(rawBusinesses);
+    }
+    return rawBusinesses;
+  }, [batch?.status, rawBusinesses]);
 
   const pagination = useMemo(
     () => paginateItems(businesses, page, PAGE_SIZE),
@@ -168,6 +127,187 @@ export default function EmailScrapeBatchDetailPageContent() {
   if (pagination.page !== page) {
     setPage(pagination.page);
   }
+
+  const pageIds = useMemo(
+    () => pagination.items.map((row) => row.id).filter(Boolean),
+    [pagination.items],
+  );
+
+  const allPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
+  const somePageSelected =
+    !allPageSelected && pageIds.some((id) => selectedIds.has(id));
+
+  const markStatusMutation = useMutation({
+    mutationFn: async (email_status) => {
+      const result = await fetchApi("/admin/businesses/email-status", {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify({
+          business_ids: Array.from(selectedIds),
+          email_status,
+        }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to mark status");
+      }
+
+      return result.data;
+    },
+    onMutate: () => {
+      setMarkStatusError(null);
+    },
+    onSuccess: async () => {
+      setMarkStatusOpen(false);
+      setSelectedIds(new Set());
+      setMarkStatusError(null);
+      await queryClient.invalidateQueries({
+        queryKey: ["email-scrape-batch", batchId],
+      });
+    },
+    onError: (err) => {
+      setMarkStatusError(err.message || "Failed to mark status");
+    },
+  });
+
+  const handleToggleId = (id, checked) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const handleToggleAll = (checked) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      for (const id of pageIds) {
+        if (checked) next.add(id);
+        else next.delete(id);
+      }
+      return next;
+    });
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handlePageChange = (nextPage) => {
+    setPage(nextPage);
+    setSelectedIds(new Set());
+  };
+
+  const columns = useMemo(
+    () => [
+      {
+        key: "select",
+        label: (
+          <Checkbox
+            checked={allPageSelected}
+            indeterminate={somePageSelected}
+            disabled={pageIds.length === 0}
+            onCheckedChange={(checked) => handleToggleAll(checked === true)}
+            aria-label="Select all businesses on this page"
+          />
+        ),
+        className: "w-10",
+        render: (row) =>
+          row.id ? (
+            <Checkbox
+              checked={selectedIds.has(row.id)}
+              onCheckedChange={(next) =>
+                handleToggleId(row.id, next === true)
+              }
+              aria-label={`Select ${row.title || "business"}`}
+            />
+          ) : null,
+      },
+      {
+        key: "title",
+        label: "Business",
+        className: "w-[20%]",
+        render: (row) => (
+          <BusinessTitleLink
+            id={row.id}
+            title={row.title}
+            slug={row.slug}
+            titleClassName="font-semibold"
+          />
+        ),
+      },
+      {
+        key: "outcome",
+        label: "Outcome",
+        className: "w-[12%]",
+        render: (row) =>
+          row.outcome_status ? (
+            <EmailScrapeStatusBadge status={row.outcome_status} />
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          ),
+      },
+      {
+        key: "email_status",
+        label: "Email status",
+        className: "w-[14%]",
+        render: (row) =>
+          row.email_status ? (
+            <EmailCleanerStatusBadge status={row.email_status} />
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          ),
+      },
+      {
+        key: "email",
+        label: "Email",
+        className: "w-[18%]",
+        getValue: (row) => row.outcome_email || row.email || "—",
+      },
+      {
+        key: "reason",
+        label: "Reason",
+        className: "w-[14%]",
+        getValue: (row) => row.reason || "—",
+      },
+      {
+        key: "attempts",
+        label: "Attempts",
+        className: "w-[8%]",
+        getValue: (row) =>
+          row.email_scraped_attempts == null
+            ? "—"
+            : String(row.email_scraped_attempts),
+      },
+      {
+        key: "actions",
+        label: "",
+        className: "w-[10%] text-right",
+        cellClassName: "text-right",
+        render: (row) =>
+          row.id ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer"
+              nativeButton={false}
+              render={<Link href={`/businesses/${row.id}`} />}
+            >
+              <EyeIcon />
+              View
+            </Button>
+          ) : null,
+      },
+    ],
+    [allPageSelected, somePageSelected, pageIds, selectedIds],
+  );
 
   if (!isReady || !accessToken) return null;
 
@@ -203,19 +343,64 @@ export default function EmailScrapeBatchDetailPageContent() {
     );
   }
 
+  const batchCompleted = batch.status === "completed";
+  const hasSelection = selectedIds.size > 0;
+  const markStatusDisabled =
+    !batchCompleted || !hasSelection || markStatusMutation.isPending;
+  const prevBatchId = navigation?.prev_batch_id ?? null;
+  const nextBatchId = navigation?.next_batch_id ?? null;
+  const batchPosition = navigation?.position ?? (batch.batch_index ?? 0) + 1;
+  const batchTotal = navigation?.total ?? null;
+
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-4 px-4 py-4 md:gap-5 md:px-8 md:py-6">
       <div className="flex flex-col gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-fit cursor-pointer"
-          nativeButton={false}
-          render={<Link href={backHref} />}
-        >
-          <ArrowLeftIcon />
-          Back to job
-        </Button>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-fit cursor-pointer"
+            nativeButton={false}
+            render={<Link href={backHref} />}
+          >
+            <ArrowLeftIcon />
+            Back to job
+          </Button>
+
+          <div className="flex items-center gap-2">
+            {batchTotal != null ? (
+              <span className="text-sm text-muted-foreground">
+                Batch {batchPosition} of {batchTotal}
+              </span>
+            ) : null}
+            <Button
+              variant="outline"
+              size="icon-sm"
+              className="cursor-pointer"
+              disabled={!prevBatchId}
+              aria-label="Previous batch"
+              onClick={() => {
+                if (!prevBatchId) return;
+                router.push(`/email-scrape/batch/${prevBatchId}`);
+              }}
+            >
+              <ChevronLeftIcon />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              className="cursor-pointer"
+              disabled={!nextBatchId}
+              aria-label="Next batch"
+              onClick={() => {
+                if (!nextBatchId) return;
+                router.push(`/email-scrape/batch/${nextBatchId}`);
+              }}
+            >
+              <ChevronRightIcon />
+            </Button>
+          </div>
+        </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-semibold tracking-tight">
@@ -262,11 +447,44 @@ export default function EmailScrapeBatchDetailPageContent() {
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Selected businesses ({businesses.length})
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Selected businesses ({businesses.length})
+          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer rounded-full"
+              disabled={markStatusDisabled}
+              onClick={() => {
+                if (markStatusDisabled) return;
+                setMarkStatusError(null);
+                setMarkStatusOpen(true);
+              }}
+            >
+              <TagIcon />
+              Mark Status
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer rounded-full"
+              disabled={!hasSelection || markStatusMutation.isPending}
+              onClick={handleClearSelection}
+            >
+              <XIcon />
+              Clear
+            </Button>
+            {hasSelection ? (
+              <span className="text-sm text-muted-foreground">
+                {selectedIds.size} selected
+              </span>
+            ) : null}
+          </div>
+        </div>
         <IngestPayloadTable
-          columns={BUSINESS_COLUMNS}
+          columns={columns}
           rows={pagination.items}
           emptyMessage="No businesses were selected for this batch."
           getRowKey={(row, index) => row.id || index}
@@ -277,13 +495,26 @@ export default function EmailScrapeBatchDetailPageContent() {
             totalPages={pagination.totalPages}
             displayPage={pagination.page}
             total={pagination.total}
-            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+            onPrevious={() => handlePageChange(Math.max(1, page - 1))}
             onNext={() =>
-              setPage((p) => Math.min(pagination.totalPages || 1, p + 1))
+              handlePageChange(Math.min(pagination.totalPages || 1, page + 1))
             }
           />
         ) : null}
       </section>
+
+      <EmailCleanerMarkStatusDialog
+        open={markStatusOpen}
+        onOpenChange={(open) => {
+          if (markStatusMutation.isPending) return;
+          setMarkStatusOpen(open);
+          if (!open) setMarkStatusError(null);
+        }}
+        selectedCount={selectedIds.size}
+        onConfirm={(status) => markStatusMutation.mutate(status)}
+        confirmPending={markStatusMutation.isPending}
+        confirmError={markStatusError}
+      />
     </div>
   );
 }
