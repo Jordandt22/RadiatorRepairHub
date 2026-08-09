@@ -398,7 +398,18 @@ export async function getEmailScrapeBatchDetail(batchId) {
   if (!batch) return null;
 
   const job = await getEmailScrapeJob(batch.job_id);
+  const siblingBatches = await listEmailScrapeBatches(batch.job_id);
   const businesses = await hydrateEmailScrapeBatchBusinesses(batch);
+
+  const siblingIndex = siblingBatches.findIndex(
+    (sibling) => sibling.id === batch.id
+  );
+  const prevBatch =
+    siblingIndex > 0 ? siblingBatches[siblingIndex - 1] : null;
+  const nextBatch =
+    siblingIndex >= 0 && siblingIndex < siblingBatches.length - 1
+      ? siblingBatches[siblingIndex + 1]
+      : null;
 
   return {
     batch: {
@@ -428,6 +439,12 @@ export async function getEmailScrapeBatchDetail(batchId) {
           skipped_count: job.skipped_count ?? 0,
         }
       : null,
+    navigation: {
+      prev_batch_id: prevBatch?.id ?? null,
+      next_batch_id: nextBatch?.id ?? null,
+      position: siblingIndex >= 0 ? siblingIndex + 1 : null,
+      total: siblingBatches.length,
+    },
     businesses,
   };
 }
