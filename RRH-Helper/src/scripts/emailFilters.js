@@ -62,6 +62,7 @@ const DIRECTORY_DOMAIN_TOKENS = [
   "bbemail",
   "sansoxygen",
   "wylerleads",
+  "leadsnearme",
 ];
 
 const PLACEHOLDER_EMAILS = new Set([
@@ -84,6 +85,15 @@ const PLACEHOLDER_EMAILS = new Set([
   "websitecontact@maah.global",
   "hosting@treadpartners.com",
   "wweeiihhuuaanngg@gmail.com",
+  "developer@leadsnearme.com",
+  "impallari@gmail.com",
+  "team@jasperwebsites.com",
+  "hi@mystore.com",
+  "sample@gmail.com",
+  "email@gmail.com",
+  "user@website.com",
+  "mymail@mailservice.com",
+  "address@youremail.com",
 ]);
 
 const STRICT_EMAIL_RE =
@@ -150,7 +160,10 @@ export function getJunkReason(email) {
   if (
     lower.includes("testaccount") ||
     lower.includes("webmaster") ||
-    lower.includes("your.email")
+    lower.includes("your.email") ||
+    lower.includes("findaloco") ||
+    lower.includes("bbb.org") ||
+    lower.includes("3c663-46b0-4973-97f3-eb3d8c85619a")
   ) {
     return "junk_local";
   }
