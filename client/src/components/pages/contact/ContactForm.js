@@ -2,13 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import emailjs from "@emailjs/browser";
 import { Send } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 
 // Contexts
 import { useToast } from "@/contexts/ToastProvider";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
+import { submitContactInquiry } from "@/lib/api/contact-inquiries";
+import { submitListingRequest } from "@/lib/api/listing-requests";
 
 const ContactForm = ({
   prefilledSubject = "",
@@ -19,6 +20,7 @@ const ContactForm = ({
   nameLabel = "Full Name",
   showSubjectInput = true,
   analyticsPage = "contact",
+  submissionKind = "contact",
   className = "",
 }) => {
   const { showCustomSuccess, showCustomError } = useToast();
@@ -88,8 +90,8 @@ const ContactForm = ({
       }
     }
 
-    // Subject validation
-    if (!formData.subject) {
+    // Subject validation (contact form only)
+    if (showSubjectInput && !formData.subject) {
       newErrors.subject = "Please select an inquiry type";
     }
 
@@ -160,29 +162,52 @@ const ContactForm = ({
     setIsSubmitting(true);
 
     try {
-      // Send message to admin using message template
-      const messageTemplateParams = {
-        sender_name: formData.name,
-        sender_email: formData.email,
-        subject: formData.subject,
-        message: formData.message,
-        sender_phone: formData.phone || "Not provided",
-      };
+      const result =
+        submissionKind === "get-listed"
+          ? await submitListingRequest({
+              businessName: formData.name.trim(),
+              email: formData.email.trim(),
+              phone: formData.phone.trim() || null,
+              message: formData.message.trim(),
+            })
+          : await submitContactInquiry({
+              name: formData.name.trim(),
+              email: formData.email.trim(),
+              phone: formData.phone.trim() || null,
+              subject: formData.subject,
+              message: formData.message.trim(),
+            });
 
-      await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-        process.env.NEXT_PUBLIC_EMAILJS_MSG_TEMPLATE_ID,
-        messageTemplateParams,
-        process.env.NEXT_PUBLIC_EMAILJS_API_KEY
-      );
+      if (result.error) {
+        const fieldErrors = result.error?.message;
+        if (fieldErrors && typeof fieldErrors === "object") {
+          const nextErrors = {};
+          for (const [key, value] of Object.entries(fieldErrors)) {
+            if (typeof value === "string") {
+              if (key === "businessName") nextErrors.name = value;
+              else nextErrors[key] = value;
+            }
+          }
+          if (Object.keys(nextErrors).length > 0) {
+            setErrors((prev) => ({ ...prev, ...nextErrors }));
+          }
+        }
+
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Sorry, there was an error sending your message. Please try again or contact us directly.";
+        showCustomError(message, "Sending Failed");
+        return;
+      }
 
       posthog?.capture("contact_page_submitted", {
         subject: formData.subject || undefined,
         page: analyticsPage,
         signed_in: Boolean(isSignedIn),
+        submission_kind: submissionKind,
       });
 
-      // Success - clear form and show success message
       setFormData({
         name: "",
         email: authEmail,
@@ -193,11 +218,13 @@ const ContactForm = ({
       setErrors({});
 
       showCustomSuccess(
-        "Thank you for your message! We'll get back to you within 24 hours.",
+        submissionKind === "get-listed"
+          ? "Thank you! We received your listing request and will review it within 2-3 business days."
+          : "Thank you for your message! We'll get back to you within 24 hours.",
         "Message Sent Successfully"
       );
     } catch (error) {
-      console.error("EmailJS Error:", error);
+      console.error("Contact form submit error:", error);
       showCustomError(
         "Sorry, there was an error sending your message. Please try again or contact us directly.",
         "Sending Failed"

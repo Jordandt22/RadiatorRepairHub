@@ -380,6 +380,178 @@ export const ADMIN_NEW_LISTING_REPORT_MESSAGE = Object.freeze({
   `,
 });
 
+// Confirmation email sent after a general contact inquiry is submitted
+export const CONTACT_INQUIRY_RECEIVED_MESSAGE = Object.freeze({
+  subject: "We received your message",
+  html: (name, { subject, message } = {}) => {
+    const safeName = escapeEmailHtml(name?.trim() || "there");
+    const safeSubject = escapeEmailHtml(subject ?? "N/A");
+    const safeMessage = escapeEmailHtml(message ?? "").replace(/\n/g, "<br>");
+
+    return `
+  <p>Hi ${safeName},</p>
+
+  <p>Thanks for contacting RadiatorRepairHub. We received your message and will get back to you within 24 hours.</p>
+
+  <p><strong>What You Submitted:</strong></p>
+  <table style="width: 100%; border-collapse: collapse; margin: 12px 0 20px;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 100px; vertical-align: top;">Subject:</td>
+      <td style="padding: 8px 0;">${safeSubject}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Message:</td>
+      <td style="padding: 8px 0;">${safeMessage || "N/A"}</td>
+    </tr>
+  </table>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `;
+  },
+});
+
+// Admin notification when a general contact inquiry is submitted
+export const ADMIN_NEW_CONTACT_INQUIRY_MESSAGE = Object.freeze({
+  subject: (subject) => `New contact inquiry${subject ? `: ${subject}` : ""}`,
+  html: (
+    {
+      name,
+      email,
+      phone,
+      subject,
+      message,
+      adminQueueUrl,
+    } = {},
+  ) => `
+  <p>A new contact inquiry was submitted on RadiatorRepairHub.</p>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 140px;">Name:</td>
+      <td style="padding: 8px 0;">${name ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Email:</td>
+      <td style="padding: 8px 0;">${email ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Phone:</td>
+      <td style="padding: 8px 0;">${phone ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Subject:</td>
+      <td style="padding: 8px 0;">${subject ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Message:</td>
+      <td style="padding: 8px 0;">${message ?? "N/A"}</td>
+    </tr>
+  </table>
+
+  <p>${
+    adminQueueUrl
+      ? `Review it in the <a href="${adminQueueUrl}" style="color: #1a73e8;">admin inquiries queue</a>.`
+      : "Review it in the admin inquiries queue."
+  }</p>
+  `,
+});
+
+// Confirmation email sent after a get-listed request is submitted
+export const LISTING_REQUEST_RECEIVED_MESSAGE = Object.freeze({
+  subject: "We received your listing request",
+  html: (businessName, { message } = {}) => {
+    const safeName = escapeEmailHtml(businessName?.trim() || "there");
+    const safeMessage = escapeEmailHtml(message ?? "").replace(/\n/g, "<br>");
+
+    return `
+  <p>Hi ${safeName},</p>
+
+  <p>Thanks for submitting your business to RadiatorRepairHub. We received your listing request and will review it within 2-3 business days.</p>
+
+  <p><strong>What You Submitted:</strong></p>
+  <table style="width: 100%; border-collapse: collapse; margin: 12px 0 20px;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 120px; vertical-align: top;">Business:</td>
+      <td style="padding: 8px 0;">${safeName}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Details:</td>
+      <td style="padding: 8px 0;">${safeMessage || "N/A"}</td>
+    </tr>
+  </table>
+
+  <p>Once your listing is approved and live, we'll send another email with a link to your page.</p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `;
+  },
+});
+
+// Admin notification when a get-listed request is submitted
+export const ADMIN_NEW_LISTING_REQUEST_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `New listing request${businessName ? `: ${businessName}` : ""}`,
+  html: (
+    {
+      businessName,
+      email,
+      phone,
+      message,
+      adminQueueUrl,
+    } = {},
+  ) => `
+  <p>A new Get Listed request was submitted on RadiatorRepairHub.</p>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 140px;">Business:</td>
+      <td style="padding: 8px 0;">${businessName ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Email:</td>
+      <td style="padding: 8px 0;">${email ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Phone:</td>
+      <td style="padding: 8px 0;">${phone ?? "N/A"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Message:</td>
+      <td style="padding: 8px 0;">${message ?? "N/A"}</td>
+    </tr>
+  </table>
+
+  <p>${
+    adminQueueUrl
+      ? `Review it in the <a href="${adminQueueUrl}" style="color: #1a73e8;">admin get listed queue</a>.`
+      : "Review it in the admin get listed queue."
+  }</p>
+  `,
+});
+
+// Email sent when a listing request is marked listed
+export const LISTING_REQUEST_LIVE_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Your listing is live${businessName ? `: ${businessName}` : ""}`,
+  html: (businessName, { businessPageUrl } = {}) => {
+    const safeName = escapeEmailHtml(businessName?.trim() || "your business");
+    const listingLink = businessPageUrl
+      ? `<p>View your listing:<br>
+  <a href="${escapeEmailHtml(businessPageUrl)}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl)}</a></p>`
+      : `<p>Your listing is now live on RadiatorRepairHub. Search for your business name on the site to find your page.</p>`;
+
+    return `
+  <p>Hi there,</p>
+
+  <p>Good news! <strong>${safeName}</strong> is now listed on RadiatorRepairHub.</p>
+
+  ${listingLink}
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `;
+  },
+});
+
 // Admin notification when a business is successfully claimed
 export const ADMIN_BUSINESS_CLAIMED_MESSAGE = Object.freeze({
   subject: (businessName) =>

@@ -241,6 +241,16 @@ export const getListingReportsKey = (page, limit, status = null) => ({
   interval: 60 * 5,
 });
 
+export const getContactInquiriesKey = (page, limit, status = null) => ({
+  key: `CONTACT_INQUIRIES?PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}`,
+  interval: 60 * 5,
+});
+
+export const getListingRequestsKey = (page, limit, status = null) => ({
+  key: `LISTING_REQUESTS?PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}`,
+  interval: 60 * 5,
+});
+
 export const getAdminBusinessesKey = (
   page,
   limit,

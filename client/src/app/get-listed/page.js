@@ -181,6 +181,7 @@ const Page = () => {
                     nameLabel="Full Business Name"
                     showSubjectInput={false}
                     analyticsPage="get-listed"
+                    submissionKind="get-listed"
                   />
                 </ToastProvider>
               </div>

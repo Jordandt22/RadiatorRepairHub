@@ -228,6 +228,55 @@ const data = {
         },
       ],
     },
+    {
+      title: "Inquiries",
+      url: "/inquiries?tab=pending",
+      icon: <InboxIcon />,
+      items: [
+        {
+          title: "Pending",
+          url: "/inquiries?tab=pending",
+          icon: <ClockIcon />,
+        },
+        {
+          title: "Resolved",
+          url: "/inquiries?tab=resolved",
+          icon: <CheckIcon />,
+        },
+        {
+          title: "Dismissed",
+          url: "/inquiries?tab=dismissed",
+          icon: <XCircleIcon />,
+        },
+      ],
+    },
+    {
+      title: "Get Listed",
+      url: "/get-listed-requests?tab=pending",
+      icon: <Building2Icon />,
+      items: [
+        {
+          title: "Pending",
+          url: "/get-listed-requests?tab=pending",
+          icon: <ClockIcon />,
+        },
+        {
+          title: "Listed",
+          url: "/get-listed-requests?tab=listed",
+          icon: <CheckIcon />,
+        },
+        {
+          title: "Rejected",
+          url: "/get-listed-requests?tab=rejected",
+          icon: <XCircleIcon />,
+        },
+        {
+          title: "Duplicate",
+          url: "/get-listed-requests?tab=duplicate",
+          icon: <ArchiveIcon />,
+        },
+      ],
+    },
   ],
   navExternal: [
     {

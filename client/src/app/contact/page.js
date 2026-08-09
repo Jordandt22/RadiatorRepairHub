@@ -134,6 +134,7 @@ const Page = () => {
                   formTitle="Message RadiatorRepairHub"
                   messagePlaceholder="Tell us about your directory question, listing issue, partnership idea, or website feedback..."
                   analyticsPage="contact"
+                  submissionKind="contact"
                 />
               </ToastProvider>
             </div>

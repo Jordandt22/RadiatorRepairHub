@@ -1721,6 +1721,139 @@ export const updateListingReportsStatus = async (
   return { data, error };
 };
 
+export const insertContactInquiry = async (payload) => {
+  const { data, error } = await supabase
+    .from("contact_inquiries")
+    .insert(payload)
+    .select("contact_inquiry_id")
+    .single();
+
+  return { data, error };
+};
+
+export const getContactInquiries = async (page, limit, status = null) => {
+  let query = supabase
+    .from("contact_inquiries")
+    .select(
+      "contact_inquiry_id, name, email, phone, subject, message, status, created_at, resolved_at, resolved_by",
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};
+
+export const updateContactInquiriesStatus = async (
+  ids,
+  status,
+  resolvedBy = "admin"
+) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const patch =
+    status === "pending"
+      ? {
+          status,
+          resolved_at: null,
+          resolved_by: null,
+        }
+      : {
+          status,
+          resolved_at: new Date().toISOString(),
+          resolved_by: resolvedBy,
+        };
+
+  const { data, error } = await supabase
+    .from("contact_inquiries")
+    .update(patch)
+    .in("contact_inquiry_id", ids)
+    .select("contact_inquiry_id");
+
+  return { data, error };
+};
+
+export const insertListingRequest = async (payload) => {
+  const { data, error } = await supabase
+    .from("listing_requests")
+    .insert(payload)
+    .select("listing_request_id")
+    .single();
+
+  return { data, error };
+};
+
+export const getListingRequests = async (page, limit, status = null) => {
+  let query = supabase
+    .from("listing_requests")
+    .select(
+      "listing_request_id, business_name, email, phone, message, status, created_at, resolved_at, resolved_by, live_email_sent_at",
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};
+
+export const updateListingRequestsStatus = async (
+  ids,
+  status,
+  resolvedBy = "admin"
+) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const patch =
+    status === "pending"
+      ? {
+          status,
+          resolved_at: null,
+          resolved_by: null,
+        }
+      : {
+          status,
+          resolved_at: new Date().toISOString(),
+          resolved_by: resolvedBy,
+        };
+
+  const { data, error } = await supabase
+    .from("listing_requests")
+    .update(patch)
+    .in("listing_request_id", ids)
+    .select("listing_request_id, business_name, email, live_email_sent_at");
+
+  return { data, error };
+};
+
+export const markListingRequestsLiveEmailSent = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("listing_requests")
+    .update({ live_email_sent_at: new Date().toISOString() })
+    .in("listing_request_id", ids)
+    .is("live_email_sent_at", null)
+    .select("listing_request_id, live_email_sent_at");
+
+  return { data, error };
+};
+
 /**
  * True when the same email appears on 2+ businesses.
  * Shared corporate inboxes cannot be used for self-serve claim until phone

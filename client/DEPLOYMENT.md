@@ -27,10 +27,6 @@ GOOGLE_VERIFICATION_ID=your-google-verification-id
 # Google Maps API (Required for business pages)
 GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 
-# EmailJS Configuration (Required for contact forms)
-NEXT_PUBLIC_EMAILJS_SERVICE_ID=your-emailjs-service-id
-NEXT_PUBLIC_EMAILJS_MSG_TEMPLATE_ID=your-emailjs-template-id
-NEXT_PUBLIC_EMAILJS_API_KEY=your-emailjs-api-key
 ```
 
 ## Deployment Steps
@@ -99,9 +95,9 @@ Vercel should automatically detect Next.js, but verify these settings:
 
 #### Contact Form Not Working
 
-- Verify EmailJS environment variables are set
-- Check EmailJS service configuration
-- Test EmailJS template and service settings
+- Verify `API_URI` / `NEXT_PUBLIC_API_URI` point at the API
+- Confirm the API has Resend configured (`RESEND_API_KEY`, `SENDER_EMAIL`, `ADMIN_EMAIL`)
+- Check API logs for contact-inquiries / listing-requests errors
 
 ## Custom Domain Setup
 

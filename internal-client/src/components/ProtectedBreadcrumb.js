@@ -17,6 +17,8 @@ const SEGMENT_LABELS = {
   "contact-form": "Contact Form",
   "claim-requests": "Claim Requests",
   "listing-reports": "Listing Reports",
+  inquiries: "Inquiries",
+  "get-listed-requests": "Get Listed",
   businesses: "Businesses",
   locations: "Locations",
   states: "States",

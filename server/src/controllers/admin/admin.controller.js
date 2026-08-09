@@ -21,6 +21,11 @@ import {
   deleteClaimRequests as removeClaimRequests,
   getListingReports as fetchListingReports,
   updateListingReportsStatus as updateReportsStatus,
+  getContactInquiries as fetchContactInquiries,
+  updateContactInquiriesStatus as updateInquiriesStatus,
+  getListingRequests as fetchListingRequests,
+  updateListingRequestsStatus as updateListingRequestsStatusFn,
+  markListingRequestsLiveEmailSent,
   getAdminBusinesses as fetchAdminBusinesses,
   getAdminBusinessById as fetchAdminBusinessById,
   getAdminBusinessesWithEmails as fetchAdminBusinessesWithEmails,
@@ -57,6 +62,8 @@ import {
   getContactMessagesKey,
   getClaimRequestsKey,
   getListingReportsKey,
+  getContactInquiriesKey,
+  getListingRequestsKey,
   getAdminBusinessesKey,
   getAdminLocationsKey,
   getAdminLocationAggregatesKey,
@@ -93,6 +100,7 @@ import {
   DECLINED_RECOMMENDATIONS_FALLBACK,
   SENDER_NAME,
   ADMIN_OUTREACH_SENT_MESSAGE,
+  LISTING_REQUEST_LIVE_MESSAGE,
 } from "../../lib/constants/messages.js";
 import {
   createIngestGroup as insertIngestGroup,
@@ -1456,6 +1464,212 @@ export const updateListingReportsStatus = async (req, res) => {
   );
 };
 
+export const getContactInquiries = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const status = req.query.status || null;
+
+  const { key, interval } = getContactInquiriesKey(page, limit, status);
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, count, error } = await fetchContactInquiries(
+    page,
+    limit,
+    status
+  );
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching contact inquiries.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  const compiledData = {
+    contactInquiries: data ?? [],
+    total,
+    totalPages,
+    page,
+    limit,
+    status,
+  };
+
+  await cacheData(key, interval, compiledData);
+  return res.status(200).json(successHandler(compiledData));
+};
+
+export const updateContactInquiriesStatus = async (req, res) => {
+  const { status, contact_inquiry_ids } = req.body;
+
+  const { data, error } = await updateInquiriesStatus(
+    contact_inquiry_ids,
+    status,
+    "admin"
+  );
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating contact inquiry statuses.",
+          error
+        )
+      );
+  }
+
+  const contactInquiryIds = (data ?? []).map((row) => row.contact_inquiry_id);
+
+  await deleteCacheDataByPrefix("CONTACT_INQUIRIES");
+
+  return res.status(200).json(
+    successHandler({
+      updated: contactInquiryIds.length,
+      contactInquiryIds,
+      status,
+    })
+  );
+};
+
+export const getListingRequests = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const status = req.query.status || null;
+
+  const { key, interval } = getListingRequestsKey(page, limit, status);
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, count, error } = await fetchListingRequests(page, limit, status);
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching listing requests.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  const compiledData = {
+    listingRequests: data ?? [],
+    total,
+    totalPages,
+    page,
+    limit,
+    status,
+  };
+
+  await cacheData(key, interval, compiledData);
+  return res.status(200).json(successHandler(compiledData));
+};
+
+export const updateListingRequestsStatus = async (req, res) => {
+  const { status, listing_request_ids } = req.body;
+
+  const { data, error } = await updateListingRequestsStatusFn(
+    listing_request_ids,
+    status,
+    "admin"
+  );
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating listing request statuses.",
+          error
+        )
+      );
+  }
+
+  const listingRequestIds = (data ?? []).map((row) => row.listing_request_id);
+  let liveEmailsSent = 0;
+
+  if (status === "listed") {
+    const toNotify = (data ?? []).filter(
+      (row) =>
+        !row.live_email_sent_at &&
+        typeof row.email === "string" &&
+        row.email.trim()
+    );
+
+    const { SENDER_EMAIL, RESEND_API_KEY } = process.env;
+
+    if (RESEND_API_KEY && SENDER_EMAIL && toNotify.length > 0) {
+      const sentIds = [];
+
+      for (const row of toNotify) {
+        const { error: sendError } = await resendClient().emails.send({
+          from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+          to: [row.email.trim()],
+          subject: LISTING_REQUEST_LIVE_MESSAGE.subject(row.business_name),
+          html: LISTING_REQUEST_LIVE_MESSAGE.html(row.business_name),
+        });
+
+        if (!sendError) {
+          sentIds.push(row.listing_request_id);
+        } else if (process.env.NODE_ENV === "development") {
+          console.error(
+            "Failed to send listing-live email:",
+            sendError
+          );
+        }
+      }
+
+      if (sentIds.length > 0) {
+        const { error: markError } =
+          await markListingRequestsLiveEmailSent(sentIds);
+        if (!markError) {
+          liveEmailsSent = sentIds.length;
+        } else if (process.env.NODE_ENV === "development") {
+          console.error(
+            "Listing-live emails sent but failed to mark live_email_sent_at:",
+            markError
+          );
+        }
+      }
+    }
+  }
+
+  await deleteCacheDataByPrefix("LISTING_REQUESTS");
+
+  return res.status(200).json(
+    successHandler({
+      updated: listingRequestIds.length,
+      listingRequestIds,
+      status,
+      liveEmailsSent,
+    })
+  );
+};
+
 export const getBusinesses = async (req, res) => {
   let page = Number(req.query.page);
   const limit = Number(req.query.limit);
@@ -2388,8 +2602,10 @@ export const getDashboardStats = async (req, res) => {
 
 const CACHE_RESOURCE_PREFIXES = {
   "contact-messages": "CONTACT_MESSAGES",
+  "contact-inquiries": "CONTACT_INQUIRIES",
   "claim-requests": "CLAIM_REQUESTS",
   "listing-reports": "LISTING_REPORTS",
+  "listing-requests": "LISTING_REQUESTS",
   businesses: "ADMIN_BUSINESSES",
   locations: "ADMIN_LOCATIONS",
   dashboard: "ADMIN_DASHBOARD",
