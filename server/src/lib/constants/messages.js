@@ -572,7 +572,7 @@ export const LISTING_REQUEST_LIVE_MESSAGE = Object.freeze({
     return `
   <p>Hi ${greetingName},</p>
 
-  <p>We just updated the business information for your listing! Please take a look and let us know if anything else is incorrect or outdated.</p>
+  <p>Great news, your listing is now live on RadiatorRepairHub! Please take a look and let us know if anything looks incorrect or outdated.</p>
 
   ${listingBlock}
 
