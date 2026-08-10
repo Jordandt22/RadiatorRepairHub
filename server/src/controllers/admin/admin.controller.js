@@ -86,12 +86,16 @@ import {
 import { clearClaimCodeCache } from "../../lib/claimHelpers.js";
 import { buildFreeLeadEmailPayload } from "../../lib/contactMessageSend.js";
 import {
+  applyOutreachDevelopmentCap,
   buildOutreachEmailContent,
-  buildOutreachEmailPayload,
-  evaluateOutreachEligibility,
   isOutreachDevRedirect,
   resolveOutreachRecipientEmail,
 } from "../../lib/outreachSend.js";
+import {
+  OutreachSendError,
+  planOutreachBatch,
+  sendOutreachBatch,
+} from "../../outreach/sendOutreachBatch.js";
 import {
   formatCitiesExportText,
   formatPostalCodesExportText,
@@ -140,6 +144,17 @@ import {
 import { startEmailScrapeJob } from "../../email-scrape/startJob.js";
 import { normalizeWebsiteUrl } from "../../lib/websiteReachability.js";
 import { getSystemsHealthChecks } from "../../lib/systemsHealth.js";
+import {
+  getOutreachSchedule,
+  getOutreachSendJobDetail,
+  listOutreachRuns,
+  listRecentOutreachRuns,
+  updateOutreachSchedule as saveOutreachSchedule,
+} from "../../outreach-scheduler/db.js";
+import {
+  getOutreachSchedulerState,
+  reconcileOutreachScheduler,
+} from "../../outreach-scheduler/scheduler.js";
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
 
 export const loginAdmin = async (req, res) => {
@@ -3022,37 +3037,6 @@ export const getOutreachMatchingIds = async (req, res) => {
   );
 };
 
-const planOutreachBatch = (businessIds, businesses, outreachType) => {
-  const byId = new Map((businesses ?? []).map((row) => [row.id, row]));
-  const skipped = [];
-  const eligible = [];
-
-  for (const id of businessIds) {
-    const business = byId.get(id);
-    if (!business) {
-      skipped.push({ id, reason: "not_found" });
-      continue;
-    }
-
-    const result = evaluateOutreachEligibility(business, outreachType);
-    if (!result.ok) {
-      skipped.push({
-        id,
-        reason: result.reason,
-        title: business.title ?? null,
-      });
-      continue;
-    }
-
-    eligible.push({
-      business,
-      recipient: result.recipient,
-    });
-  }
-
-  return { skipped, eligible };
-};
-
 export const previewOutreachEmails = async (req, res) => {
   const { business_ids, outreach_type } = req.body;
 
@@ -3071,10 +3055,8 @@ export const previewOutreachEmails = async (req, res) => {
       );
   }
 
-  const { skipped, eligible } = planOutreachBatch(
-    business_ids,
-    businesses,
-    outreach_type
+  const { skipped, eligible } = applyOutreachDevelopmentCap(
+    planOutreachBatch(business_ids, businesses, outreach_type)
   );
 
   const sample = eligible[0] ?? null;
@@ -3115,131 +3097,146 @@ export const previewOutreachEmails = async (req, res) => {
 
 export const sendOutreachEmails = async (req, res) => {
   const { business_ids, outreach_type } = req.body;
-  const { SENDER_EMAIL, TEST_RECIPIENT_EMAIL, RESEND_API_KEY } = process.env;
-
-  if (!RESEND_API_KEY || !SENDER_EMAIL) {
-    return res
-      .status(500)
-      .json(
-        customErrorHandler(SERVER_ERROR, "Email sending is not configured.")
-      );
-  }
-
-  if (process.env.NODE_ENV === "development" && !TEST_RECIPIENT_EMAIL) {
-    return res
-      .status(500)
-      .json(
-        customErrorHandler(
-          SERVER_ERROR,
-          "TEST_RECIPIENT_EMAIL is required in development."
-        )
-      );
-  }
-
-  const { data: businesses, error: fetchError } =
-    await getOutreachBusinessesByIds(business_ids);
-
-  if (fetchError) {
-    return res
-      .status(500)
-      .json(
-        customErrorHandler(
-          SUPABASE_ERROR,
-          "There was an error fetching businesses.",
-          fetchError
-        )
-      );
-  }
-
-  const { skipped, eligible } = planOutreachBatch(
-    business_ids,
-    businesses,
-    outreach_type
-  );
-
-  if (eligible.length === 0) {
-    return res.status(200).json(
-      successHandler({
-        sent: [],
-        skipped,
-        resendIds: [],
-      })
-    );
-  }
-
-  const batchPayload = eligible.map(({ business, recipient }) =>
-    buildOutreachEmailPayload({
-      business,
+  try {
+    const result = await sendOutreachBatch({
+      businessIds: business_ids,
       outreachType: outreach_type,
-      recipient,
-      senderEmail: SENDER_EMAIL,
-    })
-  );
+    });
+    return res.status(200).json(successHandler(result));
+  } catch (error) {
+    if (!(error instanceof OutreachSendError)) throw error;
+    const errorCode = [
+      "business_fetch_failed",
+      "history_insert_failed",
+    ].includes(error.code)
+      ? SUPABASE_ERROR
+      : SERVER_ERROR;
+    return res
+      .status(500)
+      .json(customErrorHandler(errorCode, error.message, error.details));
+  }
+};
 
-  const { data: batchData, error: batchError } =
-    await resendClient()?.batch?.send(batchPayload);
+async function buildOutreachSchedulerResponse(scheduleOverride = null) {
+  const scheduleWithCampaigns =
+    scheduleOverride ?? (await getOutreachSchedule());
+  const {
+    outreach_schedule_campaigns: campaigns = [],
+    ...schedule
+  } = scheduleWithCampaigns;
+  const [bullmqState, recentRuns] = await Promise.all([
+    getOutreachSchedulerState(),
+    listRecentOutreachRuns(10),
+  ]);
+  return {
+    schedule,
+    campaigns,
+    next_run_at: bullmqState?.next ?? null,
+    bullmq_state: bullmqState,
+    recent_runs: recentRuns,
+  };
+}
 
-  if (batchError) {
+export const getOutreachScheduler = async (_req, res) => {
+  try {
+    return res
+      .status(200)
+      .json(successHandler(await buildOutreachSchedulerResponse()));
+  } catch (error) {
     return res
       .status(500)
       .json(
         customErrorHandler(
           SERVER_ERROR,
-          batchError.message || "Failed to send emails.",
-          batchError
+          "Unable to load the outreach scheduler.",
+          error
         )
       );
   }
+};
 
-  const resendResults = Array.isArray(batchData)
-    ? batchData
-    : batchData?.data ?? [];
-
-  const sentAt = new Date().toISOString();
-  const historyRows = eligible.map(({ business, recipient }, index) => {
-    const content = buildOutreachEmailContent(business, outreach_type);
-    const deliveryTo = resolveOutreachRecipientEmail(recipient);
-    return {
-      business_id: business.id,
-      message_type: "email",
-      outreach_type,
-      recipient,
-      subject: content?.subject ?? null,
-      provider: "resend",
-      provider_message_id: resendResults[index]?.id ?? null,
-      sent_at: sentAt,
-      sent_by: null,
-      metadata: {
-        delivery_to: deliveryTo,
-        dev_redirect: isOutreachDevRedirect(),
-      },
-    };
-  });
-
-  const { data: inserted, error: insertError } =
-    await insertOutreachHistory(historyRows);
-
-  if (insertError) {
+export const updateOutreachScheduler = async (req, res) => {
+  const { enabled, local_time, timezone, campaigns } = req.body;
+  let schedule;
+  try {
+    schedule = await saveOutreachSchedule({
+      enabled,
+      localTime: local_time,
+      timezone,
+      campaigns,
+    });
+  } catch (error) {
     return res
       .status(500)
       .json(
         customErrorHandler(
           SUPABASE_ERROR,
-          "Emails were sent but outreach history could not be saved.",
-          insertError
+          "Unable to save outreach scheduler settings.",
+          error
         )
       );
   }
 
-  const sentIds = (inserted ?? []).map((row) => row.business_id);
+  try {
+    await reconcileOutreachScheduler(schedule);
+    return res
+      .status(200)
+      .json(successHandler(await buildOutreachSchedulerResponse(schedule)));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "Scheduler settings were saved, but scheduler reconciliation failed.",
+          error
+        )
+      );
+  }
+};
 
-  return res.status(200).json(
-    successHandler({
-      sent: sentIds,
-      skipped,
-      resendIds: resendResults.map((item) => item.id).filter(Boolean),
-    })
-  );
+export const getOutreachSchedulerRuns = async (req, res) => {
+  try {
+    const result = await listOutreachRuns(req.query.page, req.query.limit);
+    return res.status(200).json(successHandler(result));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Unable to load outreach scheduler runs.",
+          error
+        )
+      );
+  }
+};
+
+export const getOutreachSchedulerJob = async (req, res) => {
+  try {
+    const detail = await getOutreachSendJobDetail(req.params.jobId);
+    if (!detail) {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(
+            SERVER_ERROR,
+            "Scheduled outreach job not found."
+          )
+        );
+    }
+    return res.status(200).json(successHandler(detail));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Unable to load the scheduled outreach job.",
+          error
+        )
+      );
+  }
 };
 
 /** Record outreach as sent without delivering email (manual / external send). */

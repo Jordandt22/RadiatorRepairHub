@@ -8,12 +8,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 export default function IngestPayloadTable({
   columns = [],
   rows = [],
   emptyMessage = "No items.",
   getRowKey,
+  getRowClassName,
 }) {
   if (!Array.isArray(rows) || rows.length === 0) {
     return <p className="text-sm text-muted-foreground">{emptyMessage}</p>;
@@ -33,7 +35,10 @@ export default function IngestPayloadTable({
         </TableHeader>
         <TableBody>
           {rows.map((row, index) => (
-            <TableRow key={getRowKey?.(row, index) ?? index}>
+            <TableRow
+              key={getRowKey?.(row, index) ?? index}
+              className={cn(getRowClassName?.(row, index))}
+            >
               {columns.map((column) => (
                 <TableCell
                   key={column.key}

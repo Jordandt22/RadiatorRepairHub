@@ -9,6 +9,16 @@ import { processEnrichJob } from "./ingest/handlers/enrichJob.js";
 import { processInsertJob } from "./ingest/handlers/insertJob.js";
 import { processCdnUploadJob } from "./cdn-upload/handlers/cdnUploadJob.js";
 import { processEmailScrapeJob } from "./email-scrape/handlers/emailScrapeJob.js";
+import {
+  OUTREACH_DISPATCH_QUEUE_NAME,
+  OUTREACH_SEND_QUEUE_NAME,
+} from "./outreach-scheduler/constants.js";
+import {
+  processOutreachDispatchJob,
+  processOutreachSendJob,
+} from "./outreach-scheduler/handlers.js";
+import { closeOutreachQueues } from "./outreach-scheduler/queues.js";
+import { reconcileOutreachScheduler } from "./outreach-scheduler/scheduler.js";
 import { logger } from "./lib/logger.js";
 
 const connection = getBullmqConnectionOptions();
@@ -43,6 +53,18 @@ const emailScrapeWorker = new Worker(
   { connection, concurrency: 2 }
 );
 
+const outreachDispatchWorker = new Worker(
+  OUTREACH_DISPATCH_QUEUE_NAME,
+  processOutreachDispatchJob,
+  { connection, concurrency: 1 }
+);
+
+const outreachSendWorker = new Worker(
+  OUTREACH_SEND_QUEUE_NAME,
+  processOutreachSendJob,
+  { connection, concurrency: 1 }
+);
+
 function attachLogging(worker, label) {
   const log = logger.child({ worker: label });
   worker.on("completed", (job, result) => {
@@ -58,6 +80,8 @@ attachLogging(enrichWorker, "ingest-enrich");
 attachLogging(insertWorker, "ingest-insert");
 attachLogging(cdnUploadWorker, "cdn-upload");
 attachLogging(emailScrapeWorker, "email-scrape");
+attachLogging(outreachDispatchWorker, "outreach-dispatch");
+attachLogging(outreachSendWorker, "outreach-send");
 
 logger.info(
   {
@@ -65,10 +89,23 @@ logger.info(
       ...Object.values(QUEUE_NAMES),
       CDN_UPLOAD_QUEUE_NAME,
       EMAIL_SCRAPE_QUEUE_NAME,
+      OUTREACH_DISPATCH_QUEUE_NAME,
+      OUTREACH_SEND_QUEUE_NAME,
     ],
   },
   "Worker listening"
 );
+
+reconcileOutreachScheduler()
+  .then((scheduler) => {
+    logger.info({ scheduler }, "Outreach scheduler reconciled");
+  })
+  .catch((err) => {
+    logger.error(
+      { err: err?.message || err },
+      "Outreach scheduler reconciliation failed"
+    );
+  });
 
 async function shutdown() {
   logger.info("Shutting down worker...");
@@ -78,6 +115,9 @@ async function shutdown() {
     insertWorker.close(),
     cdnUploadWorker.close(),
     emailScrapeWorker.close(),
+    outreachDispatchWorker.close(),
+    outreachSendWorker.close(),
+    closeOutreachQueues(),
   ]);
   process.exit(0);
 }

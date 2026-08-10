@@ -40,6 +40,31 @@ export const CLAIM_ELIGIBILITY = Object.freeze({
 export const isOutreachDevRedirect = () =>
   process.env.NODE_ENV === "development";
 
+const DEVELOPMENT_OUTREACH_SEND_LIMIT = 2;
+
+export function getEffectiveOutreachSendLimit(requestedLimit) {
+  const normalized = Math.max(0, Number(requestedLimit) || 0);
+  return isOutreachDevRedirect()
+    ? Math.min(normalized, DEVELOPMENT_OUTREACH_SEND_LIMIT)
+    : normalized;
+}
+
+export function applyOutreachDevelopmentCap({ skipped, eligible }) {
+  const limit = getEffectiveOutreachSendLimit(eligible.length);
+  if (limit >= eligible.length) return { skipped, eligible };
+  return {
+    eligible: eligible.slice(0, limit),
+    skipped: [
+      ...skipped,
+      ...eligible.slice(limit).map(({ business }) => ({
+        id: business.id,
+        title: business.title ?? null,
+        reason: "development_send_limit",
+      })),
+    ],
+  };
+}
+
 export const resolveOutreachRecipientEmail = (email) => {
   if (isOutreachDevRedirect()) {
     return process.env.TEST_RECIPIENT_EMAIL;

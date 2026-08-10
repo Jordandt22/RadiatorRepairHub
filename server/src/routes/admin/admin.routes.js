@@ -50,6 +50,10 @@ import {
   getOutreachMatchingIds,
   previewOutreachEmails,
   sendOutreachEmails,
+  getOutreachScheduler,
+  getOutreachSchedulerRuns,
+  getOutreachSchedulerJob,
+  updateOutreachScheduler,
   markOutreachEmailsSent,
   getOutreachHistoryList,
   getOutreachHistoryMatchingIdsList,
@@ -127,6 +131,9 @@ import {
   OutreachMatchingIdsSchema,
   OutreachPreviewSchema,
   OutreachSendSchema,
+  UpdateOutreachSchedulerSchema,
+  GetOutreachSchedulerRunsQuerySchema,
+  GetOutreachSchedulerJobParamsSchema,
   OutreachMarkSentSchema,
   GetOutreachHistoryQuerySchema,
   GetOutreachHistoryMatchingIdsSchema,
@@ -350,6 +357,29 @@ adminRouter.post(
   "/outreach/send",
   bodyValidator(OutreachSendSchema),
   serverErrorCatcherWrapper(sendOutreachEmails)
+);
+
+adminRouter.get(
+  "/outreach/scheduler",
+  serverErrorCatcherWrapper(getOutreachScheduler)
+);
+
+adminRouter.get(
+  "/outreach/scheduler/runs",
+  queryValidator(GetOutreachSchedulerRunsQuerySchema),
+  serverErrorCatcherWrapper(getOutreachSchedulerRuns)
+);
+
+adminRouter.get(
+  "/outreach/scheduler/jobs/:jobId",
+  paramsValidator(GetOutreachSchedulerJobParamsSchema),
+  serverErrorCatcherWrapper(getOutreachSchedulerJob)
+);
+
+adminRouter.patch(
+  "/outreach/scheduler",
+  bodyValidator(UpdateOutreachSchedulerSchema),
+  serverErrorCatcherWrapper(updateOutreachScheduler)
 );
 
 adminRouter.post(

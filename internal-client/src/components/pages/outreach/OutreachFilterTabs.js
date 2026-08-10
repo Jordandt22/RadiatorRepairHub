@@ -1,4 +1,5 @@
 import {
+  CalendarClockIcon,
   ChevronDownIcon,
   HistoryIcon,
   ListIcon,
@@ -14,12 +15,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export const VALID_OUTREACH_TABS = ["all", "sender", "history"];
+export const VALID_OUTREACH_TABS = ["all", "sender", "history", "schedule"];
 
 const TAB_OPTIONS = [
   { value: "all", label: "All", Icon: ListIcon },
   { value: "sender", label: "Sender", Icon: SendIcon },
   { value: "history", label: "History", Icon: HistoryIcon },
+  { value: "schedule", label: "Schedule", Icon: CalendarClockIcon },
 ];
 
 export default function OutreachFilterTabs({ value, onValueChange }) {

@@ -784,6 +784,62 @@ export const OutreachSendSchema = Yup.object({
     .required("Business IDs are required"),
 });
 
+export const SCHEDULED_OUTREACH_TYPES = [
+  "claim_invite",
+  "ownership_claim_invite",
+  "lead_claim_invite",
+];
+export const OUTREACH_SCHEDULE_LIMITS = [10, 25, 50, 75];
+
+const OutreachScheduleCampaignSchema = Yup.object({
+  outreach_type: Yup.string()
+    .oneOf(SCHEDULED_OUTREACH_TYPES, "Invalid scheduled outreach type")
+    .required("Outreach type is required"),
+  enabled: Yup.boolean().required("Campaign enabled state is required"),
+  limit_count: Yup.number()
+    .oneOf(OUTREACH_SCHEDULE_LIMITS, "Invalid campaign limit")
+    .required("Campaign limit is required"),
+}).noUnknown();
+
+export const UpdateOutreachSchedulerSchema = Yup.object({
+  enabled: Yup.boolean().required("Scheduler enabled state is required"),
+  local_time: Yup.string()
+    .matches(
+      /^(?:[01]\d|2[0-3]):[0-5]\d$/,
+      "Time must use 24-hour HH:mm format"
+    )
+    .required("Schedule time is required"),
+  timezone: Yup.string()
+    .oneOf(["America/Los_Angeles"], "Timezone must be Pacific Time")
+    .required("Timezone is required"),
+  campaigns: Yup.array()
+    .of(OutreachScheduleCampaignSchema)
+    .length(3, "All three claim invite campaigns are required")
+    .test(
+      "scheduled-outreach-types",
+      "Each scheduled outreach type must appear exactly once",
+      (campaigns) => {
+        const types = (campaigns ?? []).map((item) => item?.outreach_type);
+        return (
+          types.length === SCHEDULED_OUTREACH_TYPES.length &&
+          SCHEDULED_OUTREACH_TYPES.every(
+            (type) => types.filter((value) => value === type).length === 1
+          )
+        );
+      }
+    )
+    .required("Campaign settings are required"),
+}).noUnknown();
+
+export const GetOutreachSchedulerRunsQuerySchema = Yup.object({
+  page: Yup.number().min(1).default(1),
+  limit: Yup.number().min(1).max(50).default(10),
+});
+
+export const GetOutreachSchedulerJobParamsSchema = Yup.object({
+  jobId: Yup.string().uuid("Invalid scheduled outreach job ID").required(),
+});
+
 export const OutreachMarkSentSchema = Yup.object({
   outreach_type: Yup.string()
     .oneOf(OUTREACH_TYPES, "Invalid outreach type")
