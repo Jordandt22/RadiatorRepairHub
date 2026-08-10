@@ -22,7 +22,7 @@ export default function FeedbackSurveyActions({
           onClick={onDelete}
           aria-label="Delete"
           className={cn(
-            "shrink-0 cursor-pointer rounded-full border-destructive text-destructive transition-all duration-300 hover:translate-y-[-2px] hover:bg-destructive/10 hover:text-destructive hover:shadow-md max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+            "shrink-0 cursor-pointer rounded-full border-destructive text-destructive transition-all duration-300 hover:-translate-y-0.5 hover:bg-destructive/10 hover:text-destructive hover:shadow-md max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
           )}
         >
           <Trash2Icon />
@@ -40,7 +40,7 @@ export default function FeedbackSurveyActions({
           onClick={onRefresh}
           aria-label="Refresh"
           className={cn(
-            "ml-auto shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:translate-y-[-2px] hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+            "ml-auto shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
           )}
         >
           <RefreshCwIcon
