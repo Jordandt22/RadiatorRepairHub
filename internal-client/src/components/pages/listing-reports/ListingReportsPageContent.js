@@ -22,6 +22,7 @@ import ListingReportActions from "@/components/pages/listing-reports/ListingRepo
 import ListingReportsTable from "@/components/pages/listing-reports/ListingReportsTable";
 import ListingReportsTableSkeleton from "@/components/pages/listing-reports/ListingReportsTableSkeleton";
 import ListingReportDrawer from "@/components/pages/listing-reports/ListingReportDrawer";
+import BulkDeleteConfirmDialog from "@/components/pages/dashboard/BulkDeleteConfirmDialog";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
 const PAGE_LIMIT = 10;
@@ -48,8 +49,10 @@ export default function ListingReportsPageContent() {
   const [refreshError, setRefreshError] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const statusFilter = TAB_STATUS[activeTab] ?? "pending";
+  const showDelete = activeTab !== "pending";
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -147,6 +150,40 @@ export default function ListingReportsPageContent() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (listing_report_ids) => {
+      const result = await fetchApi("/admin/listing-reports", {
+        method: "DELETE",
+        accessToken,
+        body: JSON.stringify({ listing_report_ids }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to delete listing reports";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      setActionError(null);
+      setConfirmOpen(false);
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["listing-reports"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to delete listing reports");
+    },
+  });
+
   const refreshMutation = useMutation({
     mutationFn: async () => {
       const result = await fetchApi("/admin/cache/invalidate", {
@@ -182,8 +219,8 @@ export default function ListingReportsPageContent() {
   });
 
   useEffect(() => {
-    setLoading(statusMutation.isPending);
-  }, [statusMutation.isPending, setLoading]);
+    setLoading(statusMutation.isPending || deleteMutation.isPending);
+  }, [statusMutation.isPending, deleteMutation.isPending, setLoading]);
 
   const listingReports = useMemo(
     () => data?.listingReports ?? [],
@@ -197,6 +234,7 @@ export default function ListingReportsPageContent() {
   const totalPages = data?.totalPages ?? 0;
   const hasSelection = selectedIds.size > 0;
   const actionDisabled = !hasSelection || statusMutation.isPending;
+  const deleteDisabled = !hasSelection || deleteMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
 
   const handleToggleId = (id, checked) => {
@@ -231,6 +269,19 @@ export default function ListingReportsPageContent() {
     setDrawerOpen(true);
   };
 
+  const handleDeleteClick = () => {
+    if (selectedIds.size === 0 || deleteMutation.isPending) return;
+    setActionError(null);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    const listing_report_ids = Array.from(selectedIds);
+    if (listing_report_ids.length === 0 || deleteMutation.isPending) return;
+    setActionError(null);
+    deleteMutation.mutate(listing_report_ids);
+  };
+
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-4 py-4 md:gap-4 md:px-8 md:py-6">
       <ListingReportStatusFilterTabs
@@ -243,12 +294,16 @@ export default function ListingReportsPageContent() {
           selectedCount={selectedIds.size}
           showResolveDismiss={activeTab === "pending"}
           showReopen={activeTab === "resolved" || activeTab === "dismissed"}
+          showDelete={showDelete}
           actionDisabled={actionDisabled}
+          deleteDisabled={deleteDisabled}
           onResolve={() => mutateSelectedStatus("resolved")}
           onDismiss={() => mutateSelectedStatus("dismissed")}
           onReopen={() => mutateSelectedStatus("pending")}
+          onDelete={handleDeleteClick}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
+          deletePending={deleteMutation.isPending}
           actionError={actionError}
           refreshError={refreshError}
         />
@@ -285,6 +340,17 @@ export default function ListingReportsPageContent() {
         report={selectedReport}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
+      />
+
+      <BulkDeleteConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        selectedCount={selectedIds.size}
+        onConfirm={handleConfirmDelete}
+        confirmPending={deleteMutation.isPending}
+        title="Delete listing reports?"
+        entityLabelSingular="listing report"
+        entityLabelPlural="listing reports"
       />
     </div>
   );

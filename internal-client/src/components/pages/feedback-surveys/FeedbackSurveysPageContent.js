@@ -14,24 +14,24 @@ import { fetchApi } from "@/lib/api/fetchApi";
 import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
 import { ensureQueryParam } from "@/lib/urlQueryState";
 import useUrlQueryState from "@/hooks/useUrlQueryState";
-import InquiryStatusFilterTabs, {
-  TAB_STATUS,
+import FeedbackSurveyFormTypeFilterTabs, {
+  TAB_FORM_TYPE,
   VALID_TABS,
-} from "@/components/pages/inquiries/InquiryStatusFilterTabs";
-import InquiryActions from "@/components/pages/inquiries/InquiryActions";
-import InquiriesTable from "@/components/pages/inquiries/InquiriesTable";
-import InquiriesTableSkeleton from "@/components/pages/inquiries/InquiriesTableSkeleton";
-import InquiryDrawer from "@/components/pages/inquiries/InquiryDrawer";
+} from "@/components/pages/feedback-surveys/FeedbackSurveyFormTypeFilterTabs";
+import FeedbackSurveyActions from "@/components/pages/feedback-surveys/FeedbackSurveyActions";
+import FeedbackSurveysTable from "@/components/pages/feedback-surveys/FeedbackSurveysTable";
+import FeedbackSurveysTableSkeleton from "@/components/pages/feedback-surveys/FeedbackSurveysTableSkeleton";
+import FeedbackSurveyDrawer from "@/components/pages/feedback-surveys/FeedbackSurveyDrawer";
 import BulkDeleteConfirmDialog from "@/components/pages/dashboard/BulkDeleteConfirmDialog";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
 const PAGE_LIMIT = 10;
 
 function resolveTab(tab) {
-  return VALID_TABS.includes(tab) ? tab : "pending";
+  return VALID_TABS.includes(tab) ? tab : "all";
 }
 
-export default function InquiriesPageContent() {
+export default function FeedbackSurveysPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -39,7 +39,7 @@ export default function InquiriesPageContent() {
   const { setLoading } = useLoading();
   const { page, setField } = useUrlQueryState(
     { page: { type: "page" } },
-    { pathname: "/inquiries" },
+    { pathname: "/feedback-surveys" },
   );
   const [activeTab, setActiveTab] = useState(() =>
     resolveTab(searchParams.get("tab")),
@@ -47,12 +47,11 @@ export default function InquiriesPageContent() {
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [actionError, setActionError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedSurvey, setSelectedSurvey] = useState(null);
 
-  const statusFilter = TAB_STATUS[activeTab] ?? "pending";
-  const showDelete = activeTab !== "pending";
+  const formTypeFilter = TAB_FORM_TYPE[activeTab] ?? null;
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -61,7 +60,7 @@ export default function InquiriesPageContent() {
   }, [isReady, accessToken, router]);
 
   useEffect(() => {
-    ensureQueryParam("tab", "pending", "/inquiries");
+    ensureQueryParam("tab", "all", "/feedback-surveys");
   }, [searchParams]);
 
   useEffect(() => {
@@ -75,7 +74,7 @@ export default function InquiriesPageContent() {
   const handleTabChange = (tab) => {
     const nextTab = resolveTab(tab);
     if (nextTab === activeTab) return;
-    replaceTab(nextTab, "/inquiries");
+    replaceTab(nextTab, "/feedback-surveys");
   };
 
   const handlePreviousPage = () => {
@@ -89,16 +88,18 @@ export default function InquiriesPageContent() {
   };
 
   const { data, error, isLoading, isFetching, isPlaceholderData } = useQuery({
-    queryKey: ["contact-inquiries", page, statusFilter],
+    queryKey: ["feedback-surveys", page, formTypeFilter ?? "all"],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
         limit: String(PAGE_LIMIT),
-        status: statusFilter,
       });
+      if (formTypeFilter) {
+        params.set("form_type", formTypeFilter);
+      }
 
       const result = await fetchApi(
-        `/admin/contact-inquiries?${params.toString()}`,
+        `/admin/feedback-surveys?${params.toString()}`,
         { accessToken },
       );
       if (result.status === 401) {
@@ -107,7 +108,7 @@ export default function InquiriesPageContent() {
       }
       if (result.error) {
         throw new Error(
-          result.error.message || "Failed to fetch contact inquiries",
+          result.error.message || "Failed to fetch feedback surveys",
         );
       }
       return result.data;
@@ -117,45 +118,12 @@ export default function InquiriesPageContent() {
     staleTime: 30_000,
   });
 
-  const statusMutation = useMutation({
-    mutationFn: async ({ status, contact_inquiry_ids }) => {
-      const result = await fetchApi("/admin/contact-inquiries/status", {
-        method: "PATCH",
-        accessToken,
-        body: JSON.stringify({ status, contact_inquiry_ids }),
-      });
-
-      if (result.status === 401) {
-        logout();
-        throw new Error("Session expired");
-      }
-
-      if (result.error) {
-        const message =
-          typeof result.error.message === "string"
-            ? result.error.message
-            : "Failed to update status";
-        throw new Error(message);
-      }
-
-      return result.data;
-    },
-    onSuccess: async () => {
-      setActionError(null);
-      setSelectedIds(new Set());
-      await queryClient.invalidateQueries({ queryKey: ["contact-inquiries"] });
-    },
-    onError: (err) => {
-      setActionError(err.message || "Failed to update status");
-    },
-  });
-
   const deleteMutation = useMutation({
-    mutationFn: async (contact_inquiry_ids) => {
-      const result = await fetchApi("/admin/contact-inquiries", {
+    mutationFn: async (feedback_survey_ids) => {
+      const result = await fetchApi("/admin/feedback-surveys", {
         method: "DELETE",
         accessToken,
-        body: JSON.stringify({ contact_inquiry_ids }),
+        body: JSON.stringify({ feedback_survey_ids }),
       });
 
       if (result.status === 401) {
@@ -167,7 +135,7 @@ export default function InquiriesPageContent() {
         const message =
           typeof result.error.message === "string"
             ? result.error.message
-            : "Failed to delete inquiries";
+            : "Failed to delete surveys";
         throw new Error(message);
       }
 
@@ -177,10 +145,10 @@ export default function InquiriesPageContent() {
       setActionError(null);
       setConfirmOpen(false);
       setSelectedIds(new Set());
-      await queryClient.invalidateQueries({ queryKey: ["contact-inquiries"] });
+      await queryClient.invalidateQueries({ queryKey: ["feedback-surveys"] });
     },
     onError: (err) => {
-      setActionError(err.message || "Failed to delete inquiries");
+      setActionError(err.message || "Failed to delete surveys");
     },
   });
 
@@ -189,7 +157,7 @@ export default function InquiriesPageContent() {
       const result = await fetchApi("/admin/cache/invalidate", {
         method: "POST",
         accessToken,
-        body: JSON.stringify({ resource: "contact-inquiries" }),
+        body: JSON.stringify({ resource: "feedback-surveys" }),
       });
 
       if (result.status === 401) {
@@ -211,7 +179,7 @@ export default function InquiriesPageContent() {
       setRefreshError(null);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["contact-inquiries"] });
+      await queryClient.invalidateQueries({ queryKey: ["feedback-surveys"] });
     },
     onError: (err) => {
       setRefreshError(err.message || "Failed to refresh");
@@ -219,12 +187,12 @@ export default function InquiriesPageContent() {
   });
 
   useEffect(() => {
-    setLoading(statusMutation.isPending || deleteMutation.isPending);
-  }, [statusMutation.isPending, deleteMutation.isPending, setLoading]);
+    setLoading(deleteMutation.isPending);
+  }, [deleteMutation.isPending, setLoading]);
 
-  const contactInquiries = useMemo(
-    () => data?.contactInquiries ?? [],
-    [data?.contactInquiries],
+  const feedbackSurveys = useMemo(
+    () => data?.feedbackSurveys ?? [],
+    [data?.feedbackSurveys],
   );
 
   if (!isReady || !accessToken) {
@@ -233,7 +201,6 @@ export default function InquiriesPageContent() {
 
   const totalPages = data?.totalPages ?? 0;
   const hasSelection = selectedIds.size > 0;
-  const actionDisabled = !hasSelection || statusMutation.isPending;
   const deleteDisabled = !hasSelection || deleteMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
 
@@ -249,24 +216,12 @@ export default function InquiriesPageContent() {
   const handleToggleAll = (checked) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      for (const row of contactInquiries) {
-        if (checked) next.add(row.contact_inquiry_id);
-        else next.delete(row.contact_inquiry_id);
+      for (const row of feedbackSurveys) {
+        if (checked) next.add(row.feedback_survey_id);
+        else next.delete(row.feedback_survey_id);
       }
       return next;
     });
-  };
-
-  const mutateSelectedStatus = (status) => {
-    const contact_inquiry_ids = Array.from(selectedIds);
-    if (contact_inquiry_ids.length === 0 || statusMutation.isPending) return;
-    setActionError(null);
-    statusMutation.mutate({ status, contact_inquiry_ids });
-  };
-
-  const handleViewClick = (inquiry) => {
-    setSelectedInquiry(inquiry);
-    setDrawerOpen(true);
   };
 
   const handleDeleteClick = () => {
@@ -276,30 +231,28 @@ export default function InquiriesPageContent() {
   };
 
   const handleConfirmDelete = () => {
-    const contact_inquiry_ids = Array.from(selectedIds);
-    if (contact_inquiry_ids.length === 0 || deleteMutation.isPending) return;
+    const feedback_survey_ids = Array.from(selectedIds);
+    if (feedback_survey_ids.length === 0 || deleteMutation.isPending) return;
     setActionError(null);
-    deleteMutation.mutate(contact_inquiry_ids);
+    deleteMutation.mutate(feedback_survey_ids);
+  };
+
+  const handleViewClick = (survey) => {
+    setSelectedSurvey(survey);
+    setDrawerOpen(true);
   };
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-4 py-4 md:gap-4 md:px-8 md:py-6">
-      <InquiryStatusFilterTabs
+      <FeedbackSurveyFormTypeFilterTabs
         value={activeTab}
         onValueChange={handleTabChange}
       />
 
       <div className="mt-2 flex flex-col gap-3 md:mt-4 md:gap-4">
-        <InquiryActions
+        <FeedbackSurveyActions
           selectedCount={selectedIds.size}
-          showResolveDismiss={activeTab === "pending"}
-          showReopen={activeTab === "resolved" || activeTab === "dismissed"}
-          showDelete={showDelete}
-          actionDisabled={actionDisabled}
           deleteDisabled={deleteDisabled}
-          onResolve={() => mutateSelectedStatus("resolved")}
-          onDismiss={() => mutateSelectedStatus("dismissed")}
-          onReopen={() => mutateSelectedStatus("pending")}
           onDelete={handleDeleteClick}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
@@ -313,10 +266,10 @@ export default function InquiriesPageContent() {
         ) : null}
 
         {showInitialSkeleton ? (
-          <InquiriesTableSkeleton />
+          <FeedbackSurveysTableSkeleton />
         ) : !error || isPlaceholderData ? (
-          <InquiriesTable
-            contactInquiries={contactInquiries}
+          <FeedbackSurveysTable
+            feedbackSurveys={feedbackSurveys}
             selectedIds={selectedIds}
             onToggleId={handleToggleId}
             onToggleAll={handleToggleAll}
@@ -336,8 +289,8 @@ export default function InquiriesPageContent() {
         />
       </div>
 
-      <InquiryDrawer
-        inquiry={selectedInquiry}
+      <FeedbackSurveyDrawer
+        survey={selectedSurvey}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
       />
@@ -348,9 +301,9 @@ export default function InquiriesPageContent() {
         selectedCount={selectedIds.size}
         onConfirm={handleConfirmDelete}
         confirmPending={deleteMutation.isPending}
-        title="Delete inquiries?"
-        entityLabelSingular="inquiry"
-        entityLabelPlural="inquiries"
+        title="Delete surveys?"
+        entityLabelSingular="survey"
+        entityLabelPlural="surveys"
       />
     </div>
   );

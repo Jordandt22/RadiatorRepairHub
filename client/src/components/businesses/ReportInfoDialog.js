@@ -19,6 +19,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/contexts/ToastProvider";
 import { submitListingReport } from "@/lib/api/listing-reports";
+import { shouldShowPostSubmitSurvey } from "@/lib/feedbackSurvey";
+import PostSubmitSurveyDialog from "@/components/feedback/PostSubmitSurveyDialog";
 
 const REASON_OPTIONS = [
   {
@@ -69,6 +71,7 @@ function mapApiErrorsToFields(error) {
 function ReportInfoDialog({ businessId, businessName }) {
   const { showCustomSuccess, showCustomError } = useToast();
   const [open, setOpen] = useState(false);
+  const [surveyOpen, setSurveyOpen] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -163,6 +166,9 @@ function ReportInfoDialog({ businessId, businessName }) {
       );
       resetForm();
       setOpen(false);
+      if (shouldShowPostSubmitSurvey()) {
+        window.setTimeout(() => setSurveyOpen(true), 150);
+      }
     } catch {
       showCustomError("Unable to submit your report. Please try again.");
     } finally {
@@ -171,6 +177,7 @@ function ReportInfoDialog({ businessId, businessName }) {
   };
 
   return (
+    <>
     <Dialog
       open={open}
       onOpenChange={(nextOpen) => {
@@ -408,6 +415,14 @@ function ReportInfoDialog({ businessId, businessName }) {
         </form>
       </DialogContent>
     </Dialog>
+
+    <PostSubmitSurveyDialog
+      open={surveyOpen}
+      onOpenChange={setSurveyOpen}
+      formType="report_info"
+      businessId={businessId || null}
+    />
+    </>
   );
 }
 

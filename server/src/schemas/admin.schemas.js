@@ -162,6 +162,41 @@ export const DeleteClaimRequestsSchema = Yup.object({
     .required("Claim request IDs are required"),
 });
 
+export const DeleteListingReportsSchema = Yup.object({
+  listing_report_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid listing report ID").required())
+    .min(1, "At least one listing report ID is required")
+    .required("Listing report IDs are required"),
+});
+
+export const DeleteContactInquiriesSchema = Yup.object({
+  contact_inquiry_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid contact inquiry ID").required())
+    .min(1, "At least one contact inquiry ID is required")
+    .required("Contact inquiry IDs are required"),
+});
+
+export const DeleteListingRequestsSchema = Yup.object({
+  listing_request_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid listing request ID").required())
+    .min(1, "At least one listing request ID is required")
+    .required("Listing request IDs are required"),
+});
+
+export const DeleteFeedbackSurveysSchema = Yup.object({
+  feedback_survey_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid feedback survey ID").required())
+    .min(1, "At least one feedback survey ID is required")
+    .required("Feedback survey IDs are required"),
+});
+
+export const DeleteContactMessagesSchema = Yup.object({
+  contact_message_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid contact message ID").required())
+    .min(1, "At least one contact message ID is required")
+    .required("Contact message IDs are required"),
+});
+
 export const LISTING_REPORT_STATUSES = ["pending", "resolved", "dismissed"];
 
 export const GetListingReportsQuerySchema = Yup.object({
@@ -193,6 +228,23 @@ export const GetContactInquiriesQuerySchema = Yup.object({
     .transform((value) => (value === "" || value == null ? null : value))
     .nullable()
     .oneOf([...CONTACT_INQUIRY_STATUSES, null], "Invalid status")
+    .optional(),
+});
+
+export const FEEDBACK_SURVEY_FORM_TYPES = [
+  "quick_contact",
+  "report_info",
+  "contact",
+  "get_listed",
+];
+
+export const GetFeedbackSurveysQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  form_type: Yup.string()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .oneOf([...FEEDBACK_SURVEY_FORM_TYPES, null], "Invalid form type")
     .optional(),
 });
 
@@ -595,6 +647,7 @@ export const GetAdminUserParamsSchema = Yup.object({
 export const CACHE_INVALIDATE_RESOURCES = [
   "contact-messages",
   "contact-inquiries",
+  "feedback-surveys",
   "claim-requests",
   "listing-reports",
   "listing-requests",

@@ -94,6 +94,8 @@ const PLACEHOLDER_EMAILS = new Set([
   "user@website.com",
   "mymail@mailservice.com",
   "address@youremail.com",
+  "micah@micahrich.com",
+  "john@doe.com",
 ]);
 
 const STRICT_EMAIL_RE =

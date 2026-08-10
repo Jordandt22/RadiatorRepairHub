@@ -2,6 +2,7 @@ import {
   CheckIcon,
   RefreshCwIcon,
   RotateCcwIcon,
+  Trash2Icon,
   XCircleIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,12 +39,16 @@ export default function ListingReportActions({
   selectedCount = 0,
   showResolveDismiss = false,
   showReopen = false,
+  showDelete = false,
   actionDisabled = true,
+  deleteDisabled = true,
   onResolve,
   onDismiss,
   onReopen,
+  onDelete,
   onRefresh,
   refreshPending = false,
+  deletePending = false,
   actionError = null,
   refreshError = null,
 }) {
@@ -75,6 +80,15 @@ export default function ListingReportActions({
             disabled={actionDisabled}
             onClick={onReopen}
             className="border-amber-600 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+          />
+        ) : null}
+        {showDelete ? (
+          <ActionButton
+            label="Delete"
+            icon={Trash2Icon}
+            disabled={deleteDisabled || deletePending}
+            onClick={onDelete}
+            className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
           />
         ) : null}
         {selectedCount > 0 ? (

@@ -11,6 +11,7 @@ import {
   MessageCircleOffIcon,
   RefreshCwIcon,
   SendIcon,
+  Trash2Icon,
   XIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -132,6 +133,7 @@ export default function BulkStatusActions({
   showMarkResponded = false,
   showArchive = false,
   showUnarchive = false,
+  showDelete = false,
   flagDisabled,
   approveDisabled,
   markPendingDisabled,
@@ -147,6 +149,7 @@ export default function BulkStatusActions({
   sendRespondedDisabled = true,
   archiveDisabled = true,
   unarchiveDisabled = true,
+  deleteDisabled = true,
   onMarkSent,
   onSendMessages,
   onMarkConfirmed,
@@ -159,7 +162,9 @@ export default function BulkStatusActions({
   onSendResponded,
   onArchive,
   onUnarchive,
+  onDelete,
   sendPending = false,
+  deletePending = false,
   onRefresh,
   refreshPending = false,
   refreshError = null,
@@ -179,7 +184,8 @@ export default function BulkStatusActions({
     showRespondedOutcome ||
     showMarkResponded ||
     showArchive ||
-    showUnarchive;
+    showUnarchive ||
+    showDelete;
 
   const buttonClassName = "border-primary/75 hover:shadow-lg hover:bg-primary/75";
   const archiveButtonClassName =
@@ -306,6 +312,15 @@ export default function BulkStatusActions({
             disabled={unarchiveDisabled}
             onClick={onUnarchive}
             className={cn("md:ml-auto", buttonClassName)}
+          />
+        ) : null}
+        {showDelete ? (
+          <ActionButton
+            label="Delete"
+            icon={Trash2Icon}
+            disabled={deleteDisabled || deletePending}
+            onClick={onDelete}
+            className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
           />
         ) : null}
         <ActionButton

@@ -10,6 +10,8 @@ import { useToast } from "@/contexts/ToastProvider";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { submitContactInquiry } from "@/lib/api/contact-inquiries";
 import { submitListingRequest } from "@/lib/api/listing-requests";
+import { shouldShowPostSubmitSurvey } from "@/lib/feedbackSurvey";
+import PostSubmitSurveyDialog from "@/components/feedback/PostSubmitSurveyDialog";
 
 const isLikelyGoogleMapsUrl = (value) => {
   const trimmed = value.trim();
@@ -63,7 +65,9 @@ const ContactForm = ({
   const { user, isSignedIn } = useIsSignedIn();
   const posthog = usePostHog();
   const isGetListed = submissionKind === "get-listed";
+  const surveyFormType = isGetListed ? "get_listed" : "contact";
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [surveyOpen, setSurveyOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -289,6 +293,9 @@ const ContactForm = ({
           : "Thank you for your message! We'll get back to you within 24 hours.",
         "Message Sent Successfully"
       );
+      if (shouldShowPostSubmitSurvey()) {
+        window.setTimeout(() => setSurveyOpen(true), 150);
+      }
     } catch (error) {
       console.error("Contact form submit error:", error);
       showCustomError(
@@ -301,6 +308,7 @@ const ContactForm = ({
   };
 
   return (
+    <>
     <div
       className={`bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300 hover:border-blue-500 transition-all duration-300 ${className}`}
     >
@@ -614,6 +622,13 @@ const ContactForm = ({
         </div>
       </form>
     </div>
+
+    <PostSubmitSurveyDialog
+      open={surveyOpen}
+      onOpenChange={setSurveyOpen}
+      formType={surveyFormType}
+    />
+    </>
   );
 };
 

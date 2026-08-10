@@ -35,7 +35,7 @@ function TermsPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date("2026-07-29").toLocaleDateString("en-US", {
+  const lastUpdated = new Date("2026-08-09").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -49,11 +49,13 @@ function TermsPage() {
     "Quick Contact, a tool to submit service inquiries to listed businesses",
     "Business claiming, so eligible owners can verify listing email access and create an account to manage their listing",
     "Report Info, a tool to report incorrect claim contact details, incorrect or outdated listing info, or inappropriate listing content",
+    "An optional short site feedback survey that may appear after you submit certain forms",
   ];
 
   const quickContactTermsPoints = [
     "You agree to provide accurate and complete information when submitting a contact form or Quick Contact message.",
     "Submitting a form constitutes your consent to our Privacy Policy and the processing of the information you provide.",
+    "After a successful Contact, Get Listed, or Quick Contact submission, we may show an optional short site feedback survey. Responses are voluntary and described in our Privacy Policy.",
     "Quick Contact messages are reviewed before they may be forwarded to a listed business; delivery is not guaranteed and may take additional time.",
     "We may decline, flag, archive, or not forward messages that appear fraudulent, abusive, incomplete, undeliverable, or otherwise inappropriate.",
     "We may verify the email address you provide before accepting a Quick Contact submission.",
@@ -77,6 +79,7 @@ function TermsPage() {
     "Submitting a report does not guarantee that we will change the listing, approve a claim, or respond within a specific timeframe.",
     "We may decline, archive, or take no action on reports that appear incomplete, abusive, fraudulent, or unsupported.",
     "Suggested phone numbers or emails you provide may be used to update listing contact details after review, when appropriate.",
+    "After a successful Report Info submission, we may show an optional short site feedback survey. Responses are voluntary and described in our Privacy Policy.",
   ];
 
   const capacityRequirements = [
@@ -93,6 +96,7 @@ function TermsPage() {
     "Submit service inquiries to listed businesses through Quick Contact, subject to review",
     "Claim an eligible business listing you are authorized to represent, and manage that listing through your account",
     "Report incorrect claim contact information, incorrect or outdated listing info, or inappropriate listing content through Report Info",
+    "Optionally respond to a short site feedback survey after submitting certain forms",
     "Access publicly available information about listed businesses",
   ];
 

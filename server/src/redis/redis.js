@@ -246,6 +246,11 @@ export const getContactInquiriesKey = (page, limit, status = null) => ({
   interval: 60 * 5,
 });
 
+export const getFeedbackSurveysKey = (page, limit, formType = null) => ({
+  key: `FEEDBACK_SURVEYS?PAGE:${page}&LIMIT:${limit}&FORM_TYPE:${formType ?? "all"}`,
+  interval: 60 * 5,
+});
+
 export const getListingRequestsKey = (page, limit, status = null) => ({
   key: `LISTING_REQUESTS?PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}`,
   interval: 60 * 5,

@@ -1,7 +1,7 @@
 export const EMAIL_SCRAPE_BATCH_SIZE = 20;
 
 /** Stop selecting businesses after this many scrape attempts. */
-export const MAX_EMAIL_SCRAPED_ATTEMPTS = 3;
+export const MAX_EMAIL_SCRAPED_ATTEMPTS = 2;
 
 export const FETCH_TIMEOUT_MS = 10_000;
 export const DELAY_MIN_MS = 400;

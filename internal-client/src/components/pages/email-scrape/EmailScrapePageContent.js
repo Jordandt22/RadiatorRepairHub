@@ -422,7 +422,7 @@ export default function EmailScrapePageContent() {
               Each run scrapes websites for businesses with a website and no
               email (50–500 businesses), split into batches of 20. Home,
               contact, and about pages are checked; junk emails are discarded.
-              Never-tried listings are prioritized; after 3 attempts a business
+              Never-tried listings are prioritized; after 2 attempts a business
               is skipped. Listings marked Unable to Find are also excluded.
             </p>
           </div>

@@ -515,7 +515,7 @@ export default function OverviewDashboardPageContent() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-semibold tracking-tight">
-                    Contact Form
+                    Quick Contact
                   </h2>
                   <p className="text-sm text-muted-foreground">
                     Latest messages across all statuses
