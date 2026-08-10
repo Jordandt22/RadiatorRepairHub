@@ -27,6 +27,7 @@ import OutreachTable from "@/components/pages/outreach/OutreachTable";
 import OutreachTableSkeleton from "@/components/pages/outreach/OutreachTableSkeleton";
 import OutreachHistoryTable from "@/components/pages/outreach/OutreachHistoryTable";
 import OutreachHistoryTableSkeleton from "@/components/pages/outreach/OutreachHistoryTableSkeleton";
+import OutreachSchedulePanel from "@/components/pages/outreach/OutreachSchedulePanel";
 import RemoveSentConfirmDialog from "@/components/pages/outreach/RemoveSentConfirmDialog";
 import OutreachPreviewSheet from "@/components/pages/outreach/OutreachPreviewSheet";
 import OutreachAddBusinessesSheet from "@/components/pages/outreach/OutreachAddBusinessesSheet";
@@ -792,6 +793,7 @@ export default function OutreachPageContent() {
     all: "Browse businesses, select rows to mark campaigns sent, and filter eligibility or send status.",
     sender: `Match up to your chosen limit, then manually add more (total max ${OUTREACH_SEND_SELECTION_CAP}).`,
     history: "Review previously sent outreach emails.",
+    schedule: "Configure daily campaign batches and review scheduled job activity.",
   }[activeTab];
 
   return (
@@ -1014,6 +1016,14 @@ export default function OutreachPageContent() {
             />
           ) : null}
         </>
+      ) : null}
+
+      {activeTab === "schedule" ? (
+        <OutreachSchedulePanel
+          accessToken={accessToken}
+          isReady={isReady}
+          logout={logout}
+        />
       ) : null}
 
       <RemoveSentConfirmDialog

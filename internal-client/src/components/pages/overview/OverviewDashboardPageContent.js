@@ -18,6 +18,7 @@ import OverviewClaimRequestsTable from "@/components/pages/overview/OverviewClai
 import OverviewListingReportsTable from "@/components/pages/overview/OverviewListingReportsTable";
 import OverviewInquiriesTable from "@/components/pages/overview/OverviewInquiriesTable";
 import OverviewListingRequestsTable from "@/components/pages/overview/OverviewListingRequestsTable";
+import OverviewFeedbackSurveysTable from "@/components/pages/overview/OverviewFeedbackSurveysTable";
 import OverviewDashboardCharts, {
   OverviewDashboardChartsSkeleton,
 } from "@/components/pages/overview/OverviewDashboardCharts";
@@ -27,6 +28,7 @@ import ClaimRequestsTableSkeleton from "@/components/pages/claim-requests/ClaimR
 import ListingReportsTableSkeleton from "@/components/pages/listing-reports/ListingReportsTableSkeleton";
 import InquiriesTableSkeleton from "@/components/pages/inquiries/InquiriesTableSkeleton";
 import ListingRequestsTableSkeleton from "@/components/pages/get-listed-requests/ListingRequestsTableSkeleton";
+import FeedbackSurveysTableSkeleton from "@/components/pages/feedback-surveys/FeedbackSurveysTableSkeleton";
 
 const PAGE_LIMIT = 10;
 
@@ -67,6 +69,7 @@ export default function OverviewDashboardPageContent() {
   const [inquiriesRefreshError, setInquiriesRefreshError] = useState(null);
   const [listingRequestsRefreshError, setListingRequestsRefreshError] =
     useState(null);
+  const [surveysRefreshError, setSurveysRefreshError] = useState(null);
   const [statsRefreshError, setStatsRefreshError] = useState(null);
 
   const inboxEnabled = activeTab === "inbox";
@@ -240,6 +243,33 @@ export default function OverviewDashboardPageContent() {
       if (result.error) {
         throw new Error(
           result.error.message || "Failed to fetch listing requests",
+        );
+      }
+      return result.data;
+    },
+    enabled: Boolean(isReady && accessToken && inboxEnabled),
+    staleTime: 30_000,
+  });
+
+  const surveysQuery = useQuery({
+    queryKey: ["dashboard-feedback-surveys"],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: "1",
+        limit: String(PAGE_LIMIT),
+      });
+
+      const result = await fetchApi(
+        `/admin/feedback-surveys?${params.toString()}`,
+        { accessToken },
+      );
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+      if (result.error) {
+        throw new Error(
+          result.error.message || "Failed to fetch feedback surveys",
         );
       }
       return result.data;
@@ -452,6 +482,40 @@ export default function OverviewDashboardPageContent() {
     },
   });
 
+  const surveysRefreshMutation = useMutation({
+    mutationFn: async () => {
+      const result = await fetchApi("/admin/cache/invalidate", {
+        method: "POST",
+        accessToken,
+        body: JSON.stringify({ resource: "feedback-surveys" }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to refresh cache",
+        );
+      }
+
+      return result.data;
+    },
+    onMutate: () => setSurveysRefreshError(null),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["dashboard-feedback-surveys"],
+      });
+    },
+    onError: (err) => {
+      setSurveysRefreshError(err.message || "Failed to refresh");
+    },
+  });
+
   if (!isReady || !accessToken) {
     return null;
   }
@@ -468,6 +532,8 @@ export default function OverviewDashboardPageContent() {
     inquiriesRefreshMutation.isPending || inquiriesQuery.isFetching;
   const listingRequestsRefreshPending =
     listingRequestsRefreshMutation.isPending || listingRequestsQuery.isFetching;
+  const surveysRefreshPending =
+    surveysRefreshMutation.isPending || surveysQuery.isFetching;
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-4 py-4 md:gap-4 md:px-8 md:py-6">
@@ -675,6 +741,40 @@ export default function OverviewDashboardPageContent() {
                 <OverviewListingRequestsTable
                   listingRequests={
                     listingRequestsQuery.data?.listingRequests ?? []
+                  }
+                />
+              ) : null}
+            </section>
+
+            <section className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight">
+                    Surveys
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Latest post-submit feedback across all form types
+                  </p>
+                </div>
+                <RefreshButton
+                  onClick={() => surveysRefreshMutation.mutate()}
+                  pending={surveysRefreshPending}
+                />
+              </div>
+              {surveysRefreshError ? (
+                <p className="text-sm text-destructive">{surveysRefreshError}</p>
+              ) : null}
+              {surveysQuery.error && !surveysQuery.isFetching ? (
+                <p className="text-sm text-destructive">
+                  {surveysQuery.error.message}
+                </p>
+              ) : null}
+              {surveysQuery.isLoading ? (
+                <FeedbackSurveysTableSkeleton rows={5} />
+              ) : !surveysQuery.error ? (
+                <OverviewFeedbackSurveysTable
+                  feedbackSurveys={
+                    surveysQuery.data?.feedbackSurveys ?? []
                   }
                 />
               ) : null}

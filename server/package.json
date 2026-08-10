@@ -6,7 +6,8 @@
     "start": "concurrently -n server,worker -c blue,magenta --kill-others-on-fail \"node src/index.js\" \"node src/worker.js\"",
     "server": "nodemon src/index.js",
     "worker": "nodemon src/worker.js",
-    "dev": "concurrently -n server,worker -c blue,magenta --kill-others-on-fail \"npm:server\" \"npm:worker\""
+    "dev": "concurrently -n server,worker -c blue,magenta --kill-others-on-fail \"npm:server\" \"npm:worker\"",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "Jordandt22",
