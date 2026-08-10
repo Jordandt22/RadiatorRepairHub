@@ -32,6 +32,7 @@ import {
   InboxIcon,
   ActivityIcon,
   ServerIcon,
+  MessageSquareIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -143,7 +144,7 @@ const data = {
   ],
   navInbox: [
     {
-      title: "Contact Form",
+      title: "Quick Contact",
       url: "/contact-form?tab=pending",
       icon: <MailIcon />,
       items: [
@@ -274,6 +275,38 @@ const data = {
           title: "Duplicate",
           url: "/get-listed-requests?tab=duplicate",
           icon: <ArchiveIcon />,
+        },
+      ],
+    },
+    {
+      title: "Surveys",
+      url: "/feedback-surveys?tab=all",
+      icon: <MessageSquareIcon />,
+      items: [
+        {
+          title: "All",
+          url: "/feedback-surveys?tab=all",
+          icon: <LayoutDashboardIcon />,
+        },
+        {
+          title: "Quick Contact",
+          url: "/feedback-surveys?tab=quick_contact",
+          icon: <SendIcon />,
+        },
+        {
+          title: "Report Info",
+          url: "/feedback-surveys?tab=report_info",
+          icon: <FlagIcon />,
+        },
+        {
+          title: "Contact",
+          url: "/feedback-surveys?tab=contact",
+          icon: <InboxIcon />,
+        },
+        {
+          title: "Get Listed",
+          url: "/feedback-surveys?tab=get_listed",
+          icon: <Building2Icon />,
         },
       ],
     },

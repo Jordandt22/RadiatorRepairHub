@@ -9,6 +9,7 @@ import {
   getContactMessages as fetchContactMessages,
   updateContactMessagesStatus as updateMessagesStatus,
   updateContactMessagesArchived as updateMessagesArchived,
+  deleteContactMessages as removeContactMessages,
   markContactMessagesConfirmed as markMessagesConfirmed,
   getContactMessagesByIds,
   markContactMessagesSent,
@@ -21,10 +22,15 @@ import {
   deleteClaimRequests as removeClaimRequests,
   getListingReports as fetchListingReports,
   updateListingReportsStatus as updateReportsStatus,
+  deleteListingReports as removeListingReports,
   getContactInquiries as fetchContactInquiries,
   updateContactInquiriesStatus as updateInquiriesStatus,
+  deleteContactInquiries as removeContactInquiries,
+  getFeedbackSurveys as fetchFeedbackSurveys,
+  deleteFeedbackSurveys as removeFeedbackSurveys,
   getListingRequests as fetchListingRequests,
   updateListingRequestsStatus as updateListingRequestsStatusFn,
+  deleteListingRequests as removeListingRequests,
   markListingRequestsLiveEmailSent,
   getBusinessExistsBySlug,
   getAdminBusinesses as fetchAdminBusinesses,
@@ -64,6 +70,7 @@ import {
   getClaimRequestsKey,
   getListingReportsKey,
   getContactInquiriesKey,
+  getFeedbackSurveysKey,
   getListingRequestsKey,
   getAdminBusinessesKey,
   getAdminLocationsKey,
@@ -282,6 +289,36 @@ export const updateContactMessagesArchived = async (req, res) => {
       updated: contactMessageIds.length,
       contactMessageIds,
       archived,
+    })
+  );
+};
+
+export const deleteContactMessages = async (req, res) => {
+  const { contact_message_ids } = req.body;
+
+  const { data, error } = await removeContactMessages(contact_message_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error deleting contact messages.",
+          error
+        )
+      );
+  }
+
+  const contactMessageIds = (data ?? []).map((row) => row.contact_message_id);
+
+  await deleteCacheDataByPrefix("CONTACT_MESSAGES");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+
+  return res.status(200).json(
+    successHandler({
+      deleted: contactMessageIds.length,
+      contactMessageIds,
     })
   );
 };
@@ -1465,6 +1502,36 @@ export const updateListingReportsStatus = async (req, res) => {
   );
 };
 
+export const deleteListingReports = async (req, res) => {
+  const { listing_report_ids } = req.body;
+
+  const { data, error } = await removeListingReports(listing_report_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error deleting listing reports.",
+          error
+        )
+      );
+  }
+
+  const listingReportIds = (data ?? []).map((row) => row.listing_report_id);
+
+  await deleteCacheDataByPrefix("LISTING_REPORTS");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+
+  return res.status(200).json(
+    successHandler({
+      deleted: listingReportIds.length,
+      listingReportIds,
+    })
+  );
+};
+
 export const getContactInquiries = async (req, res) => {
   let page = Number(req.query.page);
   const limit = Number(req.query.limit);
@@ -1512,6 +1579,82 @@ export const getContactInquiries = async (req, res) => {
   return res.status(200).json(successHandler(compiledData));
 };
 
+export const getFeedbackSurveys = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const formType = req.query.form_type || null;
+
+  const { key, interval } = getFeedbackSurveysKey(page, limit, formType);
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, count, error } = await fetchFeedbackSurveys(
+    page,
+    limit,
+    formType
+  );
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching feedback surveys.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  const compiledData = {
+    feedbackSurveys: data ?? [],
+    total,
+    totalPages,
+    page,
+    limit,
+    form_type: formType,
+  };
+
+  await cacheData(key, interval, compiledData);
+  return res.status(200).json(successHandler(compiledData));
+};
+
+export const deleteFeedbackSurveys = async (req, res) => {
+  const { feedback_survey_ids } = req.body;
+
+  const { data, error } = await removeFeedbackSurveys(feedback_survey_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error deleting feedback surveys.",
+          error
+        )
+      );
+  }
+
+  const feedbackSurveyIds = (data ?? []).map((row) => row.feedback_survey_id);
+
+  await deleteCacheDataByPrefix("FEEDBACK_SURVEYS");
+
+  return res.status(200).json(
+    successHandler({
+      deleted: feedbackSurveyIds.length,
+      feedbackSurveyIds,
+    })
+  );
+};
+
 export const updateContactInquiriesStatus = async (req, res) => {
   const { status, contact_inquiry_ids } = req.body;
 
@@ -1542,6 +1685,36 @@ export const updateContactInquiriesStatus = async (req, res) => {
       updated: contactInquiryIds.length,
       contactInquiryIds,
       status,
+    })
+  );
+};
+
+export const deleteContactInquiries = async (req, res) => {
+  const { contact_inquiry_ids } = req.body;
+
+  const { data, error } = await removeContactInquiries(contact_inquiry_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error deleting contact inquiries.",
+          error
+        )
+      );
+  }
+
+  const contactInquiryIds = (data ?? []).map((row) => row.contact_inquiry_id);
+
+  await deleteCacheDataByPrefix("CONTACT_INQUIRIES");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+
+  return res.status(200).json(
+    successHandler({
+      deleted: contactInquiryIds.length,
+      contactInquiryIds,
     })
   );
 };
@@ -1703,6 +1876,36 @@ export const updateListingRequestsStatus = async (req, res) => {
       listingRequestIds,
       status,
       liveEmailsSent,
+    })
+  );
+};
+
+export const deleteListingRequests = async (req, res) => {
+  const { listing_request_ids } = req.body;
+
+  const { data, error } = await removeListingRequests(listing_request_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error deleting listing requests.",
+          error
+        )
+      );
+  }
+
+  const listingRequestIds = (data ?? []).map((row) => row.listing_request_id);
+
+  await deleteCacheDataByPrefix("LISTING_REQUESTS");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+
+  return res.status(200).json(
+    successHandler({
+      deleted: listingRequestIds.length,
+      listingRequestIds,
     })
   );
 };
@@ -2640,6 +2843,7 @@ export const getDashboardStats = async (req, res) => {
 const CACHE_RESOURCE_PREFIXES = {
   "contact-messages": "CONTACT_MESSAGES",
   "contact-inquiries": "CONTACT_INQUIRIES",
+  "feedback-surveys": "FEEDBACK_SURVEYS",
   "claim-requests": "CLAIM_REQUESTS",
   "listing-reports": "LISTING_REPORTS",
   "listing-requests": "LISTING_REQUESTS",

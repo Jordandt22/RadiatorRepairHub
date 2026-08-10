@@ -1750,12 +1750,69 @@ export const updateListingReportsStatus = async (
   return { data, error };
 };
 
+/** Deletes listing reports that are not pending. */
+export const deleteListingReports = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("listing_reports")
+    .delete()
+    .in("listing_report_id", ids)
+    .neq("status", "pending")
+    .select("listing_report_id");
+
+  return { data, error };
+};
+
 export const insertContactInquiry = async (payload) => {
   const { data, error } = await supabase
     .from("contact_inquiries")
     .insert(payload)
     .select("contact_inquiry_id")
     .single();
+
+  return { data, error };
+};
+
+export const insertFeedbackSurvey = async (payload) => {
+  const { data, error } = await supabase
+    .from("feedback_surveys")
+    .insert(payload)
+    .select("feedback_survey_id")
+    .single();
+
+  return { data, error };
+};
+
+export const getFeedbackSurveys = async (page, limit, formType = null) => {
+  let query = supabase
+    .from("feedback_surveys")
+    .select(
+      "feedback_survey_id, form_type, business_id, found_via, found_looking_for, comment, created_at, business:businesses(id, title, slug)",
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false });
+
+  if (formType) {
+    query = query.eq("form_type", formType);
+  }
+
+  const { data, count, error } = await query.range(
+    (page - 1) * limit,
+    page * limit - 1
+  );
+
+  return { data, count, error };
+};
+
+export const deleteFeedbackSurveys = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("feedback_surveys")
+    .delete()
+    .in("feedback_survey_id", ids)
+    .select("feedback_survey_id");
 
   return { data, error };
 };
@@ -1805,6 +1862,20 @@ export const updateContactInquiriesStatus = async (
     .from("contact_inquiries")
     .update(patch)
     .in("contact_inquiry_id", ids)
+    .select("contact_inquiry_id");
+
+  return { data, error };
+};
+
+/** Deletes contact inquiries that are not pending. */
+export const deleteContactInquiries = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("contact_inquiries")
+    .delete()
+    .in("contact_inquiry_id", ids)
+    .neq("status", "pending")
     .select("contact_inquiry_id");
 
   return { data, error };
@@ -1917,6 +1988,20 @@ export const updateListingRequestsStatus = async (
     .update(patch)
     .in("listing_request_id", ids)
     .select("listing_request_id, business_name, email, live_email_sent_at");
+
+  return { data, error };
+};
+
+/** Deletes listing requests that are not pending. */
+export const deleteListingRequests = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("listing_requests")
+    .delete()
+    .in("listing_request_id", ids)
+    .neq("status", "pending")
+    .select("listing_request_id");
 
   return { data, error };
 };
@@ -2946,6 +3031,20 @@ export const updateContactMessagesArchived = async (ids, archived) => {
     .from("contact_messages")
     .update({ archived })
     .in("contact_message_id", ids)
+    .select("contact_message_id");
+
+  return { data, error };
+};
+
+/** Deletes contact messages that are not pending. */
+export const deleteContactMessages = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .delete()
+    .in("contact_message_id", ids)
+    .neq("status", "pending")
     .select("contact_message_id");
 
   return { data, error };

@@ -27,6 +27,7 @@ import ContactMessagesTable, {
 } from "@/components/pages/dashboard/ContactMessagesTable";
 import ContactMessagesTableSkeleton from "@/components/pages/dashboard/ContactMessagesTableSkeleton";
 import ContactMessageDrawer from "@/components/pages/dashboard/ContactMessageDrawer";
+import BulkDeleteConfirmDialog from "@/components/pages/dashboard/BulkDeleteConfirmDialog";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
 const PAGE_LIMIT = 10;
@@ -53,9 +54,11 @@ export default function DashboardPageContent() {
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [actionError, setActionError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const statusFilter = TAB_STATUS[activeTab] ?? null;
   const archivedFilter = activeTab === "archived";
+  const showDelete = activeTab !== "pending";
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -151,6 +154,40 @@ export default function DashboardPageContent() {
     },
     onError: (err) => {
       setActionError(err.message || "Failed to update status");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (contact_message_ids) => {
+      const result = await fetchApi("/admin/contact-messages", {
+        method: "DELETE",
+        accessToken,
+        body: JSON.stringify({ contact_message_ids }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        const message =
+          typeof result.error.message === "string"
+            ? result.error.message
+            : "Failed to delete contact messages";
+        throw new Error(message);
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      setActionError(null);
+      setConfirmOpen(false);
+      setSelectedIds(new Set());
+      await queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
+    },
+    onError: (err) => {
+      setActionError(err.message || "Failed to delete contact messages");
     },
   });
 
@@ -527,6 +564,7 @@ export default function DashboardPageContent() {
     setLoading(
       statusMutation.isPending ||
         archiveMutation.isPending ||
+        deleteMutation.isPending ||
         confirmMutation.isPending ||
         markDeclinedMutation.isPending ||
         markRespondedMutation.isPending ||
@@ -535,6 +573,7 @@ export default function DashboardPageContent() {
   }, [
     statusMutation.isPending,
     archiveMutation.isPending,
+    deleteMutation.isPending,
     confirmMutation.isPending,
     markDeclinedMutation.isPending,
     markRespondedMutation.isPending,
@@ -723,6 +762,7 @@ export default function DashboardPageContent() {
     markRespondedMutation.isPending ||
     markNoResponseMutation.isPending ||
     archiveMutation.isPending ||
+    deleteMutation.isPending ||
     confirmMutation.isPending;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
 
@@ -767,6 +807,20 @@ export default function DashboardPageContent() {
   };
 
   const isArchivedTab = activeTab === "archived";
+  const deleteDisabled = actionsDisabled;
+
+  const handleDeleteClick = () => {
+    if (selectedIds.size === 0 || deleteMutation.isPending) return;
+    setActionError(null);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    const contact_message_ids = Array.from(selectedIds);
+    if (contact_message_ids.length === 0 || deleteMutation.isPending) return;
+    setActionError(null);
+    deleteMutation.mutate(contact_message_ids);
+  };
   const selectionIncludesStatus = (status) =>
     messages.some(
       (message) =>
@@ -856,6 +910,7 @@ export default function DashboardPageContent() {
           showMarkResponded={activeTab === "sent"}
           showArchive={!isArchivedTab}
           showUnarchive={isArchivedTab}
+          showDelete={showDelete}
           markSentDisabled={actionsDisabled}
           sendMessagesDisabled={!canSendMessages}
           markConfirmedDisabled={markConfirmedDisabled}
@@ -867,6 +922,7 @@ export default function DashboardPageContent() {
           markRespondedDisabled={markRespondedDisabled}
           archiveDisabled={actionsDisabled}
           unarchiveDisabled={actionsDisabled}
+          deleteDisabled={deleteDisabled}
           onMarkSent={() => runStatusUpdate("sent")}
           onSendMessages={runSendMessages}
           onMarkConfirmed={runMarkConfirmed}
@@ -878,12 +934,14 @@ export default function DashboardPageContent() {
           onMarkResponded={runMarkResponded}
           onArchive={() => runArchiveUpdate(true)}
           onUnarchive={() => runArchiveUpdate(false)}
+          onDelete={handleDeleteClick}
           sendPending={
             sendMutation.isPending ||
             sendConfirmationsMutation.isPending ||
             sendDeclinedMutation.isPending ||
             sendNoResponseMutation.isPending
           }
+          deletePending={deleteMutation.isPending}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
           refreshError={refreshError}
@@ -921,6 +979,17 @@ export default function DashboardPageContent() {
         message={selectedMessage}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
+      />
+
+      <BulkDeleteConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        selectedCount={selectedIds.size}
+        onConfirm={handleConfirmDelete}
+        confirmPending={deleteMutation.isPending}
+        title="Delete Quick Contact messages?"
+        entityLabelSingular="message"
+        entityLabelPlural="messages"
       />
     </div>
   );

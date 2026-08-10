@@ -14,11 +14,12 @@ import {
 
 const SEGMENT_LABELS = {
   dashboard: "Dashboard",
-  "contact-form": "Contact Form",
+  "contact-form": "Quick Contact",
   "claim-requests": "Claim Requests",
   "listing-reports": "Listing Reports",
   inquiries: "Inquiries",
   "get-listed-requests": "Get Listed",
+  "feedback-surveys": "Surveys",
   businesses: "Businesses",
   locations: "Locations",
   states: "States",

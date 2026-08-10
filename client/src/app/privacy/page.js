@@ -34,7 +34,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date("2026-07-29").toLocaleDateString("en-US", {
+  const lastUpdated = new Date("2026-08-09").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -80,14 +80,19 @@ function PrivacyPage() {
             "When you use Report Info on a business listing, we collect your name (optional), email address, report reason, details you provide, the business you selected, and (when reporting wrong claim contact info) any suggested phone number or email you submit so we can review and update listing contact details.",
         },
         {
+          label: "Site Feedback Survey:",
+          description:
+            "After you successfully submit a Contact, Get Listed, Quick Contact, or Report Info form, we may show an optional short survey. If you choose to respond, we collect how you found RadiatorRepairHub, whether you found what you were looking for, any optional free-text feedback you provide, the form type that triggered the survey, and (when applicable) the related business listing identifier. We do not require your name or email address for the survey itself. Survey answers are stored in our database.",
+        },
+        {
           label: "Communication Records:",
           description:
-            "Content of messages, emails, or other communications you send to us, including general contact form messages, Quick Contact inquiry details, claim-related emails, and listing report details.",
+            "Content of messages, emails, or other communications you send to us, including general contact form messages, Quick Contact inquiry details, claim-related emails, listing report details, and optional site feedback survey comments.",
         },
         {
           label: "Feedback and Reviews:",
           description:
-            "Any reviews, ratings, or feedback you choose to submit about listed businesses.",
+            "Any reviews, ratings, or feedback you choose to submit about listed businesses, as well as optional site feedback survey responses about RadiatorRepairHub.",
         },
         {
           label: "Account Information:",
@@ -142,7 +147,7 @@ function PrivacyPage() {
         {
           label: "Local Storage:",
           description:
-            "Analytics tools may store identifiers in your browser's local storage to recognize returning visitors and maintain session continuity.",
+            "Analytics tools may store identifiers in your browser's local storage to recognize returning visitors and maintain session continuity. We also store a small local record (`rrh_feedback_survey`) with a timestamp and whether you submitted or skipped our optional post-submit feedback survey, so we can avoid re-prompting too often (longer after a completed survey than after a skip).",
         },
       ],
     },
@@ -252,12 +257,12 @@ function PrivacyPage() {
         {
           label: "Purpose:",
           description:
-            "Database hosting and backend data storage for our directory, Contact and Get Listed submissions, Quick Contact messages, user accounts, business claim requests, listing reports, and related operational records.",
+            "Database hosting and backend data storage for our directory, Contact and Get Listed submissions, Quick Contact messages, user accounts, business claim requests, listing reports, optional site feedback survey responses, and related operational records.",
         },
         {
           label: "Data Collected:",
           description:
-            "Quick Contact submission data; account credentials and ownership links; claim-request records; listing report data (including reporter contact details and suggested corrections); associated business identifiers; and operational metadata such as timestamps and processing status.",
+            "Quick Contact submission data; account credentials and ownership links; claim-request records; listing report data (including reporter contact details and suggested corrections); site feedback survey answers (how you found us, whether you found what you were looking for, optional comments, form type, and related business identifiers when applicable); associated business identifiers; and operational metadata such as timestamps and processing status.",
         },
         {
           label: "Privacy Policy:",
@@ -302,6 +307,11 @@ function PrivacyPage() {
           label: "Communication:",
           description:
             "Respond to inquiries, support requests, and feedback submitted through our contact forms or direct communications.",
+        },
+        {
+          label: "Product Improvement:",
+          description:
+            "Review voluntary site feedback survey responses to understand how people discover RadiatorRepairHub, whether they found what they needed, and how we can improve the directory and form experience.",
         },
         {
           label: "Inquiry Facilitation:",
@@ -452,6 +462,11 @@ function PrivacyPage() {
       label: "Listing Reports:",
       description:
         "Report Info submissions are retained for up to 3 years after resolution or last related activity.",
+    },
+    {
+      label: "Site Feedback Surveys:",
+      description:
+        "Optional post-submit survey responses are retained for up to 2 years for product improvement, after which they may be deleted or aggregated.",
     },
     {
       label: "Account Information:",

@@ -33,6 +33,8 @@ import {
   ISSUE_LABEL_TO_ENUM,
   submitQuickContact,
 } from "@/lib/api/contact-messages";
+import { shouldShowPostSubmitSurvey } from "@/lib/feedbackSurvey";
+import PostSubmitSurveyDialog from "@/components/feedback/PostSubmitSurveyDialog";
 
 const SUBMIT_DEBOUNCE_MS = 2000;
 
@@ -93,6 +95,7 @@ function QuickContactDialogContent({
   const { user } = useIsSignedIn();
   const posthog = usePostHog();
   const [open, setOpen] = useState(false);
+  const [surveyOpen, setSurveyOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
@@ -220,6 +223,9 @@ function QuickContactDialogContent({
           : "Your message was sent successfully!",
         "Message Sent Successfully"
       );
+      if (shouldShowPostSubmitSurvey()) {
+        window.setTimeout(() => setSurveyOpen(true), 150);
+      }
     } catch {
       showCustomError(
         "Sorry, there was an error sending your message. Please try again.",
@@ -300,6 +306,7 @@ function QuickContactDialogContent({
     "cursor-pointer hover:scale-95 transition-all duration-200";
 
   return (
+    <>
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={triggerElement}>{triggerContent}</DialogTrigger>
 
@@ -547,6 +554,14 @@ function QuickContactDialogContent({
         </form>
       </DialogContent>
     </Dialog>
+
+    <PostSubmitSurveyDialog
+      open={surveyOpen}
+      onOpenChange={setSurveyOpen}
+      formType="quick_contact"
+      businessId={businessId || null}
+    />
+    </>
   );
 }
 

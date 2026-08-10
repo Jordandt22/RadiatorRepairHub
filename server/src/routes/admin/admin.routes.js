@@ -5,6 +5,7 @@ import {
   getContactMessages,
   updateContactMessagesStatus,
   updateContactMessagesArchived,
+  deleteContactMessages,
   markContactMessagesConfirmed,
   markContactMessagesDeclined,
   markContactMessagesResponded,
@@ -18,10 +19,15 @@ import {
   deleteClaimRequests,
   getListingReports,
   updateListingReportsStatus,
+  deleteListingReports,
   getContactInquiries,
   updateContactInquiriesStatus,
+  deleteContactInquiries,
+  getFeedbackSurveys,
+  deleteFeedbackSurveys,
   getListingRequests,
   updateListingRequestsStatus,
+  deleteListingRequests,
   getBusinesses,
   getBusinessById,
   getBusinessesWithEmails,
@@ -89,10 +95,16 @@ import {
   GetClaimRequestsQuerySchema,
   UpdateClaimRequestsStatusSchema,
   DeleteClaimRequestsSchema,
+  DeleteListingReportsSchema,
+  DeleteContactInquiriesSchema,
+  DeleteFeedbackSurveysSchema,
+  DeleteListingRequestsSchema,
+  DeleteContactMessagesSchema,
   GetListingReportsQuerySchema,
   UpdateListingReportsStatusSchema,
   GetContactInquiriesQuerySchema,
   UpdateContactInquiriesStatusSchema,
+  GetFeedbackSurveysQuerySchema,
   GetListingRequestsQuerySchema,
   UpdateListingRequestsStatusSchema,
   GetAdminBusinessesQuerySchema,
@@ -196,6 +208,12 @@ adminRouter.patch(
   serverErrorCatcherWrapper(updateListingReportsStatus)
 );
 
+adminRouter.delete(
+  "/listing-reports",
+  bodyValidator(DeleteListingReportsSchema),
+  serverErrorCatcherWrapper(deleteListingReports)
+);
+
 adminRouter.get(
   "/contact-inquiries",
   queryValidator(GetContactInquiriesQuerySchema),
@@ -208,6 +226,24 @@ adminRouter.patch(
   serverErrorCatcherWrapper(updateContactInquiriesStatus)
 );
 
+adminRouter.delete(
+  "/contact-inquiries",
+  bodyValidator(DeleteContactInquiriesSchema),
+  serverErrorCatcherWrapper(deleteContactInquiries)
+);
+
+adminRouter.get(
+  "/feedback-surveys",
+  queryValidator(GetFeedbackSurveysQuerySchema),
+  serverErrorCatcherWrapper(getFeedbackSurveys)
+);
+
+adminRouter.delete(
+  "/feedback-surveys",
+  bodyValidator(DeleteFeedbackSurveysSchema),
+  serverErrorCatcherWrapper(deleteFeedbackSurveys)
+);
+
 adminRouter.get(
   "/listing-requests",
   queryValidator(GetListingRequestsQuerySchema),
@@ -218,6 +254,12 @@ adminRouter.patch(
   "/listing-requests/status",
   bodyValidator(UpdateListingRequestsStatusSchema),
   serverErrorCatcherWrapper(updateListingRequestsStatus)
+);
+
+adminRouter.delete(
+  "/listing-requests",
+  bodyValidator(DeleteListingRequestsSchema),
+  serverErrorCatcherWrapper(deleteListingRequests)
 );
 
 adminRouter.get(
@@ -397,6 +439,12 @@ adminRouter.patch(
   "/contact-messages/archived",
   bodyValidator(UpdateContactMessagesArchivedSchema),
   serverErrorCatcherWrapper(updateContactMessagesArchived)
+);
+
+adminRouter.delete(
+  "/contact-messages",
+  bodyValidator(DeleteContactMessagesSchema),
+  serverErrorCatcherWrapper(deleteContactMessages)
 );
 
 adminRouter.patch(

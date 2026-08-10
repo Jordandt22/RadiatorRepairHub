@@ -64,6 +64,12 @@ const CACHE_RESOURCES = [
     queryKeys: [["contact-inquiries"], ["dashboard-contact-inquiries"]],
   },
   {
+    id: "feedback-surveys",
+    title: "Feedback surveys",
+    description: "Post-submit site feedback survey lists.",
+    queryKeys: [["feedback-surveys"]],
+  },
+  {
     id: "listing-requests",
     title: "Listing requests",
     description: "Get Listed request inbox lists.",
