@@ -18,11 +18,14 @@ function PageHeader({ breadcrumbItems, pageTitle, pageDescription, headerLink })
         {headerLink && (
           <Link
             href={headerLink.href}
+            target={headerLink.target}
+            rel={headerLink.rel}
             className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
             {headerLink.label}
             <ArrowRight className="w-4 h-4" />
-          </Link>        )}
+          </Link>
+        )}
       </div>
     </div>
   );

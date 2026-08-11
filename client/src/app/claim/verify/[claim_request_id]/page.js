@@ -4,7 +4,6 @@ import { fetchClaimRequest } from "@/lib/api/businesses";
 import ClaimVerifyForm from "@/components/claim/ClaimVerifyForm";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
-import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 import { NOINDEX_ROBOTS } from "@/lib/seo/metadata";
 
 export const metadata = {
@@ -53,10 +52,12 @@ export default async function ClaimVerifyPage({ params }) {
         headerLink={{
           href: `/business/${data.business.slug}`,
           label: "View business page",
+          target: "_blank",
+          rel: "noopener noreferrer",
         }}
       />
 
-      <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-4">
+      <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-4 pb-12">
         <ClaimVerifyForm
           claimRequestId={data.claimRequestId}
           business={data.business}
@@ -64,14 +65,15 @@ export default async function ClaimVerifyPage({ params }) {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Need help?{" "}
-          <Link href="/contact" className="text-blue-600 hover:underline">
+          <Link
+            href="/contact"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
             Contact support
           </Link>
         </p>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <DirectoryDisclaimer />
       </div>
     </div>
   );

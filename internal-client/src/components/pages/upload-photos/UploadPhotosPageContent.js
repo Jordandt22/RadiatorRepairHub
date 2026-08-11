@@ -402,7 +402,7 @@ export default function UploadPhotosPageContent() {
             <p className="mt-1 text-muted-foreground">
               Each run uploads Google Place photos to Cloudflare Images (50-500
               businesses), split into batches of 20. Never-tried listings are
-              prioritized, then the most recently added; after 5 failed attempts
+              prioritized, then the most recently added; after 3 failed attempts
               a business is skipped.
             </p>
           </div>
