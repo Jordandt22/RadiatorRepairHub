@@ -19,6 +19,9 @@ export const OUTREACH_TYPES = Object.freeze({
   WEBSITE_OFFER: "website_offer",
 });
 
+/** Minimum days after claim invite before follow-up is eligible. */
+export const CLAIM_FOLLOWUP_MIN_DAYS_SINCE_INVITE = 7;
+
 /** Claim-invite A/B variants share eligibility (one claim email per business). */
 export const CLAIM_INVITE_OUTREACH_TYPES = Object.freeze([
   OUTREACH_TYPES.CLAIM_INVITE,
@@ -29,6 +32,17 @@ export const CLAIM_INVITE_OUTREACH_TYPES = Object.freeze([
 
 export const isClaimInviteOutreachType = (outreachType) =>
   CLAIM_INVITE_OUTREACH_TYPES.includes(outreachType);
+
+export function isClaimInviteOldEnoughForFollowup(
+  claimInviteSentAt,
+  now = new Date()
+) {
+  if (!claimInviteSentAt) return false;
+  const sentAt = new Date(claimInviteSentAt);
+  if (Number.isNaN(sentAt.getTime())) return false;
+  const minMs = CLAIM_FOLLOWUP_MIN_DAYS_SINCE_INVITE * 24 * 60 * 60 * 1000;
+  return now.getTime() - sentAt.getTime() >= minMs;
+}
 
 export const CLAIM_ELIGIBILITY = Object.freeze({
   ABLE: "able",
@@ -116,6 +130,9 @@ export const evaluateOutreachEligibility = (business, outreachType) => {
     }
     if (!business?.claim_invite_sent_at) {
       return { ok: false, reason: "claim_invite_not_sent" };
+    }
+    if (!isClaimInviteOldEnoughForFollowup(business.claim_invite_sent_at)) {
+      return { ok: false, reason: "claim_invite_too_recent" };
     }
     if (business?.claim_followup_sent_at) {
       return { ok: false, reason: "already_sent" };

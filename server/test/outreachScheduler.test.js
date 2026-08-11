@@ -85,7 +85,7 @@ test("scheduler schema accepts each supported limit", async () => {
   }
 });
 
-test("scheduler schema requires all three unique claim invite types", async () => {
+test("scheduler schema requires all scheduled outreach types uniquely", async () => {
   const duplicate = {
     ...validConfig,
     campaigns: validConfig.campaigns.map((campaign, index) => ({
@@ -112,6 +112,39 @@ test("scheduler schema rejects non-Pacific timezone and invalid time", async () 
   );
 });
 
+test("claim follow-up requires invite at least 7 days old", async () => {
+  const { evaluateOutreachEligibility } = await import(
+    "../src/lib/outreachSend.js"
+  );
+  const base = {
+    claim_eligibility: "able",
+    email: "shop@example.com",
+    claim_followup_sent_at: null,
+  };
+  const recent = evaluateOutreachEligibility(
+    {
+      ...base,
+      claim_invite_sent_at: new Date(
+        Date.now() - 3 * 24 * 60 * 60 * 1000
+      ).toISOString(),
+    },
+    "claim_followup"
+  );
+  assert.equal(recent.ok, false);
+  assert.equal(recent.reason, "claim_invite_too_recent");
+
+  const ready = evaluateOutreachEligibility(
+    {
+      ...base,
+      claim_invite_sent_at: new Date(
+        Date.now() - 8 * 24 * 60 * 60 * 1000
+      ).toISOString(),
+    },
+    "claim_followup"
+  );
+  assert.equal(ready.ok, true);
+});
+
 test("migration serializes reservations and enforces active uniqueness", async () => {
   const migration = await readFile(
     new URL(
@@ -127,4 +160,18 @@ test("migration serializes reservations and enforces active uniqueness", async (
   );
   assert.match(migration, /WHERE status IN \('reserved', 'sending'\)/);
   assert.match(migration, /SECURITY INVOKER/);
+});
+
+test("follow-up migration reserves businesses with 7-day invite delay", async () => {
+  const migration = await readFile(
+    new URL(
+      "../../supabase/migrations/20260811010000_scheduled_claim_followup_outreach.sql",
+      import.meta.url
+    ),
+    "utf8"
+  );
+  assert.match(migration, /claim_followup/);
+  assert.match(migration, /interval '7 days'/);
+  assert.match(migration, /claim_invite_sent_at IS NOT NULL/);
+  assert.match(migration, /claim_followup_sent_at IS NULL/);
 });

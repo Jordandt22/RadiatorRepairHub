@@ -24,7 +24,7 @@ export async function getOutreachSchedule() {
       outreach_schedule_campaigns: SCHEDULED_OUTREACH_TYPES.map(
         (outreach_type) => ({
           outreach_type,
-          enabled: true,
+          enabled: outreach_type !== "claim_followup",
           limit_count: 25,
         })
       ),

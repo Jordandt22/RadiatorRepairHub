@@ -3355,6 +3355,13 @@ export const getOutreachMatchingBusinessIds = async ({
     if (outreachType === "claim_followup") {
       if (row.claim_eligibility !== "able") continue;
       if (!row.claim_invite_sent_at) continue;
+      const inviteSentAt = new Date(row.claim_invite_sent_at);
+      if (
+        Number.isNaN(inviteSentAt.getTime()) ||
+        Date.now() - inviteSentAt.getTime() < 7 * 24 * 60 * 60 * 1000
+      ) {
+        continue;
+      }
       if (row.claim_followup_sent_at) continue;
       const email = typeof row.email === "string" ? row.email.trim() : "";
       if (!email) continue;

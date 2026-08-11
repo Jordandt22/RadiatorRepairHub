@@ -18,6 +18,7 @@ const SKIP_REASON_LABELS = {
   missing_recipient: "Missing recipient",
   invalid_outreach_type: "Invalid type",
   claim_invite_not_sent: "No claim invite sent",
+  claim_invite_too_recent: "Claim invite sent less than 7 days ago",
   eligibility_able: "Eligibility: Able",
   eligibility_no_email: "No email",
   eligibility_duplicate_email: "Duplicate email",
