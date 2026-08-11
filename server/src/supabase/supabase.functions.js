@@ -2142,13 +2142,15 @@ export const getClaimRequestWithBusiness = async (claim_request_id) => {
   return { data, error };
 };
 
+/** Deletes a claim request only while it is still pending. */
 export const deleteClaimRequest = async (claim_request_id) => {
   const { data, error } = await supabase
     .from("claim_requests")
     .delete()
     .eq("claim_request_id", claim_request_id)
+    .eq("status", "pending")
     .select("claim_request_id")
-    .single();
+    .maybeSingle();
 
   return { data, error };
 };

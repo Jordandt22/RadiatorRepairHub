@@ -1,7 +1,12 @@
 import React from "react";
 import Link from "next/link";
+import {
+  formatBusinessPhoneDisplay,
+  getBusinessPhoneSmsHref,
+  getBusinessPhoneTelHref,
+} from "@/lib/businessContactInfo";
 
-function Footer() {
+function Footer({ businessEmail = null, businessPhoneDigits = null }) {
   const discoverLinks = [
     { label: "Home", path: "/" },
     { label: "Featured", path: "/featured" },
@@ -30,6 +35,12 @@ function Footer() {
     { label: "Washington", path: "/state/WA" },
   ];
 
+  const email = businessEmail;
+  const phoneDigits = businessPhoneDigits;
+  const phoneDisplay = formatBusinessPhoneDisplay(phoneDigits);
+  const telHref = getBusinessPhoneTelHref(phoneDigits);
+  const smsHref = getBusinessPhoneSmsHref(phoneDigits);
+
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -42,10 +53,45 @@ function Footer() {
             <p className="text-gray-400 mb-4 italic">
               Your trusted radiator repair directory.
             </p>
-            <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
+            <p className="text-gray-400 text-sm leading-relaxed max-w-sm mb-4">
               Browse radiator repair shops by state and city. Find reliable
               services near you with reviews, hours, and contact details.
             </p>
+            {(email || phoneDigits) && (
+              <div className="space-y-1.5 text-sm">
+                {email ? (
+                  <p>
+                    <span className="text-gray-500">Email: </span>
+                    <a
+                      href={`mailto:${email}`}
+                      className="text-gray-300 hover:text-blue-400 transition-colors break-all"
+                    >
+                      {email}
+                    </a>
+                  </p>
+                ) : null}
+                {phoneDigits ? (
+                  <p>
+                    <span className="text-gray-500">Call or Text: </span>
+                    <a
+                      href={telHref}
+                      className="text-gray-300 hover:text-blue-400 transition-colors"
+                    >
+                      {phoneDisplay}
+                    </a>
+                    <span className="text-gray-600 mx-1.5" aria-hidden="true">
+                      ·
+                    </span>
+                    <a
+                      href={smsHref}
+                      className="text-gray-300 hover:text-blue-400 transition-colors"
+                    >
+                      SMS
+                    </a>
+                  </p>
+                ) : null}
+              </div>
+            )}
           </div>
 
           {/* Discover Links */}

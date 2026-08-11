@@ -1,5 +1,6 @@
 import React from "react";
 import PageHeader from "@/components/layout/Header/PageHeader";
+import SiteSupportContactLines from "@/components/contact/SiteSupportContactLines";
 import {
   DEFAULT_OG_IMAGE,
   INDEX_ROBOTS,
@@ -994,15 +995,7 @@ function TermsPage() {
             If you have any questions about these Terms of Service, please
             contact us:
           </p>
-          <p className="mt-4 text-gray-700">
-            <strong>Email:</strong>{" "}
-            <a
-              href={`mailto:${process.env.BUSINESS_EMAIL}`}
-              className="text-blue-600 hover:text-blue-800 underline"
-            >
-              {process.env.BUSINESS_EMAIL}
-            </a>
-          </p>
+          <SiteSupportContactLines />
           <p className="mt-6 text-gray-700">
             We will try to respond to inquiries within 30 days of receipt.
           </p>

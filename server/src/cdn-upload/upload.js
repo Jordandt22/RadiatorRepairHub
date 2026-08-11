@@ -1,9 +1,8 @@
 import { randomUUID } from "crypto";
 import {
-  buildBusinessImageAssetFolder,
   buildBusinessImagePublicId,
-  uploadBufferToCloudinary,
-} from "./cloudinary.js";
+  uploadBufferToCloudflareImages,
+} from "./cloudflareImages.js";
 import {
   getBusinessesByIds,
   incrementCdnStoredAttempts,
@@ -60,10 +59,9 @@ async function processBusiness(business, apiKey) {
     const imageId = randomUUID();
     const first = photos[0];
     const { buffer } = await fetchPhotoMediaBuffer(first.name, apiKey);
-    const assetFolder = buildBusinessImageAssetFolder(business.id);
     const publicId = buildBusinessImagePublicId(business.id, imageId);
 
-    await uploadBufferToCloudinary(buffer, { publicId, assetFolder });
+    await uploadBufferToCloudflareImages(buffer, { publicId });
     await insertPrimaryBusinessImage({
       imageId,
       businessId: business.id,

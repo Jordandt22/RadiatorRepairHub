@@ -12,6 +12,8 @@ import {
 import PageHeader from "@/components/layout/Header/PageHeader";
 import FAQSection from "@/components/seo/FAQSection";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
+import SitePhoneLinks from "@/components/contact/SitePhoneLinks";
+import { getBusinessEmail, getBusinessPhoneDigits } from "@/lib/businessContactInfo";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 const pageTitle = "How to Claim Your Business | RadiatorRepairHub";
@@ -80,8 +82,8 @@ function buildClaimFaqs(supportEmail) {
     {
       question: "What if someone else already claimed my business by mistake?",
       answer: supportEmail
-        ? `Contact RadiatorRepairHub support right away at ${supportEmail} or through the contact page. We'll help verify ownership and resolve mistaken claims.`
-        : "Contact RadiatorRepairHub support right away through the contact page. We'll help verify ownership and resolve mistaken claims.",
+        ? `Contact RadiatorRepairHub support right away at ${supportEmail}, by phone/SMS, or through the contact page. We'll help verify ownership and resolve mistaken claims.`
+        : "Contact RadiatorRepairHub support right away by phone/SMS or through the contact page. We'll help verify ownership and resolve mistaken claims.",
     },
     {
       question: "Is claiming free?",
@@ -97,7 +99,8 @@ export default function HowToClaimPage() {
     { name: "How to Claim", url: "/how-to-claim" },
   ];
 
-  const supportEmail = process.env.BUSINESS_EMAIL;
+  const supportEmail = getBusinessEmail();
+  const hasPhone = Boolean(getBusinessPhoneDigits());
   const faqs = buildClaimFaqs(supportEmail);
 
   return (
@@ -267,6 +270,18 @@ export default function HowToClaimPage() {
                   >
                     {supportEmail}
                   </a>
+                </>
+              ) : null}
+              {hasPhone ? (
+                <>
+                  {supportEmail ? ", " : " "}
+                  by phone or SMS (
+                  <SitePhoneLinks
+                    className="inline"
+                    showLabel={false}
+                    linkClassName="text-blue-600 hover:underline"
+                  />
+                  ),
                 </>
               ) : null}{" "}
               or use the contact form.

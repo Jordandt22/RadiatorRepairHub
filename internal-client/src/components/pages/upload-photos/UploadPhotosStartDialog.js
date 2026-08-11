@@ -53,8 +53,8 @@ export default function UploadPhotosStartDialog({
           <DialogTitle>Start photo upload</DialogTitle>
           <DialogDescription>
             Choose how many businesses to process this run. Work is split into
-            batches of 20 and uploaded to Cloudinary for listings that are not
-            yet on the CDN.
+            batches of 20 and uploaded to Cloudflare Images for listings that
+            are not yet on the CDN.
           </DialogDescription>
         </DialogHeader>
 

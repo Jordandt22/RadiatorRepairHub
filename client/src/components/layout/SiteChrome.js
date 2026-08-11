@@ -14,7 +14,11 @@ function isProtectedPath(pathname) {
   );
 }
 
-export default function SiteChrome({ children }) {
+export default function SiteChrome({
+  children,
+  businessEmail = null,
+  businessPhoneDigits = null,
+}) {
   const pathname = usePathname();
   const hidePublicChrome = isProtectedPath(pathname);
 
@@ -26,7 +30,10 @@ export default function SiteChrome({ children }) {
     <>
       <Navbar />
       {children}
-      <Footer />
+      <Footer
+        businessEmail={businessEmail}
+        businessPhoneDigits={businessPhoneDigits}
+      />
       <BackToTop />
     </>
   );

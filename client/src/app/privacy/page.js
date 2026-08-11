@@ -1,5 +1,7 @@
 import React from "react";
 import PageHeader from "@/components/layout/Header/PageHeader";
+import SiteSupportContactLines from "@/components/contact/SiteSupportContactLines";
+import { getBusinessEmail } from "@/lib/businessContactInfo";
 import {
   DEFAULT_OG_IMAGE,
   INDEX_ROBOTS,
@@ -29,6 +31,7 @@ export const metadata = {
 };
 
 function PrivacyPage() {
+  const businessEmail = getBusinessEmail();
   const effectiveDate = new Date("2025-09-22").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -916,14 +919,21 @@ function PrivacyPage() {
           ))}
 
           <p className="mt-2 text-gray-700">
-            To exercise these rights, contact us at{" "}
-            <a
-              href={`mailto:${process.env.BUSINESS_EMAIL}`}
-              className="text-blue-600 hover:text-blue-800 underline"
-            >
-              {process.env.BUSINESS_EMAIL}
-            </a>
-            . We will respond to your request within 30 days.
+            To exercise these rights, contact us
+            {businessEmail ? (
+              <>
+                {" "}
+                at{" "}
+                <a
+                  href={`mailto:${businessEmail}`}
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  {businessEmail}
+                </a>
+              </>
+            ) : null}{" "}
+            (email, phone, or SMS — see Contact Information below). We will
+            respond to your request within 30 days.
           </p>
         </section>
 
@@ -958,14 +968,21 @@ function PrivacyPage() {
             ))}
           </ul>
           <p className="mt-2 text-gray-700">
-            To exercise these rights, contact us at{" "}
-            <a
-              href={`mailto:${process.env.BUSINESS_EMAIL}`}
-              className="text-blue-600 hover:text-blue-800 underline"
-            >
-              {process.env.BUSINESS_EMAIL}
-            </a>
-            . We will respond to your request within 30 days.
+            To exercise these rights, contact us
+            {businessEmail ? (
+              <>
+                {" "}
+                at{" "}
+                <a
+                  href={`mailto:${businessEmail}`}
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  {businessEmail}
+                </a>
+              </>
+            ) : null}{" "}
+            (email, phone, or SMS — see Contact Information below). We will
+            respond to your request within 30 days.
           </p>
         </section>
 
@@ -1026,15 +1043,7 @@ function PrivacyPage() {
             If you have questions, concerns, or requests regarding this Privacy
             Policy or our data practices, please contact us:
           </p>
-          <p className="mt-4 text-gray-700">
-            <strong>Email:</strong>{" "}
-            <a
-              href={`mailto:${process.env.BUSINESS_EMAIL}`}
-              className="text-blue-600 hover:text-blue-800 underline"
-            >
-              {process.env.BUSINESS_EMAIL}
-            </a>
-          </p>
+          <SiteSupportContactLines />
           <p className="mt-6 text-gray-700">
             We will try to respond to inquiries within 30 days of receipt.
           </p>

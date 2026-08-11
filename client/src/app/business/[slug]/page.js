@@ -262,7 +262,6 @@ async function Page({ params }) {
           {/* Hero Section with Business Image */}
           <BusinessHeroBanner
             src={business.image_url}
-            placeId={business.place_id}
             businessId={business.id}
             imageId={business.primary_image_id}
             cdnStored={Boolean(business.cdn_stored)}
@@ -308,7 +307,6 @@ async function Page({ params }) {
                   businessId={business.id}
                   description={business.description || ""}
                   imageUrl={business.image_url}
-                  placeId={business.place_id}
                   imageId={business.primary_image_id}
                   cdnStored={Boolean(business.cdn_stored)}
                   imageAlt={`${business.title} - ${business.keywords && business.keywords.length > 0
