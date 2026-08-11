@@ -9,7 +9,7 @@ export default function UploadPhotosEmptyState() {
       <div className="flex max-w-sm flex-col gap-1">
         <p className="text-sm font-medium text-foreground">No upload jobs</p>
         <p className="text-sm text-muted-foreground">
-          Start an upload to pull Google Place photos into Cloudinary for
+          Start an upload to pull Google Place photos into Cloudflare Images for
           businesses that are not yet on the CDN.
         </p>
       </div>

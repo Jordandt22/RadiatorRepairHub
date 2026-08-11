@@ -400,7 +400,7 @@ export default function UploadPhotosPageContent() {
               {pendingCount.toLocaleString()} businesses pending CDN upload
             </p>
             <p className="mt-1 text-muted-foreground">
-              Each run uploads Google Place photos to Cloudinary (50-500
+              Each run uploads Google Place photos to Cloudflare Images (50-500
               businesses), split into batches of 20. Never-tried listings are
               prioritized, then the most recently added; after 5 failed attempts
               a business is skipped.

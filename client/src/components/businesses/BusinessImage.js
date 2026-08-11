@@ -2,16 +2,16 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { CldImage } from "next-cloudinary";
 import { CircleAlert } from "lucide-react";
 import {
   bypassImageOptimizer,
-  getCloudinaryPublicId,
+  buildCfImageUrl,
+  CF_IMAGE_VARIANT,
+  getBusinessImageId,
 } from "@/lib/images";
 
 function BusinessImage({
   src,
-  placeId,
   businessId,
   imageId,
   cdnStored = false,
@@ -25,19 +25,20 @@ function BusinessImage({
   // "message" = No image available UI; "solid" = blank colored background
   fallback = "message",
   fallbackClassName = "bg-slate-900",
+  variant = CF_IMAGE_VARIANT.card,
 }) {
-  const publicId = getCloudinaryPublicId({
+  const cfImageId = getBusinessImageId({
     businessId,
     imageId,
-    placeId,
     cdnStored,
   });
-  const canUseCloudinary = Boolean(cdnStored && publicId);
+  const cdnSrc = buildCfImageUrl(cfImageId, variant);
+  const canUseCdn = Boolean(cdnSrc);
   const hasRemote = Boolean(src);
 
-  // Prefer Cloudinary when available; otherwise start on remote image_url
+  // Prefer Cloudflare when available; otherwise start on remote image_url
   const [source, setSource] = useState(() =>
-    canUseCloudinary ? "cloudinary" : hasRemote ? "remote" : "none"
+    canUseCdn ? "cdn" : hasRemote ? "remote" : "none"
   );
 
   if (source === "none") {
@@ -81,19 +82,16 @@ function BusinessImage({
     );
   }
 
-  if (source === "cloudinary") {
+  if (source === "cdn") {
     return (
-      <CldImage
-        src={publicId}
+      <Image
+        src={cdnSrc}
         alt={alt}
         fill={fill}
         sizes={sizes}
         className={className}
         priority={priority}
-        crop="fill"
-        gravity="center"
-        format="auto"
-        quality="auto:eco"
+        unoptimized
         onError={() => setSource(hasRemote ? "remote" : "none")}
       />
     );

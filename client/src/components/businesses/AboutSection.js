@@ -16,7 +16,10 @@ import { ToastProvider, useToast } from "@/contexts/ToastProvider";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import { updateBusinessAbout } from "@/lib/api/businessAbout";
-import { BUSINESS_ABOUT_IMAGE_SIZES } from "@/lib/images";
+import {
+  BUSINESS_ABOUT_IMAGE_SIZES,
+  CF_IMAGE_VARIANT,
+} from "@/lib/images";
 
 export const ABOUT_MAX_LENGTH = 750;
 
@@ -43,7 +46,6 @@ function AboutSectionContent({
   businessId,
   description: initialDescription = "",
   imageUrl,
-  placeId,
   imageId,
   cdnStored,
   imageAlt,
@@ -150,12 +152,12 @@ function AboutSectionContent({
         <div className="relative h-48 w-full overflow-hidden rounded-lg bg-gray-200 md:h-64">
           <BusinessImage
             src={imageUrl}
-            placeId={placeId}
             businessId={businessId}
             imageId={imageId}
             cdnStored={Boolean(cdnStored)}
             alt={imageAlt}
             sizes={BUSINESS_ABOUT_IMAGE_SIZES}
+            variant={CF_IMAGE_VARIANT.about}
             className="object-cover object-center"
             iconSize="sm"
           />

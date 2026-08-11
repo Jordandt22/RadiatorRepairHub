@@ -2,16 +2,16 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { CldImage } from "next-cloudinary";
 import {
   bypassImageOptimizer,
+  buildCfImageUrl,
   BUSINESS_HERO_IMAGE_SIZES,
-  getCloudinaryPublicId,
+  CF_IMAGE_VARIANT,
+  getBusinessImageId,
 } from "@/lib/images";
 
 export default function BusinessHeroBanner({
   src,
-  placeId,
   businessId,
   imageId,
   cdnStored = false,
@@ -19,17 +19,17 @@ export default function BusinessHeroBanner({
   children,
   sizes = BUSINESS_HERO_IMAGE_SIZES,
 }) {
-  const publicId = getCloudinaryPublicId({
+  const cfImageId = getBusinessImageId({
     businessId,
     imageId,
-    placeId,
     cdnStored,
   });
-  const canUseCloudinary = Boolean(cdnStored && publicId);
+  const cdnSrc = buildCfImageUrl(cfImageId, CF_IMAGE_VARIANT.hero);
+  const canUseCdn = Boolean(cdnSrc);
   const hasRemote = Boolean(src);
 
   const [source, setSource] = useState(() =>
-    canUseCloudinary ? "cloudinary" : hasRemote ? "remote" : "none"
+    canUseCdn ? "cdn" : hasRemote ? "remote" : "none"
   );
 
   const hasImage = source !== "none";
@@ -38,18 +38,15 @@ export default function BusinessHeroBanner({
     <div className="relative w-full h-56 sm:h-64 md:h-80 lg:h-96 bg-slate-900">
       {hasImage ? (
         <>
-          {source === "cloudinary" ? (
-            <CldImage
-              src={publicId}
+          {source === "cdn" ? (
+            <Image
+              src={cdnSrc}
               alt={alt}
               fill
               sizes={sizes}
               className="object-cover object-center"
               priority
-              crop="fill"
-              gravity="center"
-              format="auto"
-              quality="auto:good"
+              unoptimized
               onError={() => setSource(hasRemote ? "remote" : "none")}
             />
           ) : (

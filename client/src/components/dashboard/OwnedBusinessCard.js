@@ -82,7 +82,6 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
         <div className="relative h-56 w-full bg-gray-200">
           <BusinessImage
             src={business.image_url}
-            placeId={business.place_id}
             businessId={business.id}
             imageId={business.primary_image_id}
             cdnStored={Boolean(business.cdn_stored)}
