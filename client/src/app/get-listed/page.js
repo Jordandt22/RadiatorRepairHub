@@ -8,6 +8,11 @@ import { ToastProvider } from "@/contexts/ToastProvider";
 // Components
 import ContactForm from "@/components/pages/contact/ContactForm";
 import GetListedHeader from "@/components/pages/get-listed/GetListedHeader";
+import SitePhoneLinks from "@/components/contact/SitePhoneLinks";
+import {
+  getBusinessEmail,
+  getBusinessPhoneDigits,
+} from "@/lib/businessContactInfo";
 
 export const metadata = {
   title: "Get Listed | Add Your Radiator Repair Business - RadiatorRepairHub",
@@ -49,6 +54,9 @@ export const metadata = {
 };
 
 const Page = () => {
+  const businessEmail = getBusinessEmail();
+  const hasPhone = Boolean(getBusinessPhoneDigits());
+
   // Service Schema for Business Listing
   const serviceSchema = {
     "@context": "https://schema.org",
@@ -242,15 +250,24 @@ const Page = () => {
                   Need Help?
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  Have questions about listing your business? We&apos;re here to
-                  help!
+                  Have questions about listing your business? Email, call, or
+                  text us — we&apos;re here to help!
                 </p>
-                <a
-                  href={`mailto:${process.env.BUSINESS_EMAIL}`}
-                  className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300"
-                >
-                  {process.env.BUSINESS_EMAIL}
-                </a>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  {businessEmail ? (
+                    <a
+                      href={`mailto:${businessEmail}`}
+                      className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                    >
+                      {businessEmail}
+                    </a>
+                  ) : null}
+                  {hasPhone ? (
+                    <div className="text-sm text-gray-700">
+                      <SitePhoneLinks showLabel={true} />
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>

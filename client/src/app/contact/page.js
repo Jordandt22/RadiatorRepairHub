@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import {
   Mail,
+  Phone,
   MapPin,
   Clock,
   CheckCircle,
@@ -19,6 +20,11 @@ import { ToastProvider } from "@/contexts/ToastProvider";
 import ContactForm from "@/components/pages/contact/ContactForm";
 import ContactHeader from "@/components/pages/contact/ContactHeader";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
+import SitePhoneLinks from "@/components/contact/SitePhoneLinks";
+import {
+  getBusinessEmail,
+  getBusinessPhoneDigits,
+} from "@/lib/businessContactInfo";
 
 export const metadata = {
   title: "Contact RadiatorRepairHub | Directory Support & Feedback",
@@ -60,6 +66,9 @@ export const metadata = {
 };
 
 const Page = () => {
+  const businessEmail = getBusinessEmail();
+  const hasPhone = Boolean(getBusinessPhoneDigits());
+
   const contactPageSchema = {
     "@context": "https://schema.org",
     "@type": "ContactPage",
@@ -146,28 +155,53 @@ const Page = () => {
                 </h2>
 
                 <div className="space-y-6 flex-1">
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Mail className="w-6 h-6 text-blue-600" />
+                  {businessEmail ? (
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <Mail className="w-6 h-6 text-blue-600" />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-md font-semibold text-gray-900 mb-1">
+                          Email the Team
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-2">
+                          Submit the form or email us directly for
+                          RadiatorRepairHub support and inquiries.
+                        </p>
+                        <a
+                          href={`mailto:${businessEmail}`}
+                          className="text-sm text-blue-600 hover:text-blue-600 font-medium transition-colors break-all"
+                        >
+                          {businessEmail}
+                        </a>
                       </div>
                     </div>
-                    <div>
-                      <h3 className="text-md font-semibold text-gray-900 mb-1">
-                        Email the Team
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-2">
-                        Submit the form or email us directly for RadiatorRepairHub
-                        support and inquiries.
-                      </p>
-                      <a
-                        href={`mailto:${process.env.BUSINESS_EMAIL}`}
-                        className="text-sm text-blue-600 hover:text-blue-600 font-medium transition-colors break-all"
-                      >
-                        {process.env.BUSINESS_EMAIL}
-                      </a>
+                  ) : null}
+
+                  {hasPhone ? (
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                          <Phone className="w-6 h-6 text-emerald-600" />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-md font-semibold text-gray-900 mb-1">
+                          Call or Text Us
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-2">
+                          Reach RadiatorRepairHub support by phone or SMS. This
+                          is directory support only, not a repair shop line.
+                        </p>
+                        <SitePhoneLinks
+                          showLabel={false}
+                          linkClassName="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ) : null}
 
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">

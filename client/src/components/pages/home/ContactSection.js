@@ -1,8 +1,13 @@
 import React from "react";
 import Link from "next/link";
-import { Mail, Clock, MessageCircle, ArrowRight } from "lucide-react";
+import { Mail, Phone, Clock, MessageCircle, ArrowRight } from "lucide-react";
+import { getBusinessEmail, getBusinessPhoneDigits } from "@/lib/businessContactInfo";
+import SitePhoneLinks from "@/components/contact/SitePhoneLinks";
 
 function ContactSection() {
+  const email = getBusinessEmail();
+  const hasPhone = Boolean(getBusinessPhoneDigits());
+
   return (
     <section className="py-20 mb-32 bg-white text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -18,25 +23,43 @@ function ContactSection() {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          {/* Contact Information */}
-          <div className="flex flex-col md:flex-row align-centers justify-center gap-4 md:gap-8 lg:gap-48 mb-12 md:mb-16">
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Mail className="w-6 h-6 text-white" />
+          <div className="flex flex-col md:flex-row align-centers justify-center gap-4 md:gap-8 lg:gap-16 mb-12 md:mb-16 flex-wrap">
+            {email ? (
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1 text-gray-900">
+                    Email Us
+                  </h3>
+                  <p className="text-gray-600 mb-2">Send us an email anytime</p>
+                  <a
+                    href={`mailto:${email}`}
+                    className="text-blue-600 hover:text-blue-700 transition-colors duration-300 break-all"
+                  >
+                    {email}
+                  </a>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-1 text-gray-900">
-                  Email Us
-                </h3>
-                <p className="text-gray-600 mb-2">Send us an email anytime</p>
-                <a
-                  href={`mailto:${process.env.BUSINESS_EMAIL}`}
-                  className="text-blue-600 hover:text-blue-700 transition-colors duration-300"
-                >
-                  {process.env.BUSINESS_EMAIL}
-                </a>
+            ) : null}
+
+            {hasPhone ? (
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <Phone className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1 text-gray-900">
+                    Call or Text Us
+                  </h3>
+                  <p className="text-gray-600 mb-2">
+                    Phone and SMS for directory support
+                  </p>
+                  <SitePhoneLinks showLabel={false} />
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <div className="flex items-start space-x-4">
               <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -53,7 +76,6 @@ function ContactSection() {
             </div>
           </div>
 
-          {/* Contact Page Link */}
           <div className="text-center">
             <div className="bg-blue-50 rounded-xl p-8 border border-blue-200">
               <div className="flex items-center justify-center mb-4">

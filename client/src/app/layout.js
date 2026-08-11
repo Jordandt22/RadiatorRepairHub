@@ -8,6 +8,11 @@ import { PostHogProvider } from "./providers";
 import SiteChrome from "@/components/layout/SiteChrome";
 import { ALL_KEYWORDS } from "@/lib/seo/keywords";
 import { DEFAULT_OG_IMAGE, INDEX_ROBOTS } from "@/lib/seo/metadata";
+import {
+  getBusinessEmail,
+  getBusinessPhoneDigits,
+  getBusinessPhoneE164,
+} from "@/lib/businessContactInfo";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -102,7 +107,8 @@ export default function RootLayout({ children }) {
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer service",
-      email: process.env.BUSINESS_EMAIL,
+      email: getBusinessEmail() || undefined,
+      telephone: getBusinessPhoneE164() || undefined,
       availableLanguage: "English",
     },
     address: {
@@ -199,7 +205,12 @@ export default function RootLayout({ children }) {
         )}
 
         <PostHogProvider>
-          <SiteChrome>{children}</SiteChrome>
+          <SiteChrome
+            businessEmail={getBusinessEmail()}
+            businessPhoneDigits={getBusinessPhoneDigits()}
+          >
+            {children}
+          </SiteChrome>
 
           <Toaster
             toastOptions={{
