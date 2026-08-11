@@ -422,9 +422,19 @@ export const cancelClaim = async (req, res) => {
   }
 
   const business = claim.business;
+
+  if (claim.status !== "pending") {
+    return res.status(200).json(
+      successHandler({
+        slug: business?.slug ?? null,
+      })
+    );
+  }
+
   const { key: codeKey } = getClaimRequestCodeKey(claimRequestId);
 
-  const { error: deleteError } = await deleteClaimRequest(claimRequestId);
+  const { data: deleted, error: deleteError } =
+    await deleteClaimRequest(claimRequestId);
   if (deleteError) {
     return res
       .status(500)
@@ -435,6 +445,14 @@ export const cancelClaim = async (req, res) => {
           deleteError
         )
       );
+  }
+
+  if (!deleted) {
+    return res.status(200).json(
+      successHandler({
+        slug: business?.slug ?? null,
+      })
+    );
   }
 
   try {
