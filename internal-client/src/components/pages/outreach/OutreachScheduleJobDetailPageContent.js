@@ -21,6 +21,7 @@ const CAMPAIGN_LABELS = {
   claim_invite: "Claim Invite",
   ownership_claim_invite: "Ownership Claim Invite",
   lead_claim_invite: "Lead Claim Invite",
+  claim_followup: "Claim Follow-up",
 };
 
 function statusVariant(status) {

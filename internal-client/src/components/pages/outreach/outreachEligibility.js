@@ -3,6 +3,8 @@ import {
   isClaimInviteOutreachType,
 } from "@/components/pages/outreach/outreachConstants";
 
+export const CLAIM_FOLLOWUP_MIN_DAYS_SINCE_INVITE = 7;
+
 export const OUTREACH_SKIP_REASON_LABELS = {
   not_found: "Not found",
   already_sent: "Already sent",
@@ -11,6 +13,7 @@ export const OUTREACH_SKIP_REASON_LABELS = {
   invalid_outreach_type: "Invalid type",
   already_added: "Already added",
   claim_invite_not_sent: "No claim invite sent",
+  claim_invite_too_recent: "Claim invite sent less than 7 days ago",
   eligibility_able: "Eligibility: Able",
   eligibility_no_email: "No email",
   eligibility_duplicate_email: "Duplicate email",
@@ -51,6 +54,14 @@ function hasWebsite(business) {
   return Boolean(website);
 }
 
+function isClaimInviteOldEnoughForFollowup(claimInviteSentAt, now = new Date()) {
+  if (!claimInviteSentAt) return false;
+  const sentAt = new Date(claimInviteSentAt);
+  if (Number.isNaN(sentAt.getTime())) return false;
+  const minMs = CLAIM_FOLLOWUP_MIN_DAYS_SINCE_INVITE * 24 * 60 * 60 * 1000;
+  return now.getTime() - sentAt.getTime() >= minMs;
+}
+
 /** Mirrors server evaluateOutreachEligibility for UI display. */
 export function evaluateOutreachEligibilityClient(business, outreachType) {
   const eligibility = business?.claim_eligibility;
@@ -74,6 +85,9 @@ export function evaluateOutreachEligibilityClient(business, outreachType) {
     }
     if (!business?.claim_invite_sent_at) {
       return { ok: false, reason: "claim_invite_not_sent" };
+    }
+    if (!isClaimInviteOldEnoughForFollowup(business.claim_invite_sent_at)) {
+      return { ok: false, reason: "claim_invite_too_recent" };
     }
     if (business?.claim_followup_sent_at) {
       return { ok: false, reason: "already_sent" };

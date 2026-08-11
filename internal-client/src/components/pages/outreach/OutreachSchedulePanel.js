@@ -28,6 +28,7 @@ const CAMPAIGN_TYPES = [
   "claim_invite",
   "ownership_claim_invite",
   "lead_claim_invite",
+  "claim_followup",
 ];
 
 function normalizeCampaigns(campaigns) {
@@ -43,7 +44,9 @@ function normalizeCampaigns(campaigns) {
     const limit = Number(campaign?.limit_count);
     return {
       outreach_type: outreachType,
-      enabled: campaign?.enabled ?? true,
+      // Follow-up defaults off until explicitly enabled in the schedule UI.
+      enabled:
+        campaign?.enabled ?? (outreachType === "claim_followup" ? false : true),
       limit_count: SCHEDULE_LIMITS.includes(limit) ? limit : 25,
     };
   });

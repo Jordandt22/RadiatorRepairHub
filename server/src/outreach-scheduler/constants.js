@@ -9,6 +9,7 @@ export const SCHEDULED_OUTREACH_TYPES = [
   "claim_invite",
   "ownership_claim_invite",
   "lead_claim_invite",
+  "claim_followup",
 ];
 
 export function buildOutreachCronPattern(localTime) {

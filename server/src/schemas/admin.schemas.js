@@ -788,6 +788,7 @@ export const SCHEDULED_OUTREACH_TYPES = [
   "claim_invite",
   "ownership_claim_invite",
   "lead_claim_invite",
+  "claim_followup",
 ];
 export const OUTREACH_SCHEDULE_LIMITS = [10, 25, 50, 75];
 
@@ -814,7 +815,10 @@ export const UpdateOutreachSchedulerSchema = Yup.object({
     .required("Timezone is required"),
   campaigns: Yup.array()
     .of(OutreachScheduleCampaignSchema)
-    .length(3, "All three claim invite campaigns are required")
+    .length(
+      SCHEDULED_OUTREACH_TYPES.length,
+      "All scheduled outreach campaigns are required"
+    )
     .test(
       "scheduled-outreach-types",
       "Each scheduled outreach type must appear exactly once",

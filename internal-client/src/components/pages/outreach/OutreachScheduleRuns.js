@@ -21,18 +21,21 @@ const CAMPAIGN_FILTER_OPTIONS = [
   { id: "claim_invite", label: "Claim Invite" },
   { id: "ownership_claim_invite", label: "Ownership Claim Invite" },
   { id: "lead_claim_invite", label: "Lead Claim Invite" },
+  { id: "claim_followup", label: "Claim Follow-up" },
 ];
 
 const CAMPAIGN_LABELS = {
   claim_invite: "Claim Invite",
   ownership_claim_invite: "Ownership Claim Invite",
   lead_claim_invite: "Lead Claim Invite",
+  claim_followup: "Claim Follow-up",
 };
 
 const CAMPAIGN_BORDER_COLORS = {
   claim_invite: "border-l-4 border-l-sky-400",
   ownership_claim_invite: "border-l-4 border-l-violet-400",
   lead_claim_invite: "border-l-4 border-l-emerald-400",
+  claim_followup: "border-l-4 border-l-amber-400",
 };
 
 function formatPacificDate(value) {
