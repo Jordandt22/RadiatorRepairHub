@@ -341,11 +341,14 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
           {errors.code && (
             <p className="text-xs text-destructive">{errors.code}</p>
           )}
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+              This code expires in 1 hour.
+            </p>
             <Button
               type="button"
               variant="link"
-              className="h-auto p-0 text-sm text-blue-600"
+              className="h-auto shrink-0 p-0 text-sm text-blue-600"
               disabled={busy}
               onClick={handleResend}
             >
@@ -496,6 +499,8 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
               By creating an account, you agree to our{" "}
               <Link
                 href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800 underline"
               >
                 Terms of Service
@@ -503,6 +508,8 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
               and{" "}
               <Link
                 href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800 underline"
               >
                 Privacy Policy
