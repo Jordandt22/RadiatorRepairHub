@@ -44,6 +44,8 @@ export default function ListingReportDrawer({ report, open, onOpenChange }) {
                 {report.business?.id ? (
                   <Link
                     href={`/businesses/${report.business.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="underline underline-offset-2"
                   >
                     {report.business.title || "View business"}

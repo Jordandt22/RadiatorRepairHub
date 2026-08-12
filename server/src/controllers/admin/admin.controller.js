@@ -123,6 +123,11 @@ import {
 } from "../../ingest/db.js";
 import { enqueueFilterJob } from "../../ingest/queues.js";
 import {
+  IngestRetryError,
+  retryFailedIngestBatchesForGroup,
+  retryIngestBatch,
+} from "../../ingest/retry.js";
+import {
   countPendingCdnBusinesses,
   deleteCdnUploadJobs,
   getCdnUploadBatchDetail,
@@ -3747,6 +3752,55 @@ export const getIngestBatchById = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "There was an error fetching the ingest batch.",
+          error
+        )
+      );
+  }
+};
+
+export const retryIngestBatchHandler = async (req, res) => {
+  const { batchId } = req.params;
+  const step = req.body?.step ?? "auto";
+
+  try {
+    const data = await retryIngestBatch(batchId, { step });
+    return res.status(200).json(successHandler(data));
+  } catch (error) {
+    if (error instanceof IngestRetryError) {
+      return res
+        .status(error.status)
+        .json(customErrorHandler(YUP_ERROR, error.message));
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error retrying the ingest batch.",
+          error
+        )
+      );
+  }
+};
+
+export const retryIngestGroupFailedHandler = async (req, res) => {
+  const { groupId } = req.params;
+
+  try {
+    const data = await retryFailedIngestBatchesForGroup(groupId);
+    return res.status(200).json(successHandler(data));
+  } catch (error) {
+    if (error instanceof IngestRetryError) {
+      return res
+        .status(error.status)
+        .json(customErrorHandler(YUP_ERROR, error.message));
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error retrying failed ingest batches.",
           error
         )
       );

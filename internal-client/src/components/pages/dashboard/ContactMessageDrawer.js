@@ -72,6 +72,8 @@ export default function ContactMessageDrawer({ message, open, onOpenChange }) {
                 {message.business?.id ? (
                   <Link
                     href={`/businesses/${message.business.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="underline underline-offset-2"
                   >
                     {message.business.title || "View business"}

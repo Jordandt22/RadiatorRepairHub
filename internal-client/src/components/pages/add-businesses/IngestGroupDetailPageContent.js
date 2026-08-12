@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeftIcon } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeftIcon, RefreshCwIcon } from "lucide-react";
 import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
@@ -94,12 +94,15 @@ export default function IngestGroupDetailPageContent() {
   const params = useParams();
   const groupId = params?.["group_id"];
   const { accessToken, isReady, logout } = useAuth();
+  const queryClient = useQueryClient();
   const [jobsBatchFilter, setJobsBatchFilter] = useState(ALL_BATCHES);
   const [paginationGroupId, setPaginationGroupId] = useState(groupId);
   const [jobsPage, setJobsPage] = useState(1);
   const [insertedPage, setInsertedPage] = useState(1);
   const [filteredOutPage, setFilteredOutPage] = useState(1);
   const [activeTab, setActiveTab] = useState(GROUP_TABS.batches);
+  const [retryError, setRetryError] = useState(null);
+  const [retrySummary, setRetrySummary] = useState(null);
 
   if (groupId !== paginationGroupId) {
     setPaginationGroupId(groupId);
@@ -138,6 +141,49 @@ export default function IngestGroupDetailPageContent() {
         throw new Error(result.error.message || "Failed to load group");
       }
       return result.data;
+    },
+  });
+
+  const retryFailedMutation = useMutation({
+    mutationFn: async () => {
+      const result = await fetchApi(
+        `/admin/ingest/groups/${groupId}/retry-failed`,
+        {
+          method: "POST",
+          accessToken,
+        },
+      );
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+      if (result.error) {
+        throw new Error(
+          result.error.message || "Failed to retry failed batches",
+        );
+      }
+      return result.data;
+    },
+    onMutate: () => {
+      setRetryError(null);
+      setRetrySummary(null);
+    },
+    onSuccess: async (data) => {
+      const retriedCount = data?.retried?.length ?? 0;
+      const skippedCount = data?.skipped?.length ?? 0;
+      setRetrySummary(
+        `Retried ${retriedCount} batch${retriedCount === 1 ? "" : "es"}${
+          skippedCount > 0
+            ? ` · skipped ${skippedCount}`
+            : ""
+        }.`,
+      );
+      await queryClient.invalidateQueries({
+        queryKey: ["ingest-group", groupId],
+      });
+    },
+    onError: (err) => {
+      setRetryError(err.message || "Failed to retry failed batches");
     },
   });
 
@@ -198,6 +244,9 @@ export default function IngestGroupDetailPageContent() {
   }
 
   const { group, jobs } = detailQuery.data;
+  const retryableCount =
+    group.retryable_batch_count ??
+    batches.filter((batch) => batch.retry?.eligible).length;
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-10 px-4 py-4 md:gap-12 md:px-8 md:py-6">
@@ -215,12 +264,34 @@ export default function IngestGroupDetailPageContent() {
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-semibold tracking-tight">{group.name}</h1>
           <IngestStatusBadge status={group.status} />
+          {retryableCount > 0 ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer rounded-full px-4"
+              disabled={retryFailedMutation.isPending}
+              onClick={() => retryFailedMutation.mutate()}
+            >
+              <RefreshCwIcon
+                className={
+                  retryFailedMutation.isPending ? "animate-spin" : undefined
+                }
+              />
+              Retry failed batches ({retryableCount})
+            </Button>
+          ) : null}
         </div>
         <p className="text-sm text-muted-foreground">
           {group.payload_count} uploaded · {group.filtered_out_count} filtered
           out · {insertedPagination.total} inserted · {batches?.length ?? 0}{" "}
           batches · {jobs?.length ?? 0} jobs
         </p>
+        {retryError ? (
+          <p className="text-sm text-destructive">{retryError}</p>
+        ) : null}
+        {retrySummary ? (
+          <p className="text-sm text-muted-foreground">{retrySummary}</p>
+        ) : null}
       </div>
 
       <IngestBatchOutcomesChart
