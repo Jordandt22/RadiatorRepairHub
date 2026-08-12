@@ -551,7 +551,7 @@ export default function OverviewDashboardPageContent() {
                   Analytics
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Business coverage and outreach email volume
+                  Outreach, business coverage, and listing quality
                 </p>
               </div>
               <RefreshButton

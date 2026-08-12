@@ -142,6 +142,20 @@ import {
   listEmailScrapeJobs,
 } from "../../email-scrape/db.js";
 import { startEmailScrapeJob } from "../../email-scrape/startJob.js";
+import {
+  deleteApifyScrapeJobs,
+  getApifyScrapeJobDetail,
+  hasActiveApifyScrapeJob,
+  listApifyScrapeJobs,
+} from "../../apify-scrape/db.js";
+import {
+  ApifyScrapeError,
+  startApifyScrapeJob,
+} from "../../apify-scrape/startJob.js";
+import {
+  DEFAULT_MAX_PLACES,
+  DEFAULT_SEARCH_KEYWORD,
+} from "../../apify-scrape/constants.js";
 import { normalizeWebsiteUrl } from "../../lib/websiteReachability.js";
 import { getSystemsHealthChecks } from "../../lib/systemsHealth.js";
 import {
@@ -4146,6 +4160,124 @@ export const deleteEmailScrapeJobsHandler = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "There was an error deleting email scrape jobs.",
+          error
+        )
+      );
+  }
+};
+
+export const getApifyScrapeJobs = async (req, res) => {
+  try {
+    const jobs = await listApifyScrapeJobs();
+    return res.status(200).json(successHandler({ jobs }));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching city scrape jobs.",
+          error
+        )
+      );
+  }
+};
+
+export const getApifyScrapeJobById = async (req, res) => {
+  const { jobId } = req.params;
+
+  try {
+    const detail = await getApifyScrapeJobDetail(jobId);
+
+    if (!detail) {
+      return res
+        .status(404)
+        .json(customErrorHandler(SUPABASE_ERROR, "City scrape job not found."));
+    }
+
+    return res.status(200).json(successHandler(detail));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the city scrape job.",
+          error
+        )
+      );
+  }
+};
+
+export const createApifyScrapeJobHandler = async (req, res) => {
+  const { search_keyword, max_places, cities } = req.body;
+
+  try {
+    const active = await hasActiveApifyScrapeJob();
+    if (active) {
+      return res
+        .status(409)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "A city scrape is already pending or running."
+          )
+        );
+    }
+
+    const { job, cities: createdCities } = await startApifyScrapeJob({
+      searchKeyword: search_keyword?.trim() || DEFAULT_SEARCH_KEYWORD,
+      maxPlaces: Number.isFinite(max_places) ? max_places : DEFAULT_MAX_PLACES,
+      cities: cities.map((city) => ({
+        city: city.city.trim(),
+        stateId: city.state_id,
+      })),
+    });
+
+    return res.status(201).json(
+      successHandler({
+        job,
+        cities: createdCities,
+        city_count: createdCities.length,
+      })
+    );
+  } catch (error) {
+    if (error instanceof ApifyScrapeError) {
+      return res
+        .status(400)
+        .json(customErrorHandler(YUP_ERROR, error.message));
+    }
+
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error creating the city scrape job.",
+          error
+        )
+      );
+  }
+};
+
+export const deleteApifyScrapeJobsHandler = async (req, res) => {
+  const { job_ids } = req.body;
+
+  try {
+    const data = await deleteApifyScrapeJobs(job_ids);
+    return res.status(200).json(
+      successHandler({
+        deleted: data?.length ?? 0,
+        ids: (data ?? []).map((row) => row.id),
+      })
+    );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error deleting city scrape jobs.",
           error
         )
       );

@@ -26,13 +26,16 @@ const CHART_COLORS = [
 
 function buildChartModel(chart, valueLabel = "Count") {
   const slices = chart?.slices ?? [];
-  const chartData = slices.map((slice, index) => ({
-    key: slice.key,
-    label: slice.label,
-    value: slice.count,
-    fill: `var(--color-${slice.key})`,
-    color: CHART_COLORS[index % CHART_COLORS.length],
-  }));
+  const chartData = slices.map((slice, index) => {
+    const color = CHART_COLORS[index % CHART_COLORS.length];
+    return {
+      key: slice.key,
+      label: slice.label,
+      value: slice.count,
+      fill: color,
+      color,
+    };
+  });
 
   const chartConfig = {
     value: { label: valueLabel },
@@ -162,46 +165,117 @@ function OverviewStatPieCard({
 
 export default function OverviewDashboardCharts({ stats = null }) {
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <OverviewStatPieCard
-        title="Businesses with email"
-        description="Share of listings that have an email on file"
-        centerLabel="Businesses"
-        valueLabel="Businesses"
-        chart={stats?.email}
-      />
-      <OverviewStatPieCard
-        title="Businesses with website"
-        description="Share of listings that have a website on file"
-        centerLabel="Businesses"
-        valueLabel="Businesses"
-        chart={stats?.website}
-      />
-      <OverviewStatPieCard
-        title="Emails sent"
-        description="Outreach emails by type"
-        centerLabel="Emails"
-        valueLabel="Emails"
-        chart={stats?.emails_sent}
-      />
-      <OverviewStatPieCard
-        title="Claim eligibility"
-        description="Able, no email, duplicate email, and claimed"
-        centerLabel="Businesses"
-        valueLabel="Businesses"
-        chart={stats?.claim_eligibility}
-      />
+    <div className="flex flex-col gap-8">
+      <ChartSection
+        title="Outreach"
+        description="Email review status, claim eligibility, and sent outreach emails"
+      >
+        <OverviewStatPieCard
+          title="Email statuses"
+          description="Checked, not checked, suspicious, and unable to find"
+          centerLabel="Businesses"
+          valueLabel="Businesses"
+          chart={stats?.email_status}
+        />
+        <OverviewStatPieCard
+          title="Claim eligibility"
+          description="Able, no email, duplicate email, and claimed"
+          centerLabel="Businesses"
+          valueLabel="Businesses"
+          chart={stats?.claim_eligibility}
+        />
+        <OverviewStatPieCard
+          title="Emails sent"
+          description="Outreach emails by type"
+          centerLabel="Emails"
+          valueLabel="Emails"
+          chart={stats?.emails_sent}
+        />
+      </ChartSection>
+
+      <ChartSection
+        title="Business coverage"
+        description="Contact info and image storage across all listings"
+      >
+        <OverviewStatPieCard
+          title="Businesses with email"
+          description="Share of listings that have an email on file"
+          centerLabel="Businesses"
+          valueLabel="Businesses"
+          chart={stats?.email}
+        />
+        <OverviewStatPieCard
+          title="Businesses with website"
+          description="Share of listings that have a website on file"
+          centerLabel="Businesses"
+          valueLabel="Businesses"
+          chart={stats?.website}
+        />
+        <OverviewStatPieCard
+          title="CDN image storage"
+          description="Listings with primary images stored on CDN"
+          centerLabel="Businesses"
+          valueLabel="Businesses"
+          chart={stats?.cdn}
+        />
+      </ChartSection>
+
+      <ChartSection
+        title="Listing quality"
+        description="Google rating and review count distribution"
+      >
+        <OverviewStatPieCard
+          title="Rating tiers"
+          description="Listings grouped by Google rating (total score)"
+          centerLabel="Businesses"
+          valueLabel="Businesses"
+          chart={stats?.score_tier}
+        />
+        <OverviewStatPieCard
+          title="Review count tiers"
+          description="Listings grouped by number of Google reviews"
+          centerLabel="Businesses"
+          valueLabel="Businesses"
+          chart={stats?.reviews_tier}
+        />
+      </ChartSection>
     </div>
+  );
+}
+
+function ChartSection({ title, description, children }) {
+  return (
+    <section className="flex flex-col gap-3">
+      <div>
+        <h3 className="text-base font-semibold tracking-tight">{title}</h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {children}
+      </div>
+    </section>
   );
 }
 
 export function OverviewDashboardChartsSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <Card className="h-80 animate-pulse bg-muted/40" />
-      <Card className="h-80 animate-pulse bg-muted/40" />
-      <Card className="h-80 animate-pulse bg-muted/40" />
-      <Card className="h-80 animate-pulse bg-muted/40" />
+    <div className="flex flex-col gap-8">
+      {[3, 3, 2].map((count, sectionIndex) => (
+        <div key={sectionIndex} className="flex flex-col gap-3">
+          <div className="space-y-2">
+            <div className="h-5 w-40 animate-pulse rounded bg-muted/60" />
+            <div className="h-4 w-72 animate-pulse rounded bg-muted/40" />
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: count }).map((_, cardIndex) => (
+              <Card
+                key={cardIndex}
+                className="h-80 animate-pulse bg-muted/40"
+              />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

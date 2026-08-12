@@ -14,6 +14,8 @@ import IngestGroupsTable from "@/components/pages/add-businesses/IngestGroupsTab
 import IngestGroupsActions from "@/components/pages/add-businesses/IngestGroupsActions";
 import IngestGroupsTableSkeleton from "@/components/pages/add-businesses/IngestGroupsTableSkeleton";
 import IngestUploadDialog from "@/components/pages/add-businesses/IngestUploadDialog";
+import ScrapeCitiesDialog from "@/components/pages/add-businesses/ScrapeCitiesDialog";
+import ScrapeJobsTable from "@/components/pages/add-businesses/ScrapeJobsTable";
 
 function resolveTab(tab) {
   return VALID_TABS.includes(tab) ? tab : "groups";
@@ -21,6 +23,16 @@ function resolveTab(tab) {
 
 function isActiveGroup(status) {
   return ["pending", "filtering", "processing"].includes(status);
+}
+
+function isActiveScrape(status) {
+  return ["pending", "running"].includes(status);
+}
+
+function isDeletableRow(row, tab) {
+  return tab === "scraper"
+    ? ["completed", "failed"].includes(row.status)
+    : row.status === "completed";
 }
 
 export default function AddBusinessesPageContent() {
@@ -33,8 +45,10 @@ export default function AddBusinessesPageContent() {
   );
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [scrapeDialogOpen, setScrapeDialogOpen] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [uploadError, setUploadError] = useState(null);
+  const [scrapeError, setScrapeError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
 
   useEffect(() => {
@@ -85,15 +99,37 @@ export default function AddBusinessesPageContent() {
     },
   });
 
+  const scrapeJobsQuery = useQuery({
+    queryKey: ["apify-scrape-jobs"],
+    enabled: Boolean(accessToken),
+    refetchInterval: (query) => {
+      const jobs = query.state.data?.jobs ?? [];
+      return jobs.some((job) => isActiveScrape(job.status)) ? 4000 : false;
+    },
+    queryFn: async () => {
+      const result = await fetchApi("/admin/apify-scrape/jobs", { accessToken });
+      if (result.status === 401) {
+        logout();
+        throw new Error("Unauthorized");
+      }
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to load scrapes");
+      }
+      return result.data;
+    },
+  });
+
   const groups = groupsQuery.data?.groups ?? [];
+  const scrapeJobs = scrapeJobsQuery.data?.jobs ?? [];
+  const rows = activeTab === "scraper" ? scrapeJobs : groups;
 
   useEffect(() => {
-    const validIds = new Set(groups.map((g) => g.id));
+    const validIds = new Set(rows.map((row) => row.id));
     setSelectedIds((prev) => {
       const next = new Set([...prev].filter((id) => validIds.has(id)));
       return next.size === prev.size ? prev : next;
     });
-  }, [groups]);
+  }, [rows]);
 
   const uploadMutation = useMutation({
     mutationFn: async ({ name, file }) => {
@@ -123,13 +159,44 @@ export default function AddBusinessesPageContent() {
     },
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: async (groupIds) => {
-      const result = await fetchApi("/admin/ingest/groups", {
-        method: "DELETE",
+  const scrapeMutation = useMutation({
+    mutationFn: async (payload) => {
+      const result = await fetchApi("/admin/apify-scrape/jobs", {
+        method: "POST",
         accessToken,
-        body: JSON.stringify({ group_ids: groupIds }),
+        body: JSON.stringify(payload),
       });
+      if (result.status === 401) {
+        logout();
+        throw new Error("Unauthorized");
+      }
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to start scrape");
+      }
+      return result.data;
+    },
+    onSuccess: () => {
+      setScrapeError(null);
+      queryClient.invalidateQueries({ queryKey: ["apify-scrape-jobs"] });
+    },
+    onError: (error) => {
+      setScrapeError(error.message || "Failed to start scrape");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      const isScraper = activeTab === "scraper";
+      const result = await fetchApi(
+        isScraper ? "/admin/apify-scrape/jobs" : "/admin/ingest/groups",
+        {
+          method: "DELETE",
+          accessToken,
+          body: JSON.stringify(
+            isScraper ? { job_ids: ids } : { group_ids: ids },
+          ),
+        },
+      );
       if (result.status === 401) {
         logout();
         throw new Error("Unauthorized");
@@ -143,6 +210,7 @@ export default function AddBusinessesPageContent() {
       setActionError(null);
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: ["ingest-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["apify-scrape-jobs"] });
     },
     onError: (error) => {
       setActionError(error.message || "Delete failed");
@@ -151,8 +219,10 @@ export default function AddBusinessesPageContent() {
 
   const refreshMutation = useMutation({
     mutationFn: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["ingest-groups"] });
-      return queryClient.refetchQueries({ queryKey: ["ingest-groups"] });
+      const queryKey =
+        activeTab === "scraper" ? ["apify-scrape-jobs"] : ["ingest-groups"];
+      await queryClient.invalidateQueries({ queryKey });
+      return queryClient.refetchQueries({ queryKey });
     },
     onSuccess: () => setRefreshError(null),
     onError: (error) => {
@@ -171,16 +241,16 @@ export default function AddBusinessesPageContent() {
 
   const handleToggleAll = (checked) => {
     if (checked) {
-      setSelectedIds(new Set(groups.map((g) => g.id)));
+      setSelectedIds(new Set(rows.map((row) => row.id)));
     } else {
       setSelectedIds(new Set());
     }
   };
 
   const handleDelete = () => {
-    const ids = groups
-      .filter((g) => selectedIds.has(g.id) && g.status === "completed")
-      .map((g) => g.id);
+    const ids = rows
+      .filter((row) => selectedIds.has(row.id) && isDeletableRow(row, activeTab))
+      .map((row) => row.id);
     if (ids.length === 0) return;
     deleteMutation.mutate(ids);
   };
@@ -195,13 +265,27 @@ export default function AddBusinessesPageContent() {
     }
   };
 
+  const handleScrapeSubmit = async (payload) => {
+    setScrapeError(null);
+    try {
+      await scrapeMutation.mutateAsync(payload);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   if (!isReady || !accessToken) return null;
 
-  const isLoading = groupsQuery.isLoading;
-  const selectedGroups = groups.filter((g) => selectedIds.has(g.id));
+  const isScraperTab = activeTab === "scraper";
+  const isLoading = isScraperTab
+    ? scrapeJobsQuery.isLoading
+    : groupsQuery.isLoading;
+  const activeQuery = isScraperTab ? scrapeJobsQuery : groupsQuery;
+  const selectedRows = rows.filter((row) => selectedIds.has(row.id));
   const canDeleteSelected =
-    selectedGroups.length > 0 &&
-    selectedGroups.every((g) => g.status === "completed");
+    selectedRows.length > 0 &&
+    selectedRows.every((row) => isDeletableRow(row, activeTab));
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-4 py-4 md:gap-4 md:px-8 md:py-6">
@@ -219,14 +303,20 @@ export default function AddBusinessesPageContent() {
           setUploadError(null);
           setUploadDialogOpen(true);
         }}
-        refreshPending={refreshMutation.isPending || groupsQuery.isFetching}
+        onScrape={() => {
+          setScrapeError(null);
+          setScrapeDialogOpen(true);
+        }}
+        showUpload={!isScraperTab}
+        refreshPending={refreshMutation.isPending || activeQuery.isFetching}
         deletePending={deleteMutation.isPending}
         uploadPending={uploadMutation.isPending}
+        scrapePending={scrapeMutation.isPending}
         actionError={actionError}
         refreshError={
           refreshError ||
-          (groupsQuery.isError
-            ? groupsQuery.error?.message || "Failed to load groups"
+          (activeQuery.isError
+            ? activeQuery.error?.message || "Failed to load data"
             : null)
         }
       />
@@ -239,8 +329,26 @@ export default function AddBusinessesPageContent() {
         submitError={uploadError}
       />
 
+      <ScrapeCitiesDialog
+        open={scrapeDialogOpen}
+        onOpenChange={setScrapeDialogOpen}
+        onSubmit={handleScrapeSubmit}
+        submitPending={scrapeMutation.isPending}
+        submitError={scrapeError}
+      />
+
       {isLoading ? (
         <IngestGroupsTableSkeleton />
+      ) : isScraperTab ? (
+        <ScrapeJobsTable
+          jobs={scrapeJobs}
+          selectedIds={selectedIds}
+          onToggleId={handleToggleId}
+          onToggleAll={handleToggleAll}
+          onViewClick={(job) =>
+            router.push(`/add-businesses/scraper/${job.id}`)
+          }
+        />
       ) : (
         <IngestGroupsTable
           groups={groups}

@@ -23,11 +23,13 @@ import IngestBatchOutcomesChart from "@/components/pages/add-businesses/IngestBa
 import IngestPayloadTable from "@/components/pages/add-businesses/IngestPayloadTable";
 import IngestFilterReasonBadges from "@/components/pages/add-businesses/IngestFilterReasonBadges";
 import IngestGroupsTableSkeleton from "@/components/pages/add-businesses/IngestGroupsTableSkeleton";
+import { INGEST_INSERTED_COLUMNS } from "@/components/pages/add-businesses/ingestInsertedTable";
 import { buildBatchColorMap } from "@/components/pages/add-businesses/batchColors";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
 const ALL_BATCHES = "All";
 const JOBS_PAGE_SIZE = 10;
+const INSERTED_PAGE_SIZE = 20;
 const FILTERED_OUT_PAGE_SIZE = 20;
 const GROUP_TABS = {
   batches: "batches",
@@ -95,6 +97,7 @@ export default function IngestGroupDetailPageContent() {
   const [jobsBatchFilter, setJobsBatchFilter] = useState(ALL_BATCHES);
   const [paginationGroupId, setPaginationGroupId] = useState(groupId);
   const [jobsPage, setJobsPage] = useState(1);
+  const [insertedPage, setInsertedPage] = useState(1);
   const [filteredOutPage, setFilteredOutPage] = useState(1);
   const [activeTab, setActiveTab] = useState(GROUP_TABS.batches);
 
@@ -102,6 +105,7 @@ export default function IngestGroupDetailPageContent() {
     setPaginationGroupId(groupId);
     setJobsBatchFilter(ALL_BATCHES);
     setJobsPage(1);
+    setInsertedPage(1);
     setFilteredOutPage(1);
     setActiveTab(GROUP_TABS.batches);
   }
@@ -150,6 +154,12 @@ export default function IngestGroupDetailPageContent() {
     [filteredJobs, jobsPage],
   );
 
+  const insertedRows = detailQuery.data?.group?.inserted ?? [];
+  const insertedPagination = useMemo(
+    () => paginateItems(insertedRows, insertedPage, INSERTED_PAGE_SIZE),
+    [insertedRows, insertedPage],
+  );
+
   const filteredOutRows = detailQuery.data?.group?.filtered_out ?? [];
   const filteredOutPagination = useMemo(
     () =>
@@ -159,6 +169,9 @@ export default function IngestGroupDetailPageContent() {
 
   if (jobsPagination.page !== jobsPage) {
     setJobsPage(jobsPagination.page);
+  }
+  if (insertedPagination.page !== insertedPage) {
+    setInsertedPage(insertedPagination.page);
   }
   if (filteredOutPagination.page !== filteredOutPage) {
     setFilteredOutPage(filteredOutPagination.page);
@@ -205,7 +218,8 @@ export default function IngestGroupDetailPageContent() {
         </div>
         <p className="text-sm text-muted-foreground">
           {group.payload_count} uploaded · {group.filtered_out_count} filtered
-          out · {batches?.length ?? 0} batches · {jobs?.length ?? 0} jobs
+          out · {insertedPagination.total} inserted · {batches?.length ?? 0}{" "}
+          batches · {jobs?.length ?? 0} jobs
         </p>
       </div>
 
@@ -289,6 +303,32 @@ export default function IngestGroupDetailPageContent() {
               onNext={() =>
                 setJobsPage((page) =>
                   Math.min(jobsPagination.totalPages || 1, page + 1),
+                )
+              }
+            />
+          </section>
+
+          <section className="flex flex-col gap-3">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Inserted ({insertedPagination.total})
+            </h2>
+            <IngestPayloadTable
+              columns={INGEST_INSERTED_COLUMNS}
+              rows={insertedPagination.items}
+              emptyMessage="No inserted businesses yet."
+              getRowKey={(row, index) => row.id || row.place_id || index}
+            />
+            <Pagination
+              page={insertedPagination.page}
+              totalPages={insertedPagination.totalPages}
+              displayPage={insertedPagination.page}
+              total={insertedPagination.total}
+              onPrevious={() =>
+                setInsertedPage((page) => Math.max(1, page - 1))
+              }
+              onNext={() =>
+                setInsertedPage((page) =>
+                  Math.min(insertedPagination.totalPages || 1, page + 1),
                 )
               }
             />

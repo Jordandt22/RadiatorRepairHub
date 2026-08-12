@@ -1,6 +1,13 @@
 import * as Yup from "yup";
 import { SCORE_TIER_IDS, REVIEW_TIER_IDS, EMAIL_FILTER_IDS } from "../lib/adminBusinessTiers.js";
 import { normalizeWebsiteUrl } from "../lib/websiteReachability.js";
+import {
+  DEFAULT_MAX_PLACES,
+  DEFAULT_SEARCH_KEYWORD,
+  MAX_MAX_PLACES,
+  MAX_SCRAPE_CITIES,
+  MIN_MAX_PLACES,
+} from "../apify-scrape/constants.js";
 
 const isValidPhone = (value) => {
   if (!value?.trim()) return false;
@@ -1100,6 +1107,46 @@ export const GetEmailScrapeBatchParamsSchema = Yup.object({
 });
 
 export const DeleteEmailScrapeJobsSchema = Yup.object({
+  job_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid job id").required())
+    .min(1, "At least one job id is required")
+    .required("Job ids are required"),
+});
+
+export const CreateApifyScrapeJobSchema = Yup.object({
+  search_keyword: Yup.string()
+    .trim()
+    .min(1, "Search keyword is required")
+    .max(100, "Search keyword cannot exceed 100 characters")
+    .default(DEFAULT_SEARCH_KEYWORD),
+  max_places: Yup.number()
+    .integer("Max places must be an integer")
+    .min(MIN_MAX_PLACES, `Max places must be at least ${MIN_MAX_PLACES}`)
+    .max(MAX_MAX_PLACES, `Max places cannot exceed ${MAX_MAX_PLACES}`)
+    .default(DEFAULT_MAX_PLACES),
+  cities: Yup.array()
+    .of(
+      Yup.object({
+        city: Yup.string()
+          .trim()
+          .min(1, "City is required")
+          .max(100, "City cannot exceed 100 characters")
+          .required("City is required"),
+        state_id: Yup.string()
+          .uuid("Invalid state id")
+          .required("State is required"),
+      })
+    )
+    .min(1, "At least one city is required")
+    .max(MAX_SCRAPE_CITIES, `At most ${MAX_SCRAPE_CITIES} cities can be scraped at once`)
+    .required("Cities are required"),
+});
+
+export const GetApifyScrapeJobParamsSchema = Yup.object({
+  jobId: Yup.string().uuid("Invalid job id").required("Job id is required"),
+});
+
+export const DeleteApifyScrapeJobsSchema = Yup.object({
   job_ids: Yup.array()
     .of(Yup.string().uuid("Invalid job id").required())
     .min(1, "At least one job id is required")

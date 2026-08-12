@@ -19,6 +19,7 @@
     "@arcjet/inspect": "^1.0.0-beta.11",
     "@arcjet/node": "^1.0.0-beta.11",
     "@supabase/supabase-js": "^2.57.2",
+    "apify-client": "^2.25.0",
     "bcrypt": "^6.0.0",
     "bullmq": "^6.0.6",
     "concurrently": "^10.0.4",

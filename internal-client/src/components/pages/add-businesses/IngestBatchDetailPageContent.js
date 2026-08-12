@@ -8,67 +8,17 @@ import { ArrowLeftIcon } from "lucide-react";
 import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import IngestStatusBadge from "@/components/pages/add-businesses/IngestStatusBadge";
 import IngestPayloadTable from "@/components/pages/add-businesses/IngestPayloadTable";
 import IngestGroupsTableSkeleton from "@/components/pages/add-businesses/IngestGroupsTableSkeleton";
-import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
+import { INGEST_INSERTED_COLUMNS } from "@/components/pages/add-businesses/ingestInsertedTable";
 import Pagination from "@/components/pages/dashboard/Pagination";
-import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 10;
 
 function text(value) {
   if (value == null || value === "") return "—";
   return String(value);
-}
-
-function LocationLinkPill({ href, label, className }) {
-  if (!label) {
-    return <span className="text-muted-foreground">—</span>;
-  }
-
-  if (!href) {
-    return (
-      <Badge
-        variant="outline"
-        className={cn("border-transparent bg-zinc-100 text-zinc-700", className)}
-      >
-        {label}
-      </Badge>
-    );
-  }
-
-  return (
-    <Link href={href} className="inline-flex max-w-full">
-      <Badge
-        variant="outline"
-        className={cn(
-          "max-w-full cursor-pointer truncate transition-all duration-200 hover:opacity-80 hover:scale-95",
-          className,
-        )}
-      >
-        {label}
-      </Badge>
-    </Link>
-  );
-}
-
-function cityHref(row) {
-  if (!row.city_slug) return null;
-  return `/cities/${encodeURIComponent(row.city_slug)}`;
-}
-
-function stateHref(row) {
-  const code = row.state_code ? String(row.state_code).toLowerCase() : null;
-  if (!code) return null;
-  return `/states/${encodeURIComponent(code)}`;
-}
-
-function postalHref(row) {
-  const code = row.postal_code || row.postalCode;
-  if (!code) return null;
-  return `/postal-codes/${encodeURIComponent(code)}`;
 }
 
 function paginateItems(items, page, pageSize) {
@@ -84,76 +34,6 @@ function paginateItems(items, page, pageSize) {
     items: list.slice(start, start + pageSize),
   };
 }
-
-const INSERTED_COLUMNS = [
-  {
-    key: "title",
-    label: "Title",
-    className: "w-[28%]",
-    render: (row) => (
-      <span className="block truncate font-semibold">{text(row.title)}</span>
-    ),
-  },
-  {
-    key: "primary_category",
-    label: "Primary category",
-    className: "w-[18%]",
-    getValue: (row) =>
-      text(
-        row.primary_category ||
-        row.categoryName ||
-        row.category_name,
-      ),
-  },
-  {
-    key: "city",
-    label: "City",
-    className: "w-[14%]",
-    cellClassName: "max-w-0",
-    render: (row) => (
-      <LocationLinkPill
-        href={cityHref(row)}
-        label={row.city || null}
-        className="border-transparent bg-sky-100 text-sky-800"
-      />
-    ),
-  },
-  {
-    key: "state",
-    label: "State",
-    className: "w-[10%]",
-    cellClassName: "max-w-0",
-    render: (row) => (
-      <LocationLinkPill
-        href={stateHref(row)}
-        label={row.state || row.state_code || null}
-        className="border-transparent bg-indigo-100 text-indigo-800"
-      />
-    ),
-  },
-  {
-    key: "postal_code",
-    label: "Postal code",
-    className: "w-[14%]",
-    cellClassName: "max-w-0",
-    render: (row) => (
-      <LocationLinkPill
-        href={postalHref(row)}
-        label={row.postal_code || row.postalCode || null}
-        className="border-transparent bg-emerald-100 text-emerald-800"
-      />
-    ),
-  },
-  {
-    key: "total_score",
-    label: "Total score",
-    className: "w-[12%]",
-    cellClassName: "whitespace-nowrap",
-    render: (row) => (
-      <BusinessScoreBadge score={row.total_score ?? row.totalScore} />
-    ),
-  },
-];
 
 const FAILED_COLUMNS = [
   {
@@ -333,7 +213,7 @@ export default function IngestBatchDetailPageContent() {
           Inserted ({insertedPagination.total})
         </h2>
         <IngestPayloadTable
-          columns={INSERTED_COLUMNS}
+          columns={INGEST_INSERTED_COLUMNS}
           rows={insertedPagination.items}
           emptyMessage="No inserted businesses yet."
           getRowKey={(row, index) => row.id || row.place_id || index}
