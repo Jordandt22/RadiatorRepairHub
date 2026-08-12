@@ -2,6 +2,12 @@ import "dotenv/config";
 import { Worker } from "bullmq";
 import { getBullmqConnectionOptions } from "./ingest/bullmqRedis.js";
 import { QUEUE_NAMES } from "./ingest/queues.js";
+import {
+  INGEST_ENRICH_JOB_LOCK_DURATION_MS,
+  INGEST_ENRICH_STALLED_INTERVAL_MS,
+  INGEST_INSERT_JOB_LOCK_DURATION_MS,
+  INGEST_INSERT_STALLED_INTERVAL_MS,
+} from "./ingest/constants.js";
 import { CDN_UPLOAD_QUEUE_NAME } from "./cdn-upload/queues.js";
 import { EMAIL_SCRAPE_QUEUE_NAME } from "./email-scrape/queues.js";
 import {
@@ -38,13 +44,23 @@ const filterWorker = new Worker(
 const enrichWorker = new Worker(
   QUEUE_NAMES.enrich,
   async (job) => processEnrichJob(job.data),
-  { connection, concurrency: 2 }
+  {
+    connection,
+    concurrency: 2,
+    lockDuration: INGEST_ENRICH_JOB_LOCK_DURATION_MS,
+    stalledInterval: INGEST_ENRICH_STALLED_INTERVAL_MS,
+  }
 );
 
 const insertWorker = new Worker(
   QUEUE_NAMES.insert,
   async (job) => processInsertJob(job.data),
-  { connection, concurrency: 1 }
+  {
+    connection,
+    concurrency: 1,
+    lockDuration: INGEST_INSERT_JOB_LOCK_DURATION_MS,
+    stalledInterval: INGEST_INSERT_STALLED_INTERVAL_MS,
+  }
 );
 
 const cdnUploadWorker = new Worker(

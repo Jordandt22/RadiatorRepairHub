@@ -1,4 +1,5 @@
 import { supabase } from "../supabase/supabase.js";
+import { getBatchRetryInfo } from "./retryHelpers.js";
 
 export async function createIngestGroup({ name, payload }) {
   const { data, error } = await supabase
@@ -105,6 +106,60 @@ export async function getIngestBatch(batchId) {
     .select("*")
     .eq("id", batchId)
     .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function listIngestBatchesForGroup(groupId) {
+  const { data, error } = await supabase
+    .from("ingest_batches")
+    .select(
+      "id, group_id, status, current_job_id, created_at, updated_at, initial_payload, result_payload, failed_enrichment_payload, failed_insertion_payload"
+    )
+    .eq("group_id", groupId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+/**
+ * Mark any still-running jobs for a batch as failed (e.g. before retry).
+ */
+export async function failStaleRunningJobsForBatch(batchId, failedData) {
+  const { data, error } = await supabase
+    .from("ingest_jobs")
+    .update({
+      status: "failed",
+      failed_at: new Date().toISOString(),
+      failed_data: failedData,
+      completed_at: null,
+    })
+    .eq("batch_id", batchId)
+    .eq("status", "running")
+    .select("id");
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+/**
+ * Clear the batch lock and set status for a retry.
+ * @param {string} batchId
+ * @param {'pending' | 'inserting'} nextStatus
+ */
+export async function resetBatchForRetry(batchId, nextStatus) {
+  const { data, error } = await supabase
+    .from("ingest_batches")
+    .update({
+      current_job_id: null,
+      status: nextStatus,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", batchId)
+    .select("*")
+    .single();
 
   if (error) throw error;
   return data;
@@ -230,6 +285,7 @@ function summarizeBatch(batch) {
     result_count: resultCount,
     failed_enrichment_count: failedEnrichCount,
     failed_insertion_count: failedInsertCount,
+    retry: getBatchRetryInfo(batch),
   };
 }
 
@@ -337,6 +393,10 @@ export async function getIngestGroupDetail(groupId) {
       Array.isArray(batch.result_payload) ? batch.result_payload : []
     );
   const inserted = await hydrateInsertedBusinesses(insertedRows);
+  const summarizedBatches = (batches || []).map(summarizeBatch);
+  const retryableCount = summarizedBatches.filter(
+    (batch) => batch.retry?.eligible
+  ).length;
 
   return {
     group: {
@@ -351,8 +411,9 @@ export async function getIngestGroupDetail(groupId) {
       payload_count: Array.isArray(group.payload) ? group.payload.length : 0,
       inserted_count: inserted.length,
       inserted,
+      retryable_batch_count: retryableCount,
     },
-    batches: (batches || []).map(summarizeBatch),
+    batches: summarizedBatches,
     jobs: jobs || [],
   };
 }

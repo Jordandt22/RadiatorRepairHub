@@ -115,7 +115,13 @@ function UploadPhotosBusinessesTableView({ businesses }) {
                   size="sm"
                   className="opacity-0 transition-all duration-200 group-hover:opacity-100 cursor-pointer hover:scale-95 focus-visible:opacity-100 focus-visible:scale-95"
                   nativeButton={false}
-                  render={<Link href={`/businesses/${row.id}`} />}
+                  render={
+                    <Link
+                      href={`/businesses/${row.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    />
+                  }
                 >
                   <EyeIcon />
                   View
@@ -154,7 +160,13 @@ function UploadPhotosBusinessesCardList({ businesses }) {
               size="sm"
               className="w-full cursor-pointer"
               nativeButton={false}
-              render={<Link href={`/businesses/${row.id}`} />}
+              render={
+                    <Link
+                      href={`/businesses/${row.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    />
+                  }
             >
               <EyeIcon />
               View

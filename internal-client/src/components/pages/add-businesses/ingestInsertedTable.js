@@ -127,7 +127,13 @@ export const INGEST_INSERTED_COLUMNS = [
           size="sm"
           className="cursor-pointer"
           nativeButton={false}
-          render={<Link href={`/businesses/${row.id}`} />}
+          render={
+            <Link
+              href={`/businesses/${row.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          }
         >
           <EyeIcon />
           View

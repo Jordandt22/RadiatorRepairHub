@@ -56,6 +56,8 @@ export default function FeedbackSurveyDrawer({ survey, open, onOpenChange }) {
                 {businessTitle && businessId ? (
                   <a
                     href={`/businesses/${businessId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="underline underline-offset-2"
                   >
                     {businessTitle}

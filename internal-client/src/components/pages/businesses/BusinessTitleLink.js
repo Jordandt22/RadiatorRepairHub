@@ -39,6 +39,8 @@ export default function BusinessTitleLink({
   return (
     <Link
       href={`/businesses/${id}`}
+      target="_blank"
+      rel="noopener noreferrer"
       className={cn(
         "min-w-0 block rounded-sm outline-none transition-colors hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring",
         className,

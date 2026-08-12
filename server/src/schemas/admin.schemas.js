@@ -988,6 +988,13 @@ export const DeleteIngestGroupsSchema = Yup.object({
     .required("Group ids are required"),
 });
 
+export const RetryIngestBatchBodySchema = Yup.object({
+  step: Yup.string()
+    .oneOf(["auto", "enrich", "insert"], "Invalid retry step")
+    .optional()
+    .default("auto"),
+});
+
 export const CreateCdnUploadJobSchema = Yup.object({
   limit: Yup.number()
     .integer("Limit must be an integer")

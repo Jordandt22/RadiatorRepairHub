@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeftIcon } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeftIcon, RefreshCwIcon } from "lucide-react";
 import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
@@ -71,10 +71,13 @@ export default function IngestBatchDetailPageContent() {
   const params = useParams();
   const batchId = params?.["batch_id"];
   const { accessToken, isReady, logout } = useAuth();
+  const queryClient = useQueryClient();
   const [paginationBatchId, setPaginationBatchId] = useState(batchId);
   const [insertedPage, setInsertedPage] = useState(1);
   const [insertFailedPage, setInsertFailedPage] = useState(1);
   const [enrichFailedPage, setEnrichFailedPage] = useState(1);
+  const [retryError, setRetryError] = useState(null);
+  const [retryMessage, setRetryMessage] = useState(null);
 
   if (batchId !== paginationBatchId) {
     setPaginationBatchId(batchId);
@@ -109,6 +112,50 @@ export default function IngestBatchDetailPageContent() {
         throw new Error(result.error.message || "Failed to load batch");
       }
       return result.data;
+    },
+  });
+
+  const retryMutation = useMutation({
+    mutationFn: async () => {
+      const result = await fetchApi(
+        `/admin/ingest/batches/${batchId}/retry`,
+        {
+          method: "POST",
+          accessToken,
+          body: JSON.stringify({ step: "auto" }),
+        },
+      );
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to retry batch");
+      }
+      return result.data;
+    },
+    onMutate: () => {
+      setRetryError(null);
+      setRetryMessage(null);
+    },
+    onSuccess: async (data) => {
+      setRetryMessage(
+        data?.step === "insert"
+          ? "Insert job enqueued."
+          : "Enrich job enqueued.",
+      );
+      await queryClient.invalidateQueries({
+        queryKey: ["ingest-batch", batchId],
+      });
+      const groupId = detailQuery.data?.group?.id;
+      if (groupId) {
+        await queryClient.invalidateQueries({
+          queryKey: ["ingest-group", groupId],
+        });
+      }
+    },
+    onError: (err) => {
+      setRetryError(err.message || "Failed to retry batch");
     },
   });
 
@@ -167,6 +214,10 @@ export default function IngestBatchDetailPageContent() {
   }
 
   const { batch, group } = detailQuery.data;
+  const retryEligible = Boolean(batch.retry?.eligible);
+  const retryStep = batch.retry?.step;
+  const retryLabel =
+    retryStep === "insert" ? "Retry insert" : "Retry enrich";
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-10 px-4 py-4 md:gap-12 md:px-8 md:py-6">
@@ -183,11 +234,27 @@ export default function IngestBatchDetailPageContent() {
             Back to Group
           </Button>
         ) : null}
-        <div className="flex flex-wrap items-center gap-3 mt-4">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-semibold tracking-tight">
             Batch {String(batch.id).slice(0, 8)}
           </h1>
           <IngestStatusBadge status={batch.status} />
+          {retryEligible ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer rounded-full px-4"
+              disabled={retryMutation.isPending}
+              onClick={() => retryMutation.mutate()}
+            >
+              <RefreshCwIcon
+                className={
+                  retryMutation.isPending ? "animate-spin" : undefined
+                }
+              />
+              {retryLabel}
+            </Button>
+          ) : null}
         </div>
         <p className="text-sm text-muted-foreground">
           <span title={batch.id}>{batch.id}</span>
@@ -206,6 +273,12 @@ export default function IngestBatchDetailPageContent() {
           {batch.result_count} inserted · {batch.failed_insertion_count} insert
           failed · {batch.failed_enrichment_count} enrich failed
         </p>
+        {retryError ? (
+          <p className="text-sm text-destructive">{retryError}</p>
+        ) : null}
+        {retryMessage ? (
+          <p className="text-sm text-muted-foreground">{retryMessage}</p>
+        ) : null}
       </div>
 
       <section className="flex flex-col gap-3">

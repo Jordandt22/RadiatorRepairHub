@@ -66,6 +66,8 @@ import {
   getIngestGroups,
   getIngestGroupById,
   getIngestBatchById,
+  retryIngestBatchHandler,
+  retryIngestGroupFailedHandler,
   deleteIngestGroupsHandler,
   getCdnUploadPendingCount,
   getCdnUploadJobs,
@@ -149,6 +151,7 @@ import {
   GetIngestGroupParamsSchema,
   GetIngestBatchParamsSchema,
   DeleteIngestGroupsSchema,
+  RetryIngestBatchBodySchema,
   CreateCdnUploadJobSchema,
   GetCdnUploadJobParamsSchema,
   GetCdnUploadBatchParamsSchema,
@@ -564,6 +567,19 @@ adminRouter.get(
   "/ingest/batches/:batchId",
   paramsValidator(GetIngestBatchParamsSchema),
   serverErrorCatcherWrapper(getIngestBatchById)
+);
+
+adminRouter.post(
+  "/ingest/batches/:batchId/retry",
+  paramsValidator(GetIngestBatchParamsSchema),
+  bodyValidator(RetryIngestBatchBodySchema),
+  serverErrorCatcherWrapper(retryIngestBatchHandler)
+);
+
+adminRouter.post(
+  "/ingest/groups/:groupId/retry-failed",
+  paramsValidator(GetIngestGroupParamsSchema),
+  serverErrorCatcherWrapper(retryIngestGroupFailedHandler)
 );
 
 adminRouter.delete(
