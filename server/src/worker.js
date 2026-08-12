@@ -4,6 +4,12 @@ import { getBullmqConnectionOptions } from "./ingest/bullmqRedis.js";
 import { QUEUE_NAMES } from "./ingest/queues.js";
 import { CDN_UPLOAD_QUEUE_NAME } from "./cdn-upload/queues.js";
 import { EMAIL_SCRAPE_QUEUE_NAME } from "./email-scrape/queues.js";
+import {
+  APIFY_SCRAPE_QUEUE_NAME,
+  APIFY_JOB_LOCK_DURATION_MS,
+} from "./apify-scrape/constants.js";
+import { closeApifyScrapeQueue } from "./apify-scrape/queues.js";
+import { processApifyScrapeCityJob } from "./apify-scrape/handlers/cityJob.js";
 import { processFilterJob } from "./ingest/handlers/filterJob.js";
 import { processEnrichJob } from "./ingest/handlers/enrichJob.js";
 import { processInsertJob } from "./ingest/handlers/insertJob.js";
@@ -53,6 +59,17 @@ const emailScrapeWorker = new Worker(
   { connection, concurrency: 2 }
 );
 
+const apifyScrapeWorker = new Worker(
+  APIFY_SCRAPE_QUEUE_NAME,
+  processApifyScrapeCityJob,
+  {
+    connection,
+    concurrency: 1,
+    lockDuration: APIFY_JOB_LOCK_DURATION_MS,
+    stalledInterval: 600_000,
+  }
+);
+
 const outreachDispatchWorker = new Worker(
   OUTREACH_DISPATCH_QUEUE_NAME,
   processOutreachDispatchJob,
@@ -80,6 +97,7 @@ attachLogging(enrichWorker, "ingest-enrich");
 attachLogging(insertWorker, "ingest-insert");
 attachLogging(cdnUploadWorker, "cdn-upload");
 attachLogging(emailScrapeWorker, "email-scrape");
+attachLogging(apifyScrapeWorker, "apify-scrape-city");
 attachLogging(outreachDispatchWorker, "outreach-dispatch");
 attachLogging(outreachSendWorker, "outreach-send");
 
@@ -89,6 +107,7 @@ logger.info(
       ...Object.values(QUEUE_NAMES),
       CDN_UPLOAD_QUEUE_NAME,
       EMAIL_SCRAPE_QUEUE_NAME,
+      APIFY_SCRAPE_QUEUE_NAME,
       OUTREACH_DISPATCH_QUEUE_NAME,
       OUTREACH_SEND_QUEUE_NAME,
     ],
@@ -115,9 +134,11 @@ async function shutdown() {
     insertWorker.close(),
     cdnUploadWorker.close(),
     emailScrapeWorker.close(),
+    apifyScrapeWorker.close(),
     outreachDispatchWorker.close(),
     outreachSendWorker.close(),
     closeOutreachQueues(),
+    closeApifyScrapeQueue(),
   ]);
   process.exit(0);
 }

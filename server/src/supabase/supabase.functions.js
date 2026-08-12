@@ -9,6 +9,8 @@ import {
 import {
   getScoreTier,
   getReviewTier,
+  SCORE_TIERS,
+  REVIEW_TIERS,
 } from "../lib/adminBusinessTiers.js";
 import { getSuspiciousEmailReasons } from "../lib/suspiciousEmail.js";
 import {
@@ -1103,6 +1105,28 @@ const countExact = async (query) => {
   return { count: count ?? 0, error: null };
 };
 
+const countBusinessesInTier = (column, tier) => {
+  let query = supabase
+    .from("businesses")
+    .select("id", { count: "exact", head: true });
+  if (tier.min != null) {
+    query = query.gte(column, tier.min);
+  }
+  if (tier.max != null) {
+    query = query.lt(column, tier.max);
+  }
+  return countExact(query);
+};
+
+const buildTierChartSlices = (tiers, results) =>
+  tiers
+    .map((tier, index) => ({
+      key: tier.id,
+      label: tier.label,
+      count: results[index]?.count ?? 0,
+    }))
+    .filter((slice) => slice.count > 0);
+
 const OUTREACH_TYPE_STAT_LABELS = {
   claim_invite: "Claim invite (website)",
   ownership_claim_invite: "Claim invite (ownership)",
@@ -1119,28 +1143,28 @@ const CLAIM_ELIGIBILITY_STAT_LABELS = {
   claimed: "Claimed",
 };
 
+const EMAIL_STATUS_STAT_LABELS = {
+  suspicious: "Suspicious",
+  checked: "Checked",
+  unable_to_find: "Unable to Find",
+  not_checked: "Not Checked",
+};
+
 /**
- * Overview dashboard pie-chart stats: email/website coverage, claim eligibility,
- * and outreach emails by type.
+ * Overview dashboard pie-chart stats: email/website coverage, CDN storage,
+ * listing quality tiers, email review status, claim eligibility, and outreach
+ * emails by type.
  */
 export const getAdminDashboardStats = async () => {
-  const [
-    totalRes,
-    withEmailRes,
-    withoutEmailRes,
-    withWebsiteRes,
-    withoutWebsiteRes,
-    ableRes,
-    noEmailRes,
-    duplicateEmailRes,
-    claimedRes,
-    claimInviteRes,
-    ownershipClaimRes,
-    leadClaimRes,
-    customClaimRes,
-    claimFollowupRes,
-    websiteOfferRes,
-  ] = await Promise.all([
+  const scoreTierCountPromises = SCORE_TIERS.map((tier) =>
+    countBusinessesInTier("total_score", tier)
+  );
+  const reviewTierCountPromises = REVIEW_TIERS.map((tier) =>
+    countBusinessesInTier("reviews_count", tier)
+  );
+
+  const [mainResults, scoreTierResults, reviewTierResults] = await Promise.all([
+    Promise.all([
     countExact(
       supabase.from("businesses").select("id", { count: "exact", head: true })
     ),
@@ -1169,6 +1193,42 @@ export const getAdminDashboardStats = async () => {
         .from("businesses")
         .select("id", { count: "exact", head: true })
         .or("website.is.null,website.eq.")
+    ),
+    countExact(
+      supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .eq("cdn_stored", true)
+    ),
+    countExact(
+      supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .eq("cdn_stored", false)
+    ),
+    countExact(
+      supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .eq("email_status", "suspicious")
+    ),
+    countExact(
+      supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .eq("email_status", "checked")
+    ),
+    countExact(
+      supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .eq("email_status", "unable_to_find")
+    ),
+    countExact(
+      supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .eq("email_status", "not_checked")
     ),
     countExact(
       supabase
@@ -1230,24 +1290,39 @@ export const getAdminDashboardStats = async () => {
         .select("outreach_history_id", { count: "exact", head: true })
         .eq("outreach_type", "website_offer")
     ),
+    ]),
+    Promise.all(scoreTierCountPromises),
+    Promise.all(reviewTierCountPromises),
   ]);
 
+  const [
+    totalRes,
+    withEmailRes,
+    withoutEmailRes,
+    withWebsiteRes,
+    withoutWebsiteRes,
+    cdnStoredRes,
+    cdnNotStoredRes,
+    suspiciousRes,
+    checkedRes,
+    unableToFindRes,
+    notCheckedRes,
+    ableRes,
+    noEmailRes,
+    duplicateEmailRes,
+    claimedRes,
+    claimInviteRes,
+    ownershipClaimRes,
+    leadClaimRes,
+    customClaimRes,
+    claimFollowupRes,
+    websiteOfferRes,
+  ] = mainResults;
+
   const firstError =
-    totalRes.error ||
-    withEmailRes.error ||
-    withoutEmailRes.error ||
-    withWebsiteRes.error ||
-    withoutWebsiteRes.error ||
-    ableRes.error ||
-    noEmailRes.error ||
-    duplicateEmailRes.error ||
-    claimedRes.error ||
-    claimInviteRes.error ||
-    ownershipClaimRes.error ||
-    leadClaimRes.error ||
-    customClaimRes.error ||
-    claimFollowupRes.error ||
-    websiteOfferRes.error;
+    mainResults.find((result) => result.error)?.error ||
+    scoreTierResults.find((result) => result.error)?.error ||
+    reviewTierResults.find((result) => result.error)?.error;
 
   if (firstError) {
     return { data: null, error: firstError };
@@ -1278,6 +1353,48 @@ export const getAdminDashboardStats = async () => {
       count: withoutWebsiteRes.count,
     },
   ].filter((slice) => slice.count > 0);
+
+  const cdnSlices = [
+    {
+      key: "cdn_stored",
+      label: "CDN stored",
+      count: cdnStoredRes.count,
+    },
+    {
+      key: "cdn_not_stored",
+      label: "Not stored",
+      count: cdnNotStoredRes.count,
+    },
+  ].filter((slice) => slice.count > 0);
+
+  const emailStatusSlices = [
+    {
+      key: "not_checked",
+      label: EMAIL_STATUS_STAT_LABELS.not_checked,
+      count: notCheckedRes.count,
+    },
+    {
+      key: "checked",
+      label: EMAIL_STATUS_STAT_LABELS.checked,
+      count: checkedRes.count,
+    },
+    {
+      key: "suspicious",
+      label: EMAIL_STATUS_STAT_LABELS.suspicious,
+      count: suspiciousRes.count,
+    },
+    {
+      key: "unable_to_find",
+      label: EMAIL_STATUS_STAT_LABELS.unable_to_find,
+      count: unableToFindRes.count,
+    },
+  ].filter((slice) => slice.count > 0);
+
+  const scoreTierSlices = buildTierChartSlices(SCORE_TIERS, scoreTierResults);
+  const reviewsTierSlices = buildTierChartSlices(
+    REVIEW_TIERS,
+    reviewTierResults
+  );
 
   const claimEligibilitySlices = [
     {
@@ -1349,6 +1466,22 @@ export const getAdminDashboardStats = async () => {
       website: {
         total: totalRes.count,
         slices: websiteSlices,
+      },
+      cdn: {
+        total: totalRes.count,
+        slices: cdnSlices,
+      },
+      email_status: {
+        total: totalRes.count,
+        slices: emailStatusSlices,
+      },
+      score_tier: {
+        total: totalRes.count,
+        slices: scoreTierSlices,
+      },
+      reviews_tier: {
+        total: totalRes.count,
+        slices: reviewsTierSlices,
       },
       claim_eligibility: {
         total: totalRes.count,

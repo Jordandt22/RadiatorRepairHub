@@ -331,6 +331,13 @@ export async function getIngestGroupDetail(groupId) {
     ? group.filtered_out_payload.length
     : 0;
 
+  const insertedRows = (batches || [])
+    .filter((batch) => batch.status === "completed")
+    .flatMap((batch) =>
+      Array.isArray(batch.result_payload) ? batch.result_payload : []
+    );
+  const inserted = await hydrateInsertedBusinesses(insertedRows);
+
   return {
     group: {
       id: group.id,
@@ -342,6 +349,8 @@ export async function getIngestGroupDetail(groupId) {
         ? group.filtered_out_payload
         : [],
       payload_count: Array.isArray(group.payload) ? group.payload.length : 0,
+      inserted_count: inserted.length,
+      inserted,
     },
     batches: (batches || []).map(summarizeBatch),
     jobs: jobs || [],

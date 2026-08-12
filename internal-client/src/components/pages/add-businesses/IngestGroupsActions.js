@@ -1,4 +1,9 @@
-import { RefreshCwIcon, Trash2Icon, UploadIcon } from "lucide-react";
+import {
+  MapPinnedIcon,
+  RefreshCwIcon,
+  Trash2Icon,
+  UploadIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -35,9 +40,12 @@ export default function IngestGroupsActions({
   onDelete,
   onRefresh,
   onUpload,
+  onScrape,
+  showUpload = true,
   refreshPending = false,
   deletePending = false,
   uploadPending = false,
+  scrapePending = false,
   actionError = null,
   refreshError = null,
   uploadError = null,
@@ -57,12 +65,24 @@ export default function IngestGroupsActions({
             {selectedCount} selected
           </span>
         ) : null}
+        {showUpload ? (
+          <ActionButton
+            label={uploadPending ? "Uploading…" : "Upload JSON"}
+            icon={UploadIcon}
+            disabled={uploadPending}
+            onClick={onUpload}
+            className="md:ml-auto hover:bg-gray-100"
+          />
+        ) : null}
         <ActionButton
-          label={uploadPending ? "Uploading…" : "Upload JSON"}
-          icon={UploadIcon}
-          disabled={uploadPending}
-          onClick={onUpload}
-          className="md:ml-auto hover:bg-gray-100"
+          label={scrapePending ? "Starting…" : "Scrape cities"}
+          icon={MapPinnedIcon}
+          disabled={scrapePending}
+          onClick={onScrape}
+          className={cn(
+            "hover:bg-gray-100",
+            showUpload ? undefined : "md:ml-auto",
+          )}
         />
         <ActionButton
           label="Refresh"

@@ -81,6 +81,10 @@ import {
   getEmailScrapeBusinesses,
   createEmailScrapeJobHandler,
   deleteEmailScrapeJobsHandler,
+  getApifyScrapeJobs,
+  getApifyScrapeJobById,
+  createApifyScrapeJobHandler,
+  deleteApifyScrapeJobsHandler,
 } from "../../controllers/admin/admin.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
 import {
@@ -155,6 +159,9 @@ import {
   GetEmailScrapeBatchParamsSchema,
   GetEmailScrapeBusinessesQuerySchema,
   DeleteEmailScrapeJobsSchema,
+  CreateApifyScrapeJobSchema,
+  GetApifyScrapeJobParamsSchema,
+  DeleteApifyScrapeJobsSchema,
 } from "../../schemas/admin.schemas.js";
 import {
   bodyValidator,
@@ -643,6 +650,29 @@ adminRouter.delete(
   "/email-scrape/jobs",
   bodyValidator(DeleteEmailScrapeJobsSchema),
   serverErrorCatcherWrapper(deleteEmailScrapeJobsHandler)
+);
+
+adminRouter.get(
+  "/apify-scrape/jobs",
+  serverErrorCatcherWrapper(getApifyScrapeJobs)
+);
+
+adminRouter.get(
+  "/apify-scrape/jobs/:jobId",
+  paramsValidator(GetApifyScrapeJobParamsSchema),
+  serverErrorCatcherWrapper(getApifyScrapeJobById)
+);
+
+adminRouter.post(
+  "/apify-scrape/jobs",
+  bodyValidator(CreateApifyScrapeJobSchema),
+  serverErrorCatcherWrapper(createApifyScrapeJobHandler)
+);
+
+adminRouter.delete(
+  "/apify-scrape/jobs",
+  bodyValidator(DeleteApifyScrapeJobsSchema),
+  serverErrorCatcherWrapper(deleteApifyScrapeJobsHandler)
 );
 
 export default adminRouter;
