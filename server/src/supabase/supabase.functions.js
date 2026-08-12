@@ -1118,6 +1118,16 @@ const countBusinessesInTier = (column, tier) => {
   return countExact(query);
 };
 
+const countBusinessesWithEmailByStatus = (status) =>
+  countExact(
+    supabase
+      .from("businesses")
+      .select("id", { count: "exact", head: true })
+      .not("email", "is", null)
+      .neq("email", "")
+      .eq("email_status", status)
+  );
+
 const buildTierChartSlices = (tiers, results) =>
   tiers
     .map((tier, index) => ({
@@ -1206,30 +1216,10 @@ export const getAdminDashboardStats = async () => {
         .select("id", { count: "exact", head: true })
         .eq("cdn_stored", false)
     ),
-    countExact(
-      supabase
-        .from("businesses")
-        .select("id", { count: "exact", head: true })
-        .eq("email_status", "suspicious")
-    ),
-    countExact(
-      supabase
-        .from("businesses")
-        .select("id", { count: "exact", head: true })
-        .eq("email_status", "checked")
-    ),
-    countExact(
-      supabase
-        .from("businesses")
-        .select("id", { count: "exact", head: true })
-        .eq("email_status", "unable_to_find")
-    ),
-    countExact(
-      supabase
-        .from("businesses")
-        .select("id", { count: "exact", head: true })
-        .eq("email_status", "not_checked")
-    ),
+    countBusinessesWithEmailByStatus("suspicious"),
+    countBusinessesWithEmailByStatus("checked"),
+    countBusinessesWithEmailByStatus("unable_to_find"),
+    countBusinessesWithEmailByStatus("not_checked"),
     countExact(
       supabase
         .from("outreach_business_list")
@@ -1472,7 +1462,7 @@ export const getAdminDashboardStats = async () => {
         slices: cdnSlices,
       },
       email_status: {
-        total: totalRes.count,
+        total: withEmailRes.count,
         slices: emailStatusSlices,
       },
       score_tier: {

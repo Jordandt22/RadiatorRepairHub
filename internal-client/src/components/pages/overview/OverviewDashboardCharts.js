@@ -172,7 +172,7 @@ export default function OverviewDashboardCharts({ stats = null }) {
       >
         <OverviewStatPieCard
           title="Email statuses"
-          description="Checked, not checked, suspicious, and unable to find"
+          description="Review status for listings that have an email on file"
           centerLabel="Businesses"
           valueLabel="Businesses"
           chart={stats?.email_status}
