@@ -3,11 +3,12 @@
 import React, { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, X } from "lucide-react";
 import {
   BLOG_AUTHOR_AVATAR,
   BLOG_COVER_IMAGE,
 } from "@/components/blogs/blogConstants";
+import BlogSearch from "./BlogSearch";
+import BlogSort from "./BlogSort";
 
 function formatPostDate(date) {
   if (!date) return null;
@@ -15,6 +16,27 @@ function formatPostDate(date) {
     month: "long",
     day: "numeric",
     year: "numeric",
+  });
+}
+
+function getPostTimestamp(date) {
+  const parsed = Date.parse(date ?? "");
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function sortPosts(posts, sort) {
+  return [...posts].sort((a, b) => {
+    if (sort === "alpha") {
+      return (a.metadata.title || "").localeCompare(b.metadata.title || "");
+    }
+
+    const diff =
+      getPostTimestamp(b.metadata.date) - getPostTimestamp(a.metadata.date);
+    if (diff !== 0) {
+      return sort === "oldest" ? -diff : diff;
+    }
+
+    return (a.metadata.title || "").localeCompare(b.metadata.title || "");
   });
 }
 
@@ -30,14 +52,14 @@ function AuthorMeta({ author, dateLabel, size = "sm" }) {
         alt={author || "RadiatorRepairHub"}
         width={avatarSize}
         height={avatarSize}
-        className={`${avatarClass} rounded-full border border-gray-200 bg-white object-contain`}
+        className={`${avatarClass} rounded-full border border-border bg-card object-contain`}
       />
       <div className="min-w-0 text-left">
         <p
           className={
             size === "md"
-              ? "text-sm font-semibold text-gray-900"
-              : "text-xs font-semibold text-gray-900"
+              ? "text-sm font-semibold text-foreground"
+              : "text-xs font-semibold text-foreground"
           }
         >
           {author || "RadiatorRepairHub"}
@@ -45,7 +67,9 @@ function AuthorMeta({ author, dateLabel, size = "sm" }) {
         {dateLabel ? (
           <p
             className={
-              size === "md" ? "text-sm text-gray-500" : "text-xs text-gray-500"
+              size === "md"
+                ? "text-sm text-muted-foreground"
+                : "text-xs text-muted-foreground"
             }
           >
             {dateLabel}
@@ -62,24 +86,24 @@ function FeaturedPost({ post }) {
   return (
     <Link
       href={`/blogs/${post.slug}`}
-      className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+      className="group block overflow-hidden rounded-lg border border-border bg-card transition-colors duration-200 hover:border-interactive"
     >
-      <div className="relative aspect-video w-full max-h-56 overflow-hidden bg-slate-900 md:max-h-64">
+      <div className="relative aspect-video w-full max-h-56 overflow-hidden bg-muted md:max-h-64">
         <Image
           src={BLOG_COVER_IMAGE}
           alt={post.metadata.title || "Blog cover"}
           fill
           priority
-          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          className="object-cover"
           sizes="(max-width: 896px) 100vw, 896px"
         />
       </div>
       <div className="space-y-4 p-6 md:p-8">
-        <h2 className="font-heading text-2xl font-bold tracking-tight text-gray-900 transition-colors group-hover:text-blue-600 md:text-3xl">
+        <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground transition-colors group-hover:text-primary md:text-3xl">
           {post.metadata.title}
         </h2>
         {post.metadata.description ? (
-          <p className="text-base leading-relaxed text-gray-600 md:text-lg">
+          <p className="text-base leading-relaxed text-muted-foreground md:text-lg">
             {post.metadata.description}
           </p>
         ) : null}
@@ -99,13 +123,13 @@ function PostRow({ post }) {
   return (
     <Link
       href={`/blogs/${post.slug}`}
-      className="group block border-b border-gray-200 py-6 last:border-b-0"
+      className="group block border-b border-border py-6 last:border-b-0"
     >
-      <h3 className="font-heading text-lg font-bold text-gray-900 transition-colors group-hover:text-blue-600 md:text-xl">
+      <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary md:text-xl">
         {post.metadata.title}
       </h3>
       {post.metadata.description ? (
-        <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-gray-600 md:text-base">
+        <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground md:text-base">
           {post.metadata.description}
         </p>
       ) : null}
@@ -118,53 +142,48 @@ function PostRow({ post }) {
 
 function BlogsList({ posts }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [sort, setSort] = useState("newest");
+
   const query = searchTerm.trim().toLowerCase();
   const isSearching = query.length > 0;
 
   const filteredPosts = useMemo(() => {
-    if (!isSearching) return posts;
+    const matched = isSearching
+      ? posts.filter((post) => {
+          const title = post.metadata.title?.toLowerCase() ?? "";
+          const description = post.metadata.description?.toLowerCase() ?? "";
+          return title.includes(query) || description.includes(query);
+        })
+      : [...posts];
 
-    return posts.filter((post) => {
-      const title = post.metadata.title?.toLowerCase() ?? "";
-      const description = post.metadata.description?.toLowerCase() ?? "";
-      return title.includes(query) || description.includes(query);
-    });
-  }, [posts, query, isSearching]);
+    return sortPosts(matched, sort);
+  }, [posts, query, isSearching, sort]);
 
-  const featuredPost = !isSearching && posts.length > 0 ? posts[0] : null;
+  const featuredPost =
+    !isSearching && filteredPosts.length > 0 ? filteredPosts[0] : null;
   const listPosts = isSearching
     ? filteredPosts
-    : posts.slice(featuredPost ? 1 : 0);
+    : filteredPosts.slice(featuredPost ? 1 : 0);
 
   if (posts.length === 0) {
-    return <p className="text-lg text-gray-600">No blog posts yet.</p>;
+    return (
+      <p className="text-lg text-muted-foreground">No blog posts yet.</p>
+    );
   }
 
   return (
     <div className="space-y-10">
-      <div className="relative">
-        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-          <Search className="h-5 w-5 text-gray-400" />
-        </div>
-        <input
-          type="search"
-          placeholder="Search articles..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          autoComplete="off"
-          className="block w-full rounded-xl border border-gray-200 bg-white py-3 pl-10 pr-10 text-sm leading-5 placeholder-gray-500 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          aria-label="Search articles"
-        />
-        {searchTerm ? (
-          <button
-            type="button"
-            onClick={() => setSearchTerm("")}
-            className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3"
-            aria-label="Clear search"
-          >
-            <X className="h-5 w-5 text-gray-400 transition-colors hover:text-red-400" />
-          </button>
-        ) : null}
+      <p className="text-sm text-muted-foreground">
+        <span className="font-semibold text-green-700">
+          {filteredPosts.length.toLocaleString()}
+        </span>{" "}
+        {filteredPosts.length === 1 ? "Article" : "Articles"}
+        {isSearching ? ` of ${posts.length.toLocaleString()}` : null}
+      </p>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+        <BlogSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+        <BlogSort sort={sort} onSortChange={setSort} />
       </div>
 
       {featuredPost ? (
@@ -175,19 +194,19 @@ function BlogsList({ posts }) {
 
       {isSearching && filteredPosts.length === 0 ? (
         <div className="py-12 text-center">
-          <h2 className="mb-2 font-heading text-xl font-bold text-gray-900">
+          <h2 className="mb-2 font-heading text-xl font-bold text-foreground">
             No Posts Found
           </h2>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             No articles match your search. Try a different term.
           </p>
         </div>
       ) : listPosts.length > 0 ? (
         <section aria-label={isSearching ? "Search results" : "More posts"}>
-          <h2 className="mb-2 font-heading text-xl font-bold text-gray-900 md:text-2xl">
+          <h2 className="mb-2 font-heading text-xl font-semibold text-foreground md:text-2xl">
             {isSearching ? "Search Results" : "More Posts"}
           </h2>
-          <div className="divide-y-0 border-t border-gray-200">
+          <div className="border-t border-border">
             {listPosts.map((post) => (
               <PostRow key={post.slug} post={post} />
             ))}
