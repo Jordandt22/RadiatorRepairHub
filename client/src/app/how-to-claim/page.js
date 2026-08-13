@@ -1,14 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import {
-  BadgeCheck,
-  Clock3,
-  Flag,
-  ImageIcon,
-  MapPinned,
-  Phone,
-  Search,
-} from "lucide-react";
+import { BadgeCheck, Clock3, Flag, ImageIcon, Search } from "lucide-react";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import FAQSection from "@/components/seo/FAQSection";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
@@ -104,44 +96,44 @@ export default function HowToClaimPage() {
   const faqs = buildClaimFaqs(supportEmail);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         pageTitle="How to claim your business"
         pageDescription="Check eligibility, follow the email claim steps, and see what you can edit after claiming."
         headerLink={{
-          href: "/signin",
-          label: "Already claimed? Sign in",
+          href: "/search?page=1&sort=most_reviews",
+          label: "Search for your listing",
         }}
       />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
-        <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 font-heading mb-4">
+      <div className="mx-auto max-w-4xl space-y-12 px-4 py-12 sm:px-6 lg:px-8">
+        <section className="rounded-lg border border-border bg-card p-6 md:p-8">
+          <h2 className="mb-4 font-heading text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
             Claim Eligibility
           </h2>
-          <p className="text-gray-700 leading-relaxed mb-6">
+          <p className="mb-6 leading-relaxed text-muted-foreground">
             A listing is claimable when it has a unique email on file that is
             not shared with other businesses in our directory. We send a
             verification code to that email to confirm you control the listing
             contact.
           </p>
 
-          <div className="space-y-4">
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-              <h3 className="font-semibold text-gray-900 mb-1">
-                Unclaimable Reason: No Email
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="rounded-lg border border-border bg-muted p-4">
+              <h3 className="mb-1 font-semibold text-foreground">
+                Unclaimable: No Email
               </h3>
-              <p className="text-gray-700 text-sm leading-relaxed">
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 There is no contact email on file for the listing, so email
                 verification cannot run yet.
               </p>
             </div>
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-              <h3 className="font-semibold text-gray-900 mb-1">
-                Unclaimable Reason: Multiple Businesses have this Email
+            <div className="rounded-lg border border-border bg-muted p-4">
+              <h3 className="mb-1 font-semibold text-foreground">
+                Unclaimable: Shared Email
               </h3>
-              <p className="text-gray-700 text-sm leading-relaxed">
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 A shared or corporate inbox is used by more than one listing.
                 Self-serve email claim is disabled so one account cannot lock
                 that inbox for every location.
@@ -149,116 +141,107 @@ export default function HowToClaimPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <div className="mt-6 rounded-lg border border-primary/20 bg-tint p-4">
             <div className="flex gap-3">
               <Flag
-                className="mt-0.5 size-5 shrink-0 text-blue-600"
+                className="mt-0.5 size-5 shrink-0 text-primary"
                 aria-hidden="true"
               />
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">
+                <h3 className="mb-1 font-semibold text-foreground">
                   Wrong or outdated contact info?
                 </h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   If a missing or incorrect email is preventing you from
                   claiming, open your listing and use the{" "}
-                  <strong>Report Info</strong> {" "}button under Contact Information.
-                  Choose the option for wrong claim contact info, share the
-                  correct phone and/or email if you have them, and we&apos;ll
-                  review the report so you can complete the claim once it&apos;s
-                  fixed.
+                  <strong className="text-foreground">Report Info</strong>{" "}
+                  button under Contact Information. Choose the option for wrong
+                  claim contact info, share the correct phone and/or email if
+                  you have them, and we&apos;ll review the report so you can
+                  complete the claim once it&apos;s fixed.
                 </p>
               </div>
             </div>
           </div>
+
+          <p className="mt-6 text-sm text-muted-foreground">
+            Not in the directory yet?{" "}
+            <Link
+              href="/get-listed"
+              className="font-medium text-interactive underline hover:text-primary"
+            >
+              Get listed
+            </Link>{" "}
+            instead of claiming.
+          </p>
         </section>
 
-        <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 font-heading mb-4">
+        <section className="rounded-lg border border-border bg-card p-6 md:p-8">
+          <h2 className="mb-4 font-heading text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
             How to Claim (Step-by-Step)
           </h2>
           <ol className="space-y-4">
             {CLAIM_STEPS.map((step, index) => (
               <li key={step} className="flex gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                   {index + 1}
                 </span>
-                <p className="pt-1 text-gray-700 leading-relaxed">{step}</p>
+                <p className="pt-1 leading-relaxed text-muted-foreground">
+                  {step}
+                </p>
               </li>
             ))}
           </ol>
+          <p className="mt-6 text-sm text-muted-foreground">
+            Coming soon: phone verification, and claiming when multiple
+            businesses share the same email.
+          </p>
         </section>
 
         <section>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 font-heading mb-6">
+          <h2 className="mb-6 font-heading text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
             Benefits of Claiming
           </h2>
-          <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {BENEFITS.map(({ title, description, icon: Icon }) => (
               <div
                 key={title}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                className="rounded-lg border border-border bg-card p-6"
               >
-                <div className="flex items-start gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                    <Icon className="size-5" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {title}
-                    </h3>
-                    <p className="text-gray-700 leading-relaxed">
-                      {description}
-                    </p>
-                  </div>
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-tint">
+                  <Icon className="size-6 text-primary" aria-hidden="true" />
                 </div>
+                <h3 className="mb-2 font-heading text-lg font-semibold text-foreground">
+                  {title}
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {description}
+                </p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 font-heading mb-4">
-            Coming Soon
-          </h2>
-          <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-3">
-              <Phone className="mt-0.5 size-5 shrink-0 text-blue-600" />
-              <span>
-                Phone verification so more shops can prove ownership without
-                relying only on email.
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <MapPinned className="mt-0.5 size-5 shrink-0 text-blue-600" />
-              <span>
-                Support for claiming when multiple businesses share the same
-                email address.
-              </span>
-            </li>
-          </ul>
-        </section>
-
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-blue-50 rounded-xl p-6 text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="rounded-lg border border-border bg-card p-8 text-center">
+            <h3 className="mb-2 font-heading text-xl font-semibold text-foreground">
               Already claimed?
             </h3>
-            <p className="text-gray-600 mb-4 text-sm">
+            <p className="mb-6 text-muted-foreground">
               Sign in to open your business listing.
             </p>
             <Link
               href="/signin"
-              className="inline-flex items-center px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
             >
-              Go to sign in
+              Sign in
             </Link>
           </div>
-          <div className="bg-green-50 rounded-xl p-6 text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <div className="rounded-lg border border-border bg-card p-8 text-center">
+            <h3 className="mb-2 font-heading text-xl font-semibold text-foreground">
               Need help?
             </h3>
-            <p className="text-gray-600 mb-4 text-sm">
+            <p className="mb-6 text-muted-foreground">
               Reach our team
               {supportEmail ? (
                 <>
@@ -266,7 +249,7 @@ export default function HowToClaimPage() {
                   at{" "}
                   <a
                     href={`mailto:${supportEmail}`}
-                    className="text-blue-600 hover:underline"
+                    className="text-interactive underline hover:text-primary"
                   >
                     {supportEmail}
                   </a>
@@ -279,7 +262,7 @@ export default function HowToClaimPage() {
                   <SitePhoneLinks
                     className="inline"
                     showLabel={false}
-                    linkClassName="text-blue-600 hover:underline"
+                    linkClassName="text-interactive underline hover:text-primary"
                   />
                   ),
                 </>
@@ -288,7 +271,7 @@ export default function HowToClaimPage() {
             </p>
             <Link
               href="/contact"
-              className="inline-flex items-center px-5 py-2.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+              className="inline-flex items-center justify-center rounded-full border border-border bg-card px-6 py-3 font-medium text-foreground transition-colors duration-200 hover:bg-muted"
             >
               Contact support
             </Link>
@@ -299,10 +282,11 @@ export default function HowToClaimPage() {
       <FAQSection
         faqs={faqs}
         title="Claiming FAQ"
+        description="Answers about verification codes, contact info, mistaken claims, and cost."
         includeSchema={true}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      <div className="mx-auto max-w-4xl px-4 pb-12 sm:px-6 lg:px-8">
         <DirectoryDisclaimer />
       </div>
     </div>

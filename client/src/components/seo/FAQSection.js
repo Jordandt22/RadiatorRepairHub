@@ -8,10 +8,12 @@ import {
   motion,
   useReducedMotion,
 } from "framer-motion";
+import { getRelatedBlogs } from "@/lib/data/faq";
 
-function FAQItem({ faq, index, isOpen, onToggle, reduceMotion }) {
+export function FAQItem({ faq, itemKey, isOpen, onToggle, reduceMotion }) {
   const panelId = useId();
   const buttonId = `${panelId}-button`;
+  const relatedBlogs = getRelatedBlogs(faq);
 
   return (
     <div className="border-b border-border bg-background last:border-b-0">
@@ -21,7 +23,7 @@ function FAQItem({ faq, index, isOpen, onToggle, reduceMotion }) {
           type="button"
           aria-expanded={isOpen}
           aria-controls={panelId}
-          onClick={() => onToggle(index)}
+          onClick={() => onToggle(itemKey)}
           className="flex w-full cursor-pointer items-center justify-between gap-4 px-5 py-4 text-left font-heading text-lg font-semibold text-foreground outline-none transition-colors hover:bg-muted/50 focus-visible:bg-muted/50"
         >
           <span>{faq.question}</span>
@@ -64,16 +66,23 @@ function FAQItem({ faq, index, isOpen, onToggle, reduceMotion }) {
           >
             <div className="px-5 pb-5">
               <p className="leading-relaxed text-muted-foreground">{faq.answer}</p>
-              {faq.relatedBlog ? (
-                <p className="mt-3 text-sm text-muted-foreground">
-                  Related Blog:{" "}
-                  <Link
-                    href={faq.relatedBlog.href}
-                    className="font-medium text-interactive underline hover:text-primary"
-                  >
-                    {faq.relatedBlog.title}
-                  </Link>
-                </p>
+              {relatedBlogs.length > 0 ? (
+                <div className="mt-3 text-sm text-muted-foreground">
+                  <span>
+                    {relatedBlogs.length === 1 ? "Related guide: " : "Related guides: "}
+                  </span>
+                  {relatedBlogs.map((blog, index) => (
+                    <span key={blog.href}>
+                      {index > 0 ? ", " : null}
+                      <Link
+                        href={blog.href}
+                        className="font-medium text-interactive underline hover:text-primary"
+                      >
+                        {blog.title}
+                      </Link>
+                    </span>
+                  ))}
+                </div>
               ) : null}
             </div>
           </motion.div>
@@ -83,12 +92,41 @@ function FAQItem({ faq, index, isOpen, onToggle, reduceMotion }) {
   );
 }
 
+export function FAQAccordion({
+  faqs,
+  openKey,
+  onToggle,
+  reduceMotion,
+  keyPrefix = "faq",
+}) {
+  if (!faqs?.length) return null;
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-border">
+      {faqs.map((faq, index) => {
+        const itemKey = `${keyPrefix}-${faq.id ?? index}`;
+        return (
+          <FAQItem
+            key={itemKey}
+            faq={faq}
+            itemKey={itemKey}
+            isOpen={openKey === itemKey}
+            onToggle={onToggle}
+            reduceMotion={reduceMotion}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 function FAQSection({
   faqs,
   title = "Frequently Asked Questions",
+  description = "Get answers to common questions about radiator repair services",
   includeSchema = true,
 }) {
-  const [openIndex, setOpenIndex] = useState(null);
+  const [openKey, setOpenKey] = useState(null);
   const reduceMotion = useReducedMotion();
 
   const faqStructuredData = {
@@ -104,8 +142,8 @@ function FAQSection({
     })),
   };
 
-  const handleToggle = (index) => {
-    setOpenIndex((current) => (current === index ? null : index));
+  const handleToggle = (key) => {
+    setOpenKey((current) => (current === key ? null : key));
   };
 
   return (
@@ -125,23 +163,19 @@ function FAQSection({
             <h2 className="mb-3 font-heading text-3xl font-semibold tracking-tight text-foreground">
               {title}
             </h2>
-            <p className="text-base text-muted-foreground md:text-lg">
-              Get answers to common questions about radiator repair services
-            </p>
+            {description ? (
+              <p className="text-base text-muted-foreground md:text-lg">
+                {description}
+              </p>
+            ) : null}
           </div>
 
-          <div className="overflow-hidden rounded-lg border border-border">
-            {faqs.map((faq, index) => (
-              <FAQItem
-                key={index}
-                faq={faq}
-                index={index}
-                isOpen={openIndex === index}
-                onToggle={handleToggle}
-                reduceMotion={Boolean(reduceMotion)}
-              />
-            ))}
-          </div>
+          <FAQAccordion
+            faqs={faqs}
+            openKey={openKey}
+            onToggle={handleToggle}
+            reduceMotion={Boolean(reduceMotion)}
+          />
         </div>
       </section>
     </>
