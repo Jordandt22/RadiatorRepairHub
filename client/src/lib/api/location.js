@@ -6,6 +6,20 @@ async function fetchLocation(path, options = REFERENCE_CACHE) {
   return fetchApi(`/location${path}`, options);
 }
 
+export async function fetchStateBusinessCounts(
+  { codes, limit } = {},
+  options = REFERENCE_CACHE
+) {
+  const params = new URLSearchParams();
+  if (Array.isArray(codes) && codes.length > 0) {
+    params.set("codes", codes.join(","));
+  } else if (typeof limit === "number") {
+    params.set("limit", String(limit));
+  }
+  const query = params.toString();
+  return fetchLocation(`/states/counts${query ? `?${query}` : ""}`, options);
+}
+
 export async function fetchAllCities(options = REFERENCE_CACHE) {
   return fetchLocation("/cities", options);
 }

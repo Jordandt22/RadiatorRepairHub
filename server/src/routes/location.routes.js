@@ -6,6 +6,7 @@ import {
   getCityBySlugHandler,
   getPostalCodes,
   getPostalCodesByStateHandler,
+  getStateBusinessCountsHandler,
 } from "../controllers/location.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import { paramsValidator } from "../middleware/validators.js";
@@ -19,6 +20,11 @@ const locationRouter = Router();
 
 // Get States
 locationRouter.get("/states", serverErrorCatcherWrapper(getStates));
+
+locationRouter.get(
+  "/states/counts",
+  serverErrorCatcherWrapper(getStateBusinessCountsHandler)
+);
 
 // Get All Cities
 locationRouter.get("/cities", serverErrorCatcherWrapper(getAllCitiesHandler));

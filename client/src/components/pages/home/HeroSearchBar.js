@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 
-// Contexts
 import { useToast } from "@/contexts/ToastProvider";
 import { getBusinessSearchAnalyticsProps } from "@/lib/analytics/businessSearch";
 
@@ -33,7 +32,6 @@ function HeroSearchBar({ heroInView }) {
       return;
     }
 
-    // Check Max Length
     if (search.length > 50) {
       return showCustomError(
         "Please keep your search under 50 characters..",
@@ -41,7 +39,6 @@ function HeroSearchBar({ heroInView }) {
       );
     }
 
-    // Check for Special Characters (Allowed: ', -, &, _)
     const specialCharacters = new RegExp(
       /[!@#$%^*()+\=\[\]{};:"\\|,.<>\/?]/,
       "gi"
@@ -61,7 +58,9 @@ function HeroSearchBar({ heroInView }) {
         { source: "hero", page: 1, sort_option: "most_reviews" }
       )
     );
-    router.push(`/search?title=${encodeURIComponent(title)}&page=1&sort=most_reviews`);
+    router.push(
+      `/search?title=${encodeURIComponent(title)}&page=1&sort=most_reviews`
+    );
   };
 
   const handleKeyPress = (e) => {
@@ -72,13 +71,12 @@ function HeroSearchBar({ heroInView }) {
 
   return (
     <motion.div
-      className="max-w-2xl mx-auto"
-      initial={{ opacity: 0, y: 20 }}
-      animate={heroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.8, delay: 0.3 }}
+      className="mx-auto w-full max-w-2xl"
+      initial={{ opacity: 0 }}
+      animate={heroInView ? { opacity: 1 } : { opacity: 0 }}
+      transition={{ duration: 0.6, delay: 0.15 }}
     >
-      <div className="flex flex-col sm:flex-row gap-3">
-        {/* Search Input */}
+      <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <label htmlFor="hero-search" className="sr-only">
             Search for radiator repair shops
@@ -87,34 +85,32 @@ function HeroSearchBar({ heroInView }) {
             id="hero-search"
             type="text"
             placeholder="Enter a business name..."
-            className="text-center md:text-left w-full px-6 py-4 text-lg rounded-lg border border-white/20 focus:ring-2 focus:ring-ring focus:outline-none bg-white text-foreground md:pr-32"
+            className="w-full rounded-full border border-white/20 bg-white px-6 py-3.5 text-center text-lg text-foreground placeholder-muted-foreground shadow-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 sm:text-left md:pr-36"
             onChange={handleSearch}
             value={search}
             onKeyDown={handleKeyPress}
             aria-label="Search for radiator repair shops"
             aria-describedby="search-help"
           />
-          {/* Desktop Search Button - Hidden on mobile */}
           <button
             type="button"
-            className="hidden sm:flex absolute right-2 top-2 bottom-2 px-6 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium items-center justify-center cursor-pointer"
+            className="absolute top-1.5 right-1.5 bottom-1.5 hidden cursor-pointer items-center justify-center rounded-full bg-primary px-5 font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:flex"
             onClick={submitSearch}
             aria-label="Search for radiator repair shops"
           >
-            <Search className="w-5 h-5 mr-2" aria-hidden="true" />
-            Search Now
+            <Search className="mr-2 h-5 w-5" aria-hidden="true" />
+            Search
           </button>
         </div>
 
-        {/* Mobile Search Button - Full width on mobile */}
         <button
           type="button"
-          className="sm:hidden w-full px-6 py-4 bg-white text-primary rounded-lg hover:bg-tint transition-colors font-medium flex items-center justify-center cursor-pointer"
+          className="flex w-full cursor-pointer items-center justify-center rounded-full bg-primary px-6 py-3.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:hidden"
           onClick={submitSearch}
           aria-label="Search for radiator repair shops"
         >
-          <Search className="w-5 h-5 mr-2" aria-hidden="true" />
-          Search Now
+          <Search className="mr-2 h-5 w-5" aria-hidden="true" />
+          Search
         </button>
       </div>
     </motion.div>

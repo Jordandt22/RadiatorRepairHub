@@ -324,10 +324,7 @@ async function Page({ params }) {
 
                 {/* Map Section */}
                 <div className="order-6 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-3">
-                  <BusinessSectionHeader
-                    title="Business Location"
-                    businessId={business.id}
-                  />
+                  <BusinessSectionHeader title="Business Location" />
                   <div className="space-y-3 md:space-y-4">
                     <div className="flex items-start gap-2 md:gap-3">
                       <MapPin className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground mt-1 flex-shrink-0" />

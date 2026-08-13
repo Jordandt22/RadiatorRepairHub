@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Mail, Phone, Clock, ArrowRight } from "lucide-react";
+import { Mail, Phone, ArrowRight } from "lucide-react";
 import { getBusinessEmail, getBusinessPhoneDigits } from "@/lib/businessContactInfo";
 import SitePhoneLinks from "@/components/contact/SitePhoneLinks";
 
@@ -9,106 +9,92 @@ function ContactSection() {
   const hasPhone = Boolean(getBusinessPhoneDigits());
 
   return (
-    <section className="py-16 mb-16 bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-semibold tracking-tight text-foreground mb-3 font-heading">
+    <section className="mb-16 bg-background py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-12 text-center">
+          <h2 className="mb-3 font-heading text-3xl font-semibold tracking-tight text-foreground">
             Get In Touch
           </h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+          <p className="mx-auto max-w-3xl text-base text-muted-foreground md:text-lg">
             Questions about the RadiatorRepairHub directory, listings, or
-            partnerships? Contact our team — to reach a repair shop, use Quick
+            partnerships? Contact our team. To reach a repair shop, use Quick
             Contact on their business page.
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-center gap-6 md:gap-12 lg:gap-16 mb-12 flex-wrap">
-            {email ? (
-              <div className="flex items-start gap-4">
-                <Mail
-                  className="w-6 h-6 text-primary shrink-0 mt-0.5"
-                  aria-hidden="true"
-                />
-                <div>
-                  <h3 className="font-semibold text-lg mb-1 text-foreground">
+        <div className="mx-auto max-w-4xl">
+          {(email || hasPhone) && (
+            <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+              {email ? (
+                <div className="rounded-lg border border-border bg-card p-6">
+                  <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
+                    <Mail className="h-5 w-5 text-primary" aria-hidden="true" />
+                  </span>
+                  <h3 className="mb-1 font-heading text-lg font-semibold text-foreground">
                     Email Us
                   </h3>
-                  <p className="text-muted-foreground text-sm mb-2">
-                    Send us an email anytime
+                  <p className="mb-3 text-sm text-muted-foreground">
+                    Send us a message anytime. We typically respond within 24
+                    hours
                   </p>
                   <a
                     href={`mailto:${email}`}
-                    className="text-interactive hover:text-primary transition-colors duration-200 break-all"
+                    className="break-all text-interactive transition-colors duration-200 hover:text-primary"
                   >
                     {email}
                   </a>
                 </div>
-              </div>
-            ) : null}
+              ) : null}
 
-            {hasPhone ? (
-              <div className="flex items-start gap-4">
-                <Phone
-                  className="w-6 h-6 text-primary shrink-0 mt-0.5"
-                  aria-hidden="true"
-                />
-                <div>
-                  <h3 className="font-semibold text-lg mb-1 text-foreground">
+              {hasPhone ? (
+                <div className="rounded-lg border border-border bg-card p-6">
+                  <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
+                    <Phone
+                      className="h-5 w-5 text-primary"
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <h3 className="mb-1 font-heading text-lg font-semibold text-foreground">
                     Call or Text Us
                   </h3>
-                  <p className="text-muted-foreground text-sm mb-2">
+                  <p className="mb-3 text-sm text-muted-foreground">
                     Phone and SMS for directory support
                   </p>
-                  <SitePhoneLinks showLabel={false} />
+                  <SitePhoneLinks
+                    showLabel={false}
+                    linkClassName="text-interactive transition-colors duration-200 hover:text-primary"
+                  />
                 </div>
-              </div>
-            ) : null}
-
-            <div className="flex items-start gap-4">
-              <Clock
-                className="w-6 h-6 text-primary shrink-0 mt-0.5"
-                aria-hidden="true"
-              />
-              <div>
-                <h3 className="font-semibold text-lg mb-1 text-foreground">
-                  Quick Response
-                </h3>
-                <p className="text-muted-foreground text-sm">
-                  We typically respond within 24 hours
-                </p>
-              </div>
+              ) : null}
             </div>
-          </div>
+          )}
 
-          <div className="text-center">
-            <div className="bg-card rounded-lg p-8 border border-border">
-              <h3 className="text-2xl font-semibold mb-4 font-heading text-foreground">
-                Have a Question?
-              </h3>
-              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto leading-relaxed">
-                <strong>Directory support</strong>, listing questions,{" "}
-                <strong>partnerships</strong>, or website feedback? Message the
-                RadiatorRepairHub team. Want your shop in the directory?{" "}
-                <strong>Get listed</strong> for free. Need a repair shop?
-                Contact them from their business page.
-              </p>
-              <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-                <Link
-                  href="/contact"
-                  className="w-full md:w-auto inline-flex justify-center items-center px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors duration-200"
-                >
-                  <span>Contact Us</span>
-                  <ArrowRight className="w-4 h-4 ml-2" aria-hidden="true" />
-                </Link>
-                <Link
-                  href="/get-listed"
-                  className="inline-flex items-center text-interactive font-medium hover:text-primary transition-colors duration-200"
-                >
-                  <span>Get Listed</span>
-                  <ArrowRight className="w-4 h-4 ml-2" aria-hidden="true" />
-                </Link>
-              </div>
+          <div className="rounded-lg border border-border bg-card p-8 text-center">
+            <h3 className="mb-4 font-heading text-2xl font-semibold text-foreground">
+              Have a Question?
+            </h3>
+            <p className="mx-auto mb-6 max-w-2xl leading-relaxed text-muted-foreground">
+              <strong>Directory support</strong>, listing questions,{" "}
+              <strong>partnerships</strong>, or website feedback? Message the
+              RadiatorRepairHub team. Want your shop in the directory?{" "}
+              <strong>Get listed</strong> for free. Need a repair shop? Contact
+              them from their business page.
+            </p>
+            <div className="flex flex-col items-center justify-center gap-4 md:flex-row">
+              <Link
+                href="/contact"
+                className="inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90 md:w-auto"
+              >
+                <span>Contact Us</span>
+                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+              </Link>
+              <Link
+                href="/get-listed"
+                className="inline-flex items-center font-medium text-interactive transition-colors duration-200 hover:text-primary"
+              >
+                <span>Get Listed</span>
+                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+              </Link>
             </div>
           </div>
         </div>

@@ -7,7 +7,6 @@ import FeaturedBusinesses from "@/components/pages/home/FeaturedBusinesses";
 import FeaturedCategories from "@/components/pages/home/FeaturedCategories";
 import PopularLocations from "@/components/pages/home/PopularLocations";
 import HowItWorks from "@/components/pages/home/HowItWorks";
-import WhyChoose from "@/components/pages/home/WhyChoose";
 import ContactSection from "@/components/pages/home/ContactSection";
 import FAQSection from "@/components/seo/FAQSection";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
@@ -15,6 +14,8 @@ import { HOME_KEYWORDS } from "@/lib/seo/keywords";
 import { EXTRA_FAQS } from "@/lib/seo/faqs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
+import { fetchTopPrimaryCategories } from "@/lib/api/categories";
+import { fetchStateBusinessCounts } from "@/lib/api/location";
 
 const homeTitle =
   "Find Radiator Repair Shops Nationwide | RadiatorRepairHub Directory";
@@ -31,12 +32,20 @@ export const metadata = buildPageMetadata({
 export const revalidate = 60;
 
 export default async function Home() {
-  const { data: affiliateData } = await fetchActiveAffiliateProductsByAliases([
-    "valvoline",
-    "radiator-cap",
-    "ir-thermometer",
+  const [affiliateRes, categoriesRes, statesRes] = await Promise.all([
+    fetchActiveAffiliateProductsByAliases([
+      "valvoline",
+      "radiator-cap",
+      "ir-thermometer",
+    ]),
+    fetchTopPrimaryCategories({ limit: 4 }),
+    fetchStateBusinessCounts({ limit: 6 }),
   ]);
-  const featuredProducts = affiliateData?.products ?? [];
+
+  const featuredProducts = affiliateRes.data?.products ?? [];
+  const featuredCategories = categoriesRes.data?.categories ?? [];
+  const popularStates = statesRes.data?.states ?? [];
+  const heroStates = popularStates.slice(0, 4);
 
   const faqs = [
     {
@@ -71,76 +80,19 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <HeroContent />
+      <HeroContent popularStates={heroStates} />
 
       <FeaturedBusinesses />
 
-      <section className="py-16 bg-background">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            When your car&apos;s radiator needs repair, finding a trusted{" "}
-            <strong>radiator repair shop near you</strong> is crucial. Our
-            comprehensive directory connects you with certified specialists who
-            can diagnose, repair, and maintain your vehicle&apos;s cooling
-            system. From{" "}
-            <Link
-              href="/category/radiator-repair-service"
-              className="text-interactive hover:text-primary underline"
-            >
-              radiator repair services
-            </Link>{" "}
-            to{" "}
-            <Link
-              href="/category/auto-repair-shop"
-              className="text-interactive hover:text-primary underline"
-            >
-              general auto repair
-            </Link>
-            , find the right professional for your needs. Browse our{" "}
-            <Link
-              href="/categories"
-              className="text-interactive hover:text-primary underline"
-            >
-              service categories
-            </Link>{" "}
-            or search by{" "}
-            <Link
-              href="/states"
-              className="text-interactive hover:text-primary underline"
-            >
-              state and city
-            </Link>{" "}
-            to locate trusted repair shops in your area. Prefer DIY maintenance?
-            Browse our{" "}
-            <Link
-              href="/blogs"
-              className="text-interactive hover:text-primary underline"
-            >
-              cooling system guides
-            </Link>{" "}
-            or shop{" "}
-            <Link
-              href="/shop"
-              className="text-interactive hover:text-primary underline"
-            >
-              tools and supplies
-            </Link>
-            .
-          </p>
-        </div>
-      </section>
+      <FeaturedCategories categories={featuredCategories} />
 
-      <FeaturedCategories />
-
-      <PopularLocations />
+      <PopularLocations states={popularStates} />
 
       <HowItWorks />
 
-      <WhyChoose />
-
       {featuredProducts.length > 0 ? (
         <section className="bg-background py-16">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AffiliateProductsSection
               products={featuredProducts}
               title="Tools & Supplies"
@@ -155,28 +107,29 @@ export default async function Home() {
 
       <section className="bg-tint py-10">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <p className="mb-5 text-lg text-foreground">
-            Have more questions? Check out our comprehensive FAQ page for
-            detailed answers—or explore guides and tools for cooling system care.
-          </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-8">
-            <Link
-              href="/faq"
-              className="inline-flex items-center rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
-            >
-              View All FAQs
-            </Link>
+          <p className="mb-5 text-base text-foreground md:text-lg">
+            Have more questions? See the full FAQ or browse our{" "}
             <Link
               href="/blogs"
-              className="inline-flex items-center font-medium text-interactive transition-colors duration-200 hover:text-primary"
+              className="text-interactive underline hover:text-primary"
             >
-              Read Blogs
-            </Link>
+              cooling system guides
+            </Link>{" "}
+            and{" "}
             <Link
               href="/shop"
-              className="inline-flex items-center font-medium text-interactive transition-colors duration-200 hover:text-primary"
+              className="text-interactive underline hover:text-primary"
             >
-              Tools & Supplies
+              tools and supplies
+            </Link>{" "}
+            for DIY maintenance.
+          </p>
+          <div className="flex justify-center">
+            <Link
+              href="/faq"
+              className="inline-flex items-center rounded-full bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+            >
+              View All FAQs
             </Link>
           </div>
         </div>

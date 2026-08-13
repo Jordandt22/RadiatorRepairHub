@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 // Components
 import DetailedBusinessCard from "@/components/businesses/cards/DetailedBusinessCard";
@@ -27,13 +28,13 @@ async function FeaturedBusinesses() {
     const list = businesses || [];
 
     return (
-      <section className="py-16 bg-card border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-semibold tracking-tight text-foreground mb-3 font-heading">
+      <section className="section-atmosphere border-b border-border bg-card py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="mb-3 font-heading text-3xl font-semibold tracking-tight text-foreground">
               Featured Businesses
             </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            <p className="mx-auto max-w-3xl text-base text-muted-foreground md:text-lg">
               Top-rated radiator repair shops recommended by our community
             </p>
           </div>
@@ -55,9 +56,10 @@ async function FeaturedBusinesses() {
           <div className="text-center mt-10">
             <Link
               href="/featured"
-              className="inline-flex items-center border border-border text-foreground px-6 py-2.5 rounded-lg font-medium hover:bg-muted transition-colors duration-200"
+              className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-2.5 font-medium text-foreground transition-colors duration-200 hover:bg-muted"
             >
               View All Featured Businesses
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -65,17 +67,17 @@ async function FeaturedBusinesses() {
     );
   } catch {
     return (
-      <section className="py-16 bg-card border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-semibold tracking-tight text-foreground mb-3 font-heading">
+      <section className="section-atmosphere border-b border-border bg-card py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="mb-3 font-heading text-3xl font-semibold tracking-tight text-foreground">
               Featured Businesses
             </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            <p className="mx-auto max-w-3xl text-base text-muted-foreground md:text-lg">
               Top-rated radiator repair shops recommended by our community
             </p>
           </div>
-          <div className="text-center mt-12">
+          <div className="mt-12 text-center">
             <p className="text-muted-foreground">
               Unable to load featured businesses at this time
             </p>

@@ -13,6 +13,7 @@ import {
   getBusinessPhoneDigits,
   getBusinessPhoneE164,
 } from "@/lib/businessContactInfo";
+import { fetchStateBusinessCounts } from "@/lib/api/location";
 
 const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
@@ -71,8 +72,8 @@ export const metadata = {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
     "mobile-web-app-capable": "yes",
-    "theme-color": "#2563eb",
-    "msapplication-TileColor": "#2563eb",
+    "theme-color": "#1E6BB8",
+    "msapplication-TileColor": "#1E6BB8",
     "msapplication-config": "/browserconfig.xml",
   },
 };
@@ -81,9 +82,13 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  themeColor: "#1E6BB8",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const { data: stateCountsData } = await fetchStateBusinessCounts({ limit: 5 });
+  const topStates = stateCountsData?.states ?? [];
+
   // Organization Schema
   const organizationSchema = {
     "@context": "https://schema.org",
@@ -203,6 +208,7 @@ export default function RootLayout({ children }) {
           <SiteChrome
             businessEmail={getBusinessEmail()}
             businessPhoneDigits={getBusinessPhoneDigits()}
+            topStates={topStates}
           >
             {children}
           </SiteChrome>

@@ -10,6 +10,14 @@ export async function fetchPrimaryCategories(options = REFERENCE_CACHE) {
   return fetchCategories("/primary", options);
 }
 
+export async function fetchTopPrimaryCategories(
+  { limit = 4 } = {},
+  options = REFERENCE_CACHE
+) {
+  const params = new URLSearchParams({ limit: String(limit) });
+  return fetchCategories(`/primary/top?${params.toString()}`, options);
+}
+
 export async function fetchPrimaryCategoryBySlug(slug, options = REFERENCE_CACHE) {
   return fetchCategories(`/primary/slug/${slug}`, options);
 }

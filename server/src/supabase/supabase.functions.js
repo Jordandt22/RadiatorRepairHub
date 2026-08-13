@@ -489,6 +489,106 @@ export const getAllPrimaryCategories = async () => {
   return { data, error };
 };
 
+/**
+ * Top primary categories by business count.
+ * @param {number} limit
+ */
+export const getTopPrimaryCategoriesByBusinessCount = async (limit = 4) => {
+  const [categoriesRes, businessesRes] = await Promise.all([
+    getAllPrimaryCategories(),
+    fetchAllAdminRows("businesses", "primary_category_id"),
+  ]);
+
+  if (categoriesRes.error) {
+    return { data: null, error: categoriesRes.error };
+  }
+  if (businessesRes.error) {
+    return { data: null, error: businessesRes.error };
+  }
+
+  const countByCategory = new Map();
+  for (const biz of businessesRes.data ?? []) {
+    const id = biz.primary_category_id;
+    if (!id) continue;
+    countByCategory.set(id, (countByCategory.get(id) ?? 0) + 1);
+  }
+
+  const categories = (categoriesRes.data ?? [])
+    .map((category) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      business_count: countByCategory.get(category.id) ?? 0,
+    }))
+    .sort(
+      (a, b) =>
+        b.business_count - a.business_count ||
+        a.name.localeCompare(b.name)
+    )
+    .slice(0, Math.max(1, limit));
+
+  return { data: { categories }, error: null };
+};
+
+/**
+ * State business counts. Optional codes filter (e.g. CA,TX) or limit (top N).
+ * @param {{ codes?: string[], limit?: number }} options
+ */
+export const getStateBusinessCounts = async ({ codes, limit } = {}) => {
+  const [statesRes, businessesRes] = await Promise.all([
+    getAllStates(),
+    fetchAllAdminRows("businesses", "state_id"),
+  ]);
+
+  if (statesRes.error) {
+    return { data: null, error: statesRes.error };
+  }
+  if (businessesRes.error) {
+    return { data: null, error: businessesRes.error };
+  }
+
+  const countByState = new Map();
+  for (const biz of businessesRes.data ?? []) {
+    const id = biz.state_id;
+    if (!id) continue;
+    countByState.set(id, (countByState.get(id) ?? 0) + 1);
+  }
+
+  let states = (statesRes.data ?? []).map((state) => ({
+    id: state.id,
+    name: state.name,
+    code: state.code,
+    business_count: countByState.get(state.id) ?? 0,
+  }));
+
+  if (Array.isArray(codes) && codes.length > 0) {
+    const codeSet = new Set(
+      codes.map((code) => String(code).trim().toUpperCase()).filter(Boolean)
+    );
+    states = states.filter((state) => codeSet.has(String(state.code).toUpperCase()));
+    states.sort((a, b) => {
+      const aIndex = codes.findIndex(
+        (c) => String(c).toUpperCase() === String(a.code).toUpperCase()
+      );
+      const bIndex = codes.findIndex(
+        (c) => String(c).toUpperCase() === String(b.code).toUpperCase()
+      );
+      return aIndex - bIndex;
+    });
+  } else {
+    states.sort(
+      (a, b) =>
+        b.business_count - a.business_count ||
+        a.name.localeCompare(b.name)
+    );
+    if (typeof limit === "number" && limit > 0) {
+      states = states.slice(0, limit);
+    }
+  }
+
+  return { data: { states }, error: null };
+};
+
 export const getAllSecondaryCategories = async () => {
   const { data, error } = await supabase
     .from("secondary_categories")

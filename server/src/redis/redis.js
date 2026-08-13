@@ -215,6 +215,16 @@ export const getPrimaryCategoriesKey = () => ({
   interval: 60 * 60,
 });
 
+export const getTopPrimaryCategoriesKey = (limit) => ({
+  key: `PRIMARY_CATEGORIES_TOP?LIMIT:${limit}`,
+  interval: 60 * 30,
+});
+
+export const getStateBusinessCountsKey = ({ codesKey, limit }) => ({
+  key: `STATE_BUSINESS_COUNTS?CODES:${codesKey || "all"}&LIMIT:${limit ?? "all"}`,
+  interval: 60 * 30,
+});
+
 export const getSecondaryCategoriesKey = () => ({
   key: `SECONDARY_CATEGORIES`,
   interval: 60 * 60,

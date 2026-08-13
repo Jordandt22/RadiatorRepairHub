@@ -27,36 +27,39 @@ function HowItWorks() {
   ];
 
   return (
-    <section className="py-16 bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 animate-fade-in-up">
-          <h2 className="text-3xl font-semibold tracking-tight text-foreground mb-3 font-heading">
+    <section className="section-signature py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-12 text-center">
+          <h2 className="mb-3 font-heading text-3xl font-semibold tracking-tight text-white">
             How It Works
           </h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+          <p className="mx-auto max-w-3xl text-base text-white/70 md:text-lg">
             Get connected with the right radiator repair specialist in just 4
             simple steps
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {steps.map((item) => (
-            <div
-              key={item.step}
-              className="bg-card rounded-lg border border-border p-6"
-            >
-              <div className="w-10 h-10 bg-tint text-primary rounded-full flex items-center justify-center mb-4 text-lg font-semibold">
-                {item.step}
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2 font-heading">
+        <ol className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+          {steps.map((item, index) => (
+            <li key={item.step} className="relative">
+              {index < steps.length - 1 ? (
+                <span
+                  className="absolute top-5 left-16 hidden h-px bg-white/25 lg:block lg:right-[-12px]"
+                  aria-hidden="true"
+                />
+              ) : null}
+              <p className="mb-3 font-heading text-3xl font-bold tracking-tight text-white/90">
+                {String(item.step).padStart(2, "0")}
+              </p>
+              <h3 className="mb-2 font-heading text-lg font-semibold text-white">
                 {item.title}
               </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
+              <p className="text-sm leading-relaxed text-white/65">
                 {item.description}
               </p>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );
