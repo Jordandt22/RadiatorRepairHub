@@ -28,6 +28,7 @@ import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSectio
 function ContentWrapper({
   stateData,
   cityData,
+  categoryData,
   searchParams,
   initialListings = null,
   initialListingsPage = 1,
@@ -51,6 +52,7 @@ function ContentWrapper({
     const whitelist = {
       search: true,
       state: true,
+      category: true,
     };
     if (!whitelist[pathname.split("/")[1]]) {
       clearAllFiltersHelper();
@@ -65,6 +67,7 @@ function ContentWrapper({
 
     if (stateData) delete formattedFilters.state_id;
     if (cityData) delete formattedFilters.city_id;
+    if (categoryData) delete formattedFilters.primary_category_id;
 
     // Preserve active filters when only the page param changes (city/state pages)
     if (appliedFilters) {
@@ -74,9 +77,11 @@ function ContentWrapper({
         reviews_count: appliedFilters.reviews_count,
         title: appliedFilters.title ?? formattedFilters.title,
         primary_category_id:
-          appliedFilters.primary_category_id ?? formattedFilters.primary_category_id,
+          appliedFilters.primary_category_id ??
+          formattedFilters.primary_category_id,
         secondary_categories:
-          appliedFilters.secondary_categories ?? formattedFilters.secondary_categories,
+          appliedFilters.secondary_categories ??
+          formattedFilters.secondary_categories,
         features: appliedFilters.features
           ? Object.keys(appliedFilters.features)
           : formattedFilters.features,
@@ -128,7 +133,7 @@ function ContentWrapper({
       }
 
       // Validate Primary Category
-      if (key === "primary_category_id") {
+      if (key === "primary_category_id" && !categoryData) {
         formattedFilters.primary_category_id =
           typeof value === "string" ? value.trim() : "";
       }
@@ -188,17 +193,23 @@ function ContentWrapper({
       features: formatFeatures(formattedFilters.features),
       sort_option: sort || 1,
     }));
-  }, [searchParams, stateData, cityData, sortParam, pathname]);
+  }, [searchParams, stateData, cityData, categoryData, sortParam, pathname]);
 
   return (
     <>
       {/* Filters */}
-      <FiltersWrapper stateData={stateData} cityData={cityData} page={page} />
+      <FiltersWrapper
+        stateData={stateData}
+        cityData={cityData}
+        categoryData={categoryData}
+        page={page}
+      />
 
       {/* Business Listings */}
       <ListingsWrapper
         stateData={stateData}
         cityData={cityData}
+        categoryData={categoryData}
         page={page}
         initialListings={initialListings}
         initialListingsPage={initialListingsPage}

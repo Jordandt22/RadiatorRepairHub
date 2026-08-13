@@ -36,6 +36,7 @@ export function getBusinessSearchAnalyticsProps(filters = {}, extras = {}) {
     page: extras.page ?? undefined,
     has_state_context: Boolean(extras.stateData),
     has_city_context: Boolean(extras.cityData),
+    has_category_context: Boolean(extras.categoryData),
     source: extras.source || undefined,
   };
 }

@@ -7,6 +7,7 @@ import {
   getAllPrimaryCategories,
   getAllSecondaryCategories,
   getPrimaryCategoryBySlug,
+  getPrimaryCategoryBusinessCounts,
   getTopPrimaryCategoriesByBusinessCount,
 } from "../supabase/supabase.functions.js";
 import {
@@ -16,6 +17,7 @@ import {
   getSecondaryCategoriesKey,
   getPrimaryCategoryBySlugKey,
   getTopPrimaryCategoriesKey,
+  getPrimaryCategoryBusinessCountsKey,
 } from "../redis/redis.js";
 
 const { SUPABASE_ERROR } = errorCodes;
@@ -35,6 +37,30 @@ export const getPrimaryCategories = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "There was an error fetching primary categories.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getPrimaryCategoryBusinessCountsHandler = async (req, res) => {
+  const { key, interval } = getPrimaryCategoryBusinessCountsKey();
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getPrimaryCategoryBusinessCounts();
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching primary category business counts.",
           error
         )
       );

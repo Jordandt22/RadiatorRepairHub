@@ -13,6 +13,7 @@ import {
   getCityBySlugKey,
   getPostalCodesByStateKey,
   getStateBusinessCountsKey,
+  getCityBusinessCountsKey,
 } from "../redis/redis.js";
 import {
   getAllStates,
@@ -22,6 +23,7 @@ import {
   getPostalCodesByState,
   getCityBySlug,
   getStateBusinessCounts,
+  getCityBusinessCounts,
 } from "../supabase/supabase.functions.js";
 
 const { SUPABASE_ERROR } = errorCodes;
@@ -86,6 +88,31 @@ export const getStateBusinessCountsHandler = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "There was an error fetching state business counts.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getCityBusinessCountsHandler = async (req, res) => {
+  const { state_id } = req.params;
+  const { key, interval } = getCityBusinessCountsKey(state_id);
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getCityBusinessCounts(state_id);
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching city business counts.",
           error
         )
       );

@@ -83,13 +83,14 @@ export function FilterProvider({ children }) {
   };
 
   // Filter URL
-  const getFilterURL = (stateData, cityData, page, filters) => {
+  const getFilterURL = (stateData, cityData, page, filters, categoryData) => {
     const paginationAndSortQueryParams = `page=${page}&sort=${getSortOption(
       filters.sort_option || 1
     )}`;
     delete filters.sort_option;
     if (stateData) delete filters.state_id;
     if (cityData) delete filters.city_id;
+    if (categoryData) delete filters.primary_category_id;
 
     let filterQueryParams = "";
     Object.keys(filters).map((key) => {
@@ -119,6 +120,10 @@ export function FilterProvider({ children }) {
       }
     });
 
+    if (categoryData) {
+      return `/category/${categoryData.slug}?${paginationAndSortQueryParams}${filterQueryParams}`;
+    }
+
     if (stateData)
       return `/state/${stateData.code}${
         cityData ? `/city/${cityData.slug}` : ""
@@ -128,8 +133,8 @@ export function FilterProvider({ children }) {
   };
 
   // Update URL
-  const updateURL = (stateData, cityData, page, filters) =>
-    router.push(getFilterURL(stateData, cityData, page, filters));
+  const updateURL = (stateData, cityData, page, filters, categoryData) =>
+    router.push(getFilterURL(stateData, cityData, page, filters, categoryData));
 
   // Clear all filters
   const clearAllFiltersHelper = () => {
@@ -139,7 +144,7 @@ export function FilterProvider({ children }) {
   };
 
   // Clear all filters
-  const clearAllFilters = (stateData, cityData, appliedFilters) => {
+  const clearAllFilters = (stateData, cityData, appliedFilters, categoryData) => {
     const sort_option = appliedFilters?.sort_option || 1;
     posthog?.capture(
       "business_search_filtered",
@@ -151,14 +156,21 @@ export function FilterProvider({ children }) {
           sort_option,
           stateData,
           cityData,
+          categoryData,
         }
       )
     );
     clearAllFiltersHelper();
-    updateURL(stateData, cityData, 1, {
-      ...defaultFilters,
-      sort_option,
-    });
+    updateURL(
+      stateData,
+      cityData,
+      1,
+      {
+        ...defaultFilters,
+        sort_option,
+      },
+      categoryData
+    );
   };
 
   // Get sort option
@@ -174,7 +186,13 @@ export function FilterProvider({ children }) {
   };
 
   // Update Sort Option
-  const updateSortOption = (stateData, cityData, filters, sortNum) => {
+  const updateSortOption = (
+    stateData,
+    cityData,
+    filters,
+    sortNum,
+    categoryData
+  ) => {
     posthog?.capture(
       "business_search_filtered",
       getBusinessSearchAnalyticsProps(
@@ -185,14 +203,21 @@ export function FilterProvider({ children }) {
           sort_option: getSortOption(sortNum),
           stateData,
           cityData,
+          categoryData,
         }
       )
     );
     updateAppliedFilters(filters, sortNum);
-    updateURL(stateData, cityData, 1, {
-      ...filters,
-      sort_option: sortNum,
-    });
+    updateURL(
+      stateData,
+      cityData,
+      1,
+      {
+        ...filters,
+        sort_option: sortNum,
+      },
+      categoryData
+    );
   };
 
   // Format filters
@@ -264,6 +289,7 @@ export function FilterProvider({ children }) {
     const analyticsEvent =
       options.analyticsEvent || "business_search_filtered";
     const source = options.source || "filters";
+    const categoryData = options.categoryData ?? null;
 
     posthog?.capture(
       analyticsEvent,
@@ -275,15 +301,22 @@ export function FilterProvider({ children }) {
           sort_option: getSortOption(sort_option),
           stateData,
           cityData,
+          categoryData,
         }
       )
     );
 
     updateAppliedFilters(formattedFilters, sort_option);
-    updateURL(stateData, cityData, page, {
-      ...formattedFilters,
-      sort_option,
-    });
+    updateURL(
+      stateData,
+      cityData,
+      page,
+      {
+        ...formattedFilters,
+        sort_option,
+      },
+      categoryData
+    );
   };
 
   return (

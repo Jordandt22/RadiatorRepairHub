@@ -14,13 +14,14 @@ function Pagination({
   requestTotal,
   stateData,
   cityData,
+  categoryData,
   limit,
 }) {
   const { appliedFilters, filters, getFilterURL } = useFilters();
 
   // Page Tab Styles
   const pageTabStyle =
-    "px-3 py-2 text-sm font-medium border border-border rounded-md duration-200";
+    "px-3 py-2 text-sm font-medium border border-border rounded-full duration-200";
 
   // Page Link Styles
   const pageLinkStyle = "block " + pageTabStyle;
@@ -52,17 +53,23 @@ function Pagination({
   }
 
   const getHref = (pageNum) =>
-    getFilterURL(stateData, cityData, pageNum, {
-      ...filters,
-      total_score: appliedFilters?.total_score ?? filters.total_score,
-      reviews_count: appliedFilters?.reviews_count ?? filters.reviews_count,
-      title: appliedFilters?.title ?? filters.title,
-      primary_category_id:
-        appliedFilters?.primary_category_id ?? filters.primary_category_id,
-      secondary_categories:
-        appliedFilters?.secondary_categories ?? filters.secondary_categories,
-      sort_option: appliedFilters?.sort_option || 1,
-    });
+    getFilterURL(
+      stateData,
+      cityData,
+      pageNum,
+      {
+        ...filters,
+        total_score: appliedFilters?.total_score ?? filters.total_score,
+        reviews_count: appliedFilters?.reviews_count ?? filters.reviews_count,
+        title: appliedFilters?.title ?? filters.title,
+        primary_category_id:
+          appliedFilters?.primary_category_id ?? filters.primary_category_id,
+        secondary_categories:
+          appliedFilters?.secondary_categories ?? filters.secondary_categories,
+        sort_option: appliedFilters?.sort_option || 1,
+      },
+      categoryData
+    );
 
   // Generate windowed pagination for desktop
   const generateWindowedPages = () => {

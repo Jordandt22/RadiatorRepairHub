@@ -1,18 +1,10 @@
 import React from "react";
-import CategoryBusinessesPage from "@/components/pages/category/CategoryBusinessesPage";
-import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
+import BusinessesContainer from "@/components/businesses/BusinessesContainer";
 import { notFound } from "next/navigation";
 import { fetchPrimaryCategoryBySlug } from "@/lib/api/categories";
-import { fetchBusinessesByCategory } from "@/lib/api/businesses";
 import { CATEGORY_KEYWORDS } from "@/lib/seo/keywords";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS, SITE_URL } from "@/lib/seo/metadata";
-
-function parsePageParam(pageParam) {
-  if (!pageParam || isNaN(pageParam)) return 1;
-  const page = parseInt(pageParam, 10);
-  if (page < 1 || page > 20) return 1;
-  return page;
-}
+import { getListingsPage } from "@/lib/businesses/listingsSearch";
 
 function buildCategoryUrl(slug, page) {
   const base = `${SITE_URL}/category/${slug}`;
@@ -21,8 +13,8 @@ function buildCategoryUrl(slug, page) {
 
 export async function generateMetadata({ params, searchParams }) {
   const { slug } = await params;
-  const { page: pageParam } = await searchParams;
-  const formattedPage = parsePageParam(pageParam);
+  const resolvedSearchParams = await searchParams;
+  const formattedPage = getListingsPage(resolvedSearchParams);
   const { data: primaryCategory } = await fetchPrimaryCategoryBySlug(slug);
 
   if (!primaryCategory) {
@@ -64,43 +56,13 @@ export async function generateMetadata({ params, searchParams }) {
 
 async function Page({ params, searchParams }) {
   const { slug } = await params;
-  const { page: pageParam } = await searchParams;
-  const formattedPage = parsePageParam(pageParam);
+  const resolvedSearchParams = await searchParams;
+  const formattedPage = getListingsPage(resolvedSearchParams);
 
   const { data: primaryCategory } = await fetchPrimaryCategoryBySlug(slug);
   if (!slug || !primaryCategory) {
     return notFound();
   }
-
-  let businessesData = null;
-
-  try {
-    const result = await fetchBusinessesByCategory(
-      primaryCategory.id,
-      formattedPage
-    );
-
-    if (result.error) {
-      return (
-        <ErrorDisplay
-          status={result.status || 500}
-          code={result.error?.code}
-          message={result.error?.message || "Unable to load businesses."}
-        />
-      );
-    }
-
-    businessesData = result.data;
-  } catch {
-    return (
-      <ErrorDisplay
-        status={500}
-        message="Unable to load businesses. Please try again later."
-      />
-    );
-  }
-
-  const totalPages = businessesData?.totalPages ?? 0;
 
   const collectionSchema = {
     "@context": "https://schema.org",
@@ -123,28 +85,15 @@ async function Page({ params, searchParams }) {
 
   return (
     <>
-      {formattedPage > 1 && (
-        <link
-          rel="prev"
-          href={buildCategoryUrl(slug, formattedPage - 1)}
-        />
-      )}
-      {formattedPage < totalPages && (
-        <link
-          rel="next"
-          href={buildCategoryUrl(slug, formattedPage + 1)}
-        />
-      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(collectionSchema),
         }}
       />
-      <CategoryBusinessesPage
-        primaryCategory={primaryCategory}
-        page={formattedPage}
-        businessesData={businessesData}
+      <BusinessesContainer
+        categoryData={primaryCategory}
+        searchParams={resolvedSearchParams}
       />
     </>
   );

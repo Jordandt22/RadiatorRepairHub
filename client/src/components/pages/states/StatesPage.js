@@ -5,20 +5,40 @@ import StatesGrid from "./StatesGrid";
 import STATES from "@/lib/data/states";
 import PageHeader from "@/components/layout/Header/PageHeader";
 
-function StatesPage() {
+function StatesPage({ statesWithCounts = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [sort, setSort] = useState("alpha");
+
+  const catalog = useMemo(() => {
+    if (statesWithCounts.length > 0) return statesWithCounts;
+
+    return STATES.map((state) => ({
+      ...state,
+      business_count: 0,
+    }));
+  }, [statesWithCounts]);
 
   const filteredStates = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return STATES;
-    }
+    const query = searchTerm.trim().toLowerCase();
+    const matched = query
+      ? catalog.filter(
+          (state) =>
+            state.name.toLowerCase().includes(query) ||
+            state.code.toLowerCase().includes(query)
+        )
+      : [...catalog];
 
-    return STATES.filter(
-      (state) =>
-        state.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        state.code.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm]);
+    return matched.sort((a, b) => {
+      if (sort === "most" || sort === "least") {
+        const diff =
+          (Number(b.business_count) || 0) - (Number(a.business_count) || 0);
+        if (diff !== 0) {
+          return sort === "most" ? diff : -diff;
+        }
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }, [searchTerm, sort, catalog]);
 
   const breadcrumbItems = [
     { name: "Home", url: "/" },
@@ -31,14 +51,13 @@ function StatesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         pageTitle={pageTitle}
         pageDescription={pageDescription}
         headerLink={{
           label: "Search",
-          href: "/search",
+          href: "/search?page=1&sort=most_reviews",
         }}
       />
 
@@ -46,7 +65,9 @@ function StatesPage() {
         states={filteredStates}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        totalStates={STATES.length}
+        sort={sort}
+        onSortChange={setSort}
+        totalStates={catalog.length}
         filteredCount={filteredStates.length}
       />
     </div>

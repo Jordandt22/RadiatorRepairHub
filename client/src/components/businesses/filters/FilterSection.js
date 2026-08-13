@@ -16,7 +16,7 @@ import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
 
-function FilterSection({ stateData, cityData, page }) {
+function FilterSection({ stateData, cityData, categoryData, page }) {
   const {
     showFilters,
     filters,
@@ -46,10 +46,10 @@ function FilterSection({ stateData, cityData, page }) {
               <PostalCodeSearch stateData={stateData} />
 
               {/* Primary Category */}
-              <PrimaryCategoriesDropdown />
+              {!categoryData && <PrimaryCategoriesDropdown />}
 
               {/* Min Total Score */}
-              <div className="flex gap-12 items-center md:col-span-2 lg:col-span-3 xl:col-span-4 bg-muted p-4 rounded-md">
+              <div className="flex gap-12 items-center md:col-span-2 lg:col-span-3 xl:col-span-4 bg-muted p-4 rounded-lg">
                 <div className="w-1/3">
                   <FilterSliderInput
                     label="Min. Total Score"
@@ -79,7 +79,7 @@ function FilterSection({ stateData, cityData, page }) {
               <FeaturesCheckboxes />
 
               {/* Open Hours */}
-              <div className="md:col-span-2 lg:col-span-3 xl:col-span-4 bg-muted p-4 rounded-md">
+              <div className="md:col-span-2 lg:col-span-3 xl:col-span-4 bg-muted p-4 rounded-lg">
                 <label className="block text-sm font-medium text-foreground mb-2">
                   Open Hours
                 </label>
@@ -119,18 +119,24 @@ function FilterSection({ stateData, cityData, page }) {
                     appliedFilters,
                     stateData,
                     cityData,
-                    page
+                    page,
+                    { categoryData }
                   )
                 }
-                className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary border border-primary rounded-md hover:bg-primary/90 cursor-pointer transition-colors duration-200"
+                className="cursor-pointer rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
               >
                 Apply Filters
               </button>
               <button
                 onClick={() =>
-                  clearAllFilters(stateData, cityData, appliedFilters)
+                  clearAllFilters(
+                    stateData,
+                    cityData,
+                    appliedFilters,
+                    categoryData
+                  )
                 }
-                className="px-4 py-2 text-sm font-medium text-muted-foreground bg-card border border-border rounded-md hover:bg-muted cursor-pointer transition-colors duration-200"
+                className="cursor-pointer rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted"
               >
                 Clear All Filters
               </button>
@@ -144,6 +150,7 @@ function FilterSection({ stateData, cityData, page }) {
         <MobileFilterSection
           stateData={stateData}
           cityData={cityData}
+          categoryData={categoryData}
           page={page}
         />
       )}

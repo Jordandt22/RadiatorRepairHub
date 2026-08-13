@@ -4,7 +4,7 @@ import CitiesPage from "@/components/pages/cities/CitiesPage";
 
 // Data
 import STATES from "@/lib/data/states";
-import { fetchCitiesByStateId } from "@/lib/api/location";
+import { fetchCitiesByStateId, fetchCityBusinessCounts } from "@/lib/api/location";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
 export const dynamic = "force-dynamic";
@@ -54,10 +54,19 @@ async function Page({ params }) {
     return notFound();
   }
 
-  const { data: stateCities } = await fetchCitiesByStateId(stateData.id);
-  const sortedCities = [...(stateCities || [])].sort((a, b) =>
-    a.name.localeCompare(b.name)
+  const [{ data: stateCities }, { data: countsData }] = await Promise.all([
+    fetchCitiesByStateId(stateData.id),
+    fetchCityBusinessCounts(stateData.id),
+  ]);
+  const countById = new Map(
+    (countsData?.cities ?? []).map((city) => [city.id, city.business_count ?? 0])
   );
+  const sortedCities = [...(stateCities || [])]
+    .map((city) => ({
+      ...city,
+      business_count: countById.get(city.id) ?? city.business_count ?? 0,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const collectionSchema = {
     "@context": "https://schema.org",

@@ -19,6 +19,7 @@ import {
 async function BusinessesContainer({
   stateData,
   cityData,
+  categoryData,
   searchParams,
   affiliateProducts = [],
 }) {
@@ -30,16 +31,22 @@ async function BusinessesContainer({
   const searchBody = buildListingsSearchBody({
     stateData,
     cityData,
+    categoryData,
     searchParams,
   });
 
   const { data: initialListings, error: initialError } =
     await fetchBusinessesSearch(searchBody, page, LISTINGS_PAGE_LIMIT);
 
+  const showLocationHeader = Boolean(stateData);
+  const showCategoryHeader = Boolean(categoryData) && !showLocationHeader;
+
   return (
     <div className="min-h-screen bg-background">
-      {stateData ? (
+      {showLocationHeader ? (
         <Header stateData={stateData} cityData={cityData} />
+      ) : showCategoryHeader ? (
+        <Header categoryData={categoryData} />
       ) : (
         <SearchHeader title={searchParams?.title} />
       )}
@@ -49,6 +56,7 @@ async function BusinessesContainer({
           <ContentWrapper
             stateData={stateData}
             cityData={cityData}
+            categoryData={categoryData}
             searchParams={searchParams}
             initialListings={initialError ? null : initialListings}
             initialListingsPage={page}

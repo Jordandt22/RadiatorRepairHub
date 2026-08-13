@@ -36,6 +36,7 @@ const DEFAULT_APPLIED_FILTERS = {
 export default function ListingsWrapper({
   stateData,
   cityData,
+  categoryData,
   page = 1,
   initialListings = null,
   initialListingsPage = 1,
@@ -50,9 +51,12 @@ export default function ListingsWrapper({
       ...base,
       state_id: stateData ? stateData.id : base.state_id,
       city_id: cityData ? cityData.id : base.city_id,
+      primary_category_id: categoryData
+        ? categoryData.id
+        : base.primary_category_id,
       sort_option: base.sort_option || 1,
     };
-  }, [appliedFilters, initialSearchBody, stateData, cityData]);
+  }, [appliedFilters, initialSearchBody, stateData, cityData, categoryData]);
 
   const swrKey = [
     `${process.env.NEXT_PUBLIC_API_URI}/businesses/search?page=${page}&limit=${limit}`,
@@ -82,15 +86,25 @@ export default function ListingsWrapper({
 
   const businessesData = data.data;
   const totalPages = businessesData?.totalPages;
+  const totalBusinesses = Number(businessesData?.totalBusinesses) || 0;
+  const businessLabel = totalBusinesses === 1 ? "Business" : "Businesses";
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <p className="mb-6 text-sm text-muted-foreground">
+        <span className="font-semibold text-green-700">
+          {totalBusinesses.toLocaleString()}
+        </span>{" "}
+        {businessLabel}
+      </p>
+
       <Listings
         businesses={businessesData?.businesses}
         data={businessesData}
         page={page}
         stateData={stateData}
         cityData={cityData}
+        categoryData={categoryData}
       />
 
       {totalPages > 0 && (
@@ -99,6 +113,7 @@ export default function ListingsWrapper({
           currentPage={page}
           stateData={stateData}
           cityData={cityData}
+          categoryData={categoryData}
           totalBusinesses={businessesData?.totalBusinesses}
           requestTotal={businessesData?.requestTotal}
           limit={limit}

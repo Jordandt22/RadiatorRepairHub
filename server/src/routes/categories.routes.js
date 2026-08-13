@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   getPrimaryCategories,
   getPrimaryCategoryBySlugHandler,
+  getPrimaryCategoryBusinessCountsHandler,
   getSecondaryCategories,
   getTopPrimaryCategoriesHandler,
 } from "../controllers/categories.controller.js";
@@ -14,6 +15,11 @@ const categoriesRouter = Router();
 categoriesRouter.get(
   "/primary/top",
   serverErrorCatcherWrapper(getTopPrimaryCategoriesHandler)
+);
+
+categoriesRouter.get(
+  "/primary/counts",
+  serverErrorCatcherWrapper(getPrimaryCategoryBusinessCountsHandler)
 );
 
 categoriesRouter.get(

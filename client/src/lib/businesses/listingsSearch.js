@@ -7,6 +7,7 @@ export const LISTINGS_PAGE_LIMIT = 12;
 export function buildListingsSearchBody({
   stateData = null,
   cityData = null,
+  categoryData = null,
   searchParams = {},
 } = {}) {
   const sortOptions = {
@@ -37,8 +38,9 @@ export function buildListingsSearchBody({
     postal_code_id: "",
     total_score: 3,
     reviews_count: 1,
-    primary_category_id:
-      typeof searchParams?.primary_category_id === "string"
+    primary_category_id: categoryData?.id
+      ? categoryData.id
+      : typeof searchParams?.primary_category_id === "string"
         ? searchParams.primary_category_id.trim()
         : "",
     secondary_categories: [],

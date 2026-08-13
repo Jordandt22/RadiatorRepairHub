@@ -18,6 +18,12 @@ export async function fetchTopPrimaryCategories(
   return fetchCategories(`/primary/top?${params.toString()}`, options);
 }
 
+export async function fetchPrimaryCategoryBusinessCounts(
+  options = REFERENCE_CACHE
+) {
+  return fetchCategories("/primary/counts", options);
+}
+
 export async function fetchPrimaryCategoryBySlug(slug, options = REFERENCE_CACHE) {
   return fetchCategories(`/primary/slug/${slug}`, options);
 }

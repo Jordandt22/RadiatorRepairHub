@@ -11,7 +11,7 @@ import BusinessCard from "../cards/BusinessCard";
 import BusinessHours from "../cards/BusinessHours";
 import BusinessInfo from "../cards/BusinessInfo";
 
-function Listings({ businesses, data, page, stateData, cityData }) {
+function Listings({ businesses, data, page, stateData, cityData, categoryData }) {
   const { filters, appliedFilters, updateURL } = useFilters();
   const [activeCard, setActiveCard] = useState(null);
   const [activeBackCard, setActiveBackCard] = useState(1);
@@ -21,12 +21,27 @@ function Listings({ businesses, data, page, stateData, cityData }) {
 
     // Only correct the URL when the server clamped past the last valid page
     if (data.page < page) {
-      updateURL(stateData, cityData, data.page, {
-        ...filters,
-        sort_option: appliedFilters?.sort_option || 1,
-      });
+      updateURL(
+        stateData,
+        cityData,
+        data.page,
+        {
+          ...filters,
+          sort_option: appliedFilters?.sort_option || 1,
+        },
+        categoryData
+      );
     }
-  }, [data, page, stateData, cityData, filters, appliedFilters, updateURL]);
+  }, [
+    data,
+    page,
+    stateData,
+    cityData,
+    categoryData,
+    filters,
+    appliedFilters,
+    updateURL,
+  ]);
 
   return (
     <div>

@@ -15,7 +15,7 @@ import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
 
-function MobileFilterSection({ stateData, cityData, page }) {
+function MobileFilterSection({ stateData, cityData, categoryData, page }) {
   const {
     filters,
     updateOpenFilter,
@@ -40,7 +40,7 @@ function MobileFilterSection({ stateData, cityData, page }) {
           <h2 className="text-lg font-semibold text-foreground">Filters</h2>
           <button
             onClick={() => setShowFilters(false)}
-            className="p-2 rounded-md hover:bg-muted"
+            className="rounded-full p-2 hover:bg-muted"
           >
             <svg
               className="w-5 h-5"
@@ -87,7 +87,7 @@ function MobileFilterSection({ stateData, cityData, page }) {
           />
 
           {/* Primary Category */}
-          <PrimaryCategoriesDropdown />
+          {!categoryData && <PrimaryCategoriesDropdown />}
 
           {/* Secondary Categories */}
           <SecondaryCategoriesCheckboxes />
@@ -96,7 +96,7 @@ function MobileFilterSection({ stateData, cityData, page }) {
           <FeaturesCheckboxes />
 
           {/* Open Hours */}
-          <div className="bg-muted p-4 rounded-md">
+          <div className="rounded-lg bg-muted p-4">
             <label className="block text-sm font-medium text-foreground mb-2">
               Open Hours
             </label>
@@ -137,18 +137,24 @@ function MobileFilterSection({ stateData, cityData, page }) {
                   appliedFilters,
                   stateData,
                   cityData,
-                  page
+                  page,
+                  { categoryData }
                 );
               }}
-              className="flex-1 px-4 py-2 text-sm font-medium text-primary-foreground bg-primary border border-primary rounded-md hover:bg-primary/90 cursor-pointer transition-colors duration-200"
+              className="flex-1 cursor-pointer rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
             >
               Apply Filters
             </button>
             <button
               onClick={() =>
-                clearAllFilters(stateData, cityData, appliedFilters)
+                clearAllFilters(
+                  stateData,
+                  cityData,
+                  appliedFilters,
+                  categoryData
+                )
               }
-              className="flex-1 px-4 py-2 text-sm font-medium text-muted-foreground bg-card border border-border rounded-md hover:bg-muted cursor-pointer transition-colors duration-200"
+              className="flex-1 cursor-pointer rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted"
             >
               Clear All Filters
             </button>

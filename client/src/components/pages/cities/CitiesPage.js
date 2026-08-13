@@ -6,16 +6,25 @@ import PageHeader from "@/components/layout/Header/PageHeader";
 
 function CitiesPage({ stateData, stateCities }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [sort, setSort] = useState("alpha");
 
   const filteredCities = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return stateCities;
-    }
+    const query = searchTerm.trim().toLowerCase();
+    const matched = query
+      ? stateCities.filter((city) => city.name.toLowerCase().includes(query))
+      : [...stateCities];
 
-    return stateCities.filter((city) =>
-      city.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, stateCities]);
+    return matched.sort((a, b) => {
+      if (sort === "most" || sort === "least") {
+        const diff =
+          (Number(b.business_count) || 0) - (Number(a.business_count) || 0);
+        if (diff !== 0) {
+          return sort === "most" ? diff : -diff;
+        }
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }, [searchTerm, sort, stateCities]);
 
   const breadcrumbItems = [
     { name: "Home", url: "/" },
@@ -29,7 +38,6 @@ function CitiesPage({ stateData, stateCities }) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         pageTitle={pageTitle}
@@ -45,6 +53,8 @@ function CitiesPage({ stateData, stateCities }) {
         stateData={stateData}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        sort={sort}
+        onSortChange={setSort}
         totalCities={stateCities.length}
         filteredCount={filteredCities.length}
       />

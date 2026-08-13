@@ -3,25 +3,27 @@ import { Search, X } from "lucide-react";
 
 function CitySearch({ searchTerm, onSearchChange }) {
   return (
-    <div className="mb-8">
+    <div className="min-w-0 flex-1">
       <div className="max-w-2xl">
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-muted-foreground" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <Search className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
           </div>
           <input
             type="text"
             placeholder="Search cities..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="block w-full pl-10 pr-10 py-3 border border-border rounded-lg leading-5 bg-card placeholder-muted-foreground focus:outline-none focus:border-ring text-sm"
+            className="block w-full rounded-full border border-border bg-card py-3 pr-10 pl-10 text-sm leading-5 text-foreground placeholder-muted-foreground outline-none focus:border-ring"
           />
           {searchTerm && (
             <button
+              type="button"
               onClick={() => onSearchChange("")}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+              className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3"
+              aria-label="Clear city search"
             >
-              <X className="h-5 w-5 text-muted-foreground hover:text-destructive duration-200" />
+              <X className="h-5 w-5 text-muted-foreground duration-200 hover:text-destructive" />
             </button>
           )}
         </div>

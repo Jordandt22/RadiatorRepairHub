@@ -490,10 +490,9 @@ export const getAllPrimaryCategories = async () => {
 };
 
 /**
- * Top primary categories by business count.
- * @param {number} limit
+ * Primary categories with business counts (all categories).
  */
-export const getTopPrimaryCategoriesByBusinessCount = async (limit = 4) => {
+export const getPrimaryCategoryBusinessCounts = async () => {
   const [categoriesRes, businessesRes] = await Promise.all([
     getAllPrimaryCategories(),
     fetchAllAdminRows("businesses", "primary_category_id"),
@@ -513,13 +512,27 @@ export const getTopPrimaryCategoriesByBusinessCount = async (limit = 4) => {
     countByCategory.set(id, (countByCategory.get(id) ?? 0) + 1);
   }
 
-  const categories = (categoriesRes.data ?? [])
-    .map((category) => ({
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      business_count: countByCategory.get(category.id) ?? 0,
-    }))
+  const categories = (categoriesRes.data ?? []).map((category) => ({
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    business_count: countByCategory.get(category.id) ?? 0,
+  }));
+
+  return { data: { categories }, error: null };
+};
+
+/**
+ * Top primary categories by business count.
+ * @param {number} limit
+ */
+export const getTopPrimaryCategoriesByBusinessCount = async (limit = 4) => {
+  const { data, error } = await getPrimaryCategoryBusinessCounts();
+  if (error) {
+    return { data: null, error };
+  }
+
+  const categories = [...(data?.categories ?? [])]
     .sort(
       (a, b) =>
         b.business_count - a.business_count ||
@@ -587,6 +600,52 @@ export const getStateBusinessCounts = async ({ codes, limit } = {}) => {
   }
 
   return { data: { states }, error: null };
+};
+
+/**
+ * City business counts for a single state.
+ * @param {string} state_id
+ */
+export const getCityBusinessCounts = async (state_id) => {
+  const citiesRes = await getAllCities(state_id);
+  if (citiesRes.error) {
+    return { data: null, error: citiesRes.error };
+  }
+
+  const rows = [];
+  let start = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("city_id")
+      .eq("state_id", state_id)
+      .range(start, start + ADMIN_LOCATION_PAGE_SIZE - 1);
+
+    if (error) return { data: null, error };
+
+    rows.push(...(data ?? []));
+    if (!data || data.length < ADMIN_LOCATION_PAGE_SIZE) break;
+    start += ADMIN_LOCATION_PAGE_SIZE;
+  }
+
+  const countByCity = new Map();
+  for (const biz of rows) {
+    const id = biz.city_id;
+    if (!id) continue;
+    countByCity.set(id, (countByCity.get(id) ?? 0) + 1);
+  }
+
+  const cities = (citiesRes.data ?? [])
+    .map((city) => ({
+      id: city.id,
+      name: city.name,
+      slug: city.slug,
+      state_id: city.state_id,
+      business_count: countByCity.get(city.id) ?? 0,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  return { data: { cities }, error: null };
 };
 
 export const getAllSecondaryCategories = async () => {

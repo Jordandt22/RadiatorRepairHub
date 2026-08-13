@@ -1,7 +1,7 @@
 import React from "react";
 import CategoriesPage from "@/components/pages/categories/CategoriesPage";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
-import { fetchPrimaryCategories } from "@/lib/api/categories";
+import { fetchPrimaryCategoryBusinessCounts } from "@/lib/api/categories";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 
 export const revalidate = 60;
@@ -48,16 +48,16 @@ export const metadata = {
 };
 
 async function Page() {
-  const [{ data: primaryCategories }, { data: affiliateData }] =
-    await Promise.all([
-      fetchPrimaryCategories(),
-      fetchActiveAffiliateProductsByAliases([
-        "valvoline",
-        "radiator-cap",
-        "coolant-funnel",
-      ]),
-    ]);
-  const categories = primaryCategories || [];
+  const [{ data: countsData }, { data: affiliateData }] = await Promise.all([
+    fetchPrimaryCategoryBusinessCounts(),
+    fetchActiveAffiliateProductsByAliases([
+      "valvoline",
+      "radiator-cap",
+      "coolant-funnel",
+    ]),
+  ]);
+
+  const categoriesWithCounts = countsData?.categories ?? [];
   const featuredProducts = affiliateData?.products ?? [];
 
   const itemListSchema = {
@@ -66,8 +66,8 @@ async function Page() {
     name: "Auto Repair Service Categories",
     description: "Browse all auto repair and radiator service categories",
     url: "https://radiatorrepairhub.com/categories",
-    numberOfItems: categories.length,
-    itemListElement: categories.map((category, index) => ({
+    numberOfItems: categoriesWithCounts.length,
+    itemListElement: categoriesWithCounts.map((category, index) => ({
       "@type": "ListItem",
       position: index + 1,
       name: category.name,
@@ -83,10 +83,10 @@ async function Page() {
           __html: JSON.stringify(itemListSchema),
         }}
       />
-      <CategoriesPage primaryCategories={categories} />
+      <CategoriesPage categoriesWithCounts={categoriesWithCounts} />
 
       {featuredProducts.length > 0 ? (
-        <section className="border-t border-gray-200 bg-white py-16">
+        <section className="border-t border-border bg-card py-16">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <AffiliateProductsSection
               products={featuredProducts}

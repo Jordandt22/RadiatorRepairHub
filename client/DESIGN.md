@@ -77,8 +77,10 @@ Prefer color, opacity, and height for interaction (e.g. FAQ expand).
 
 Home: full-bleed atmospheric shop photo with dark overlay; tall first
 viewport (`min-h-[80svh]`) with nav overlaid; centered headline, pill search,
-and popular-state chips. Listing pages: search remains the memorable control.
-Do not add a second hero photo below the fold.
+and popular-state chips. Listing/search pages: navy `PageHeader` (same
+signature band as How It Works, not `bg-primary` slabs); pill search, sort,
+and filter controls; result count above the grid. Do not add a second hero
+photo below the fold.
 
 Restrained flair is allowed: step numbers, tint icon wells (same icon OK for
 state rows), stronger hover borders, soft section atmosphere (radial wash +

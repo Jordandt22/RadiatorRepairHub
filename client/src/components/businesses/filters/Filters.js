@@ -1,11 +1,24 @@
 "use client";
 
 import React from "react";
+import { ChevronDown, Filter } from "lucide-react";
 
-// Contexts
 import { useFilters } from "@/contexts/FilterProvider";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-function Filters({ stateData, cityData }) {
+const SORT_OPTIONS = [
+  { value: 1, label: "Most Reviews" },
+  { value: 2, label: "Least Reviews" },
+  { value: 3, label: "Highest Rating" },
+  { value: 4, label: "Lowest Rating" },
+];
+
+function Filters({ stateData, cityData, categoryData }) {
   const {
     showFilters,
     setShowFilters,
@@ -14,101 +27,66 @@ function Filters({ stateData, cityData }) {
     appliedFilters,
   } = useFilters();
 
-  return (
-    <div className="flex flex-col sm:flex-row gap-3">
-      <div className="relative bg-card border border-border rounded-lg cursor-pointer">
-        <select
-          value={appliedFilters?.sort_option}
-          onChange={(e) => {
-            setShowFilters(false);
-            updateSortOption(
-              stateData,
-              cityData,
-              filters,
-              Number(e.target.value)
-            );
-          }}
-          className="px-4 py-3 pr-10 w-full text-foreground cursor-pointer appearance-none focus:border-ring outline-none duration-200"
-        >
-          <option value={1}>Most Reviews</option>
-          <option value={2}>Least Reviews</option>
-          <option value={3}>Highest Rating</option>
-          <option value={4}>Lowest Rating</option>
-        </select>
-        {/* Custom Chevron Icon */}
-        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-          <svg
-            className="w-4 h-4 text-muted-foreground"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </div>
-      </div>
+  const currentSort =
+    SORT_OPTIONS.find(
+      (option) => option.value === Number(appliedFilters?.sort_option || 1)
+    ) ?? SORT_OPTIONS[0];
 
-      {/* Filter Button */}
+  const handleSortChange = (sortNum) => {
+    setShowFilters(false);
+    updateSortOption(stateData, cityData, filters, sortNum, categoryData);
+  };
+
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger
+          className="inline-flex min-w-[11.5rem] cursor-pointer items-center justify-between gap-2 rounded-full border border-border bg-card px-4 py-3 text-sm font-medium text-foreground outline-none transition-colors duration-200 hover:bg-muted"
+          aria-label="Sort listings"
+        >
+          <span className="truncate">{currentSort.label}</span>
+          <ChevronDown
+            className="h-4 w-4 shrink-0 text-muted-foreground"
+            aria-hidden="true"
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="min-w-44 rounded-lg">
+          {SORT_OPTIONS.map((option) => (
+            <DropdownMenuItem
+              key={option.value}
+              className={`cursor-pointer rounded-md ${
+                option.value === currentSort.value
+                  ? "bg-tint text-primary"
+                  : ""
+              }`}
+              onClick={() => handleSortChange(option.value)}
+            >
+              {option.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       <button
         onClick={() => setShowFilters(!showFilters)}
-        className={`px-4 py-3 border rounded-lg font-medium transition-colors duration-200 flex justify-between items-center gap-2 ${
+        className={`inline-flex cursor-pointer items-center justify-between gap-2 rounded-full border px-4 py-3 text-sm font-medium transition-colors duration-200 ${
           showFilters
-            ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90 cursor-pointer"
-            : "bg-card text-foreground border-border hover:bg-muted cursor-pointer"
+            ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90"
+            : "border-border bg-card text-foreground hover:bg-muted"
         }`}
       >
         <span className="flex items-center gap-2">
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-            />
-          </svg>
+          <Filter className="h-4 w-4" aria-hidden="true" />
           Filters
         </span>
-
-        {showFilters && (
-          <svg
-            className="w-4 h-4 transition-transform duration-200 rotate-180 text-primary-foreground/70"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        )}
-        {!showFilters && (
-          <svg
-            className="w-4 h-4 transition-transform duration-200 text-muted-foreground"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        )}
+        <ChevronDown
+          className={`h-4 w-4 transition-transform duration-200 ${
+            showFilters
+              ? "rotate-180 text-primary-foreground/70"
+              : "text-muted-foreground"
+          }`}
+          aria-hidden="true"
+        />
       </button>
     </div>
   );

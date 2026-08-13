@@ -20,6 +20,10 @@ export async function fetchStateBusinessCounts(
   return fetchLocation(`/states/counts${query ? `?${query}` : ""}`, options);
 }
 
+export async function fetchCityBusinessCounts(stateId, options = REFERENCE_CACHE) {
+  return fetchLocation(`/states/${stateId}/cities/counts`, options);
+}
+
 export async function fetchAllCities(options = REFERENCE_CACHE) {
   return fetchLocation("/cities", options);
 }
