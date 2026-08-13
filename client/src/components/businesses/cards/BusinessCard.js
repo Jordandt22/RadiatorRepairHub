@@ -16,16 +16,16 @@ import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
   const router = useRouter();
   const buttonStyle =
-    "group/hours bg-white/80 hover:bg-blue-500 rounded-full p-2 shadow-sm hover:shadow-md transition-all duration-200 backdrop-blur-sm cursor-pointer";
-  const iconStyle = "w-5 h-5 text-gray-600 group-hover/hours:text-white";
+    "group/hours bg-white/90 hover:bg-primary rounded-full p-2 shadow-sm transition-colors duration-200 backdrop-blur-sm cursor-pointer";
+  const iconStyle = "w-5 h-5 text-muted-foreground group-hover/hours:text-white";
 
   return (
     <article
-      className="hidden md:block bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full hover:shadow-lg hover:-translate-y-1 hover:scale-102 transition-all duration-300"
+      className="hidden md:block bg-card rounded-lg border border-border overflow-hidden h-full hover:border-interactive/50 transition-colors duration-300"
       role="article"
       aria-label={`Business listing for ${business.title}`}
     >
-      <div className="group/image relative w-full h-56 bg-gray-200">
+      <div className="group/image relative w-full h-56 bg-muted">
         <BusinessImage
           src={business.image_url}
           businessId={business.id}
@@ -75,7 +75,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
           <Link
             key={"business-card-category-" + business.id}
             href={`/category/${business.primary_category.slug}`}
-            className="absolute bottom-3 left-3 text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-md hover:bg-blue-500 hover:text-white duration-200 capitalize"
+            className="absolute bottom-3 left-3 text-sm font-medium text-primary bg-tint px-2 py-1 rounded-md hover:bg-white duration-200 capitalize"
             prefetch={false}
           >
             {business.primary_category.name}
@@ -88,10 +88,10 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
       </div>
 
       <div className="p-5">
-        <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 font-heading text-lg">
+        <h3 className="font-semibold text-foreground mb-1 line-clamp-2 font-heading text-lg">
           <Link
             href={`/business/${business.slug}`}
-            className="hover:text-blue-600 duration-200"
+            className="hover:text-interactive duration-200"
             prefetch={false}
             aria-label={`View ${business.title} details`}
           >
@@ -109,7 +109,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
                 key={business.title + "-" + i}
                 className={`w-4 h-4 ${i < Math.floor(business.total_score)
                   ? "text-yellow-400"
-                  : "text-gray-300"
+                  : "text-border"
                   }`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
@@ -120,13 +120,13 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
             ))}
           </div>
           <span
-            className="text-sm text-gray-600 font-bold"
+            className="text-sm text-foreground font-bold"
             aria-label={`Rating: ${business.total_score} out of 5`}
           >
             {business.total_score}
           </span>
           <span
-            className="text-sm text-gray-500"
+            className="text-sm text-muted-foreground"
             aria-label={`${business.reviews_count.toLocaleString()} reviews`}
           >
             ({business.reviews_count.toLocaleString()})
@@ -135,7 +135,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
 
         <Link
           href={`/state/${business.state.code}/city/${business.city.slug}`}
-          className="text-sm text-gray-600 hover:text-blue-500"
+          className="text-sm text-muted-foreground hover:text-interactive"
           prefetch={false}
           aria-label={`View businesses in ${business.city.name}, ${business.state.name}`}
         >

@@ -258,7 +258,7 @@ async function Page({ params }) {
           }}
         />
 
-        <div className="min-h-screen bg-gray-50 pb-16 md:pb-32">
+        <div className="min-h-screen bg-background pb-16 md:pb-32">
           {/* Hero Section with Business Image */}
           <BusinessHeroBanner
             src={business.image_url}
@@ -270,7 +270,7 @@ async function Page({ params }) {
             <div className="w-full p-3 sm:p-4 md:p-6 text-white max-w-7xl mx-auto hidden md:block">
               <BreadcrumbList
                 items={breadcrumbItems}
-                navStyles="text-gray-600 mb-4 md:mb-6 bg-slate-900 rounded-lg p-2 pl-4 pr-8 w-fit text-sm"
+                navStyles="mb-4 md:mb-6 bg-black/40 backdrop-blur-sm rounded-lg p-2 pl-4 pr-8 w-fit text-sm"
               />
             </div>
 
@@ -279,8 +279,8 @@ async function Page({ params }) {
                 {business.title}
               </h1>
               {business.local_note && (
-                <p className="text-sm md:text-base italic text-gray-200 mb-2 md:mb-4">
-                  📍 {business.local_note}
+                <p className="text-sm md:text-base italic text-white/80 mb-2 md:mb-4">
+                  {business.local_note}
                 </p>
               )}
               <div className="flex items-center gap-2 flex-wrap">
@@ -323,15 +323,15 @@ async function Page({ params }) {
                 />
 
                 {/* Map Section */}
-                <div className="order-6 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-3">
+                <div className="order-6 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-3">
                   <BusinessSectionHeader
                     title="Business Location"
                     businessId={business.id}
                   />
                   <div className="space-y-3 md:space-y-4">
                     <div className="flex items-start gap-2 md:gap-3">
-                      <MapPin className="w-4 h-4 md:w-5 md:h-5 text-gray-600 mt-1 flex-shrink-0" />
-                      <p className="text-sm md:text-base text-gray-700 break-words">
+                      <MapPin className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground mt-1 flex-shrink-0" />
+                      <p className="text-sm md:text-base text-foreground break-words">
                         {business.address}
                       </p>
                     </div>
@@ -339,13 +339,13 @@ async function Page({ params }) {
                     <div className="flex items-center gap-2 flex-wrap">
                       <Link
                         href={`/state/${business.state.code}/city/${business.city.slug}`}
-                        className="text-white bg-blue-600 rounded-full px-4 md:px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95 text-sm md:text-base"
+                        className="text-primary bg-tint rounded-full px-4 md:px-6 font-medium py-1 hover:bg-secondary duration-200 text-sm md:text-base"
                       >
                         Radiator Repair in {business.city.name}
                       </Link>
                       <Link
                         href={`/state/${business.state.code}`}
-                        className="text-white bg-blue-600 rounded-full px-4 md:px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95 text-sm md:text-base"
+                        className="text-primary bg-tint rounded-full px-4 md:px-6 font-medium py-1 hover:bg-secondary duration-200 text-sm md:text-base"
                       >
                         {business.state.name} Services
                       </Link>
@@ -366,12 +366,12 @@ async function Page({ params }) {
                             title={`Map showing location of ${business.title}`}
                           />
                         ) : (
-                          <div className="flex h-full items-center justify-center bg-gray-100 px-6 text-center">
+                          <div className="flex h-full items-center justify-center bg-muted px-6 text-center">
                             <Link
                               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
+                              className="inline-flex items-center gap-2 text-interactive hover:text-primary font-medium"
                             >
                               <MapPin className="w-5 h-5" />
                               View {business.address || business.title} on
@@ -388,7 +388,7 @@ async function Page({ params }) {
                           href={business.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                         >
                           <ExternalLink className="w-4 h-4" />
                           View on Google Maps
@@ -402,13 +402,13 @@ async function Page({ params }) {
               {/* Sidebar — contents on mobile so reviews/contact/hours sit after About */}
               <div className="contents lg:flex lg:flex-col lg:gap-6">
                 {/* Rating Summary */}
-                <div className="order-2 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-1">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
+                <div className="order-2 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-1">
+                  <h2 className="text-xl md:text-2xl font-bold text-foreground mb-3 md:mb-4 font-heading">
                     Customer Reviews
                   </h2>
                   <div className="text-center">
                     <div className="flex flex-col items-center justify-center gap-4 mb-2">
-                      <span className="text-3xl font-bold text-gray-900 bg-gray-100 px-4 py-2 rounded-md">
+                      <span className="text-3xl font-bold text-foreground bg-muted px-4 py-2 rounded-md">
                         {business.total_score}
                       </span>
                       <div className="flex items-center">
@@ -417,13 +417,13 @@ async function Page({ params }) {
                             key={i}
                             className={`w-6 h-6 ${i < Math.floor(business.total_score)
                               ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
+                              : "text-border"
                               }`}
                           />
                         ))}
                       </div>
                     </div>
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">
                       Based on {business.reviews_count.toLocaleString()} Verified Reviews
                     </p>
 
@@ -432,7 +432,7 @@ async function Page({ params }) {
                         href={business.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-4 text-sm text-white bg-blue-600 rounded-full px-6 font-medium py-2 hover:bg-blue-700 duration-300 hover:scale-95 flex items-center gap-2 justify-center"
+                        className="mt-4 text-sm text-primary-foreground bg-primary rounded-full px-6 font-medium py-2 hover:bg-primary/90 duration-200 flex items-center gap-2 justify-center"
                       >
                         View All Reviews
                         <ExternalLink className="size-4" />

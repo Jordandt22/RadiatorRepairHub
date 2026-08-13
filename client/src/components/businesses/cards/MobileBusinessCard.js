@@ -12,8 +12,8 @@ function MobileBusinessCard({ business }) {
       className="md:hidden block h-full"
       prefetch={false}
     >
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full">
-        <div className="relative w-full h-56 bg-gray-200">
+      <div className="bg-card rounded-lg border border-border overflow-hidden h-full">
+        <div className="relative w-full h-56 bg-muted">
           <BusinessImage
             src={business.image_url}
             businessId={business.id}
@@ -31,7 +31,7 @@ function MobileBusinessCard({ business }) {
         </div>
 
         <div className="p-5">
-          <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 font-heading text-lg">
+          <h3 className="font-semibold text-foreground mb-1 line-clamp-2 font-heading text-lg">
             {business.title}
           </h3>
 
@@ -42,7 +42,7 @@ function MobileBusinessCard({ business }) {
                   key={business.title + "-" + i}
                   className={`w-4 h-4 ${i < Math.floor(business.total_score)
                     ? "text-yellow-400"
-                    : "text-gray-300"
+                    : "text-border"
                     }`}
                   fill="currentColor"
                   viewBox="0 0 20 20"
@@ -51,17 +51,17 @@ function MobileBusinessCard({ business }) {
                 </svg>
               ))}
             </div>
-            <span className="text-sm text-gray-600 font-bold">
+            <span className="text-sm text-foreground font-bold">
               {business.total_score}
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-muted-foreground">
               ({business.reviews_count.toLocaleString()})
             </span>
             <OpenStatus hours={business.hours} timezone={business.timezone} />
           </div>
-          <p className="text-sm text-gray-600 mb-4">{business.address}</p>
+          <p className="text-sm text-muted-foreground mb-4">{business.address}</p>
 
-          <p className="w-fit text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-md  capitalize">
+          <p className="w-fit text-sm font-medium text-primary bg-tint px-2 py-1 rounded-md capitalize">
             {business.primary_category.name}
           </p>
         </div>

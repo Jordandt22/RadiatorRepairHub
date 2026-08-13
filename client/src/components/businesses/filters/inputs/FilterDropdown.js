@@ -19,7 +19,7 @@ function FilterDropdown({
     <div>
       <label
         htmlFor={`filter-${name}`}
-        className="block text-sm font-medium text-gray-700 mb-2"
+        className="block text-sm font-medium text-foreground mb-2"
       >
         {label}
       </label>
@@ -28,7 +28,7 @@ function FilterDropdown({
           id={`filter-${name}`}
           value={filters[name]}
           onChange={(e) => updateFilter(name, e.target.value)}
-          className="w-full px-3 py-2 pr-10 border-2 border-gray-200 rounded-md cursor-pointer appearance-none focus:border-blue-500 outline-none duration-200"
+          className="w-full px-3 py-2 pr-10 border border-border bg-card rounded-md cursor-pointer appearance-none focus:border-ring outline-none duration-200"
           aria-label={`Filter by ${label.toLowerCase()}`}
         >
           <option value="">All {inputLabel}</option>
@@ -47,7 +47,7 @@ function FilterDropdown({
         {/* Custom Chevron Icon */}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
           <svg
-            className="w-4 h-4 text-gray-400"
+            className="w-4 h-4 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

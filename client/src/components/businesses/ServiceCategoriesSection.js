@@ -33,13 +33,13 @@ const MAX_SECONDARY = 10;
 
 function CategoryChip({ label, onRemove, disabled }) {
   return (
-    <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-800 capitalize">
+    <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-tint px-2.5 py-1 text-sm font-medium text-primary capitalize">
       <span className="truncate">{label}</span>
       <button
         type="button"
         onClick={onRemove}
         disabled={disabled}
-        className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+        className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-primary hover:bg-secondary disabled:opacity-50"
         aria-label={`Remove ${label}`}
       >
         <X className="size-3.5" />
@@ -253,7 +253,7 @@ function ServiceCategoriesSectionContent({
     isSubmitting || !hasChanges || loadingCategories || !primary?.id;
 
   return (
-    <div className="order-5 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-2">
+    <div className="order-5 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-2">
       <BusinessSectionHeader
         title="Service Categories"
         businessId={businessId}
@@ -261,23 +261,23 @@ function ServiceCategoriesSectionContent({
       />
       <div className="space-y-3 md:space-y-4">
         <div>
-          <h3 className="mb-2 text-base font-semibold text-gray-800 md:text-lg">
+          <h3 className="mb-2 text-base font-semibold text-foreground md:text-lg">
             Primary Category
           </h3>
           {initialPrimary ? (
             <Link
               href={`/category/${initialPrimary.slug}`}
-              className="inline-block rounded-lg bg-blue-100 px-3 py-1.5 text-sm font-medium capitalize text-blue-800 transition-colors duration-300 hover:bg-blue-500 hover:text-white md:px-4 md:py-2 md:text-base"
+              className="inline-block rounded-lg bg-tint px-3 py-1.5 text-sm font-medium capitalize text-primary transition-colors duration-300 hover:bg-secondary md:px-4 md:py-2 md:text-base"
             >
               {initialPrimary.name}
             </Link>
           ) : (
-            <p className="text-sm text-gray-600 md:text-base">None</p>
+            <p className="text-sm text-muted-foreground md:text-base">None</p>
           )}
         </div>
 
         <div>
-          <h3 className="mb-2 text-base font-semibold text-gray-800 md:text-lg">
+          <h3 className="mb-2 text-base font-semibold text-foreground md:text-lg">
             Secondary Categories
           </h3>
           {initialSecondary?.length > 0 ? (
@@ -286,14 +286,14 @@ function ServiceCategoriesSectionContent({
                 <Link
                   href={`/search?secondary_categories=${category.id}`}
                   key={category.id}
-                  className="rounded-full bg-gray-100 px-3 py-1 text-sm capitalize text-gray-700 duration-300 hover:scale-95 hover:bg-gray-200"
+                  className="rounded-full bg-muted px-3 py-1 text-sm capitalize text-foreground duration-200 hover:bg-secondary"
                 >
                   {category.name}
                 </Link>
               ))}
             </div>
           ) : (
-            <p className="text-gray-600">None</p>
+            <p className="text-muted-foreground">None</p>
           )}
         </div>
       </div>
@@ -310,7 +310,7 @@ function ServiceCategoriesSectionContent({
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800">
+              <label className="text-sm font-medium text-foreground">
                 Primary category <span className="text-red-500">*</span>
               </label>
               <Combobox
@@ -362,9 +362,9 @@ function ServiceCategoriesSectionContent({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800">
+              <label className="text-sm font-medium text-foreground">
                 Secondary categories{" "}
-                <span className="font-normal text-gray-500">
+                <span className="font-normal text-muted-foreground">
                   ({secondary.length}/{MAX_SECONDARY})
                 </span>
               </label>
@@ -447,7 +447,7 @@ function ServiceCategoriesSectionContent({
               <Button
                 type="submit"
                 disabled={saveDisabled}
-                className="bg-blue-600 hover:bg-blue-700"
+               
               >
                 {isSubmitting ? "Saving…" : "Save"}
               </Button>

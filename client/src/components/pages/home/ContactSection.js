@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Mail, Phone, Clock, MessageCircle, ArrowRight } from "lucide-react";
+import { Mail, Phone, Clock, ArrowRight } from "lucide-react";
 import { getBusinessEmail, getBusinessPhoneDigits } from "@/lib/businessContactInfo";
 import SitePhoneLinks from "@/components/contact/SitePhoneLinks";
 
@@ -9,13 +9,13 @@ function ContactSection() {
   const hasPhone = Boolean(getBusinessPhoneDigits());
 
   return (
-    <section className="py-20 mb-32 bg-white text-white">
+    <section className="py-16 mb-16 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-4xl text-gray-900 font-bold mb-4 font-heading">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground mb-3 font-heading">
             Get In Touch
           </h2>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
             Questions about the RadiatorRepairHub directory, listings, or
             partnerships? Contact our team — to reach a repair shop, use Quick
             Contact on their business page.
@@ -23,20 +23,23 @@ function ContactSection() {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col md:flex-row align-centers justify-center gap-4 md:gap-8 lg:gap-16 mb-12 md:mb-16 flex-wrap">
+          <div className="flex flex-col md:flex-row justify-center gap-6 md:gap-12 lg:gap-16 mb-12 flex-wrap">
             {email ? (
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-white" />
-                </div>
+              <div className="flex items-start gap-4">
+                <Mail
+                  className="w-6 h-6 text-primary shrink-0 mt-0.5"
+                  aria-hidden="true"
+                />
                 <div>
-                  <h3 className="font-semibold text-lg mb-1 text-gray-900">
+                  <h3 className="font-semibold text-lg mb-1 text-foreground">
                     Email Us
                   </h3>
-                  <p className="text-gray-600 mb-2">Send us an email anytime</p>
+                  <p className="text-muted-foreground text-sm mb-2">
+                    Send us an email anytime
+                  </p>
                   <a
                     href={`mailto:${email}`}
-                    className="text-blue-600 hover:text-blue-700 transition-colors duration-300 break-all"
+                    className="text-interactive hover:text-primary transition-colors duration-200 break-all"
                   >
                     {email}
                   </a>
@@ -45,15 +48,16 @@ function ContactSection() {
             ) : null}
 
             {hasPhone ? (
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Phone className="w-6 h-6 text-white" />
-                </div>
+              <div className="flex items-start gap-4">
+                <Phone
+                  className="w-6 h-6 text-primary shrink-0 mt-0.5"
+                  aria-hidden="true"
+                />
                 <div>
-                  <h3 className="font-semibold text-lg mb-1 text-gray-900">
+                  <h3 className="font-semibold text-lg mb-1 text-foreground">
                     Call or Text Us
                   </h3>
-                  <p className="text-gray-600 mb-2">
+                  <p className="text-muted-foreground text-sm mb-2">
                     Phone and SMS for directory support
                   </p>
                   <SitePhoneLinks showLabel={false} />
@@ -61,15 +65,16 @@ function ContactSection() {
               </div>
             ) : null}
 
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-white" />
-              </div>
+            <div className="flex items-start gap-4">
+              <Clock
+                className="w-6 h-6 text-primary shrink-0 mt-0.5"
+                aria-hidden="true"
+              />
               <div>
-                <h3 className="font-semibold text-lg mb-1 text-gray-900">
+                <h3 className="font-semibold text-lg mb-1 text-foreground">
                   Quick Response
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-muted-foreground text-sm">
                   We typically respond within 24 hours
                 </p>
               </div>
@@ -77,36 +82,31 @@ function ContactSection() {
           </div>
 
           <div className="text-center">
-            <div className="bg-blue-50 rounded-xl p-8 border border-blue-200">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-                  <MessageCircle className="w-8 h-8 text-white" />
-                </div>
-              </div>
-              <h3 className="text-2xl font-semibold mb-4 font-heading text-gray-900">
+            <div className="bg-card rounded-lg p-8 border border-border">
+              <h3 className="text-2xl font-semibold mb-4 font-heading text-foreground">
                 Have a Question?
               </h3>
-              <p className="text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto leading-relaxed">
                 <strong>Directory support</strong>, listing questions,{" "}
                 <strong>partnerships</strong>, or website feedback? Message the
                 RadiatorRepairHub team. Want your shop in the directory?{" "}
                 <strong>Get listed</strong> for free. Need a repair shop?
                 Contact them from their business page.
               </p>
-              <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
-                <Link
-                  href="/get-listed"
-                  className="w-full flex justify-center align-center md:w-auto items-center px-8 py-2 border-2 rounded-full bg-white border-blue-600 text-blue-600 font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                  <span>Get Listed</span>
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Link>
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4">
                 <Link
                   href="/contact"
-                  className="w-full flex justify-center align-center md:w-auto items-center px-8 py-2 border-2 rounded-full border-blue-600 bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="w-full md:w-auto inline-flex justify-center items-center px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors duration-200"
                 >
                   <span>Contact Us</span>
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                  <ArrowRight className="w-4 h-4 ml-2" aria-hidden="true" />
+                </Link>
+                <Link
+                  href="/get-listed"
+                  className="inline-flex items-center text-interactive font-medium hover:text-primary transition-colors duration-200"
+                >
+                  <span>Get Listed</span>
+                  <ArrowRight className="w-4 h-4 ml-2" aria-hidden="true" />
                 </Link>
               </div>
             </div>

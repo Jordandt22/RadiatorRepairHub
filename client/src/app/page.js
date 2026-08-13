@@ -70,14 +70,14 @@ export default async function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <HeroContent />
 
       <FeaturedBusinesses />
 
-      <section className="pt-8 pb-28 bg-white">
+      <section className="py-16 bg-background">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-lg text-gray-700 leading-relaxed">
+          <p className="text-lg text-muted-foreground leading-relaxed">
             When your car&apos;s radiator needs repair, finding a trusted{" "}
             <strong>radiator repair shop near you</strong> is crucial. Our
             comprehensive directory connects you with certified specialists who
@@ -85,28 +85,28 @@ export default async function Home() {
             system. From{" "}
             <Link
               href="/category/radiator-repair-service"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-interactive hover:text-primary underline"
             >
               radiator repair services
             </Link>{" "}
             to{" "}
             <Link
               href="/category/auto-repair-shop"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-interactive hover:text-primary underline"
             >
               general auto repair
             </Link>
             , find the right professional for your needs. Browse our{" "}
             <Link
               href="/categories"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-interactive hover:text-primary underline"
             >
               service categories
             </Link>{" "}
             or search by{" "}
             <Link
               href="/states"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-interactive hover:text-primary underline"
             >
               state and city
             </Link>{" "}
@@ -114,14 +114,14 @@ export default async function Home() {
             Browse our{" "}
             <Link
               href="/blogs"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-interactive hover:text-primary underline"
             >
               cooling system guides
             </Link>{" "}
             or shop{" "}
             <Link
               href="/shop"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-interactive hover:text-primary underline"
             >
               tools and supplies
             </Link>
@@ -139,7 +139,7 @@ export default async function Home() {
       <WhyChoose />
 
       {featuredProducts.length > 0 ? (
-        <section className="bg-white py-16">
+        <section className="bg-background py-16">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <AffiliateProductsSection
               products={featuredProducts}
@@ -153,28 +153,28 @@ export default async function Home() {
 
       <FAQSection faqs={faqs} includeSchema={false} />
 
-      <section className="bg-blue-50 py-8">
+      <section className="bg-tint py-10">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <p className="mb-4 text-lg text-gray-700">
+          <p className="mb-5 text-lg text-foreground">
             Have more questions? Check out our comprehensive FAQ page for
             detailed answers—or explore guides and tools for cooling system care.
           </p>
-          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-8">
             <Link
               href="/faq"
-              className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:bg-blue-700"
+              className="inline-flex items-center rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
             >
               View All FAQs
             </Link>
             <Link
               href="/blogs"
-              className="inline-flex items-center rounded-lg border border-blue-600 px-6 py-3 font-semibold text-blue-700 transition-colors duration-300 hover:bg-blue-100"
+              className="inline-flex items-center font-medium text-interactive transition-colors duration-200 hover:text-primary"
             >
               Read Blogs
             </Link>
             <Link
               href="/shop"
-              className="inline-flex items-center rounded-lg border border-blue-600 px-6 py-3 font-semibold text-blue-700 transition-colors duration-300 hover:bg-blue-100"
+              className="inline-flex items-center font-medium text-interactive transition-colors duration-200 hover:text-primary"
             >
               Tools & Supplies
             </Link>

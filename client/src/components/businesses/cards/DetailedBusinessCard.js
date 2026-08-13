@@ -10,9 +10,9 @@ import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 
 function DetailedBusinessCard({ business }) {
   return (
-    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:-translate-y-3 overflow-hidden">
+    <div className="bg-card rounded-lg border border-border hover:border-interactive/50 transition-colors duration-300 overflow-hidden">
       {/* Business Image */}
-      <div className="relative w-full h-48 bg-gray-200">
+      <div className="relative w-full h-48 bg-muted">
         <BusinessImage
           src={business.image_url}
           businessId={business.id}
@@ -31,12 +31,12 @@ function DetailedBusinessCard({ business }) {
       <div className="p-6">
         <div className="flex flex-col items-start justify-between mb-4">
           <div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-1 font-heading line-clamp-1">
+            <h3 className="text-xl font-semibold text-foreground mb-1 font-heading line-clamp-1">
               {business.title}
             </h3>
             <Link
               href={`/state/${business.state.code}/city/${business.city.slug}`}
-              className="flex items-center text-gray-600 mb-2 hover:text-blue-600 duration-300"
+              className="flex items-center text-muted-foreground mb-2 hover:text-interactive duration-300"
             >
               <MapPin className="w-4 h-4 mr-1" />
               <span className="text-sm">{business.address}</span>
@@ -45,18 +45,18 @@ function DetailedBusinessCard({ business }) {
           <div className="flex gap-2 items-center flex-wrap">
             <div className="flex items-center">
               <Star className="w-4 h-4 text-yellow-400 fill-current" />
-              <span className="ml-1 font-semibold text-gray-900">
+              <span className="ml-1 font-semibold text-foreground">
                 {business.total_score}
               </span>
             </div>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-muted-foreground">
               ({business.reviews_count} reviews)
             </span>
             <OpenStatus hours={business.hours} timezone={business.timezone} />
           </div>
         </div>
 
-        <p className="text-gray-600 mb-4 text-sm leading-relaxed line-clamp-3">
+        <p className="text-muted-foreground mb-4 text-sm leading-relaxed line-clamp-3">
           {business.description}
         </p>
 
@@ -64,7 +64,7 @@ function DetailedBusinessCard({ business }) {
           <div className="flex flex-wrap gap-2">
             <Link
               href={`/search?primary_category_id=${business.primary_category.id}`}
-              className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full capitalize hover:bg-blue-500 hover:text-white duration-300"
+              className="px-3 py-1 bg-tint text-primary text-xs rounded-full capitalize hover:bg-secondary duration-300"
             >
               {business.primary_category.name}
             </Link>
@@ -74,7 +74,7 @@ function DetailedBusinessCard({ business }) {
                 <Link
                   href={`/search?secondary_categories=${category.id}`}
                   key={business.id + "-" + category.id}
-                  className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full capitalize hover:bg-blue-500 hover:text-white duration-300"
+                  className="px-3 py-1 bg-tint text-primary text-xs rounded-full capitalize hover:bg-secondary duration-300"
                 >
                   {category.name}
                 </Link>
@@ -82,7 +82,7 @@ function DetailedBusinessCard({ business }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-2 pt-4 border-t border-gray-100">
+        <div className="flex items-center justify-between gap-2 pt-4 border-t border-border">
           <QuickContactDialog
             businessId={business.id}
             businessName={business.title}
@@ -91,7 +91,7 @@ function DetailedBusinessCard({ business }) {
             trigger={
               <Button
                 type="button"
-                className="h-9 gap-1.5 bg-blue-600 text-white hover:bg-blue-600 cursor-pointer hover:scale-105 hover:shadow-md transition-all duration-200 px-8"
+                className="h-9 gap-1.5 cursor-pointer px-8"
               />
             }
           >
@@ -100,7 +100,7 @@ function DetailedBusinessCard({ business }) {
           </QuickContactDialog>
           <Link
             href={`/business/${business.slug}`}
-            className="inline-flex items-center gap-1.5 bg-secondary px-4 py-2 rounded-full text-sm font-medium hover:shadow-md duration-300 hover:scale-105"
+            className="inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground px-4 py-2 rounded-full text-sm font-medium hover:bg-tint duration-300"
           >
             View Details
             <MoveRight className="w-4 h-4" />

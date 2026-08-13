@@ -52,7 +52,7 @@ async function ShopPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {products.length > 0 ? (
         <script
           type="application/ld+json"
@@ -64,21 +64,21 @@ async function ShopPage() {
         <BreadcrumbList items={breadcrumbItems} variant="light" />
 
         <header className="mb-10">
-          <h1 className="font-heading text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground md:text-4xl">
             Shop
           </h1>
-          <p className="mt-3 max-w-2xl text-lg text-gray-600">
+          <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
             Cooling system tools and supplies we recommend alongside our repair
             guides, chosen for common DIY top-offs, diagnosis, and maintenance.
           </p>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-muted-foreground/80">
             As an Amazon Associate, RadiatorRepairHub earns from qualifying
             purchases.
           </p>
         </header>
 
-        <section className="mb-10 space-y-4 text-base leading-relaxed text-gray-700 md:text-lg">
-          <p className="bg-gray-100 p-4 rounded-lg">
+        <section className="mb-10 space-y-4 text-base leading-relaxed text-foreground md:text-lg">
+          <p className="bg-tint p-4 rounded-lg">
             Start with the right coolant for your vehicle, a correctly rated
             radiator cap, and simple tools that help you spot overheating early.
             Always match coolant type and cap pressure to your owner&apos;s
@@ -88,21 +88,21 @@ async function ShopPage() {
             Prefer a walkthrough first? Read{" "}
             <Link
               href="/blogs/radiator-cap-symptoms-and-replacement"
-              className="font-medium text-blue-600 underline decoration-blue-600/30 underline-offset-2 hover:text-blue-800"
+              className="font-medium text-interactive underline decoration-interactive/30 underline-offset-2 hover:text-primary"
             >
               radiator cap symptoms
             </Link>
             ,{" "}
             <Link
               href="/blogs/radiator-flush-what-to-expect-and-cost"
-              className="font-medium text-blue-600 underline decoration-blue-600/30 underline-offset-2 hover:text-blue-800"
+              className="font-medium text-interactive underline decoration-interactive/30 underline-offset-2 hover:text-primary"
             >
               what a radiator flush involves
             </Link>
             , or{" "}
             <Link
               href="/blogs/why-is-my-car-overheating"
-              className="font-medium text-blue-600 underline decoration-blue-600/30 underline-offset-2 hover:text-blue-800"
+              className="font-medium text-interactive underline decoration-interactive/30 underline-offset-2 hover:text-primary"
             >
               why cars overheat
             </Link>
@@ -112,19 +112,19 @@ async function ShopPage() {
 
         <ShopProductsList products={products} />
 
-        <section className="mt-14 border-t border-gray-200 pt-10">
+        <section className="mt-14 border-t border-border pt-10">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="font-heading text-xl font-bold text-gray-900">
+              <h2 className="font-heading text-xl font-bold text-foreground">
                 Need Guidance First?
               </h2>
-              <p className="mt-1 text-gray-600">
+              <p className="mt-1 text-muted-foreground">
                 Read our cooling system guides before you buy or DIY.
               </p>
             </div>
             <Link
               href="/blogs"
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               View blogs
               <ArrowRight className="h-4 w-4" />

@@ -128,10 +128,10 @@ function Navbar() {
   ) : (
     <Link
       href="/signin"
-      className={`px-4 py-1 rounded-full font-medium transition-all duration-300 ${
+      className={`px-4 py-1 rounded-full font-medium transition-colors duration-300 ${
         isHomePage
-          ? "border-2 border-white/80 text-white hover:bg-white/20"
-          : "border-2 border-blue-600 text-blue-600 hover:bg-blue-100"
+          ? "border border-white/60 text-white hover:bg-white/10"
+          : "border border-primary text-primary hover:bg-tint"
       }`}
       aria-label="Sign in to your business account"
     >
@@ -142,8 +142,8 @@ function Navbar() {
   const linkClassName = (path) =>
     `block px-4 py-3 text-lg font-medium rounded-lg transition-colors duration-200 ${
       pathname === path
-        ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-        : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+        ? "bg-tint text-primary"
+        : "text-foreground hover:bg-muted hover:text-primary"
     }`;
 
   return (
@@ -151,8 +151,8 @@ function Navbar() {
       className={`${
         isHomePage
           ? "bg-transparent absolute top-0 left-0 right-0 z-50"
-          : "bg-white shadow-sm border-b border-gray-200"
-      } transition-all duration-300`}
+          : "bg-card border-b border-border"
+      } transition-colors duration-300`}
       role="navigation"
       aria-label="Main navigation"
     >
@@ -173,8 +173,8 @@ function Navbar() {
                 className="w-10 h-10"
               />
               <span
-                className={`text-2xl font-bold font-heading ${
-                  isHomePage ? "text-white" : "text-blue-600"
+                className={`text-2xl font-bold tracking-tight font-heading ${
+                  isHomePage ? "text-white" : "text-primary"
                 } transition-colors duration-300`}
               >
                 RadiatorRepairHub
@@ -189,8 +189,8 @@ function Navbar() {
                   href={link.path}
                   className={`${
                     isHomePage
-                      ? "text-white hover:bg-blue-500 hover:text-white"
-                      : "text-gray-600 hover:text-blue-600"
+                      ? "text-white/90 hover:bg-white/10 hover:text-white"
+                      : "text-muted-foreground hover:text-primary"
                   } rounded-full px-3 py-2 text-sm font-medium transition-colors duration-300`}
                 >
                   {link.label}
@@ -198,7 +198,11 @@ function Navbar() {
               ))}
               <Link
                 href="/search?page=1&sort=most_reviews"
-                className="flex items-center space-x-2 px-4 py-1 rounded-full font-medium transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white hover:scale-105"
+                className={`flex items-center space-x-2 px-4 py-1 rounded-full font-medium transition-colors duration-300 ${
+                  isHomePage
+                    ? "bg-white text-primary hover:bg-tint"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                }`}
                 aria-label="Search for radiator repair services"
               >
                 <Search className="w-4 h-4" aria-hidden="true" />
@@ -212,8 +216,8 @@ function Navbar() {
               onClick={toggleMobileMenu}
               className={`${
                 isHomePage
-                  ? "text-white hover:text-blue-200"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "text-white hover:text-white/70"
+                  : "text-muted-foreground hover:text-foreground"
               } transition-colors duration-300`}
               aria-label={
                 isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"
@@ -243,7 +247,7 @@ function Navbar() {
       {/* Mobile Sidebar */}
       <div
         id="mobile-menu"
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
+        className={`fixed top-0 right-0 h-full w-80 bg-card border-l border-border shadow-lg transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
           isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
         role="dialog"
@@ -252,7 +256,7 @@ function Navbar() {
       >
         <div className="flex flex-col h-full">
           {/* Mobile Sidebar Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between p-6 border-b border-border">
             <Link
               href="/"
               className="flex items-center space-x-3"
@@ -266,13 +270,13 @@ function Navbar() {
                 height={32}
                 className="w-8 h-8"
               />
-              <span className="text-xl font-bold font-heading text-blue-600">
+              <span className="text-xl font-bold tracking-tight font-heading text-primary">
                 RadiatorRepairHub
               </span>
             </Link>
             <button
               onClick={closeMobileMenu}
-              className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+              className="text-muted-foreground hover:text-foreground transition-colors duration-200"
               aria-label="Close mobile menu"
             >
               <X className="h-6 w-6" aria-hidden="true" />
@@ -280,11 +284,11 @@ function Navbar() {
           </div>
 
           {/* Mobile Search Button */}
-          <div className="p-6 border-b border-gray-200 space-y-3">
+          <div className="p-6 border-b border-border space-y-3">
             <Link
               href="/search?page=1&sort=most_reviews"
               onClick={closeMobileMenu}
-              className="flex items-center justify-center space-x-2 w-full px-4 py-3 rounded-lg font-medium transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white"
+              className="flex items-center justify-center space-x-2 w-full px-4 py-3 rounded-lg font-medium transition-colors duration-200 bg-primary hover:bg-primary/90 text-primary-foreground"
               aria-label="Search for radiator repair businesses"
             >
               <Search className="w-5 h-5" aria-hidden="true" />
@@ -294,7 +298,7 @@ function Navbar() {
               <Link
                 href="/signin"
                 onClick={closeMobileMenu}
-                className="flex items-center justify-center w-full px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-blue-600 text-blue-600 hover:bg-blue-50"
+                className="flex items-center justify-center w-full px-4 py-3 rounded-lg font-medium transition-colors duration-200 border border-primary text-primary hover:bg-tint"
                 aria-label="Sign in to your business account"
               >
                 Sign In
@@ -322,7 +326,7 @@ function Navbar() {
 
               {isSignedIn ? (
                 <>
-                  <div className="border-t border-gray-200 pt-4 space-y-4">
+                  <div className="border-t border-border pt-4 space-y-4">
                     {signedInMobileLinks.map((link) => (
                       <Link
                         key={link.label}
@@ -340,7 +344,7 @@ function Navbar() {
           </div>
 
           {isSignedIn ? (
-            <div className="p-6 border-t border-gray-200">
+            <div className="p-6 border-t border-border">
               <button
                 type="button"
                 onClick={handleMobileLogout}

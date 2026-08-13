@@ -160,7 +160,7 @@ function ContactInformationSectionContent({
   };
 
   return (
-    <div className="order-3 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-2">
+    <div className="order-3 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-2">
       <BusinessSectionHeader
         title="Contact Information"
         businessId={businessId}
@@ -201,7 +201,7 @@ function ContactInformationSectionContent({
             <div className="space-y-1.5">
               <label
                 htmlFor="owner-contact-phone"
-                className="text-sm font-medium text-gray-800"
+                className="text-sm font-medium text-foreground"
               >
                 Phone number <span className="text-red-500">*</span>
               </label>
@@ -225,7 +225,7 @@ function ContactInformationSectionContent({
             <div className="space-y-1.5">
               <label
                 htmlFor="owner-contact-email"
-                className="text-sm font-medium text-gray-800"
+                className="text-sm font-medium text-foreground"
               >
                 Email
               </label>
@@ -241,7 +241,7 @@ function ContactInformationSectionContent({
                 autoComplete="email"
                 aria-invalid={Boolean(errors.email)}
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 This email is for display and not sign in.
               </p>
               {errors.email ? (
@@ -252,7 +252,7 @@ function ContactInformationSectionContent({
             <div className="space-y-1.5">
               <label
                 htmlFor="owner-contact-website"
-                className="text-sm font-medium text-gray-800"
+                className="text-sm font-medium text-foreground"
               >
                 Website URL
               </label>
@@ -289,7 +289,7 @@ function ContactInformationSectionContent({
               <Button
                 type="submit"
                 disabled={isSubmitting || !hasChanges}
-                className="bg-blue-600 hover:bg-blue-700"
+               
               >
                 {isSubmitting ? "Saving…" : "Save"}
               </Button>

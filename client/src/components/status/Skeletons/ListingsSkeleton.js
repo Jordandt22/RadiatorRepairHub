@@ -11,14 +11,14 @@ function ListingsSkeleton() {
             {/* Skeleton Card Container */}
             <div className="relative w-full h-full">
               {/* Skeleton Card */}
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full animate-pulse">
+              <div className="bg-card rounded-lg border border-border overflow-hidden h-full animate-pulse">
                 {/* Image skeleton */}
-                <div className="relative w-full h-56 bg-gray-200">
-                  <div className="absolute inset-0 w-full h-full bg-gray-300 animate-pulse"></div>
+                <div className="relative w-full h-56 bg-muted">
+                  <div className="absolute inset-0 w-full h-full bg-border/60 animate-pulse"></div>
 
                   {/* Category badge skeleton */}
                   <div className="absolute bottom-3 left-3">
-                    <div className="h-6 w-20 bg-gray-300 rounded-md animate-pulse"></div>
+                    <div className="h-6 w-20 bg-border rounded-md animate-pulse"></div>
                   </div>
                 </div>
 
@@ -26,8 +26,8 @@ function ListingsSkeleton() {
                 <div className="p-5">
                   {/* Title skeleton */}
                   <div className="mb-3">
-                    <div className="h-6 bg-gray-300 rounded animate-pulse mb-2"></div>
-                    <div className="h-4 bg-gray-300 rounded animate-pulse w-3/4"></div>
+                    <div className="h-6 bg-border rounded animate-pulse mb-2"></div>
+                    <div className="h-4 bg-border rounded animate-pulse w-3/4"></div>
                   </div>
 
                   {/* Address skeleton */}
@@ -36,12 +36,12 @@ function ListingsSkeleton() {
                       {[...Array(5)].map((_, i) => (
                         <div
                           key={i}
-                          className="w-4 h-4 bg-gray-300 rounded animate-pulse"
+                          className="w-4 h-4 bg-border rounded animate-pulse"
                         ></div>
                       ))}
                     </div>
-                    <div className="ml-2 h-4 w-8 bg-gray-300 rounded animate-pulse"></div>
-                    <div className="ml-1 h-4 w-12 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="ml-2 h-4 w-8 bg-border rounded animate-pulse"></div>
+                    <div className="ml-1 h-4 w-12 bg-border rounded animate-pulse"></div>
                   </div>
                 </div>
               </div>

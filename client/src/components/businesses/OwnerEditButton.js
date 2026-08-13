@@ -15,7 +15,7 @@ export default function OwnerEditButton({
       aria-label={ariaLabel}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white p-2 text-gray-600 transition-all hover:scale-105 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 disabled:pointer-events-none disabled:opacity-50 disabled:hover:scale-100 ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-lg border border-border bg-card p-2 text-muted-foreground transition-colors hover:bg-tint hover:text-primary disabled:pointer-events-none disabled:opacity-50 ${className}`}
     >
       <Pencil className="size-4" />
     </Button>

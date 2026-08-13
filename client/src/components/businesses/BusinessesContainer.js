@@ -37,7 +37,7 @@ async function BusinessesContainer({
     await fetchBusinessesSearch(searchBody, page, LISTINGS_PAGE_LIMIT);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {stateData ? (
         <Header stateData={stateData} cityData={cityData} />
       ) : (

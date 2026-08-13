@@ -13,36 +13,37 @@ function PopularLocations() {
   ];
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-16 bg-card border-y border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4 font-heading">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground mb-3 font-heading">
             Popular States
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
             Find radiator repair shops in the most searched states across the
             United States
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {topStates.map((state, index) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {topStates.map((state) => (
             <Link
               key={state.code}
               href={`/state/${state.code}`}
-              className="bg-gray-50 rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 cursor-pointer group hover:scale-105 hover:-translate-y-1 animate-fade-in-up hover:bg-blue-50 hover:border-blue-500 border-2 border-transparent"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className="group flex items-center gap-3 bg-background rounded-lg border border-border p-4 hover:border-interactive/50 transition-colors duration-200"
             >
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-200 transition-colors">
-                <MapPin className="w-8 h-8 text-blue-600" />
+              <MapPin
+                className="w-5 h-5 text-primary shrink-0"
+                aria-hidden="true"
+              />
+              <div className="min-w-0">
+                <h3 className="text-base font-semibold text-foreground font-heading truncate">
+                  {state.name}
+                </h3>
+                <span className="text-sm text-muted-foreground group-hover:text-interactive transition-colors">
+                  View shops
+                </span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2 font-heading">
-                {state.name}
-              </h3>
-              <p className="text-gray-600 mb-4">{state.code}</p>
-              <span className="text-blue-600 font-medium group-hover:text-blue-700">
-                View Shops →
-              </span>
             </Link>
           ))}
         </div>

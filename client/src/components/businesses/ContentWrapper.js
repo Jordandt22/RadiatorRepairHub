@@ -206,7 +206,7 @@ function ContentWrapper({
       />
 
       {affiliateProducts.length > 0 ? (
-        <section className="border-t border-gray-200 bg-white py-16">
+        <section className="border-t border-border bg-card py-16">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <AffiliateProductsSection
               products={affiliateProducts}

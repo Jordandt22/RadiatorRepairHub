@@ -4,16 +4,16 @@ function BackOfCard({ title, setActiveCard, children }) {
   return (
     <div className="p-5 h-full overflow-y-auto">
       <div className="flex items-center justify-between mb-4">
-        <h4 className="font-semibold text-gray-900 font-heading text-lg">
+        <h4 className="font-semibold text-foreground font-heading text-lg">
           {title}
         </h4>
         <button
-          className="group/close transition-all duration-200 cursor-pointer"
+          className="group/close transition-colors duration-200 cursor-pointer"
           onClick={() => setActiveCard(null)}
           aria-label="Close card details"
         >
           <svg
-            className="w-6.5 h-6.5 text-gray-600 group-hover/close:text-blue-500 group-hover/close:scale-115 transition-all duration-200"
+            className="w-6.5 h-6.5 text-muted-foreground group-hover/close:text-interactive transition-colors duration-200"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

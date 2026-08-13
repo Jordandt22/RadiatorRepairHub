@@ -16,7 +16,7 @@ function Filters({ stateData, cityData }) {
 
   return (
     <div className="flex flex-col sm:flex-row gap-3">
-      <div className="relative bg-white border-2 border-gray-200 rounded-lg cursor-pointer">
+      <div className="relative bg-card border border-border rounded-lg cursor-pointer">
         <select
           value={appliedFilters?.sort_option}
           onChange={(e) => {
@@ -28,7 +28,7 @@ function Filters({ stateData, cityData }) {
               Number(e.target.value)
             );
           }}
-          className="px-4 py-3 pr-10 w-full text-gray-900 cursor-pointer appearance-none focus:border-blue-500 outline-none duration-200"
+          className="px-4 py-3 pr-10 w-full text-foreground cursor-pointer appearance-none focus:border-ring outline-none duration-200"
         >
           <option value={1}>Most Reviews</option>
           <option value={2}>Least Reviews</option>
@@ -38,7 +38,7 @@ function Filters({ stateData, cityData }) {
         {/* Custom Chevron Icon */}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
           <svg
-            className="w-4 h-4 text-gray-400"
+            className="w-4 h-4 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -56,10 +56,10 @@ function Filters({ stateData, cityData }) {
       {/* Filter Button */}
       <button
         onClick={() => setShowFilters(!showFilters)}
-        className={`px-4 py-3 border-2 rounded-lg font-medium transition-colors duration-200 flex justify-between items-center gap-2 ${
+        className={`px-4 py-3 border rounded-lg font-medium transition-colors duration-200 flex justify-between items-center gap-2 ${
           showFilters
-            ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700 cursor-pointer"
-            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 cursor-pointer"
+            ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90 cursor-pointer"
+            : "bg-card text-foreground border-border hover:bg-muted cursor-pointer"
         }`}
       >
         <span className="flex items-center gap-2">
@@ -81,7 +81,7 @@ function Filters({ stateData, cityData }) {
 
         {showFilters && (
           <svg
-            className="w-4 h-4 transition-transform duration-200 rotate-180 text-gray-400"
+            className="w-4 h-4 transition-transform duration-200 rotate-180 text-primary-foreground/70"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -96,7 +96,7 @@ function Filters({ stateData, cityData }) {
         )}
         {!showFilters && (
           <svg
-            className="w-4 h-4 transition-transform duration-200 text-gray-400"
+            className="w-4 h-4 transition-transform duration-200 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

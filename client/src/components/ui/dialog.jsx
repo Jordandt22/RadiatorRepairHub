@@ -69,7 +69,7 @@ function DialogContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-4 right-4 bg-secondary cursor-pointer p-2 hover:scale-95 hover:opacity-50 transition-all duration-200"
+                className="absolute top-4 right-4 bg-secondary cursor-pointer p-2 hover:opacity-70 transition-opacity duration-200"
                 size="icon-md" />
             }>
             <XIcon />

@@ -28,7 +28,7 @@ function CitiesPage({ stateData, stateCities }) {
   const pageDescription = `Browse radiator repair shops and services available in cities throughout ${stateData.name}. Click on any city to find certified repair specialists near you.`;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <PageHeader
         breadcrumbItems={breadcrumbItems}

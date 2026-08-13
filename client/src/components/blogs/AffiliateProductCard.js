@@ -32,9 +32,9 @@ export default function AffiliateProductCard({
         target="_blank"
         rel="sponsored noopener noreferrer"
         onClick={handleClick}
-        className="group flex gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:border-blue-200 hover:shadow-md"
+        className="group flex gap-4 rounded-lg border border-border bg-card p-4 transition-colors hover:border-interactive/50"
       >
-        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-50">
+        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
           {product.image_url ? (
             <Image
               src={product.image_url}
@@ -44,22 +44,22 @@ export default function AffiliateProductCard({
               sizes="80px"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
+            <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
               No image
             </div>
           )}
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="font-heading text-base font-bold text-gray-900 transition-colors group-hover:text-blue-600 md:text-lg">
+          <p className="font-heading text-base font-bold text-foreground transition-colors group-hover:text-interactive md:text-lg">
             {product.title}
           </p>
           {product.description ? (
-            <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-gray-600">
+            <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
               {product.description}
             </p>
           ) : null}
-          <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600">
+          <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-interactive">
             View on Amazon
             <ExternalLink className="h-3.5 w-3.5" aria-hidden />
           </span>
@@ -74,9 +74,9 @@ export default function AffiliateProductCard({
       target="_blank"
       rel="sponsored noopener noreferrer"
       onClick={handleClick}
-      className="group flex h-full flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:border-blue-200 hover:shadow-md hover:translate-y-[-2px] hover:scale-105"
+      className="group flex h-full flex-col rounded-lg border border-border bg-card p-4 transition-colors hover:border-interactive/50"
     >
-      <div className="relative mx-auto aspect-square w-full max-w-[160px] overflow-hidden rounded-lg bg-gray-50">
+      <div className="relative mx-auto aspect-square w-full max-w-[160px] overflow-hidden rounded-lg bg-muted">
         {product.image_url ? (
           <Image
             src={product.image_url}
@@ -86,22 +86,22 @@ export default function AffiliateProductCard({
             sizes="160px"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
+          <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
             No image
           </div>
         )}
       </div>
 
       <div className="mt-4 flex min-w-0 flex-1 flex-col">
-        <p className="font-heading text-sm font-bold leading-snug text-gray-900 transition-colors group-hover:text-blue-600">
+        <p className="font-heading text-sm font-bold leading-snug text-foreground transition-colors group-hover:text-interactive">
           {product.title}
         </p>
         {product.description ? (
-          <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-gray-600">
+          <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-muted-foreground">
             {product.description}
           </p>
         ) : null}
-        <span className="mt-auto inline-flex items-center gap-1.5 pt-3 text-sm font-semibold text-blue-600">
+        <span className="mt-auto inline-flex items-center gap-1.5 pt-3 text-sm font-semibold text-interactive">
           View on Amazon
           <ExternalLink className="h-3.5 w-3.5" aria-hidden />
         </span>

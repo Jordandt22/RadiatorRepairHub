@@ -30,7 +30,7 @@ function StatesPage() {
     "Browse radiator repair shops and services available in each state. Click on any state to find certified repair specialists near you.";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <PageHeader
         breadcrumbItems={breadcrumbItems}

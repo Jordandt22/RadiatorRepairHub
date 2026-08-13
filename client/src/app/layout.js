@@ -1,4 +1,4 @@
-import { Inter, Oswald } from "next/font/google";
+import { IBM_Plex_Sans } from "next/font/google";
 import { Toaster } from "sonner";
 import Script from "next/script";
 import "./globals.css";
@@ -14,15 +14,10 @@ import {
   getBusinessPhoneE164,
 } from "@/lib/businessContactInfo";
 
-const inter = Inter({
+const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const oswald = Oswald({
-  subsets: ["latin"],
-  variable: "--font-oswald",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-plex",
   display: "swap",
 });
 
@@ -183,7 +178,7 @@ export default function RootLayout({ children }) {
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body
-        className={`${inter.variable} ${oswald.variable} font-sans antialiased`}
+        className={`${plexSans.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         {/* Google Analytics */}

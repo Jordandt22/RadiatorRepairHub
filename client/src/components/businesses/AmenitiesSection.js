@@ -47,9 +47,9 @@ function AmenityRow({ icon: Icon, label }) {
   return (
     <div className="flex items-center gap-2 md:gap-3">
       {Icon ? (
-        <Icon className="h-4 w-4 shrink-0 text-blue-600" aria-hidden />
+        <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
       ) : null}
-      <span className="text-sm capitalize text-gray-700">{label}</span>
+      <span className="text-sm capitalize text-foreground">{label}</span>
     </div>
   );
 }
@@ -128,7 +128,7 @@ function AmenitiesSectionContent({ businessId, features = {} }) {
   };
 
   return (
-    <div className="order-7 rounded-xl bg-white p-4 shadow-lg md:p-6 lg:order-4">
+    <div className="order-7 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-4">
       <BusinessSectionHeader
         title="Amenities"
         businessId={businessId}
@@ -143,7 +143,7 @@ function AmenitiesSectionContent({ businessId, features = {} }) {
 
           return (
             <div key={group.id}>
-              <h3 className="mb-2 text-base font-semibold text-gray-800 md:text-lg">
+              <h3 className="mb-2 text-base font-semibold text-foreground md:text-lg">
                 {group.title}
               </h3>
               {active.length > 0 ? (
@@ -157,7 +157,7 @@ function AmenitiesSectionContent({ businessId, features = {} }) {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-600">None</p>
+                <p className="text-sm text-muted-foreground">None</p>
               )}
             </div>
           );
@@ -177,21 +177,21 @@ function AmenitiesSectionContent({ businessId, features = {} }) {
           <form onSubmit={handleSubmit} className="space-y-5">
             {AMENITY_GROUPS.map((group) => (
               <fieldset key={group.id} className="space-y-2">
-                <legend className="text-sm font-medium text-gray-800">
+                <legend className="text-sm font-medium text-foreground">
                   {group.title}
                 </legend>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {group.options.map((option) => (
                     <label
                       key={option.key}
-                      className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      className="flex cursor-pointer items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-foreground hover:bg-muted"
                     >
                       <input
                         type="checkbox"
                         checked={Boolean(flags[option.key])}
                         onChange={() => toggleFlag(option.key)}
                         disabled={isSubmitting}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-border text-primary focus:ring-ring"
                       />
                       <span>{option.label}</span>
                     </label>
@@ -216,7 +216,7 @@ function AmenitiesSectionContent({ businessId, features = {} }) {
               <Button
                 type="submit"
                 disabled={saveDisabled}
-                className="bg-blue-600 hover:bg-blue-700"
+               
               >
                 {isSubmitting ? "Saving…" : "Save"}
               </Button>

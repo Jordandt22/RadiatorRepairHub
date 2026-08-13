@@ -35,7 +35,7 @@ const BackToTop = () => {
       {isVisible && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 focus:outline-none cursor-pointer "
+          className="fixed bottom-6 right-6 z-50 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full shadow-md transition-colors duration-300 focus:outline-none cursor-pointer"
           aria-label="Back to top"
         >
           <ChevronUp className="w-6 h-6" />

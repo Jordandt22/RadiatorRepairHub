@@ -11,16 +11,16 @@ function FilterCheckboxes({ label, options, name, valueKey, labelKey }) {
   const [limit, setLimit] = useState(defaultLimit);
 
   return (
-    <div className="md:col-span-2 lg:col-span-3 xl:col-span-4 bg-slate-100 p-4 rounded-md">
+    <div className="md:col-span-2 lg:col-span-3 xl:col-span-4 bg-muted p-4 rounded-md">
       <div className="flex justify-between items-center mb-4">
-        <legend className="block text-sm font-medium text-gray-700">
+        <legend className="block text-sm font-medium text-foreground">
           {label}
         </legend>
         {options.length > defaultLimit && (
           <>
             {limit < options.length ? (
               <button
-                className="text-sm text-gray-500 cursor-pointer hover:text-blue-600 duration-300"
+                className="text-sm text-muted-foreground cursor-pointer hover:text-interactive duration-300"
                 onClick={() => setLimit(options.length)}
                 aria-label={`Show all ${label.toLowerCase()}`}
               >
@@ -28,7 +28,7 @@ function FilterCheckboxes({ label, options, name, valueKey, labelKey }) {
               </button>
             ) : (
               <button
-                className="text-sm text-gray-500 cursor-pointer hover:text-blue-600 duration-300"
+                className="text-sm text-muted-foreground cursor-pointer hover:text-interactive duration-300"
                 onClick={() => setLimit(defaultLimit)}
                 aria-label={`Show fewer ${label.toLowerCase()}`}
               >
@@ -52,12 +52,12 @@ function FilterCheckboxes({ label, options, name, valueKey, labelKey }) {
               onChange={(e) =>
                 handleArrayFilter(name, option[valueKey], e.target.checked)
               }
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="rounded border-border text-primary focus:ring-ring"
               aria-describedby={`${name}-${option[valueKey]}-description`}
             />
             <span
               id={`${name}-${option[valueKey]}-description`}
-              className="ml-2 text-sm text-gray-700 capitalize"
+              className="ml-2 text-sm text-foreground capitalize"
             >
               {option[labelKey]}
             </span>

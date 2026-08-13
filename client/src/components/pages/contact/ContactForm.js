@@ -310,9 +310,9 @@ const ContactForm = ({
   return (
     <>
     <div
-      className={`bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300 hover:border-blue-500 transition-all duration-300 ${className}`}
+      className={`bg-card rounded-lg border border-border p-8 ${className}`}
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-6 font-heading">
+      <h2 className="text-2xl font-bold text-foreground mb-6 font-heading">
         {formTitle}
       </h2>
 
@@ -325,7 +325,7 @@ const ContactForm = ({
         <div>
           <label
             htmlFor="name"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-foreground mb-2"
           >
             {nameLabel || "Full Name"} *
           </label>
@@ -335,12 +335,8 @@ const ContactForm = ({
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 border-2 rounded-lg focus:border-blue-500 hover:border-blue-500 outline-none transition-colors ${
-              errors.name
-                ? "border-red-500"
-                : isFieldValid("name")
-                  ? "border-green-500"
-                  : "border-gray-300"
+            className={`w-full px-4 py-3 border rounded-lg focus:border-ring outline-none transition-colors ${
+              errors.name ? "border-destructive" : "border-border"
             }`}
             placeholder={namePlaceholder || "Enter your full name"}
             aria-describedby={errors.name ? "name-error" : undefined}
@@ -362,7 +358,7 @@ const ContactForm = ({
         <div>
           <label
             htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-foreground mb-2"
           >
             Email Address *
           </label>
@@ -372,12 +368,8 @@ const ContactForm = ({
             name="email"
             value={formData.email}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 border-2 rounded-lg focus:border-blue-500 hover:border-blue-500 outline-none transition-colors ${
-              errors.email
-                ? "border-red-500"
-                : isFieldValid("email")
-                  ? "border-green-500"
-                  : "border-gray-300"
+            className={`w-full px-4 py-3 border rounded-lg focus:border-ring outline-none transition-colors ${
+              errors.email ? "border-destructive" : "border-border"
             }`}
             placeholder="Enter your email address"
             aria-describedby={errors.email ? "email-error" : undefined}
@@ -399,7 +391,7 @@ const ContactForm = ({
         <div>
           <label
             htmlFor="phone"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-foreground mb-2"
           >
             Phone Number
           </label>
@@ -409,12 +401,8 @@ const ContactForm = ({
             name="phone"
             value={formData.phone}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 border-2 rounded-lg focus:border-blue-500 hover:border-blue-500 outline-none transition-colors ${
-              errors.phone
-                ? "border-red-500"
-                : isFieldValid("phone")
-                  ? "border-green-500"
-                  : "border-gray-300"
+            className={`w-full px-4 py-3 border rounded-lg focus:border-ring outline-none transition-colors ${
+              errors.phone ? "border-destructive" : "border-border"
             }`}
             placeholder="Enter your phone number (optional)"
             aria-describedby={errors.phone ? "phone-error" : undefined}
@@ -436,7 +424,7 @@ const ContactForm = ({
           <div>
             <label
               htmlFor="subject"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-foreground mb-2"
             >
               Inquiry Type *
             </label>
@@ -446,14 +434,10 @@ const ContactForm = ({
               value={formData.subject}
               onChange={handleInputChange}
               disabled={lockSubject}
-              className={`w-full px-4 py-3 border-2 rounded-lg focus:border-blue-500 hover:border-blue-500 outline-none transition-colors ${
-                lockSubject ? "bg-gray-100 cursor-not-allowed" : ""
+              className={`w-full px-4 py-3 border rounded-lg focus:border-ring outline-none transition-colors ${
+                lockSubject ? "bg-muted cursor-not-allowed" : ""
               } ${
-                errors.subject
-                  ? "border-red-500"
-                  : isFieldValid("subject")
-                    ? "border-green-500"
-                    : "border-gray-300"
+                errors.subject ? "border-destructive" : "border-border"
               }`}
               aria-describedby={errors.subject ? "subject-error" : undefined}
               aria-invalid={errors.subject ? "true" : "false"}
@@ -483,7 +467,7 @@ const ContactForm = ({
           <div>
             <label
               htmlFor="googleMapsUrl"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-foreground mb-2"
             >
               Google Maps or Google Business Link *
             </label>
@@ -493,12 +477,8 @@ const ContactForm = ({
               name="googleMapsUrl"
               value={formData.googleMapsUrl}
               onChange={handleInputChange}
-              className={`w-full px-4 py-3 border-2 rounded-lg focus:border-blue-500 hover:border-blue-500 outline-none transition-colors ${
-                errors.googleMapsUrl
-                  ? "border-red-500"
-                  : isFieldValid("googleMapsUrl")
-                    ? "border-green-500"
-                    : "border-gray-300"
+              className={`w-full px-4 py-3 border rounded-lg focus:border-ring outline-none transition-colors ${
+                errors.googleMapsUrl ? "border-destructive" : "border-border"
               }`}
               placeholder="https://maps.google.com/... or maps.app.goo.gl/..."
               aria-describedby={
@@ -511,7 +491,7 @@ const ContactForm = ({
             />
             <p
               id="googleMapsUrl-help"
-              className="mt-1 text-xs text-gray-500"
+              className="mt-1 text-xs text-muted-foreground"
             >
               Open your business in Google Maps, tap Share, then paste the link
               here.
@@ -532,7 +512,7 @@ const ContactForm = ({
         <div>
           <label
             htmlFor="message"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-foreground mb-2"
           >
             {isGetListed ? "Additional Notes" : "Message"}
             {isGetListed ? "" : " *"}
@@ -543,12 +523,8 @@ const ContactForm = ({
             value={formData.message}
             onChange={handleInputChange}
             rows={isGetListed ? 4 : 6}
-            className={`w-full px-4 py-3 border-2 rounded-lg focus:border-blue-500 hover:border-blue-500 outline-none resize-none transition-colors ${
-              errors.message
-                ? "border-red-500"
-                : formData.message.trim() && isFieldValid("message")
-                  ? "border-green-500"
-                  : "border-gray-300"
+            className={`w-full px-4 py-3 border rounded-lg focus:border-ring outline-none resize-none transition-colors ${
+              errors.message ? "border-destructive" : "border-border"
             }`}
             placeholder={
               isGetListed
@@ -571,18 +547,18 @@ const ContactForm = ({
           )}
         </div>
 
-        <p className="text-xs text-gray-500 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           By submitting this form, you agree to our{" "}
           <Link
             href="/terms"
-            className="text-blue-600 hover:text-blue-800 underline"
+            className="text-interactive hover:text-primary underline"
           >
             Terms of Service
           </Link>{" "}
           and{" "}
           <Link
             href="/privacy"
-            className="text-blue-600 hover:text-blue-800 underline"
+            className="text-interactive hover:text-primary underline"
           >
             Privacy Policy
           </Link>
@@ -594,12 +570,12 @@ const ContactForm = ({
         <div className="pt-4">
           {isSubmitting ? (
             <div
-              className="w-full flex items-center justify-center px-6 py-4 rounded-lg font-semibold bg-gray-200 text-blue-500 transition-all duration-300 cursor-not-allowed"
+              className="w-full flex items-center justify-center px-6 py-4 rounded-lg font-semibold bg-muted text-muted-foreground transition-colors duration-300 cursor-not-allowed"
               role="status"
               aria-live="polite"
             >
               <div
-                className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400 mr-4"
+                className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mr-4"
                 aria-hidden="true"
               ></div>
               {isGetListed ? "Submitting..." : "Sending Message..."}
@@ -609,7 +585,7 @@ const ContactForm = ({
               type="submit"
               disabled={isSubmitting}
               className={
-                "w-full flex items-center justify-center px-6 py-4 rounded-lg font-semibold text-white transition-all duration-300 cursor-pointer bg-blue-600 hover:bg-blue-700 hover:scale-95 shadow-lg hover:shadow-xl"
+                "w-full flex items-center justify-center px-6 py-4 rounded-lg font-semibold text-primary-foreground transition-colors duration-200 cursor-pointer bg-primary hover:bg-primary/90"
               }
               aria-label={
                 isGetListed ? "Submit listing request" : "Send contact message"

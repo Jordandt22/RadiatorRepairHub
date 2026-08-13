@@ -136,7 +136,7 @@ function AboutSectionContent({
     description.length > ABOUT_MAX_LENGTH;
 
   return (
-    <div className="order-1 rounded-xl bg-white p-4 shadow-lg md:p-6 lg:order-1">
+    <div className="order-1 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
       <BusinessSectionHeader
         title="About Our Business"
         businessId={businessId}
@@ -144,12 +144,12 @@ function AboutSectionContent({
       />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
         <div className="space-y-4 md:col-span-2">
-          <p className="text-sm leading-relaxed text-gray-600 md:text-base whitespace-pre-wrap">
+          <p className="text-sm leading-relaxed text-muted-foreground md:text-base whitespace-pre-wrap">
             {initialDescription || "No description available."}
           </p>
         </div>
 
-        <div className="relative h-48 w-full overflow-hidden rounded-lg bg-gray-200 md:h-64">
+        <div className="relative h-48 w-full overflow-hidden rounded-lg bg-muted md:h-64">
           <BusinessImage
             src={imageUrl}
             businessId={businessId}
@@ -178,7 +178,7 @@ function AboutSectionContent({
             <div className="space-y-2">
               <label
                 htmlFor="about-description"
-                className="text-sm font-medium text-gray-800"
+                className="text-sm font-medium text-foreground"
               >
                 About <span className="text-red-500">*</span>
               </label>
@@ -191,7 +191,7 @@ function AboutSectionContent({
                 rows={8}
                 aria-invalid={Boolean(errors.description)}
                 aria-describedby="about-description-count about-description-error"
-                className="min-h-40 rounded-lg border-gray-200 bg-white"
+                className="min-h-40 rounded-lg border-border bg-white"
                 placeholder="Describe your business, services, and what makes your shop unique…"
               />
               <div className="flex items-start justify-between gap-3">
@@ -210,7 +210,7 @@ function AboutSectionContent({
                   className={`shrink-0 text-xs tabular-nums ${
                     characterCount >= ABOUT_MAX_LENGTH
                       ? "text-red-600"
-                      : "text-gray-500"
+                      : "text-muted-foreground"
                   }`}
                 >
                   {characterCount} / {ABOUT_MAX_LENGTH}
@@ -234,7 +234,7 @@ function AboutSectionContent({
               <Button
                 type="submit"
                 disabled={saveDisabled}
-                className="bg-blue-600 hover:bg-blue-700"
+               
               >
                 {isSubmitting ? "Saving…" : "Save"}
               </Button>

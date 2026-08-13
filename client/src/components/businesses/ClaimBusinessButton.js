@@ -22,14 +22,14 @@ import { usePostHog } from "posthog-js/react";
 function ClaimStatusLabel({ children, reason, showHowToClaim = false }) {
   return (
     <div className="mt-3 text-center">
-      <p className="text-sm font-medium text-gray-500">{children}</p>
+      <p className="text-sm font-medium text-muted-foreground">{children}</p>
       {reason ? (
-        <p className="mt-0.5 text-xs text-gray-400">{reason}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground/70">{reason}</p>
       ) : null}
       {showHowToClaim ? (
         <Link
           href="/how-to-claim"
-          className="mt-1.5 inline-block text-xs text-blue-600 hover:underline"
+          className="mt-1.5 inline-block text-xs text-interactive hover:underline"
         >
           Why can&apos;t I claim?
         </Link>
@@ -101,7 +101,7 @@ function ClaimBusinessButtonContent({
       <Button
         type="button"
         variant="outline"
-        className="mt-3 w-full rounded-full gap-2 text-sm font-medium border-2 border-amber-500 text-amber-600 hover:bg-amber-50 hover:scale-95 hover:text-amber-700"
+        className="mt-3 w-full rounded-full gap-2 text-sm font-medium border border-amber-500 text-amber-600 hover:bg-amber-50 hover:text-amber-700"
         disabled={isSubmitting}
         onClick={handleClaim}
       >
@@ -121,7 +121,7 @@ function ClaimBusinessButtonContent({
           </DialogHeader>
           <DialogFooter>
             <DialogClose
-              render={<Button type="button" className="w-full sm:w-auto bg-blue-500 px-8 hover:bg-blue-600 hover:scale-95" />}
+              render={<Button type="button" className="w-full sm:w-auto px-8" />}
             >
               Got it
             </DialogClose>
@@ -167,7 +167,7 @@ function ClaimedBusinessStatus({ businessId, lastEditedAt = null }) {
         </Button>
       ) : null}
       {editedDate ? (
-        <p className="mt-2 text-center text-xs font-medium text-gray-600">
+        <p className="mt-2 text-center text-xs font-medium text-muted-foreground">
           Last Updated {editedDate}
         </p>
       ) : null}

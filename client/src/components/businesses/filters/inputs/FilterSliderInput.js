@@ -17,7 +17,7 @@ function FilterSliderInput({ label, name, min, max, step }) {
     <div>
       <label
         htmlFor={`filter-${name}`}
-        className="block text-sm font-medium text-gray-700 mb-2"
+        className="block text-sm font-medium text-foreground mb-2"
       >
         {label}: {filters[name]}
       </label>
@@ -30,13 +30,13 @@ function FilterSliderInput({ label, name, min, max, step }) {
           step={step}
           value={filters[name]}
           onChange={handleSliderChange}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+          className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
           style={{
-            background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
+            background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${
               ((filters[name] - min) / (max - min)) * 100
-            }%, #e5e7eb ${
+            }%, var(--border) ${
               ((filters[name] - min) / (max - min)) * 100
-            }%, #e5e7eb 100%)`,
+            }%, var(--border) 100%)`,
           }}
           aria-label={`${label} slider`}
           aria-valuemin={min}
@@ -45,7 +45,7 @@ function FilterSliderInput({ label, name, min, max, step }) {
           aria-valuetext={`${filters[name]} out of ${max}`}
         />
         <div
-          className="flex justify-between text-xs text-gray-500"
+          className="flex justify-between text-xs text-muted-foreground"
           role="presentation"
         >
           <span>{min}</span>
@@ -58,7 +58,7 @@ function FilterSliderInput({ label, name, min, max, step }) {
           height: 20px;
           width: 20px;
           border-radius: 50%;
-          background: #3b82f6;
+          background: var(--primary);
           cursor: pointer;
           border: 2px solid #ffffff;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -68,7 +68,7 @@ function FilterSliderInput({ label, name, min, max, step }) {
           height: 20px;
           width: 20px;
           border-radius: 50%;
-          background: #3b82f6;
+          background: var(--primary);
           cursor: pointer;
           border: 2px solid #ffffff;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

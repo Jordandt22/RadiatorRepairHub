@@ -61,7 +61,7 @@ function SearchBar({ stateData, cityData, page }) {
             value={filters.title}
             onChange={(e) => updateFilter("title", e.target.value)}
             onKeyDown={handleKeyPress}
-            className="w-full px-4 py-3 pl-10 pr-10 text-gray-900 bg-gray-50 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none duration-200 transition-all"
+            className="w-full px-4 py-3 pl-10 pr-10 text-foreground bg-card border border-border rounded-lg focus:border-ring outline-none duration-200 transition-colors"
             aria-describedby="search-help"
           />
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -87,7 +87,7 @@ function SearchBar({ stateData, cityData, page }) {
               <button
                 type="button"
                 onClick={handleClearInput}
-                className="w-5 h-5 text-gray-400 hover:scale-125 hover:text-red-400 duration-200 cursor-pointer"
+                className="w-5 h-5 text-muted-foreground hover:text-destructive duration-200 cursor-pointer"
                 aria-label="Clear search input"
               >
                 <svg
@@ -109,7 +109,7 @@ function SearchBar({ stateData, cityData, page }) {
         </div>
         <button
           onClick={handleSearch}
-          className="justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
+          className="justify-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
           aria-label="Search for businesses"
         >
           <svg

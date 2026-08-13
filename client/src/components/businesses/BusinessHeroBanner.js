@@ -35,7 +35,7 @@ export default function BusinessHeroBanner({
   const hasImage = source !== "none";
 
   return (
-    <div className="relative w-full h-56 sm:h-64 md:h-80 lg:h-96 bg-slate-900">
+    <div className="relative w-full h-56 sm:h-64 md:h-80 lg:h-96 bg-primary">
       {hasImage ? (
         <>
           {source === "cdn" ? (
@@ -62,17 +62,17 @@ export default function BusinessHeroBanner({
               onError={() => setSource("none")}
             />
           )}
-          {/* Darken only when a photo is present — otherwise keep plain slate-900 */}
+          {/* Darken only when a photo is present — otherwise keep the plain ink banner */}
           <div
             className={`absolute inset-0 flex flex-col items-start justify-end md:justify-between pb-4 md:pb-0 ${
-              hasImage ? "bg-black/75" : ""
+              hasImage ? "bg-gradient-to-t from-black/70 via-black/40 to-black/20" : ""
             }`}
           >
             {children}
           </div>
         </>
       ) : (
-        <div className="absolute inset-0 flex flex-col items-start justify-end md:justify-between pb-4 md:pb-0 bg-slate-900">
+        <div className="absolute inset-0 flex flex-col items-start justify-end md:justify-between pb-4 md:pb-0 bg-primary">
           {children}
         </div>
       )}

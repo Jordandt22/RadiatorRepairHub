@@ -27,33 +27,35 @@ const FAQSection = ({ faqs, title = "Frequently Asked Questions", includeSchema 
         />
       )}
 
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-card border-y border-border">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4 font-heading">
+            <h2 className="text-3xl font-semibold tracking-tight text-foreground mb-3 font-heading">
               {title}
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-muted-foreground">
               Get answers to common questions about radiator repair services
             </p>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             {faqs.map((faq, index) => (
               <div
                 key={index}
-                className="bg-gray-50 rounded-lg p-6 border border-gray-200"
+                className="bg-background rounded-lg p-6 border border-border"
               >
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg font-semibold text-foreground mb-3">
                   {faq.question}
                 </h3>
-                <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+                <p className="text-muted-foreground leading-relaxed">
+                  {faq.answer}
+                </p>
                 {faq.relatedBlog && (
-                  <p className="mt-3 text-sm text-gray-600">
+                  <p className="mt-3 text-sm text-muted-foreground">
                     Related Blog:{" "}
                     <Link
                       href={faq.relatedBlog.href}
-                      className="text-blue-600 hover:text-blue-800 underline font-medium"
+                      className="text-interactive hover:text-primary underline font-medium"
                     >
                       {faq.relatedBlog.title}
                     </Link>

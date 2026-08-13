@@ -32,7 +32,7 @@ const DEFAULT_OPEN = "09:00";
 const DEFAULT_CLOSE = "17:00";
 
 const selectClassName =
-  "rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm disabled:cursor-not-allowed disabled:bg-gray-100";
+  "rounded-md border border-border bg-white px-2 py-1.5 text-sm disabled:cursor-not-allowed disabled:bg-muted";
 
 function mapApiErrors(error) {
   const message = error?.message;
@@ -75,7 +75,7 @@ function TimePartSelects({ idPrefix, label, value, disabled, onChange }) {
           </option>
         ))}
       </select>
-      <span className="text-sm text-gray-500" aria-hidden>
+      <span className="text-sm text-muted-foreground" aria-hidden>
         :
       </span>
       <label className="sr-only" htmlFor={`${idPrefix}-minute`}>
@@ -116,7 +116,7 @@ function TimePartSelects({ idPrefix, label, value, disabled, onChange }) {
 
 function DayHoursDisplay({ hours }) {
   if (!hours || !Array.isArray(hours) || hours.length === 0) {
-    return <p className="text-sm text-gray-600">Hours not available</p>;
+    return <p className="text-sm text-muted-foreground">Hours not available</p>;
   }
 
   return (
@@ -125,8 +125,8 @@ function DayHoursDisplay({ hours }) {
         const day = hours.find((item) => item.day_of_week === dayName);
         return (
           <div key={dayName} className="flex justify-between text-sm">
-            <span className="font-medium text-gray-700">{dayName}</span>
-            <div className="text-right text-gray-600">
+            <span className="font-medium text-foreground">{dayName}</span>
+            <div className="text-right text-muted-foreground">
               {!day || day.is_closed ? (
                 <span>Closed</span>
               ) : day.hours_text ? (
@@ -315,7 +315,7 @@ function BusinessHoursSectionContent({
   };
 
   return (
-    <div className="order-4 rounded-xl bg-white p-4 shadow-lg md:p-6 lg:order-3">
+    <div className="order-4 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
       <BusinessSectionHeader
         title="Business Hours"
         businessId={businessId}
@@ -341,13 +341,13 @@ function BusinessHoursSectionContent({
               return (
                 <div
                   key={day.day_of_week}
-                  className="rounded-lg border border-gray-200 p-3"
+                  className="rounded-lg border border-border p-3"
                 >
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-sm font-medium text-gray-800">
+                    <span className="text-sm font-medium text-foreground">
                       {day.day_of_week}
                     </span>
-                    <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <label className="inline-flex items-center gap-2 text-sm text-foreground">
                       <input
                         type="checkbox"
                         checked={day.is_closed}
@@ -355,7 +355,7 @@ function BusinessHoursSectionContent({
                           setClosed(day.day_of_week, e.target.checked)
                         }
                         disabled={isSubmitting}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-border text-primary focus:ring-ring"
                       />
                       Closed
                     </label>
@@ -386,7 +386,7 @@ function BusinessHoursSectionContent({
                             )
                           }
                         />
-                        <span className="text-sm text-gray-500">to</span>
+                        <span className="text-sm text-muted-foreground">to</span>
                         <TimePartSelects
                           idPrefix={`${day.day_of_week}-close-${periodIndex}`}
                           label={`${day.day_of_week} close time ${periodIndex + 1}`}
@@ -408,7 +408,7 @@ function BusinessHoursSectionContent({
                               removePeriod(day.day_of_week, periodIndex)
                             }
                             disabled={isSubmitting}
-                            className="inline-flex size-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-red-600 disabled:opacity-50"
+                            className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-red-600 disabled:opacity-50"
                             aria-label={`Remove period ${periodIndex + 1} for ${day.day_of_week}`}
                           >
                             <Trash2 className="size-4" />
@@ -422,7 +422,7 @@ function BusinessHoursSectionContent({
                         type="button"
                         onClick={() => addPeriod(day.day_of_week)}
                         disabled={isSubmitting}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary disabled:opacity-50"
                       >
                         <Plus className="size-3.5" />
                         Add hours
@@ -455,7 +455,7 @@ function BusinessHoursSectionContent({
               <Button
                 type="submit"
                 disabled={saveDisabled}
-                className="bg-blue-600 hover:bg-blue-700"
+               
               >
                 {isSubmitting ? "Saving…" : "Save"}
               </Button>

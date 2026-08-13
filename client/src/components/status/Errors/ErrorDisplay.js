@@ -19,10 +19,10 @@ function ErrorDisplay({
         <p className="text-lg bg-red-300 text-red-900 px-4 py-1 rounded-md mb-4 text-center capitalize">
           {code.replace("-", " ")}
         </p>
-        <p className="text-lg text-gray-600 mb-8 text-center">{message}</p>
+        <p className="text-lg text-muted-foreground mb-8 text-center">{message}</p>
         <Link
           href={link.path}
-          className="text-white bg-blue-500 font-medium px-4 py-2 rounded-md hover:bg-blue-600 duration-300 hover:scale-105 block capitalize"
+          className="text-primary-foreground bg-primary font-medium px-4 py-2 rounded-md hover:bg-primary/90 duration-300 block capitalize"
         >
           {link.text}
         </Link>

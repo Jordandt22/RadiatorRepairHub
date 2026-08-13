@@ -192,7 +192,7 @@ function ReportInfoDialog({ businessId, businessName }) {
         render={
           <button
             type="button"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-200 hover:scale-95 cursor-pointer"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:bg-muted cursor-pointer"
           />
         }
       >
@@ -212,7 +212,7 @@ function ReportInfoDialog({ businessId, businessName }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <fieldset className="space-y-2">
-            <legend className="text-sm font-medium text-gray-800">
+            <legend className="text-sm font-medium text-foreground">
               What&apos;s wrong?
             </legend>
             <RadioGroup
@@ -226,7 +226,7 @@ function ReportInfoDialog({ businessId, businessName }) {
               {REASON_OPTIONS.map((option) => (
                 <label
                   key={option.value}
-                  className="flex cursor-pointer items-start gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  className="flex cursor-pointer items-start gap-2 rounded-lg border border-border px-3 py-2 text-sm text-foreground hover:bg-muted"
                 >
                   <RadioGroupItem value={option.value} className="mt-0.5" />
                   <span>{option.label}</span>
@@ -241,7 +241,7 @@ function ReportInfoDialog({ businessId, businessName }) {
           <div className="space-y-1.5">
             <label
               htmlFor="listing-report-name"
-              className="text-sm font-medium text-gray-800"
+              className="text-sm font-medium text-foreground"
             >
               Your name
             </label>
@@ -263,7 +263,7 @@ function ReportInfoDialog({ businessId, businessName }) {
           <div className="space-y-1.5">
             <label
               htmlFor="listing-report-email"
-              className="text-sm font-medium text-gray-800"
+              className="text-sm font-medium text-foreground"
             >
               Your email <span className="text-red-500">*</span>
             </label>
@@ -300,7 +300,7 @@ function ReportInfoDialog({ businessId, businessName }) {
                 <div className="space-y-1.5">
                   <label
                     htmlFor="listing-report-suggested-phone"
-                    className="text-sm font-medium text-gray-800"
+                    className="text-sm font-medium text-foreground"
                   >
                     Correct phone
                   </label>
@@ -327,7 +327,7 @@ function ReportInfoDialog({ businessId, businessName }) {
                 <div className="space-y-1.5">
                   <label
                     htmlFor="listing-report-suggested-email"
-                    className="text-sm font-medium text-gray-800"
+                    className="text-sm font-medium text-foreground"
                   >
                     Correct email
                   </label>
@@ -357,7 +357,7 @@ function ReportInfoDialog({ businessId, businessName }) {
           <div className="space-y-1.5">
             <label
               htmlFor="listing-report-details"
-              className="text-sm font-medium text-gray-800"
+              className="text-sm font-medium text-foreground"
             >
               Details <span className="text-red-500">*</span>
             </label>
@@ -385,14 +385,14 @@ function ReportInfoDialog({ businessId, businessName }) {
             By submitting this report, you agree to our{" "}
             <Link
               href="/terms"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-interactive hover:text-primary underline"
             >
               Terms of Service
             </Link>{" "}
             and{" "}
             <Link
               href="/privacy"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-interactive hover:text-primary underline"
             >
               Privacy Policy
             </Link>

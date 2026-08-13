@@ -89,43 +89,43 @@ const Page = () => {
           __html: JSON.stringify(contactPageSchema),
         }}
       />
-      <div className="min-h-screen bg-gray-50 pb-32">
+      <div className="min-h-screen bg-background pb-32">
         <ContactHeader />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-8">
           {/* Business contact notice */}
-          <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-5 md:p-6">
+          <div className="mb-8 rounded-lg border border-border bg-tint p-5 md:p-6">
             <div className="flex items-start gap-3 md:gap-4">
 
               <div className="min-w-0 flex-1">
-                <h2 className="flex items-center gap-2 text-lg font-medium mb-1 font-heading">
-                  <Info className="w-5 h-5 text-yellow-700" />
+                <h2 className="flex items-center gap-2 text-lg font-medium mb-1 font-heading text-foreground">
+                  <Info className="w-5 h-5 text-primary" />
                   Looking to Contact a Repair Shop?
                 </h2>
-                <p className="text-sm md:text-base mb-4 leading-relaxed">
+                <p className="text-sm md:text-base mb-4 leading-relaxed text-foreground">
                   This form reaches the <strong>RadiatorRepairHub</strong> team
                   only (directory support, listing issues, partnerships, and
                   website feedback). We cannot forward repair requests or
                   schedule appointments with shops.
                 </p>
-                <p className="text-sm md:text-base mb-4 leading-relaxed">
+                <p className="text-sm md:text-base mb-4 leading-relaxed text-foreground">
                   To message a business, open their listing and use{" "}
                   <strong>Quick Contact</strong> on the business page or call
                   them using the phone number listed there. Quick Contact
                   messages are reviewed by our team before they may be forwarded
                   to the shop.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
                   <Link
                     href="/search"
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-8 py-2 text-sm font-semibold text-white hover:bg-blue-600 transition-all hover:scale-95"
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
                     <Search className="w-4 h-4" />
                     Find a Shop
                   </Link>
                   <Link
                     href="/featured"
-                    className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-blue-600 px-8 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-interactive hover:text-primary transition-colors"
                   >
                     <Store className="w-4 h-4" />
                     Featured Businesses
@@ -149,8 +149,8 @@ const Page = () => {
             </div>
 
             <div className="lg:col-span-1 flex">
-              <div className="bg-white rounded-xl shadow-lg p-8 h-full w-full flex flex-col border-t-5 border-blue-200 hover:border-blue-500 transition-all duration-300">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 font-heading">
+              <div className="bg-card rounded-lg border border-border p-8 h-full w-full flex flex-col">
+                <h2 className="text-2xl font-bold text-foreground mb-6 font-heading">
                   About This Contact Form
                 </h2>
 
@@ -158,21 +158,21 @@ const Page = () => {
                   {businessEmail ? (
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <Mail className="w-6 h-6 text-blue-600" />
+                        <div className="w-12 h-12 bg-tint rounded-lg flex items-center justify-center">
+                          <Mail className="w-6 h-6 text-primary" />
                         </div>
                       </div>
                       <div>
-                        <h3 className="text-md font-semibold text-gray-900 mb-1">
+                        <h3 className="text-md font-semibold text-foreground mb-1">
                           Email the Team
                         </h3>
-                        <p className="text-sm text-gray-600 mb-2">
+                        <p className="text-sm text-muted-foreground mb-2">
                           Submit the form or email us directly for
                           RadiatorRepairHub support and inquiries.
                         </p>
                         <a
                           href={`mailto:${businessEmail}`}
-                          className="text-sm text-blue-600 hover:text-blue-600 font-medium transition-colors break-all"
+                          className="text-sm text-interactive hover:text-primary font-medium transition-colors break-all"
                         >
                           {businessEmail}
                         </a>
@@ -183,21 +183,21 @@ const Page = () => {
                   {hasPhone ? (
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
-                        <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                          <Phone className="w-6 h-6 text-emerald-600" />
+                        <div className="w-12 h-12 bg-tint rounded-lg flex items-center justify-center">
+                          <Phone className="w-6 h-6 text-primary" />
                         </div>
                       </div>
                       <div>
-                        <h3 className="text-md font-semibold text-gray-900 mb-1">
+                        <h3 className="text-md font-semibold text-foreground mb-1">
                           Call or Text Us
                         </h3>
-                        <p className="text-sm text-gray-600 mb-2">
+                        <p className="text-sm text-muted-foreground mb-2">
                           Reach RadiatorRepairHub support by phone or SMS. This
                           is directory support only, not a repair shop line.
                         </p>
                         <SitePhoneLinks
                           showLabel={false}
-                          linkClassName="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                          linkClassName="text-sm text-interactive hover:text-primary font-medium transition-colors"
                         />
                       </div>
                     </div>
@@ -205,15 +205,15 @@ const Page = () => {
 
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <Clock className="w-6 h-6 text-purple-600" />
+                      <div className="w-12 h-12 bg-tint rounded-lg flex items-center justify-center">
+                        <Clock className="w-6 h-6 text-primary" />
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-md font-semibold text-gray-900 mb-1">
+                      <h3 className="text-md font-semibold text-foreground mb-1">
                         Response Time
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         We typically respond within 24 hours on business days.
                       </p>
                     </div>
@@ -221,15 +221,15 @@ const Page = () => {
 
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <MapPin className="w-6 h-6 text-orange-600" />
+                      <div className="w-12 h-12 bg-tint rounded-lg flex items-center justify-center">
+                        <MapPin className="w-6 h-6 text-primary" />
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-md font-semibold text-gray-900 mb-1">
+                      <h3 className="text-md font-semibold text-foreground mb-1">
                         What We Can Help With
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Directory questions, incorrect listing details, website
                         bugs, advertising, and partnerships across the U.S.
                       </p>
@@ -238,15 +238,15 @@ const Page = () => {
 
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
-                        <Store className="w-6 h-6 text-slate-600" />
+                      <div className="w-12 h-12 bg-tint rounded-lg flex items-center justify-center">
+                        <Store className="w-6 h-6 text-primary" />
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-md font-semibold text-gray-900 mb-1">
+                      <h3 className="text-md font-semibold text-foreground mb-1">
                         Contacting a Shop
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Use <strong>Quick Contact</strong> (or the phone number)
                         on that business&apos;s page, not this form. Include your
                         vehicle and issue details so the shop can respond.
@@ -256,15 +256,15 @@ const Page = () => {
 
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <List className="w-6 h-6 text-yellow-600" />
+                      <div className="w-12 h-12 bg-tint rounded-lg flex items-center justify-center">
+                        <List className="w-6 h-6 text-primary" />
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-md font-semibold text-gray-900 mb-1">
+                      <h3 className="text-md font-semibold text-foreground mb-1">
                         Own a Business?
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Request a free listing so customers can find your
                         radiator repair services.
                       </p>
@@ -273,7 +273,7 @@ const Page = () => {
 
                   <Link
                     href="/get-listed"
-                    className="mt-4 inline-flex w-full items-center justify-center gap-2 font-medium rounded-full border-2 border-blue-600 text-blue-600 px-4 py-2 text-center hover:bg-blue-600 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-sm"
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 font-medium rounded-lg border border-border text-foreground px-4 py-2 text-center hover:bg-muted transition-colors duration-200 text-sm"
                   >
                     Get Listed
                     <MoveRight className="w-4 h-4" />
@@ -281,20 +281,20 @@ const Page = () => {
                 </div>
 
                 <div className="mt-auto pt-8">
-                  <div className="p-6 bg-blue-50 rounded-lg">
+                  <div className="p-6 bg-tint rounded-lg">
                     <div className="flex items-center mb-3">
-                      <CheckCircle className="w-5 h-5 text-blue-600 mr-2" />
-                      <h4 className="font-semibold text-blue-900">
+                      <CheckCircle className="w-5 h-5 text-primary mr-2" />
+                      <h4 className="font-semibold text-primary">
                         Platform Support
                       </h4>
                     </div>
-                    <p className="text-sm text-blue-800">
+                    <p className="text-sm text-foreground">
                       Messages sent here go to RadiatorRepairHub staff. For
                       repairs, quotes, or appointments, contact the shop on their
                       business page. See our{" "}
                       <Link
                         href="/privacy"
-                        className="font-medium underline hover:text-blue-900"
+                        className="font-medium underline hover:text-primary"
                       >
                         Privacy Policy
                       </Link>{" "}

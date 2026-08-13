@@ -65,7 +65,7 @@ function Listings({ businesses, data, page, stateData, cityData }) {
 
                   {/* Back of Card - Business Hours */}
                   <div
-                    className="absolute inset-0 w-full h-full bg-white rounded-lg shadow-md border border-gray-200 backface-hidden"
+                    className="absolute inset-0 w-full h-full bg-card rounded-lg border border-border backface-hidden"
                     style={{
                       backfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
@@ -88,7 +88,7 @@ function Listings({ businesses, data, page, stateData, cityData }) {
             ))}
           </>
         ) : (
-          <div className="col-span-full bg-gray-200 text-center text-gray-500 py-4 rounded-lg font-medium">
+          <div className="col-span-full bg-muted text-center text-muted-foreground py-4 rounded-lg font-medium border border-border">
             No Businesses Found
           </div>
         )}

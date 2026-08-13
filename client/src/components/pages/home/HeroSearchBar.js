@@ -87,7 +87,7 @@ function HeroSearchBar({ heroInView }) {
             id="hero-search"
             type="text"
             placeholder="Enter a business name..."
-            className="text-center md:text-left w-full px-6 py-4 text-lg rounded-lg border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-gray-900 md:pr-32"
+            className="text-center md:text-left w-full px-6 py-4 text-lg rounded-lg border border-white/20 focus:ring-2 focus:ring-ring focus:outline-none bg-white text-foreground md:pr-32"
             onChange={handleSearch}
             value={search}
             onKeyDown={handleKeyPress}
@@ -95,31 +95,27 @@ function HeroSearchBar({ heroInView }) {
             aria-describedby="search-help"
           />
           {/* Desktop Search Button - Hidden on mobile */}
-          <motion.button
+          <button
             type="button"
-            className="hidden sm:flex absolute right-2 top-2 bottom-2 px-6 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium items-center justify-center cursor-pointer"
+            className="hidden sm:flex absolute right-2 top-2 bottom-2 px-6 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium items-center justify-center cursor-pointer"
             onClick={submitSearch}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
             aria-label="Search for radiator repair shops"
           >
             <Search className="w-5 h-5 mr-2" aria-hidden="true" />
             Search Now
-          </motion.button>
+          </button>
         </div>
 
         {/* Mobile Search Button - Full width on mobile */}
-        <motion.button
+        <button
           type="button"
-          className="sm:hidden w-full px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center cursor-pointer shadow-lg"
+          className="sm:hidden w-full px-6 py-4 bg-white text-primary rounded-lg hover:bg-tint transition-colors font-medium flex items-center justify-center cursor-pointer"
           onClick={submitSearch}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
           aria-label="Search for radiator repair shops"
         >
           <Search className="w-5 h-5 mr-2" aria-hidden="true" />
           Search Now
-        </motion.button>
+        </button>
       </div>
     </motion.div>
   );

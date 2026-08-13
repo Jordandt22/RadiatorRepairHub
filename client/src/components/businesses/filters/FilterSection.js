@@ -49,7 +49,7 @@ function FilterSection({ stateData, cityData, page }) {
               <PrimaryCategoriesDropdown />
 
               {/* Min Total Score */}
-              <div className="flex gap-12 items-center md:col-span-2 lg:col-span-3 xl:col-span-4 bg-slate-100 p-4 rounded-md">
+              <div className="flex gap-12 items-center md:col-span-2 lg:col-span-3 xl:col-span-4 bg-muted p-4 rounded-md">
                 <div className="w-1/3">
                   <FilterSliderInput
                     label="Min. Total Score"
@@ -79,8 +79,8 @@ function FilterSection({ stateData, cityData, page }) {
               <FeaturesCheckboxes />
 
               {/* Open Hours */}
-              <div className="md:col-span-2 lg:col-span-3 xl:col-span-4 bg-slate-100 p-4 rounded-md">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="md:col-span-2 lg:col-span-3 xl:col-span-4 bg-muted p-4 rounded-md">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Open Hours
                 </label>
                 <div className="flex gap-6">
@@ -91,9 +91,9 @@ function FilterSection({ stateData, cityData, page }) {
                       onChange={(e) =>
                         updateOpenFilter("weekdays", e.target.checked)
                       }
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-border text-primary focus:ring-ring"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Weekdays</span>
+                    <span className="ml-2 text-sm text-foreground">Weekdays</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -102,9 +102,9 @@ function FilterSection({ stateData, cityData, page }) {
                       onChange={(e) =>
                         updateOpenFilter("weekends", e.target.checked)
                       }
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-border text-primary focus:ring-ring"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Weekends</span>
+                    <span className="ml-2 text-sm text-foreground">Weekends</span>
                   </label>
                 </div>
               </div>
@@ -122,7 +122,7 @@ function FilterSection({ stateData, cityData, page }) {
                     page
                   )
                 }
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-gray-300 rounded-md hover:bg-blue-800 cursor-pointer transition-all duration-300"
+                className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary border border-primary rounded-md hover:bg-primary/90 cursor-pointer transition-colors duration-200"
               >
                 Apply Filters
               </button>
@@ -130,7 +130,7 @@ function FilterSection({ stateData, cityData, page }) {
                 onClick={() =>
                   clearAllFilters(stateData, cityData, appliedFilters)
                 }
-                className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-200 cursor-pointer transition-all duration-300"
+                className="px-4 py-2 text-sm font-medium text-muted-foreground bg-card border border-border rounded-md hover:bg-muted cursor-pointer transition-colors duration-200"
               >
                 Clear All Filters
               </button>

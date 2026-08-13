@@ -20,16 +20,16 @@ function Pagination({
 
   // Page Tab Styles
   const pageTabStyle =
-    "px-3 py-2 text-sm font-medium border border-gray-300 rounded-md duration-300";
+    "px-3 py-2 text-sm font-medium border border-border rounded-md duration-200";
 
   // Page Link Styles
   const pageLinkStyle = "block " + pageTabStyle;
   const pageLinkActiveStyle =
     pageLinkStyle +
-    " text-gray-500 bg-gray-200 hover:bg-gray-300 cursor-pointer";
+    " text-muted-foreground bg-card hover:bg-muted cursor-pointer";
   const pageLinkDisabledStyle =
     pageLinkStyle +
-    " text-gray-300 bg-gray-50 hover:bg-gray-100 cursor-not-allowed";
+    " text-border bg-muted cursor-not-allowed";
   const pageLinkIconStyle = "w-5 h-5";
 
   const mobilePaginationPages = [];
@@ -106,7 +106,7 @@ function Pagination({
   const upperLimit = lowerLimit + requestTotal - 1;
   return (
     <div className="flex md:flex-row flex-col items-center justify-between mt-12 mb-8">
-      <div className="text-sm text-gray-700 mb-4 md:mb-0">
+      <div className="text-sm text-muted-foreground mb-4 md:mb-0">
         Showing <span className="font-medium">{lowerLimit}</span>-
         <span className="font-medium">{upperLimit}</span> of{" "}
         <span className="font-medium">{totalBusinesses}</span> results
@@ -135,9 +135,9 @@ function Pagination({
                 key={"mobile-pagination-" + page}
                 className={
                   currentPage === page
-                    ? pageTabStyle + " text-white bg-blue-500 hover:bg-blue-700"
-                    : pageTabStyle +
-                      " text-gray-700 hover:bg-gray-300 bg-gray-50"
+                    ? pageTabStyle +
+                      " text-primary-foreground bg-primary border-primary hover:bg-primary/90"
+                    : pageTabStyle + " text-foreground hover:bg-muted bg-card"
                 }
                 href={getHref(page)}
                 prefetch={false}
@@ -155,7 +155,7 @@ function Pagination({
               return (
                 <span
                   key={`desktop-pagination-ellipsis-${index}`}
-                  className="px-3 py-2 text-sm font-medium text-gray-500"
+                  className="px-3 py-2 text-sm font-medium text-muted-foreground"
                 >
                   ...
                 </span>
@@ -167,9 +167,9 @@ function Pagination({
                 key={`desktop-pagination-${page}`}
                 className={
                   currentPage === page
-                    ? pageTabStyle + " text-white bg-blue-500 hover:bg-blue-700"
-                    : pageTabStyle +
-                      " text-gray-700 hover:bg-gray-300 bg-gray-50"
+                    ? pageTabStyle +
+                      " text-primary-foreground bg-primary border-primary hover:bg-primary/90"
+                    : pageTabStyle + " text-foreground hover:bg-muted bg-card"
                 }
                 href={getHref(page)}
                 prefetch={false}

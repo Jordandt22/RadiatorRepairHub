@@ -9,7 +9,7 @@
 
 # THANKS
 
-    Fonts: Google Fonts (Inter, Oswald)
+    Fonts: Google Fonts (IBM Plex Sans)
     Icons: Lucide React
     Framework: Next.js
     Styling: Tailwind CSS

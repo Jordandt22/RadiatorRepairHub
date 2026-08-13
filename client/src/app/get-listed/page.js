@@ -114,7 +114,7 @@ const Page = () => {
           __html: JSON.stringify(serviceSchema),
         }}
       />
-      <div className="min-h-screen bg-gray-50 pb-24">
+      <div className="min-h-screen bg-background pb-24">
         {/* Header */}
         <GetListedHeader />
 
@@ -122,30 +122,30 @@ const Page = () => {
           {/* Benefits Section */}
           <div className="mb-20">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4 font-heading">
+              <h2 className="text-3xl font-semibold tracking-tight text-foreground mb-4 font-heading">
                 Why List Your Business?
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
                 Add your shop to the RadiatorRepairHub directory so local
                 drivers can find you when they need cooling system repair.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {benefits.map((benefit, index) => {
                 const IconComponent = benefit.icon;
                 return (
                   <div
                     key={index}
-                    className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl hover:-translate-y-1 hover:scale-105 duration-300"
+                    className="bg-card rounded-lg border border-border p-6"
                   >
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                      <IconComponent className="w-6 h-6 text-blue-600" />
+                    <div className="w-12 h-12 bg-tint rounded-lg flex items-center justify-center mb-4">
+                      <IconComponent className="w-6 h-6 text-primary" />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                       {benefit.title}
                     </h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">
+                    <p className="text-muted-foreground text-sm leading-relaxed">
                       {benefit.description}
                     </p>
                   </div>
@@ -158,18 +158,18 @@ const Page = () => {
           <div className="mb-16">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4 font-heading">
+                <h2 className="text-3xl font-semibold tracking-tight text-foreground mb-4 font-heading">
                   Submit Your Business
                 </h2>
-                <p className="text-lg text-gray-600">
+                <p className="text-lg text-muted-foreground">
                   Fill out the form below to get your business listed in our
                   directory.
                 </p>
-                <p className="text-base text-gray-600 mt-3 max-w-2xl mx-auto">
+                <p className="text-base text-muted-foreground mt-3 max-w-2xl mx-auto">
                   Already in the directory?{" "}
                   <Link
                     href="/how-to-claim"
-                    className="text-blue-600 hover:text-blue-800 underline"
+                    className="text-interactive hover:text-primary underline"
                   >
                     Claim your listing
                   </Link>{" "}
@@ -198,29 +198,29 @@ const Page = () => {
           {/* Process Explanation */}
           <div className="mb-16">
             <div className="max-w-4xl mx-auto">
-              <div className="bg-white rounded-xl p-8 shadow-lg border-l-4 border-blue-500">
+              <div className="bg-card rounded-lg border border-border p-8">
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <CheckCircle className="w-8 h-8 text-blue-600" />
+                    <CheckCircle className="w-8 h-8 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                    <h3 className="text-xl font-semibold text-foreground mb-4">
                       What Happens Next?
                     </h3>
-                    <div className="space-y-3 text-gray-600">
-                      <p>
-                        • We&apos;ll review your submission within 2-3 business
+                    <ol className="list-decimal space-y-3 pl-5 text-muted-foreground">
+                      <li>
+                        We&apos;ll review your submission within 2-3 business
                         days.
-                      </p>
-                      <p>
-                        • Once approved, your business will appear in our
+                      </li>
+                      <li>
+                        Once approved, your business will appear in our
                         directory.
-                      </p>
-                      <p>
-                        • You&apos;ll receive an email confirmation when your
+                      </li>
+                      <li>
+                        You&apos;ll receive an email confirmation when your
                         listing goes live.
-                      </p>
-                    </div>
+                      </li>
+                    </ol>
                   </div>
                 </div>
               </div>
@@ -230,11 +230,11 @@ const Page = () => {
           {/* Free Listing Note */}
           <div className="mb-8">
             <div className="max-w-4xl mx-auto">
-              <div className="bg-blue-600 rounded-xl p-8 text-center text-white">
-                <h3 className="text-2xl font-bold mb-4 font-heading">
+              <div className="bg-tint rounded-lg border border-border p-8 text-center">
+                <h3 className="text-2xl font-semibold mb-3 font-heading text-primary">
                   Free Business Listings
                 </h3>
-                <p className="text-lg opacity-90">
+                <p className="text-lg text-foreground">
                   Currently, all listings are free. Paid premium options will be
                   available in the future.
                 </p>
@@ -245,11 +245,11 @@ const Page = () => {
           {/* Contact CTA */}
           <div className="mb-16">
             <div className="max-w-4xl mx-auto text-center">
-              <div className="bg-gray-100 rounded-xl p-8">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              <div className="bg-card rounded-lg border border-border p-8">
+                <h3 className="text-xl font-semibold text-foreground mb-4">
                   Need Help?
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-muted-foreground mb-4">
                   Have questions about listing your business? Email, call, or
                   text us — we&apos;re here to help!
                 </p>
@@ -257,13 +257,13 @@ const Page = () => {
                   {businessEmail ? (
                     <a
                       href={`mailto:${businessEmail}`}
-                      className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                      className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors duration-200"
                     >
                       {businessEmail}
                     </a>
                   ) : null}
                   {hasPhone ? (
-                    <div className="text-sm text-gray-700">
+                    <div className="text-sm text-foreground">
                       <SitePhoneLinks showLabel={true} />
                     </div>
                   ) : null}
@@ -274,19 +274,19 @@ const Page = () => {
 
           {/* Legal Disclaimer */}
           <div className="max-w-4xl mx-auto">
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-muted-foreground">
               <p>
                 By submitting your business, you agree to our{" "}
                 <a
                   href="/terms"
-                  className="text-blue-600 hover:text-blue-700 underline"
+                  className="text-interactive hover:text-primary underline"
                 >
                   Terms of Service
                 </a>{" "}
                 and{" "}
                 <a
                   href="/privacy"
-                  className="text-blue-600 hover:text-blue-700 underline"
+                  className="text-interactive hover:text-primary underline"
                 >
                   Privacy Policy
                 </a>

@@ -289,8 +289,7 @@ function QuickContactDialogContent({
       <Button
         type="button"
         className={
-          triggerClassName ??
-          "w-full h-10 gap-2 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer hover:scale-95 transition-all duration-200"
+          triggerClassName ?? "w-full h-10 gap-2 cursor-pointer"
         }
       />
     );
@@ -302,8 +301,7 @@ function QuickContactDialogContent({
       </>
     );
 
-  const formButtonClassName =
-    "cursor-pointer hover:scale-95 transition-all duration-200";
+  const formButtonClassName = "cursor-pointer";
 
   return (
     <>
@@ -515,14 +513,14 @@ function QuickContactDialogContent({
             By sending this message, you agree to our{" "}
             <Link
               href="/terms"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-interactive hover:text-primary underline"
             >
               Terms of Service
             </Link>{" "}
             and{" "}
             <Link
               href="/privacy"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-interactive hover:text-primary underline"
             >
               Privacy Policy
             </Link>
@@ -545,7 +543,7 @@ function QuickContactDialogContent({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className={`gap-2 bg-blue-600 text-white hover:bg-blue-700 px-12 ${formButtonClassName}`}
+              className={`gap-2 px-12 ${formButtonClassName}`}
             >
               <Send className="size-4" />
               {isSubmitting ? "Sending..." : "Send"}
