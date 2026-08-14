@@ -9,7 +9,7 @@ import {
 } from "../supabase/supabase.functions.js";
 
 export const MAX_CLAIM_ATTEMPTS = 5;
-export const CLAIM_STALE_MS = 1 * 24 * 60 * 60 * 1000;
+export const CLAIM_STALE_MS = 60 * 60 * 1000;
 export const CLAIM_RESTART_MESSAGE =
   "This claim request has expired. Please restart the claim process from the business page.";
 export const CLAIM_MAX_ATTEMPTS_MESSAGE =
