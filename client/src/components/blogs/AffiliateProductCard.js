@@ -30,7 +30,7 @@ export default function AffiliateProductCard({
       target="_blank"
       rel="sponsored noopener noreferrer"
       onClick={handleClick}
-      className="group flex h-full flex-col rounded-lg border border-border bg-card p-4 transition-colors hover:border-interactive/50"
+      className="group flex h-full flex-col rounded-lg border border-border bg-card p-4 card-lift-hover"
     >
       <div className="relative mx-auto aspect-square w-full max-w-[200px] overflow-hidden rounded-lg bg-white">
         {product.image_url ? (
@@ -49,7 +49,7 @@ export default function AffiliateProductCard({
       </div>
 
       <div className="mt-4 flex min-w-0 flex-1 flex-col">
-        <p className="font-heading text-sm font-bold leading-snug text-foreground transition-colors group-hover:text-interactive">
+        <p className="font-heading text-sm font-bold leading-snug text-foreground transition-colors duration-200 ease-out group-hover:text-interactive">
           {product.title}
         </p>
         {product.description ? (

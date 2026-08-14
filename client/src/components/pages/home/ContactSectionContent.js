@@ -127,7 +127,7 @@ export default function ContactSectionContent({
             <div className="flex flex-col items-center justify-center gap-4 md:flex-row">
               <Link
                 href="/contact"
-                className="inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90 md:w-auto"
+                className="inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-interactive hover:bg-primary/90 md:w-auto"
               >
                 <span>Contact Us</span>
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />

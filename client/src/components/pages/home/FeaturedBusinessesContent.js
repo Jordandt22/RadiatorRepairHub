@@ -34,7 +34,7 @@ export default function FeaturedBusinessesContent({ businesses = [] }) {
         {list.length > 0 ? (
           <AnimatedBusinessGrid
             businesses={list}
-            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+            className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
           />
         ) : (
           <div className="mt-12 text-center">
@@ -50,7 +50,7 @@ export default function FeaturedBusinessesContent({ businesses = [] }) {
         >
           <Link
             href="/featured"
-            className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-2.5 font-medium text-foreground transition-colors duration-200 hover:bg-muted"
+            className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-2.5 font-medium text-foreground transition-interactive hover:bg-muted"
           >
             View All Featured Businesses
             <ArrowRight className="h-4 w-4" aria-hidden="true" />

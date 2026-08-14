@@ -68,34 +68,32 @@ function isItemActive(pathname, path) {
 }
 
 function navLinkClass(pathname, path, isHome) {
+  const genericClass = "rounded-full px-3 py-2 text-sm font-medium transition-interactive ";
   if (isHome) {
-    return `rounded-full px-3 py-2 text-sm font-medium transition-colors duration-200 ${
-      pathname === path
-        ? "bg-white/15 text-white"
-        : "text-white hover:bg-white/10"
-    }`;
+    return `${genericClass} ${pathname === path
+      ? "bg-white/15 text-white"
+      : "text-white hover:bg-white/10"
+      }`;
   }
 
-  return `rounded-full px-3 py-2 text-sm font-medium transition-colors duration-200 ${
-    pathname === path
-      ? "bg-tint text-primary"
-      : "text-muted-foreground hover:bg-muted hover:text-primary"
-  }`;
+  return `${genericClass} ${pathname === path
+    ? "bg-tint text-primary"
+    : "text-muted-foreground hover:bg-muted hover:text-primary"
+    }`;
 }
 
 function NavDropdown({ label, links, pathname, isActive, isHome }) {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger
-        className={`inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-2 text-sm font-medium outline-none transition-colors duration-200 ${
-          isHome
-            ? isActive
-              ? "bg-white/15 text-white"
-              : "text-white hover:bg-white/10"
-            : isActive
-              ? "bg-tint text-primary"
-              : "text-muted-foreground hover:bg-muted hover:text-primary"
-        }`}
+        className={`inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-2 text-sm font-medium outline-none transition-interactive ${isHome
+          ? isActive
+            ? "bg-white/15 text-white"
+            : "text-white hover:bg-white/10"
+          : isActive
+            ? "bg-tint text-primary"
+            : "text-muted-foreground hover:bg-muted hover:text-primary"
+          }`}
       >
         {label}
         <ChevronDown className="size-4" aria-hidden="true" />
@@ -105,9 +103,8 @@ function NavDropdown({ label, links, pathname, isActive, isHome }) {
           <DropdownMenuItem
             key={link.path}
             render={<Link href={link.path} />}
-            className={`cursor-pointer rounded-md ${
-              isItemActive(pathname, link.path) ? "bg-tint text-primary" : ""
-            }`}
+            className={`cursor-pointer rounded-md ${isItemActive(pathname, link.path) ? "bg-tint text-primary" : ""
+              }`}
           >
             {link.label}
           </DropdownMenuItem>
@@ -154,8 +151,8 @@ function Navbar() {
       href="/signin"
       className={
         isHome
-          ? "inline-flex items-center gap-1.5 rounded-full border border-white/40 px-4 py-1.5 font-medium text-white transition-colors duration-200 hover:bg-white/10"
-          : "inline-flex items-center gap-1.5 rounded-full border border-primary px-4 py-1.5 font-medium text-primary transition-colors duration-200 hover:bg-tint"
+          ? "inline-flex items-center gap-1.5 rounded-full border border-white/40 px-4 py-1.5 font-medium text-white transition-interactive hover:bg-white/10"
+          : "inline-flex items-center gap-1.5 rounded-full border border-primary px-4 py-1.5 font-medium text-primary transition-interactive hover:bg-tint"
       }
       aria-label="Sign in to your business account"
     >
@@ -165,10 +162,9 @@ function Navbar() {
   );
 
   const mobileLinkClassName = (path) =>
-    `block rounded-md px-4 py-2.5 text-base font-medium transition-colors duration-200 ${
-      isItemActive(pathname, path) || pathname === path
-        ? "bg-tint text-primary"
-        : "text-foreground hover:bg-muted hover:text-primary"
+    `block rounded-md px-4 py-2.5 text-base font-medium transition-colors duration-200 ${isItemActive(pathname, path) || pathname === path
+      ? "bg-tint text-primary"
+      : "text-foreground hover:bg-muted hover:text-primary"
     }`;
 
   return (
@@ -198,9 +194,8 @@ function Navbar() {
                 className="h-10 w-10"
               />
               <span
-                className={`font-heading text-2xl font-bold tracking-tight ${
-                  isHome ? "text-white" : "text-primary"
-                }`}
+                className={`font-heading text-2xl font-bold tracking-tight ${isHome ? "text-white" : "text-primary"
+                  }`}
               >
                 RadiatorRepairHub
               </span>
@@ -239,7 +234,7 @@ function Navbar() {
               </Link>
               <Link
                 href="/search?page=1&sort=most_reviews"
-                className="ml-2 flex items-center space-x-2 rounded-full bg-primary px-4 py-1.5 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+                className="ml-2 flex items-center space-x-2 rounded-full bg-primary px-4 py-1.5 font-medium text-primary-foreground transition-interactive hover:bg-primary/90"
                 aria-label="Search for radiator repair services"
               >
                 <Search className="h-4 w-4" aria-hidden="true" />
@@ -282,9 +277,8 @@ function Navbar() {
 
       <div
         id="mobile-menu"
-        className={`fixed top-0 right-0 z-50 h-full w-80 transform border-l border-border bg-card shadow-md transition-transform duration-300 ease-in-out md:hidden ${
-          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 z-50 h-full w-80 transform border-l border-border bg-card shadow-md transition-transform duration-300 ease-in-out md:hidden ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
         role="dialog"
         aria-modal="true"
         aria-label="Mobile navigation menu"
@@ -321,7 +315,7 @@ function Navbar() {
             <Link
               href="/search?page=1&sort=most_reviews"
               onClick={closeMobileMenu}
-              className="flex w-full items-center justify-center space-x-2 rounded-full bg-primary px-4 py-3 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+              className="flex w-full items-center justify-center space-x-2 rounded-full bg-primary px-4 py-3 font-medium text-primary-foreground transition-interactive hover:bg-primary/90"
               aria-label="Search for radiator repair businesses"
             >
               <Search className="h-5 w-5" aria-hidden="true" />
@@ -331,7 +325,7 @@ function Navbar() {
               <Link
                 href="/signin"
                 onClick={closeMobileMenu}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 font-medium text-primary transition-colors duration-200 hover:bg-tint"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 font-medium text-primary transition-interactive hover:bg-tint"
                 aria-label="Sign in to your business account"
               >
                 Sign In
@@ -432,7 +426,7 @@ function Navbar() {
                 type="button"
                 onClick={handleMobileLogout}
                 disabled={isLoggingOut}
-                className="flex w-full items-center justify-center gap-2 rounded-full border border-red-200 px-4 py-3 text-base font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-red-200 px-4 py-3 text-base font-medium text-red-600 transition-interactive hover:bg-red-50 disabled:opacity-60"
               >
                 <LogOut className="size-5" aria-hidden="true" />
                 {isLoggingOut ? "Signing out…" : "Log out"}

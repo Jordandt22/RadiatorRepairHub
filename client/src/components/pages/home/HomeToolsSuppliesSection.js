@@ -48,7 +48,7 @@ export default function HomeToolsSuppliesSection({ products = [] }) {
           className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
         >
           {products.map((product) => (
-            <AnimatedStaggerItem key={product.id} reduceMotion={reduceMotion}>
+            <AnimatedStaggerItem key={product.id} reduceMotion={reduceMotion} className="h-full">
               <AffiliateProductCard
                 product={product}
                 variant="showcase"

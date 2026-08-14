@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -18,6 +20,7 @@ import {
   Tag,
 } from "lucide-react";
 import BusinessCount from "@/components/content/BusinessCount";
+import AnimatedStaggerRows from "@/components/ui/AnimatedStaggerRows";
 import CategorySearch from "./CategorySearch";
 import CategorySort from "./CategorySort";
 
@@ -79,6 +82,33 @@ const getCategoryIcon = (categoryName) => {
   return Tag;
 };
 
+function CategoryCard({ category }) {
+  const Icon = getCategoryIcon(category.name);
+  return (
+    <Link
+      href={`/category/${category.slug}`}
+      prefetch={false}
+      className="group flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:border-interactive"
+    >
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
+        <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <h3 className="truncate font-heading text-base font-semibold capitalize text-foreground">
+          {category.name}
+        </h3>
+        <span className="text-sm text-muted-foreground">
+          <BusinessCount count={category.business_count} />
+        </span>
+      </div>
+      <ArrowRight
+        className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-interactive"
+        aria-hidden="true"
+      />
+    </Link>
+  );
+}
+
 function CategoriesGrid({
   categories,
   searchTerm,
@@ -88,6 +118,17 @@ function CategoriesGrid({
   totalCategories,
   filteredCount,
 }) {
+  const isFirstRender = useRef(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setRefreshKey((key) => key + 1);
+  }, [searchTerm, sort]);
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <p className="mb-6 text-sm text-muted-foreground">
@@ -115,35 +156,12 @@ function CategoriesGrid({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {categories.map((category) => {
-            const Icon = getCategoryIcon(category.name);
-            return (
-              <Link
-                key={category.id}
-                href={`/category/${category.slug}`}
-                prefetch={false}
-                className="group flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:border-interactive"
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
-                  <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate font-heading text-base font-semibold capitalize text-foreground">
-                    {category.name}
-                  </h3>
-                  <span className="text-sm text-muted-foreground">
-                    <BusinessCount count={category.business_count} />
-                  </span>
-                </div>
-                <ArrowRight
-                  className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-interactive"
-                  aria-hidden="true"
-                />
-              </Link>
-            );
-          })}
-        </div>
+        <AnimatedStaggerRows
+          items={categories}
+          getKey={(category) => category.id}
+          refreshKey={refreshKey}
+          renderItem={(category) => <CategoryCard category={category} />}
+        />
       )}
     </div>
   );

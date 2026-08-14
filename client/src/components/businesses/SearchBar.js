@@ -61,7 +61,7 @@ function SearchBar({ stateData, cityData, categoryData, page }) {
             value={filters.title}
             onChange={(e) => updateFilter("title", e.target.value)}
             onKeyDown={handleKeyPress}
-            className="w-full rounded-full border border-border bg-card py-3 pr-10 pl-10 text-foreground outline-none transition-colors duration-200 focus:border-ring"
+            className="w-full rounded-full border border-border bg-card py-3 pr-10 pl-10 text-foreground outline-none transition-all duration-200 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
             aria-describedby="search-help"
           />
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">

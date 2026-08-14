@@ -293,7 +293,7 @@ async function Page({ params }) {
             cdnStored={Boolean(business.cdn_stored)}
             alt={`${business.title} - Radiator Repair Services in ${business.city.name}, ${business.state.name}`}
             top={
-              <div className="mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6 md:pt-8 lg:px-8">
+              <div className="mx-auto hidden w-full max-w-7xl px-4 pt-6 sm:px-6 md:block md:pt-8 lg:px-8">
                 <BreadcrumbList
                   items={breadcrumbItems}
                   navStyles="w-fit max-w-full rounded-lg bg-black/40 p-2 pl-4 pr-6 text-sm backdrop-blur-sm"

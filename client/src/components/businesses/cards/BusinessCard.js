@@ -13,15 +13,20 @@ import BusinessImage from "@/components/businesses/BusinessImage";
 import VerifiedBadge from "@/components/businesses/VerifiedBadge";
 import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 
-function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
+function BusinessCard({
+  business,
+  setActiveCard,
+  setActiveBackCard,
+  priority = false,
+}) {
   const router = useRouter();
   const buttonStyle =
-    "group/hours bg-white/90 hover:bg-primary rounded-full p-2 shadow-sm transition-colors duration-200 backdrop-blur-sm cursor-pointer";
+    "group/hours cursor-pointer rounded-full bg-white/90 p-2 shadow-sm backdrop-blur-sm transition-interactive hover:bg-primary";
   const iconStyle = "w-5 h-5 text-muted-foreground group-hover/hours:text-white";
 
   return (
     <article
-      className="hidden md:block bg-card rounded-lg border border-border overflow-hidden h-full hover:border-interactive/50 transition-colors duration-300"
+      className="card-lift-hover hidden md:block h-full overflow-hidden rounded-lg border border-border bg-card"
       role="article"
       aria-label={`Business listing for ${business.title}`}
     >
@@ -34,6 +39,7 @@ function BusinessCard({ business, setActiveCard, setActiveBackCard }) {
           alt={business.title}
           sizes={BUSINESS_CARD_IMAGE_SIZES}
           showIcon={false}
+          priority={priority}
         />
 
         {/* Subtle black overlay on hover */}

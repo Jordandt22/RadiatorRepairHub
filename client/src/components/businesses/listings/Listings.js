@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
@@ -11,10 +12,24 @@ import BusinessCard from "../cards/BusinessCard";
 import BusinessHours from "../cards/BusinessHours";
 import BusinessInfo from "../cards/BusinessInfo";
 
+const SEARCH_GRID_CLASS =
+  "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+
 function Listings({ businesses, data, page, stateData, cityData, categoryData }) {
+  const pathname = usePathname();
   const { filters, appliedFilters, updateURL } = useFilters();
   const [activeCard, setActiveCard] = useState(null);
   const [activeBackCard, setActiveBackCard] = useState(1);
+  const isFirstRender = useRef(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setRefreshKey((key) => key + 1);
+  }, [page, appliedFilters]);
 
   useEffect(() => {
     if (!data || data.page === page) return;
@@ -43,70 +58,75 @@ function Listings({ businesses, data, page, stateData, cityData, categoryData })
     updateURL,
   ]);
 
-  return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {businesses && businesses?.length > 0 ? (
-          <>
-            {businesses.map((business) => (
-              <div key={business.id} className="group relative h-[400px]">
-                {/* Card Container with 3D Flip */}
-                <div
-                  className="relative w-full h-full transition-transform duration-700 ease-in-out transform-gpu"
-                  style={{
-                    transformStyle: "preserve-3d",
-                    transform:
-                      activeCard === business.id
-                        ? "rotateY(180deg)"
-                        : "rotateY(0deg)",
-                  }}
-                >
-                  {/* Front of Card */}
-                  <div
-                    className="absolute inset-0 w-full h-full backface-hidden"
-                    style={{ backfaceVisibility: "hidden" }}
-                  >
-                    {/* Mobile: Entire card is clickable */}
-                    <MobileBusinessCard business={business} />
-
-                    {/* Desktop: Card with hover effects */}
-                    <BusinessCard
-                      business={business}
-                      activeCard={activeCard}
-                      setActiveCard={setActiveCard}
-                      setActiveBackCard={setActiveBackCard}
-                    />
-                  </div>
-
-                  {/* Back of Card - Business Hours */}
-                  <div
-                    className="absolute inset-0 w-full h-full bg-card rounded-lg border border-border backface-hidden"
-                    style={{
-                      backfaceVisibility: "hidden",
-                      transform: "rotateY(180deg)",
-                    }}
-                  >
-                    {activeBackCard === 1 ? (
-                      <BusinessInfo
-                        business={business}
-                        setActiveCard={setActiveCard}
-                      />
-                    ) : (
-                      <BusinessHours
-                        business={business}
-                        setActiveCard={setActiveCard}
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </>
-        ) : (
-          <div className="col-span-full bg-muted text-center text-muted-foreground py-4 rounded-lg font-medium border border-border">
+  if (!businesses || businesses.length === 0) {
+    return (
+      <div>
+        <div className={SEARCH_GRID_CLASS}>
+          <div className="col-span-full rounded-lg border border-border bg-muted py-4 text-center font-medium text-muted-foreground">
             No Businesses Found
           </div>
-        )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div
+        key={`${pathname}-listings-${refreshKey}`}
+        className={`${SEARCH_GRID_CLASS} stagger-fade-in`}
+      >
+        {businesses.map((business, index) => (
+          <div key={business.id} className="group relative h-[400px]">
+            <div
+              className="relative h-full w-full transform-gpu transition-transform duration-700 ease-in-out"
+              style={{
+                transformStyle: "preserve-3d",
+                transform:
+                  activeCard === business.id
+                    ? "rotateY(180deg)"
+                    : "rotateY(0deg)",
+              }}
+            >
+              <div
+                className="absolute inset-0 h-full w-full backface-hidden"
+                style={{ backfaceVisibility: "hidden" }}
+              >
+                <MobileBusinessCard
+                  business={business}
+                  priority={index < 2}
+                />
+                <BusinessCard
+                  business={business}
+                  activeCard={activeCard}
+                  setActiveCard={setActiveCard}
+                  setActiveBackCard={setActiveBackCard}
+                  priority={index < 2}
+                />
+              </div>
+
+              <div
+                className="absolute inset-0 h-full w-full rounded-lg border border-border bg-card backface-hidden"
+                style={{
+                  backfaceVisibility: "hidden",
+                  transform: "rotateY(180deg)",
+                }}
+              >
+                {activeBackCard === 1 ? (
+                  <BusinessInfo
+                    business={business}
+                    setActiveCard={setActiveCard}
+                  />
+                ) : (
+                  <BusinessHours
+                    business={business}
+                    setActiveCard={setActiveCard}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

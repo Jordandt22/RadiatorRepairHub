@@ -62,7 +62,7 @@ export default function FeaturedCategoriesContent({ categories = [] }) {
         <AnimatedStaggerGrid
           inView={inView}
           reduceMotion={reduceMotion}
-          className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4"
+          className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4"
         >
           {categories.map((category) => {
             const Icon = CATEGORY_ICONS[category.slug] || Tag;
@@ -73,7 +73,7 @@ export default function FeaturedCategoriesContent({ categories = [] }) {
                 className="h-full"
               >
                 <Link
-                  className="group flex h-full flex-col rounded-lg border border-border bg-card p-6 transition-colors duration-200 hover:border-interactive"
+                  className="group flex h-full flex-col rounded-lg border border-border bg-card p-6 transition-card-hover ease-out hover:scale-95 hover:border-interactive motion-reduce:transition-none motion-reduce:hover:scale-100"
                   href={`/category/${category.slug}`}
                 >
                   <div className="mb-4 shrink-0">
@@ -109,7 +109,7 @@ export default function FeaturedCategoriesContent({ categories = [] }) {
         >
           <Link
             href="/categories"
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-interactive hover:bg-primary/90"
           >
             View All Categories
             <ArrowRight className="h-4 w-4" aria-hidden="true" />

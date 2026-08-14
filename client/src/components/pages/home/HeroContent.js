@@ -117,7 +117,7 @@ function HeroContent({ popularStates = [] }) {
                 >
                   <Link
                     href={`/state/${state.code}`}
-                    className="inline-block rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm transition-colors hover:border-white/40 hover:bg-white/15"
+                    className="inline-block rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm transition-interactive hover:border-white/40 hover:bg-white/15"
                   >
                     {state.name}
                   </Link>

@@ -10,6 +10,9 @@ import {
   getBusinessImageId,
 } from "@/lib/images";
 
+export const BUSINESS_COVER_PLACEHOLDER =
+  "/assets/images/business-cover-placeholder.svg";
+
 function BusinessImage({
   src,
   businessId,
@@ -22,8 +25,8 @@ function BusinessImage({
   priority = false,
   showIcon = true,
   iconSize = "md",
-  // "message" = No image available UI; "solid" = blank colored background
-  fallback = "message",
+  // "placeholder" = branded SVG; "message" = No image available UI; "solid" = blank bg
+  fallback = "placeholder",
   fallbackClassName = "bg-muted",
   variant = CF_IMAGE_VARIANT.card,
 }) {
@@ -46,6 +49,21 @@ function BusinessImage({
       return (
         <div
           className={`absolute inset-0 w-full h-full ${fallbackClassName}`}
+          aria-hidden="true"
+        />
+      );
+    }
+
+    if (fallback === "placeholder") {
+      return (
+        <Image
+          src={BUSINESS_COVER_PLACEHOLDER}
+          alt=""
+          fill={fill}
+          sizes={sizes}
+          className={className}
+          priority={priority}
+          unoptimized
           aria-hidden="true"
         />
       );

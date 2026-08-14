@@ -49,6 +49,16 @@ const isLikelyGoogleMapsUrl = (value) => {
   return false;
 };
 
+const fieldFocusClass =
+  "outline-none transition-all duration-200 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20";
+
+const fieldClassName = (hasError, extra = "") =>
+  `w-full px-4 py-3 border rounded-lg ${
+    extra.includes("bg-") ? "" : "bg-card "
+  }${fieldFocusClass} ${
+    hasError ? "border-destructive" : "border-border"
+  }${extra ? ` ${extra}` : ""}`;
+
 const ContactForm = ({
   prefilledSubject = "",
   lockSubject = false,
@@ -335,9 +345,7 @@ const ContactForm = ({
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 border rounded-lg focus:border-ring outline-none transition-colors ${
-              errors.name ? "border-destructive" : "border-border"
-            }`}
+            className={fieldClassName(errors.name)}
             placeholder={namePlaceholder || "Enter your full name"}
             aria-describedby={errors.name ? "name-error" : undefined}
             aria-invalid={errors.name ? "true" : "false"}
@@ -368,9 +376,7 @@ const ContactForm = ({
             name="email"
             value={formData.email}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 border rounded-lg focus:border-ring outline-none transition-colors ${
-              errors.email ? "border-destructive" : "border-border"
-            }`}
+            className={fieldClassName(errors.email)}
             placeholder="Enter your email address"
             aria-describedby={errors.email ? "email-error" : undefined}
             aria-invalid={errors.email ? "true" : "false"}
@@ -401,9 +407,7 @@ const ContactForm = ({
             name="phone"
             value={formData.phone}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 border rounded-lg focus:border-ring outline-none transition-colors ${
-              errors.phone ? "border-destructive" : "border-border"
-            }`}
+            className={fieldClassName(errors.phone)}
             placeholder="Enter your phone number (optional)"
             aria-describedby={errors.phone ? "phone-error" : undefined}
             aria-invalid={errors.phone ? "true" : "false"}
@@ -434,11 +438,10 @@ const ContactForm = ({
               value={formData.subject}
               onChange={handleInputChange}
               disabled={lockSubject}
-              className={`w-full px-4 py-3 border rounded-lg focus:border-ring outline-none transition-colors ${
+              className={fieldClassName(
+                errors.subject,
                 lockSubject ? "bg-muted cursor-not-allowed" : ""
-              } ${
-                errors.subject ? "border-destructive" : "border-border"
-              }`}
+              )}
               aria-describedby={errors.subject ? "subject-error" : undefined}
               aria-invalid={errors.subject ? "true" : "false"}
               required
@@ -477,9 +480,7 @@ const ContactForm = ({
               name="googleMapsUrl"
               value={formData.googleMapsUrl}
               onChange={handleInputChange}
-              className={`w-full px-4 py-3 border rounded-lg focus:border-ring outline-none transition-colors ${
-                errors.googleMapsUrl ? "border-destructive" : "border-border"
-              }`}
+              className={fieldClassName(errors.googleMapsUrl)}
               placeholder="https://maps.google.com/... or maps.app.goo.gl/..."
               aria-describedby={
                 errors.googleMapsUrl
@@ -523,9 +524,7 @@ const ContactForm = ({
             value={formData.message}
             onChange={handleInputChange}
             rows={isGetListed ? 4 : 6}
-            className={`w-full px-4 py-3 border rounded-lg focus:border-ring outline-none resize-none transition-colors ${
-              errors.message ? "border-destructive" : "border-border"
-            }`}
+            className={fieldClassName(errors.message, "resize-none")}
             placeholder={
               isGetListed
                 ? "Anything else we should know? (optional)"

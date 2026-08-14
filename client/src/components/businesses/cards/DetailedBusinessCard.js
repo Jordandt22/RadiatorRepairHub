@@ -8,9 +8,9 @@ import VerifiedBadge from "@/components/businesses/VerifiedBadge";
 import { Button } from "@/components/ui/button";
 import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 
-function DetailedBusinessCard({ business }) {
+function DetailedBusinessCard({ business, priority = false }) {
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors duration-300 hover:border-interactive/50">
+    <div className="card-lift-hover flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card">
       {/* Business Image */}
       <div className="relative h-48 w-full shrink-0 bg-muted">
         <BusinessImage
@@ -20,6 +20,7 @@ function DetailedBusinessCard({ business }) {
           cdnStored={Boolean(business.cdn_stored)}
           alt={business.title}
           sizes={BUSINESS_CARD_IMAGE_SIZES}
+          priority={priority}
         />
         {business.is_claimed ? (
           <div className="absolute top-3 left-3 z-10">

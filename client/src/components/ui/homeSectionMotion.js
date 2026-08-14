@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useInView, useReducedMotion } from "framer-motion";
 
 export const HOME_SECTION_IN_VIEW_MARGIN = "-40px 0px";
@@ -11,6 +12,25 @@ export function useHomeSectionInView() {
   const reduceMotion = useReducedMotion();
 
   return { ref, inView, reduceMotion };
+}
+
+/**
+ * Ensures a real hidden → visible paint cycle on client navigations.
+ * Soft nav can skip Framer's mount `initial` unless we force a frame at hidden.
+ */
+export function useEnterAnimation(extraKey = "") {
+  const pathname = usePathname();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    setVisible(false);
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setVisible(true));
+    });
+    return () => cancelAnimationFrame(id);
+  }, [pathname, extraKey]);
+
+  return visible;
 }
 
 export function fadeIn(reduceMotion, delay = 0) {

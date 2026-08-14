@@ -72,7 +72,7 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
   };
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors duration-200 hover:border-interactive/50">
+    <article className="card-lift-hover flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card">
       <Link
         href={`/business/${business.slug}`}
         className="block min-h-0 flex-1"

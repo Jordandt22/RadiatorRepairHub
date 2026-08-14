@@ -90,7 +90,7 @@ function HeroSearchBar({ heroInView }) {
             id="hero-search"
             type="text"
             placeholder="Enter a business name..."
-            className="w-full rounded-full border border-white/20 bg-white px-6 py-3.5 text-center text-lg text-foreground placeholder-muted-foreground shadow-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 sm:text-left md:pr-36"
+            className="w-full rounded-full border border-white/20 bg-white px-6 py-3.5 text-center text-lg text-foreground placeholder-muted-foreground shadow-sm outline-none transition-all duration-200 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 sm:text-left md:pr-36"
             onChange={handleSearch}
             value={search}
             onKeyDown={handleKeyPress}
@@ -99,7 +99,7 @@ function HeroSearchBar({ heroInView }) {
           />
           <button
             type="button"
-            className="absolute top-1.5 right-1.5 bottom-1.5 hidden cursor-pointer items-center justify-center rounded-full bg-primary px-5 font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:flex"
+            className="absolute top-1.5 right-1.5 bottom-1.5 hidden cursor-pointer items-center justify-center rounded-full bg-primary px-5 font-medium text-primary-foreground transition-interactive hover:bg-primary/90 sm:flex"
             onClick={submitSearch}
             aria-label="Search for radiator repair shops"
           >
@@ -110,7 +110,7 @@ function HeroSearchBar({ heroInView }) {
 
         <button
           type="button"
-          className="flex w-full cursor-pointer items-center justify-center rounded-full bg-primary px-6 py-3.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:hidden"
+          className="flex w-full cursor-pointer items-center justify-center rounded-full bg-primary px-6 py-3.5 font-medium text-primary-foreground transition-interactive hover:bg-primary/90 sm:hidden"
           onClick={submitSearch}
           aria-label="Search for radiator repair shops"
         >

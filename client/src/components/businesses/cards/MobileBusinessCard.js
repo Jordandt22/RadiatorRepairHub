@@ -5,14 +5,14 @@ import BusinessImage from "@/components/businesses/BusinessImage";
 import VerifiedBadge from "@/components/businesses/VerifiedBadge";
 import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 
-function MobileBusinessCard({ business }) {
+function MobileBusinessCard({ business, priority = false }) {
   return (
     <Link
       href={`/business/${business.slug}`}
-      className="md:hidden block h-full"
+      className="group md:hidden block h-full"
       prefetch={false}
     >
-      <div className="bg-card rounded-lg border border-border overflow-hidden h-full">
+      <div className="card-lift-hover h-full overflow-hidden rounded-lg border border-border bg-card">
         <div className="relative w-full h-56 bg-muted">
           <BusinessImage
             src={business.image_url}
@@ -22,6 +22,7 @@ function MobileBusinessCard({ business }) {
             alt={business.title}
             sizes={BUSINESS_CARD_IMAGE_SIZES}
             showIcon={false}
+            priority={priority}
           />
           {business.is_claimed ? (
             <div className="absolute top-3 left-3 z-10">

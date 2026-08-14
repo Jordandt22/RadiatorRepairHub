@@ -36,7 +36,7 @@ export default function HomeFaqCta() {
         <div className="flex justify-center">
           <Link
             href="/faq"
-            className="inline-flex items-center rounded-full bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+            className="inline-flex items-center rounded-full bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-interactive hover:bg-primary/90"
           >
             View All FAQs
           </Link>

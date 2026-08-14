@@ -69,7 +69,11 @@ function FeaturedGrid({
           </p>
         </div>
       ) : (
-        <AnimatedBusinessGrid businesses={businesses} refreshKey={refreshKey} />
+        <AnimatedBusinessGrid
+          businesses={businesses}
+          refreshKey={refreshKey}
+          trigger="mount"
+        />
       )}
     </div>
   );
