@@ -12,7 +12,7 @@ import {
 export default function SitePhoneLinks({
   className = "",
   showLabel = true,
-  linkClassName = "text-blue-600 hover:text-blue-700 transition-colors",
+  linkClassName = "text-interactive transition-colors hover:text-interactive/80",
 }) {
   const digits = getBusinessPhoneDigits();
   if (!digits) return null;
@@ -24,14 +24,14 @@ export default function SitePhoneLinks({
   return (
     <span className={className}>
       {showLabel ? (
-        <span className="block text-gray-600 text-sm mb-1">
+        <span className="mb-1 block text-sm text-muted-foreground">
           Call or text (SMS)
         </span>
       ) : null}
       <a href={telHref} className={linkClassName}>
         {display}
       </a>
-      <span className="text-gray-400 mx-1.5" aria-hidden="true">
+      <span className="mx-1.5 text-muted-foreground" aria-hidden="true">
         ·
       </span>
       <a href={smsHref} className={linkClassName}>

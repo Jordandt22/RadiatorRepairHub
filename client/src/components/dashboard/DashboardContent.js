@@ -68,15 +68,14 @@ function DashboardContentInner() {
     }
   };
 
-  const tabsTriggerClassNames =
-    "px-6 cursor-pointer hover:translate-y-[-2px] transition-all duration-300";
+  const tabsTriggerClassNames ="px-6 cursor-pointer transition-colors duration-200";
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
       <div>
-        <h1 className="font-heading text-2xl font-bold text-gray-900">
+        <h1 className="font-heading text-2xl font-bold text-foreground">
           Dashboard
         </h1>
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-muted-foreground">
           Manage your claimed businesses and account.
         </p>
       </div>
@@ -104,7 +103,7 @@ function DashboardContentInner() {
             </h2>
 
             {loading && (
-              <p className="text-sm text-gray-500">Loading your businesses…</p>
+              <p className="text-sm text-muted-foreground">Loading your businesses…</p>
             )}
 
             {!loading && error && (
@@ -114,9 +113,9 @@ function DashboardContentInner() {
             )}
 
             {!loading && !error && businesses.length === 0 && (
-              <div className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-10 text-center">
-                <p className="font-medium text-gray-900">No businesses yet</p>
-                <p className="mt-1 text-sm text-gray-600">
+              <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">
+                <p className="font-medium text-foreground">No businesses yet</p>
+                <p className="mt-1 text-sm text-muted-foreground">
                   Claim a listing from a business page to see it here.
                 </p>
               </div>
@@ -137,18 +136,18 @@ function DashboardContentInner() {
         </TabsContent>
 
         <TabsContent value="inbox">
-          <div className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-10 text-center">
-            <p className="font-medium text-gray-900">Coming soon</p>
-            <p className="mt-1 text-sm text-gray-600">
+          <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">
+            <p className="font-medium text-foreground">Coming soon</p>
+            <p className="mt-1 text-sm text-muted-foreground">
               View and manage Quick Contact inquiries from customers.
             </p>
           </div>
         </TabsContent>
 
         <TabsContent value="analytics">
-          <div className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-10 text-center">
-            <p className="font-medium text-gray-900">Coming soon</p>
-            <p className="mt-1 text-sm text-gray-600">
+          <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">
+            <p className="font-medium text-foreground">Coming soon</p>
+            <p className="mt-1 text-sm text-muted-foreground">
               Track listing views and how customers find your business.
             </p>
           </div>

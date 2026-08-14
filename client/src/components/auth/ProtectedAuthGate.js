@@ -51,7 +51,7 @@ export default function ProtectedAuthGate({ children }) {
 
   if (!ready) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-gray-50 text-sm text-gray-500">
+      <div className="flex min-h-svh items-center justify-center bg-background text-sm text-muted-foreground">
         Checking session…
       </div>
     );

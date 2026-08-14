@@ -31,7 +31,7 @@ export default function NavLogout() {
             tooltip="Log out"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="cursor-pointer justify-center gap-2 bg-gray-200 hover:bg-gray-300"
+            className="cursor-pointer justify-center gap-2 bg-muted hover:bg-muted/80"
           >
             <LogOutIcon />
             <span>{isLoggingOut ? "Signing out…" : "Log out"}</span>

@@ -19,7 +19,7 @@ export default function SignInPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         pageTitle="Business owner sign in"
@@ -30,18 +30,21 @@ export default function SignInPage() {
         }}
       />
 
-      <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-4">
+      <div className="mx-auto mt-4 max-w-xl px-4 py-8 sm:px-6 lg:px-8">
         <LoginForm />
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-muted-foreground">
           Need help?{" "}
-          <Link href="/contact" className="text-blue-600 hover:underline">
+          <Link
+            href="/contact"
+            className="text-interactive transition-colors hover:underline"
+          >
             Contact support
           </Link>
         </p>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
         <DirectoryDisclaimer />
       </div>
     </div>

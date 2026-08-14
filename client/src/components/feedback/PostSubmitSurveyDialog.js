@@ -156,7 +156,7 @@ function PostSubmitSurveyDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <fieldset className="space-y-2">
-            <legend className="text-sm font-medium text-gray-800">
+            <legend className="text-sm font-medium text-foreground">
               How did you find RadiatorRepairHub?
             </legend>
             <RadioGroup
@@ -176,7 +176,7 @@ function PostSubmitSurveyDialog({
               {FOUND_VIA_OPTIONS.map((option) => (
                 <label
                   key={option.value}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-foreground hover:bg-background"
                 >
                   <RadioGroupItem value={option.value} />
                   <span>{option.label}</span>
@@ -189,7 +189,7 @@ function PostSubmitSurveyDialog({
           </fieldset>
 
           <fieldset className="space-y-2">
-            <legend className="text-sm font-medium text-gray-800">
+            <legend className="text-sm font-medium text-foreground">
               Did you find what you were looking for?
             </legend>
             <RadioGroup
@@ -209,7 +209,7 @@ function PostSubmitSurveyDialog({
               {FOUND_LOOKING_FOR_OPTIONS.map((option) => (
                 <label
                   key={option.value}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-foreground hover:bg-background"
                 >
                   <RadioGroupItem value={option.value} />
                   <span>{option.label}</span>
@@ -224,10 +224,10 @@ function PostSubmitSurveyDialog({
           <div className="space-y-1.5">
             <label
               htmlFor="feedback-survey-comment"
-              className="text-sm font-medium text-gray-800"
+              className="text-sm font-medium text-foreground"
             >
               Any feedback or suggestions?{" "}
-              <span className="font-normal text-gray-500">(optional)</span>
+              <span className="font-normal text-muted-foreground">(optional)</span>
             </label>
             <Textarea
               id="feedback-survey-comment"
@@ -264,7 +264,7 @@ function PostSubmitSurveyDialog({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="cursor-pointer bg-blue-600 text-white hover:bg-blue-700"
+              className="cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {isSubmitting ? "Sending..." : "Submit feedback"}
             </Button>

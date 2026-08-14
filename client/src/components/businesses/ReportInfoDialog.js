@@ -161,8 +161,7 @@ function ReportInfoDialog({ businessId, businessName }) {
       }
 
       showCustomSuccess(
-        data?.message ||
-        "Thanks! We received your report and will review it soon."
+        data?.message ||"Thanks! We received your report and will review it soon."
       );
       resetForm();
       setOpen(false);
@@ -381,7 +380,7 @@ function ReportInfoDialog({ businessId, businessName }) {
             <p className="text-xs text-red-600">{errors.form}</p>
           ) : null}
 
-          <p className="text-xs text-gray-500 leading-relaxed">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             By submitting this report, you agree to our{" "}
             <Link
               href="/terms"

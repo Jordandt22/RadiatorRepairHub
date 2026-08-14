@@ -24,7 +24,7 @@ function BusinessImage({
   iconSize = "md",
   // "message" = No image available UI; "solid" = blank colored background
   fallback = "message",
-  fallbackClassName = "bg-slate-900",
+  fallbackClassName = "bg-muted",
   variant = CF_IMAGE_VARIANT.card,
 }) {
   const cfImageId = getBusinessImageId({
@@ -67,16 +67,16 @@ function BusinessImage({
       iconSize === "lg" ? "text-sm md:text-lg" : "text-sm";
 
     return (
-      <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+      <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/80">
         <div className="text-center">
           {showIcon && (
             <div
-              className={`${iconClass} bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-2`}
+              className={`${iconClass} bg-muted rounded-full flex items-center justify-center mx-auto mb-2`}
             >
-              <CircleAlert className={`${alertClass} text-gray-500`} />
+              <CircleAlert className={`${alertClass} text-muted-foreground`} />
             </div>
           )}
-          <p className={`text-gray-500 ${textClass}`}>No image available</p>
+          <p className={`text-muted-foreground ${textClass}`}>No image available</p>
         </div>
       </div>
     );

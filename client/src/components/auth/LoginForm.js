@@ -145,18 +145,20 @@ function LoginFormContent() {
 
   if (!authChecked) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300">
-        <p className="text-center text-sm text-gray-500">Checking session…</p>
+      <div className="rounded-lg border border-border bg-card p-8">
+        <p className="text-center text-sm text-muted-foreground">
+          Checking session…
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300">
-      <h2 className="text-2xl font-bold text-gray-900 mb-2 font-heading">
+    <div className="rounded-lg border border-border bg-card p-8">
+      <h2 className="mb-2 font-heading text-2xl font-bold tracking-tight text-foreground">
         Welcome Back!
       </h2>
-      <p className="text-gray-600 mb-6">
+      <p className="mb-6 text-muted-foreground">
         Sign in with the email and password from your claim to open your
         listing.
       </p>
@@ -173,6 +175,7 @@ function LoginFormContent() {
             id="login-email"
             type="email"
             autoComplete="email"
+            placeholder="you@example.com"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -204,6 +207,7 @@ function LoginFormContent() {
               id="login-password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -221,7 +225,7 @@ function LoginFormContent() {
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700"
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition-colors hover:text-foreground"
               onClick={() => setShowPassword((prev) => !prev)}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
@@ -237,18 +241,17 @@ function LoginFormContent() {
           ) : null}
         </div>
 
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-blue-600 hover:bg-blue-700"
-        >
+        <Button type="submit" disabled={isSubmitting} className="w-full" size="lg">
           {isSubmitting ? "Signing in..." : "Sign in"}
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         Need help claiming a listing?{" "}
-        <Link href="/how-to-claim" className="text-blue-600 hover:underline">
+        <Link
+          href="/how-to-claim"
+          className="text-interactive transition-colors hover:underline"
+        >
           How to claim
         </Link>
       </p>
@@ -260,8 +263,8 @@ export default function LoginForm() {
   return (
     <Suspense
       fallback={
-        <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300">
-          <p className="text-sm text-gray-500">Loading…</p>
+        <div className="rounded-lg border border-border bg-card p-8">
+          <p className="text-sm text-muted-foreground">Loading…</p>
         </div>
       }
     >

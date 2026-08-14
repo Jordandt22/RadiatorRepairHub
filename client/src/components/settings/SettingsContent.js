@@ -56,7 +56,7 @@ function PasswordField({
 }) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="text-sm font-medium text-gray-800">
+      <label htmlFor={id} className="text-sm font-medium text-foreground">
         {label}
       </label>
       <div className="relative">
@@ -72,7 +72,7 @@ function PasswordField({
         />
         <button
           type="button"
-          className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700"
+          className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
           onClick={onToggleShow}
           aria-label={showPassword ? "Hide password" : "Show password"}
           tabIndex={-1}
@@ -139,8 +139,7 @@ function AccountEmailSection({
       }
 
       showCustomSuccess(
-        data?.message ||
-        "Confirmation emails sent. Check your current and new inbox to finish the change."
+        data?.message ||"Confirmation emails sent. Check your current and new inbox to finish the change."
       );
       setOpen(false);
       if (typeof onEmailChangeRequested === "function") {
@@ -154,16 +153,16 @@ function AccountEmailSection({
   };
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5">
+    <section className="rounded-lg border border-border bg-card p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-heading text-base font-semibold text-gray-900">
+            <h3 className="font-heading text-base font-semibold text-foreground">
               Email
             </h3>
             {pendingEmail ? <PendingBadge /> : null}
           </div>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             {currentEmail || "No email on file"}
           </p>
           {pendingEmail ? (
@@ -172,7 +171,7 @@ function AccountEmailSection({
               the confirmation links.
             </p>
           ) : (
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-muted-foreground">
               This email is only for signing in, not displayed on your business
               page.
             </p>
@@ -198,7 +197,7 @@ function AccountEmailSection({
             <div className="space-y-1.5">
               <label
                 htmlFor="settings-email"
-                className="text-sm font-medium text-gray-800"
+                className="text-sm font-medium text-foreground"
               >
                 New email
               </label>
@@ -235,7 +234,6 @@ function AccountEmailSection({
               <Button
                 type="submit"
                 disabled={isSubmitting || !hasChanges}
-                className="bg-blue-600 hover:bg-blue-700"
               >
                 {isSubmitting ? "Saving…" : "Save"}
               </Button>
@@ -292,8 +290,7 @@ function AccountPasswordSection() {
       if (strengthError) {
         next.password = strengthError;
       } else if (password === currentPassword) {
-        next.password =
-          "New password must be different from your current password.";
+        next.password ="New password must be different from your current password.";
       }
     }
     if (!confirmPassword) {
@@ -346,14 +343,14 @@ function AccountPasswordSection() {
   };
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5">
+    <section className="rounded-lg border border-border bg-card p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-heading text-base font-semibold text-gray-900">
+          <h3 className="font-heading text-base font-semibold text-foreground">
             Password
           </h3>
-          <p className="mt-1 text-sm tracking-widest text-gray-600">••••••••</p>
-          <p className="mt-2 text-xs text-gray-500">
+          <p className="mt-1 text-sm tracking-widest text-muted-foreground">••••••••</p>
+          <p className="mt-2 text-xs text-muted-foreground">
             Choose a strong password you don&apos;t use elsewhere.
           </p>
         </div>
@@ -402,7 +399,7 @@ function AccountPasswordSection() {
               disabled={isSubmitting}
             />
             {!errors.password ? (
-              <p className="-mt-2 text-xs text-gray-500">
+              <p className="-mt-2 text-xs text-muted-foreground">
                 {PASSWORD_REQUIREMENTS_HINT}
               </p>
             ) : null}
@@ -437,7 +434,6 @@ function AccountPasswordSection() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-blue-600 hover:bg-blue-700"
               >
                 {isSubmitting ? "Saving…" : "Save"}
               </Button>
@@ -495,7 +491,7 @@ function AccountDeleteSection() {
       >
         Delete Account
       </Button>
-      <p className="mt-2 text-xs text-gray-500">
+      <p className="mt-2 text-xs text-muted-foreground">
         Deletes your login account only. Your business listing information stays
         on RadiatorRepairHub, but listings you own become unclaimed.
       </p>
@@ -569,7 +565,7 @@ function SettingsAccountSkeleton() {
       aria-busy="true"
       aria-label="Loading account settings"
     >
-      <section className="rounded-xl border border-gray-200 bg-white p-5">
+      <section className="rounded-lg border border-border bg-card p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 space-y-2">
             <Skeleton className="h-5 w-16 rounded-md" />
@@ -579,7 +575,7 @@ function SettingsAccountSkeleton() {
           <Skeleton className="size-9 shrink-0 rounded-lg" />
         </div>
       </section>
-      <section className="rounded-xl border border-gray-200 bg-white p-5">
+      <section className="rounded-lg border border-border bg-card p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 space-y-2">
             <Skeleton className="h-5 w-20 rounded-md" />
@@ -639,18 +635,17 @@ function SettingsContentInner() {
     }
   }, [pendingFromUser, currentEmail, pendingOverride]);
 
-  const tabsTriggerClassNames =
-    "px-6 cursor-pointer hover:translate-y-[-2px] transition-all duration-300";
+  const tabsTriggerClassNames ="px-6 cursor-pointer transition-colors duration-200";
 
   const showAccountSkeleton = isLoading || !user;
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
       <div>
-        <h1 className="font-heading text-2xl font-bold text-gray-900">
+        <h1 className="font-heading text-2xl font-bold text-foreground">
           Settings
         </h1>
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-muted-foreground">
           Manage your account and notification preferences.
         </p>
       </div>
@@ -683,9 +678,9 @@ function SettingsContentInner() {
         </TabsContent>
 
         <TabsContent value="notifications">
-          <div className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-10 text-center">
-            <p className="font-medium text-gray-900">Coming soon</p>
-            <p className="mt-1 text-sm text-gray-600">
+          <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">
+            <p className="font-medium text-foreground">Coming soon</p>
+            <p className="mt-1 text-sm text-muted-foreground">
               Choose how you hear about inquiries and account updates.
             </p>
           </div>

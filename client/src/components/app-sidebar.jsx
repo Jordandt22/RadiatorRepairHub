@@ -25,7 +25,7 @@ export function AppSidebar(props) {
               tooltip="RadiatorRepairHub"
               render={<Link href="/" />}
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-sm bg-blue-500 text-sidebar-primary-foreground">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-sm bg-primary text-primary-foreground">
                 <GalleryVerticalEndIcon className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">

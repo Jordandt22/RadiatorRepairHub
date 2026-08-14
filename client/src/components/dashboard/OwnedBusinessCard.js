@@ -72,14 +72,14 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
   };
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:scale-102 hover:shadow-lg">
+    <article className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors duration-200 hover:border-interactive/50">
       <Link
         href={`/business/${business.slug}`}
         className="block min-h-0 flex-1"
         prefetch={false}
         aria-label={`View ${business.title}`}
       >
-        <div className="relative h-56 w-full bg-gray-200">
+        <div className="relative h-56 w-full bg-muted">
           <BusinessImage
             src={business.image_url}
             businessId={business.id}
@@ -92,21 +92,21 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
         </div>
 
         <div className="p-5 pb-3">
-          <h3 className="mb-1 line-clamp-2 font-heading text-lg font-semibold text-gray-900 hover:text-blue-600 duration-200">
+          <h3 className="mb-1 line-clamp-2 font-heading text-lg font-semibold text-foreground hover:text-primary duration-200">
             {business.title}
           </h3>
           {business.address ? (
-            <p className="mb-1 text-sm text-gray-600">{business.address}</p>
+            <p className="mb-1 text-sm text-muted-foreground">{business.address}</p>
           ) : (
-            <p className="mb-1 text-sm text-gray-400">No address listed</p>
+            <p className="mb-1 text-sm text-muted-foreground">No address listed</p>
           )}
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Last edited: {formatLastEdited(business.last_edited_at)}
           </p>
         </div>
       </Link>
 
-      <div className="mt-auto border-t border-gray-100 px-5 py-3">
+      <div className="mt-auto border-t border-border px-5 py-3">
         <Button
           type="button"
           variant="outline"
