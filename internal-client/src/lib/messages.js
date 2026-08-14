@@ -1,4 +1,5 @@
 import {
+  formatContactTypeLabel,
   formatIssueLabel,
   formatUrgencyLabel,
 } from "@/lib/contact-messages";
@@ -15,6 +16,55 @@ function escapeHtml(value) {
 function displayValue(value) {
   const text = value == null || value === "" ? "N/A" : String(value);
   return escapeHtml(text);
+}
+
+function inquiryEmailRow(
+  label,
+  value,
+  { first = false, width = 120, verticalAlign = false } = {},
+) {
+  const widthStyle = first ? ` width: ${width}px;` : "";
+  const valign = verticalAlign ? " vertical-align: top;" : "";
+  return `
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;${widthStyle}${valign}">${escapeHtml(label)}:</td>
+      <td style="padding: 8px 0;">${value}</td>
+    </tr>`;
+}
+
+function buildContactInquiryDetailRows({
+  name,
+  phone,
+  email,
+  vehicle,
+  issue,
+  urgency,
+  additionalDetails,
+  contactType,
+}) {
+  const isQuestions = contactType === "questions";
+  const detailsLabel = isQuestions ? "Message" : "Additional Details";
+  const rows = [
+    inquiryEmailRow("Name", displayValue(name), { first: true }),
+    inquiryEmailRow("Email", displayValue(email)),
+    inquiryEmailRow("Phone", displayValue(phone)),
+    inquiryEmailRow("Type", escapeHtml(formatContactTypeLabel(contactType))),
+  ];
+
+  if (!isQuestions) {
+    rows.push(
+      inquiryEmailRow("Vehicle", displayValue(vehicle)),
+      inquiryEmailRow("Issue", escapeHtml(formatIssueLabel(issue))),
+      inquiryEmailRow("Urgency", escapeHtml(formatUrgencyLabel(urgency))),
+    );
+  }
+
+  rows.push(
+    inquiryEmailRow(detailsLabel, displayValue(additionalDetails), {
+      verticalAlign: true,
+    }),
+  );
+  return rows.join("");
 }
 
 function getWebBaseUrl() {
@@ -57,6 +107,7 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
       issue,
       urgency,
       additionalDetails,
+      contactType,
       isClaimed,
       businessSlug,
     },
@@ -66,34 +117,16 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
   <p>Someone found your business on RadiatorRepairHub and wanted to contact you.</p>
 
   <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold; width: 120px;">Name:</td>
-      <td style="padding: 8px 0;">${displayValue(name)}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Email:</td>
-      <td style="padding: 8px 0;">${displayValue(email)}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Phone:</td>
-      <td style="padding: 8px 0;">${displayValue(phone)}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Vehicle:</td>
-      <td style="padding: 8px 0;">${displayValue(vehicle)}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Issue:</td>
-      <td style="padding: 8px 0;">${escapeHtml(formatIssueLabel(issue))}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Urgency:</td>
-      <td style="padding: 8px 0;">${escapeHtml(formatUrgencyLabel(urgency))}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Additional Details:</td>
-      <td style="padding: 8px 0;">${displayValue(additionalDetails)}</td>
-    </tr>
+    ${buildContactInquiryDetailRows({
+      name,
+      phone,
+      email,
+      vehicle,
+      issue,
+      urgency,
+      additionalDetails,
+      contactType,
+    })}
   </table>
 
   <p>We're passing this along for free, no strings attached.</p>
@@ -179,6 +212,7 @@ export function buildFreeLeadClaimOfferPreview(message) {
       issue: message?.issue,
       urgency: message?.urgency,
       additionalDetails: message?.additional_details,
+      contactType: message?.contact_type,
       isClaimed: message?.business?.is_claimed,
       businessSlug: message?.business?.slug,
     }),

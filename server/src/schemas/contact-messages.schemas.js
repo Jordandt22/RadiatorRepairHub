@@ -11,6 +11,8 @@ const CONTACT_MESSAGE_ISSUES = [
   "other",
 ];
 
+export const CONTACT_MESSAGE_TYPES = ["need_service", "questions"];
+
 const isValidPhone = (value) => {
   if (!value?.trim()) return true;
 
@@ -23,6 +25,10 @@ const isValidPhone = (value) => {
 
 export const CreateContactMessageSchema = Yup.object({
   businessId: Yup.string().trim().uuid("Invalid business ID").optional(),
+  contactType: Yup.string()
+    .transform((value) => value || "need_service")
+    .oneOf(CONTACT_MESSAGE_TYPES, "Please select a contact type")
+    .required("Please select a contact type"),
   name: Yup.string().trim().min(2, "Name must be at least 2 characters").required(),
   email: Yup.string()
     .trim()
@@ -32,16 +38,34 @@ export const CreateContactMessageSchema = Yup.object({
     .trim()
     .test("valid-phone", "Please enter a valid phone number", isValidPhone),
   vehicleModel: Yup.string().trim().max(150),
-  issue: Yup.string()
-    .oneOf(CONTACT_MESSAGE_ISSUES, "Please select a valid issue")
-    .required(),
-  urgency: Yup.string().oneOf(["asap", "can-wait"]).required(),
+  issue: Yup.string().when("contactType", {
+    is: "need_service",
+    then: (schema) =>
+      schema
+        .oneOf(CONTACT_MESSAGE_ISSUES, "Please select a valid issue")
+        .required(),
+    otherwise: (schema) => schema.strip().optional().nullable(),
+  }),
+  urgency: Yup.string().when("contactType", {
+    is: "need_service",
+    then: (schema) => schema.oneOf(["asap", "can-wait"]).required(),
+    otherwise: (schema) => schema.strip().optional().nullable(),
+  }),
   additionalDetails: Yup.string()
     .trim()
-    .when("issue", {
-      is: "other",
+    .when("contactType", {
+      is: "questions",
       then: (schema) =>
-        schema.required("Please describe your issue when selecting Other."),
-      otherwise: (schema) => schema,
+        schema
+          .min(10, "Please provide at least 10 characters.")
+          .max(2000, "Details must be 2000 characters or fewer")
+          .required("Please enter your question."),
+      otherwise: (schema) =>
+        schema.when("issue", {
+          is: "other",
+          then: (inner) =>
+            inner.required("Please describe your issue when selecting Other."),
+          otherwise: (inner) => inner,
+        }),
     }),
 });

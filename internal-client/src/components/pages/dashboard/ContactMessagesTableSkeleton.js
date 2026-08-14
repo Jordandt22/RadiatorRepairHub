@@ -20,6 +20,7 @@ function CardSkeleton() {
           </div>
           <div className="flex gap-1.5">
             <Skeleton className="h-5 w-16 rounded-full" />
+            <Skeleton className="h-5 w-20 rounded-full" />
             <Skeleton className="h-5 w-14 rounded-full" />
             <Skeleton className="h-5 w-20 rounded-full" />
           </div>
@@ -54,6 +55,7 @@ export default function ContactMessagesTableSkeleton({ rows = 8 }) {
             <TableHead>Name</TableHead>
             <TableHead>Business</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Type</TableHead>
             <TableHead>Issue</TableHead>
             <TableHead>Urgency</TableHead>
             <TableHead>Status</TableHead>
@@ -75,6 +77,9 @@ export default function ContactMessagesTableSkeleton({ rows = 8 }) {
               </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-40" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-20 rounded-full" />
               </TableCell>
               <TableCell>
                 <Skeleton className="h-5 w-24 rounded-full" />

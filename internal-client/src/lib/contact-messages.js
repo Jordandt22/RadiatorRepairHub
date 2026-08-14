@@ -50,6 +50,16 @@ export const URGENCY_BADGE_CLASSES = {
   2: "border-transparent bg-zinc-100 text-zinc-700",
 };
 
+export const CONTACT_TYPE_LABELS = {
+  need_service: "Need Service",
+  questions: "Questions",
+};
+
+export const CONTACT_TYPE_BADGE_CLASSES = {
+  need_service: "border-transparent bg-blue-100 text-blue-800",
+  questions: "border-transparent bg-zinc-100 text-zinc-700",
+};
+
 export const CONFIRMATION_BADGE_CLASSES = {
   true: "border-transparent bg-emerald-100 text-emerald-800",
   false: "border-transparent bg-zinc-100 text-zinc-700",
@@ -65,6 +75,10 @@ export function formatStatusLabel(status) {
 
 export function formatUrgencyLabel(urgency) {
   return URGENCY_LABELS[urgency] || urgency || "—";
+}
+
+export function formatContactTypeLabel(contactType) {
+  return CONTACT_TYPE_LABELS[contactType] || contactType || "—";
 }
 
 export function formatConfirmationLabel(confirmationSent) {

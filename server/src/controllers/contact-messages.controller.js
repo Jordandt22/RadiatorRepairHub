@@ -29,6 +29,7 @@ const URGENCY_MAP = {
 export const createContactMessage = async (req, res) => {
   const {
     businessId,
+    contactType = "need_service",
     name,
     email,
     phone,
@@ -37,6 +38,7 @@ export const createContactMessage = async (req, res) => {
     urgency,
     additionalDetails,
   } = req.body;
+  const isQuestions = contactType === "questions";
 
   let business = null;
   let businessName = null;
@@ -87,20 +89,22 @@ export const createContactMessage = async (req, res) => {
       );
   }
 
-  const urgencyValue = URGENCY_MAP[urgency];
+  const urgencyValue = isQuestions ? null : URGENCY_MAP[urgency];
   const trimmedName = name.trim();
   const trimmedPhone = phone?.trim() || "";
-  const trimmedVehicle = vehicleModel?.trim() || null;
+  const trimmedVehicle = isQuestions ? null : vehicleModel?.trim() || null;
   const trimmedDetails = additionalDetails?.trim() || null;
+  const issueValue = isQuestions ? null : issue;
 
   // Insert Contact Message
   const { data, error } = await insertContactMessage({
     business_id: businessId || null,
+    contact_type: contactType,
     name: trimmedName,
     email: trimmedEmail,
     phone: trimmedPhone,
     vehicle: trimmedVehicle,
-    issue,
+    issue: issueValue,
     urgency: urgencyValue,
     additional_details: trimmedDetails,
   });
@@ -130,9 +134,10 @@ export const createContactMessage = async (req, res) => {
     phone: trimmedPhone,
     email: trimmedEmail,
     vehicle: trimmedVehicle,
-    issue,
+    issue: issueValue,
     urgency: urgencyValue,
     additional_details: trimmedDetails,
+    contact_type: contactType,
     business: business
       ? {
           title: business.title,
@@ -177,9 +182,10 @@ export const createContactMessage = async (req, res) => {
       phone: trimmedPhone,
       email: trimmedEmail,
       vehicle: trimmedVehicle,
-      issue,
+      issue: issueValue,
       urgency: urgencyValue,
       additionalDetails: trimmedDetails,
+      contactType,
       autoSent,
     };
 

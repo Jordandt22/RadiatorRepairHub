@@ -10,7 +10,7 @@ const { SUPABASE_ERROR } = errorCodes;
 
 /**
  * For GET /businesses/:business_slug — if the business exists and is not claimed,
- * expire any pending claim requests with last_attempted_at older than 1 day.
+ * expire any pending claim requests with last_attempted_at older than 1 hour.
  */
 export const expireStaleClaimsOnBusinessFetch = serverErrorCatcherWrapper(
   async (req, res, next) => {

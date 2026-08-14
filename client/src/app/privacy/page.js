@@ -54,7 +54,7 @@ function PrivacyPage() {
         },
         {
           label: "Quick Contact Submissions:",
-          description:"When you use Quick Contact on a business listing, we collect your name, email address, phone number, optional vehicle model, issue type, urgency preference, optional additional details, and the business you selected. We store this information in our database, verify your email address, send you a status email, and may review the message before forwarding it to the listed business.",
+          description:"When you use Quick Contact on a business listing, we collect your name, email address, optional phone number, the type of inquiry (Need Service or Questions), and the business you selected. For Need Service, we also collect issue type, urgency preference, optional vehicle model, and optional additional details. For Questions, we collect your message instead of issue, urgency, and vehicle. We store this information in our database, verify your email address, send you a status email, and may review the message before forwarding it to the listed business.",
         },
         {
           label: "Contact Information:",

@@ -2,6 +2,7 @@ import { ChevronRightIcon, LockIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   ConfirmationBadge,
+  ContactTypeBadge,
   IssueBadge,
   StatusBadge,
   UrgencyBadge,
@@ -80,8 +81,11 @@ function ContactMessageCard({
 
             <div className="flex flex-wrap gap-1.5">
               <StatusBadge status={message.status} />
-              <UrgencyBadge urgency={message.urgency} />
-              <IssueBadge issue={message.issue} />
+              <ContactTypeBadge contactType={message.contact_type} />
+              {message.urgency != null ? (
+                <UrgencyBadge urgency={message.urgency} />
+              ) : null}
+              {message.issue ? <IssueBadge issue={message.issue} /> : null}
               {showConfirmation ? (
                 <ConfirmationBadge
                   confirmationSent={message.confirmation_sent}

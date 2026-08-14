@@ -9,6 +9,7 @@ import {
 import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import {
+  ContactTypeBadge,
   IssueBadge,
   StatusBadge,
   UrgencyBadge,
@@ -40,8 +41,11 @@ export default function OverviewContactMessagesTable({ messages = [] }) {
             />
             <div className="flex flex-wrap gap-1.5">
               <StatusBadge status={message.status} />
-              <IssueBadge issue={message.issue} />
-              <UrgencyBadge urgency={message.urgency} />
+              <ContactTypeBadge contactType={message.contact_type} />
+              {message.issue ? <IssueBadge issue={message.issue} /> : null}
+              {message.urgency != null ? (
+                <UrgencyBadge urgency={message.urgency} />
+              ) : null}
             </div>
             <p className="text-sm text-muted-foreground">
               {formatDate(message.created_at)}
@@ -54,10 +58,11 @@ export default function OverviewContactMessagesTable({ messages = [] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[18%]">Name</TableHead>
-              <TableHead className="w-[22%]">Business</TableHead>
-              <TableHead className="w-[14%]">Issue</TableHead>
-              <TableHead className="w-[14%]">Urgency</TableHead>
+              <TableHead className="w-[16%]">Name</TableHead>
+              <TableHead className="w-[18%]">Business</TableHead>
+              <TableHead className="w-[12%]">Type</TableHead>
+              <TableHead className="w-[12%]">Issue</TableHead>
+              <TableHead className="w-[12%]">Urgency</TableHead>
               <TableHead className="w-[14%]">Status</TableHead>
               <TableHead className="w-[18%]">Created</TableHead>
             </TableRow>
@@ -76,6 +81,9 @@ export default function OverviewContactMessagesTable({ messages = [] }) {
                     title={message.business?.title}
                     showSlug={false}
                   />
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  <ContactTypeBadge contactType={message.contact_type} />
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <IssueBadge issue={message.issue} />
