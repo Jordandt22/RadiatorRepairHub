@@ -1,18 +1,9 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
+import BusinessCount from "@/components/content/BusinessCount";
 import StateSearch from "./StateSearch";
 import StateSort from "./StateSort";
-
-function BusinessCount({ count }) {
-  const n = Number(count) || 0;
-  return (
-    <>
-      <span className="font-semibold text-green-700">{n.toLocaleString()}</span>{" "}
-      {n === 1 ? "Business" : "Businesses"}
-    </>
-  );
-}
 
 function StatesGrid({
   states,

@@ -3,14 +3,28 @@
 import React, { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 
 import HeroSearchBar from "./HeroSearchBar";
+import StrokeText from "@/components/ui/StrokeText";
+import FoldText from "@/components/ui/FoldText";
 
 function HeroContent({ popularStates = [] }) {
   const heroRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true });
+  const reduceMotion = useReducedMotion();
 
+  const strokeTextProps = {
+    strokeColor: "#FFFFFF",
+    fillColor: "#FFFFFF",
+    fontSize: 60,
+    fontWeight: 600,
+    letterSpacing: 2,
+    strokeWidth: 1.8,
+    drawDuration: 1,
+    fillDelay: 0.00,
+    delay: 0.00,
+  };
   return (
     <section
       ref={heroRef}
@@ -35,43 +49,83 @@ function HeroContent({ popularStates = [] }) {
       />
 
       <div className="relative mx-auto w-full max-w-7xl px-4 py-16 pt-24 sm:px-6 lg:px-8 lg:py-20 lg:pt-28">
-        <motion.div
-          className="mx-auto max-w-3xl text-center"
-          initial={{ opacity: 0 }}
-          animate={heroInView ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="mb-4 font-heading text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-6xl">
-            Find Trusted Radiator Repair Shops Near You
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="mb-4 font-heading">
+            <span className="sr-only">
+              Find Trusted Radiator Repair Shops Near You
+            </span>
+            <span className="block" aria-hidden="true">
+              <StrokeText
+                text="Find Trusted Radiator"
+                strokeColor="#FFFFFF"
+                fillColor="#FFFFFF"
+                {...strokeTextProps}
+              />
+              <StrokeText
+                text="Repair Shops Near You"
+                strokeColor="#FFFFFF"
+                fillColor="#FFFFFF"
+                {...strokeTextProps}
+                delay={0.18}
+              />
+            </span>
           </h1>
           <p className="mx-auto mb-10 max-w-2xl text-base text-white/75 md:text-lg">
-            Search our directory of verified radiator repair businesses across
-            the U.S.
+            <FoldText
+              text="Search our directory of verified radiator repair businesses across the U.S."
+              splitBy="word"
+              hinge="top"
+              duration={0.65}
+              stagger={0.05}
+              delay={0.55}
+              creaseShading={0.35}
+              color="rgba(255, 255, 255, 1)"
+              fontWeight={400}
+            />
           </p>
 
           <HeroSearchBar heroInView={heroInView} />
 
           {popularStates.length > 0 ? (
             <motion.div
-              className="mt-6"
-              initial={{ opacity: 0 }}
-              animate={heroInView ? { opacity: 1 } : { opacity: 0 }}
-              transition={{ duration: 0.6, delay: 0.25 }}
+              className="mt-6 flex flex-wrap items-center justify-center gap-2"
+              initial="hidden"
+              animate={heroInView ? "visible" : "hidden"}
+              variants={{
+                hidden: {},
+                visible: {
+                  transition: {
+                    staggerChildren: reduceMotion ? 0 : 0.08,
+                    delayChildren: reduceMotion ? 0 : 1.85,
+                  },
+                },
+              }}
             >
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                {popularStates.map((state) => (
+              {popularStates.map((state) => (
+                <motion.div
+                  key={state.code}
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: {
+                        duration: reduceMotion ? 0 : 0.4,
+                        ease: "easeOut",
+                      },
+                    },
+                  }}
+                >
                   <Link
-                    key={state.code}
                     href={`/state/${state.code}`}
-                    className="rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm transition-colors hover:border-white/40 hover:bg-white/15"
+                    className="inline-block rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm transition-colors hover:border-white/40 hover:bg-white/15"
                   >
                     {state.name}
                   </Link>
-                ))}
-              </div>
+                </motion.div>
+              ))}
             </motion.div>
           ) : null}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

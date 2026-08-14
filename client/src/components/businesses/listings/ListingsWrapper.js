@@ -15,6 +15,7 @@ import Listings from "./Listings";
 import Pagination from "./Pagination";
 import PageErrorMessage from "@/components/status/Errors/PageErrorMessage";
 import ListingsSkeleton from "@/components/status/Skeletons/ListingsSkeleton";
+import BusinessCount from "@/components/content/BusinessCount";
 
 const DEFAULT_APPLIED_FILTERS = {
   title: "",
@@ -87,15 +88,11 @@ export default function ListingsWrapper({
   const businessesData = data.data;
   const totalPages = businessesData?.totalPages;
   const totalBusinesses = Number(businessesData?.totalBusinesses) || 0;
-  const businessLabel = totalBusinesses === 1 ? "Business" : "Businesses";
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <p className="mb-6 text-sm text-muted-foreground">
-        <span className="font-semibold text-green-700">
-          {totalBusinesses.toLocaleString()}
-        </span>{" "}
-        {businessLabel}
+        <BusinessCount count={totalBusinesses} />
       </p>
 
       <Listings

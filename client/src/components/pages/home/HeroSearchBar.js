@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Search } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 
@@ -14,6 +14,7 @@ function HeroSearchBar({ heroInView }) {
   const { showCustomError } = useToast();
   const router = useRouter();
   const posthog = usePostHog();
+  const reduceMotion = useReducedMotion();
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
@@ -74,7 +75,11 @@ function HeroSearchBar({ heroInView }) {
       className="mx-auto w-full max-w-2xl"
       initial={{ opacity: 0 }}
       animate={heroInView ? { opacity: 1 } : { opacity: 0 }}
-      transition={{ duration: 0.6, delay: 0.15 }}
+      transition={{
+        duration: reduceMotion ? 0 : 0.55,
+        delay: reduceMotion ? 0 : 1.35,
+        ease: "easeOut",
+      }}
     >
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">

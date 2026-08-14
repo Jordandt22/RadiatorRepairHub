@@ -10,9 +10,9 @@ import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 
 function DetailedBusinessCard({ business }) {
   return (
-    <div className="bg-card rounded-lg border border-border hover:border-interactive/50 transition-colors duration-300 overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors duration-300 hover:border-interactive/50">
       {/* Business Image */}
-      <div className="relative w-full h-48 bg-muted">
+      <div className="relative h-48 w-full shrink-0 bg-muted">
         <BusinessImage
           src={business.image_url}
           businessId={business.id}
@@ -28,21 +28,21 @@ function DetailedBusinessCard({ business }) {
         ) : null}
       </div>
 
-      <div className="p-6">
-        <div className="flex flex-col items-start justify-between mb-4">
-          <div>
-            <h3 className="text-xl font-semibold text-foreground mb-1 font-heading line-clamp-1">
+      <div className="flex flex-1 flex-col p-6">
+        <div className="mb-4 flex flex-col items-start justify-between">
+          <div className="w-full">
+            <h3 className="mb-1 line-clamp-1 font-heading text-xl font-semibold text-foreground">
               {business.title}
             </h3>
             <Link
               href={`/state/${business.state.code}/city/${business.city.slug}`}
-              className="flex items-center text-muted-foreground mb-2 hover:text-interactive duration-300"
+              className="mb-2 flex items-start text-muted-foreground duration-300 hover:text-interactive"
             >
-              <MapPin className="w-4 h-4 mr-1" />
-              <span className="text-sm">{business.address}</span>
+              <MapPin className="mr-1 mt-0.5 h-4 w-4 shrink-0" />
+              <span className="line-clamp-2 text-sm">{business.address}</span>
             </Link>
           </div>
-          <div className="flex gap-2 items-center flex-wrap">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center">
               <Star className="w-4 h-4 text-yellow-400 fill-current" />
               <span className="ml-1 font-semibold text-foreground">
@@ -56,11 +56,11 @@ function DetailedBusinessCard({ business }) {
           </div>
         </div>
 
-        <p className="text-muted-foreground mb-4 text-sm leading-relaxed line-clamp-3">
+        <p className="mb-4 line-clamp-3 flex-1 text-sm leading-relaxed text-muted-foreground">
           {business.description}
         </p>
 
-        <div className="mb-4">
+        <div className="mb-4 min-h-[1.75rem]">
           <div className="flex flex-wrap gap-2">
             <Link
               href={`/search?primary_category_id=${business.primary_category.id}`}
@@ -82,7 +82,7 @@ function DetailedBusinessCard({ business }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-2 pt-4 border-t border-border">
+        <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-4">
           <QuickContactDialog
             businessId={business.id}
             businessName={business.title}

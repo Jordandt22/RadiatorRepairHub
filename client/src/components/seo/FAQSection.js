@@ -9,6 +9,7 @@ import {
   useReducedMotion,
 } from "framer-motion";
 import { getRelatedBlogs } from "@/lib/data/faq";
+import { fadeIn, useHomeSectionInView } from "@/components/ui/homeSectionMotion";
 
 export function FAQItem({ faq, itemKey, isOpen, onToggle, reduceMotion }) {
   const panelId = useId();
@@ -125,9 +126,11 @@ function FAQSection({
   title = "Frequently Asked Questions",
   description = "Get answers to common questions about radiator repair services",
   includeSchema = true,
+  animateOnScroll = true,
 }) {
   const [openKey, setOpenKey] = useState(null);
   const reduceMotion = useReducedMotion();
+  const { ref, inView } = useHomeSectionInView();
 
   const faqStructuredData = {
     "@context": "https://schema.org",
@@ -157,9 +160,17 @@ function FAQSection({
         />
       ) : null}
 
-      <section className="border-y border-border bg-card py-16">
+      <section
+        ref={animateOnScroll ? ref : undefined}
+        className="border-y border-border bg-card py-16"
+      >
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-10 text-center">
+          <motion.div
+            className="mb-10 text-center"
+            initial={animateOnScroll ? "hidden" : false}
+            animate={animateOnScroll && inView ? "visible" : animateOnScroll ? "hidden" : undefined}
+            variants={animateOnScroll ? fadeIn(reduceMotion) : undefined}
+          >
             <h2 className="mb-3 font-heading text-3xl font-semibold tracking-tight text-foreground">
               {title}
             </h2>
@@ -168,14 +179,20 @@ function FAQSection({
                 {description}
               </p>
             ) : null}
-          </div>
+          </motion.div>
 
-          <FAQAccordion
-            faqs={faqs}
-            openKey={openKey}
-            onToggle={handleToggle}
-            reduceMotion={Boolean(reduceMotion)}
-          />
+          <motion.div
+            initial={animateOnScroll ? "hidden" : false}
+            animate={animateOnScroll && inView ? "visible" : animateOnScroll ? "hidden" : undefined}
+            variants={animateOnScroll ? fadeIn(reduceMotion, 0.12) : undefined}
+          >
+            <FAQAccordion
+              faqs={faqs}
+              openKey={openKey}
+              onToggle={handleToggle}
+              reduceMotion={Boolean(reduceMotion)}
+            />
+          </motion.div>
         </div>
       </section>
     </>

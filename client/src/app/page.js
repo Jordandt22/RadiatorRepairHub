@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 
 // Components
 import HeroContent from "@/components/pages/home/HeroContent";
@@ -7,9 +6,10 @@ import FeaturedBusinesses from "@/components/pages/home/FeaturedBusinesses";
 import FeaturedCategories from "@/components/pages/home/FeaturedCategories";
 import PopularLocations from "@/components/pages/home/PopularLocations";
 import HowItWorks from "@/components/pages/home/HowItWorks";
+import HomeToolsSuppliesSection from "@/components/pages/home/HomeToolsSuppliesSection";
+import HomeFaqCta from "@/components/pages/home/HomeFaqCta";
 import ContactSection from "@/components/pages/home/ContactSection";
 import FAQSection from "@/components/seo/FAQSection";
-import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import { HOME_KEYWORDS } from "@/lib/seo/keywords";
 import { EXTRA_FAQS } from "@/lib/seo/faqs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -100,50 +100,11 @@ export default async function Home() {
 
       <HowItWorks />
 
-      {featuredProducts.length > 0 ? (
-        <section className="bg-background py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <AffiliateProductsSection
-              products={featuredProducts}
-              title="Tools & Supplies"
-              description="Coolant, radiator caps, and diagnostic tools we recommend for common cooling system care."
-              variant="showcase"
-            />
-          </div>
-        </section>
-      ) : null}
+      <HomeToolsSuppliesSection products={featuredProducts} />
 
       <FAQSection faqs={faqs} includeSchema={false} />
 
-      <section className="bg-tint py-10">
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <p className="mb-5 text-base text-foreground md:text-lg">
-            Have more questions? See the full FAQ or browse our{" "}
-            <Link
-              href="/blogs"
-              className="text-interactive underline hover:text-primary"
-            >
-              cooling system guides
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/shop"
-              className="text-interactive underline hover:text-primary"
-            >
-              tools and supplies
-            </Link>{" "}
-            for DIY maintenance.
-          </p>
-          <div className="flex justify-center">
-            <Link
-              href="/faq"
-              className="inline-flex items-center rounded-full bg-primary px-6 py-2.5 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
-            >
-              View All FAQs
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HomeFaqCta />
 
       <ContactSection />
     </div>

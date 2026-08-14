@@ -1,18 +1,9 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
+import BusinessCount from "@/components/content/BusinessCount";
 import CitySearch from "./CitySearch";
 import CitySort from "./CitySort";
-
-function BusinessCount({ count }) {
-  const n = Number(count) || 0;
-  return (
-    <>
-      <span className="font-semibold text-green-700">{n.toLocaleString()}</span>{" "}
-      {n === 1 ? "Business" : "Businesses"}
-    </>
-  );
-}
 
 function CitiesGrid({
   cities,

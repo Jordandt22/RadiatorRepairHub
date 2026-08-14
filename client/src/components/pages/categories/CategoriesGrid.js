@@ -17,18 +17,9 @@ import {
   Wind,
   Tag,
 } from "lucide-react";
+import BusinessCount from "@/components/content/BusinessCount";
 import CategorySearch from "./CategorySearch";
 import CategorySort from "./CategorySort";
-
-function BusinessCount({ count }) {
-  const n = Number(count) || 0;
-  return (
-    <>
-      <span className="font-semibold text-green-700">{n.toLocaleString()}</span>{" "}
-      {n === 1 ? "Business" : "Businesses"}
-    </>
-  );
-}
 
 const getCategoryIcon = (categoryName) => {
   const name = (categoryName || "").toLowerCase();

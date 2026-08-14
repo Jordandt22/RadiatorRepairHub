@@ -1,5 +1,9 @@
-import React from "react";
-import DetailedBusinessCard from "@/components/businesses/cards/DetailedBusinessCard";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+import AnimatedBusinessGrid from "@/components/businesses/cards/AnimatedBusinessGrid";
+import BusinessCount from "@/components/content/BusinessCount";
 import FeaturedSearch from "./FeaturedSearch";
 import FeaturedSort from "./FeaturedSort";
 
@@ -13,6 +17,16 @@ function FeaturedGrid({
   filteredCount,
 }) {
   const hasCatalog = totalBusinesses > 0;
+  const isFirstRender = useRef(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setRefreshKey((key) => key + 1);
+  }, [searchTerm, sort]);
 
   if (!hasCatalog) {
     return (
@@ -33,10 +47,7 @@ function FeaturedGrid({
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <p className="mb-6 text-sm text-muted-foreground">
-        <span className="font-semibold text-green-700">
-          {(filteredCount ?? businesses.length).toLocaleString()}
-        </span>{" "}
-        {(filteredCount ?? businesses.length) === 1 ? "Business" : "Businesses"}
+        <BusinessCount count={filteredCount ?? businesses.length} />
         {searchTerm?.trim() && totalBusinesses
           ? ` of ${totalBusinesses.toLocaleString()}`
           : null}
@@ -58,11 +69,7 @@ function FeaturedGrid({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {businesses.map((business) => (
-            <DetailedBusinessCard key={business.id} business={business} />
-          ))}
-        </div>
+        <AnimatedBusinessGrid businesses={businesses} refreshKey={refreshKey} />
       )}
     </div>
   );
