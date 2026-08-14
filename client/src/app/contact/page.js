@@ -7,7 +7,6 @@ import {
   Search,
   Store,
 } from "lucide-react";
-import { ToastProvider } from "@/contexts/ToastProvider";
 import ContactForm from "@/components/pages/contact/ContactForm";
 import ContactHeader from "@/components/pages/contact/ContactHeader";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
@@ -89,15 +88,13 @@ const Page = () => {
 
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-stretch">
             <div className="flex lg:col-span-2">
-              <ToastProvider>
-                <ContactForm
-                  className="h-full w-full"
-                  formTitle="Message RadiatorRepairHub"
-                  messagePlaceholder="Tell us about your directory question, listing issue, partnership idea, or website feedback..."
-                  analyticsPage="contact"
-                  submissionKind="contact"
-                />
-              </ToastProvider>
+              <ContactForm
+                className="h-full w-full"
+                formTitle="Message RadiatorRepairHub"
+                messagePlaceholder="Tell us about your directory question, listing issue, partnership idea, or website feedback..."
+                analyticsPage="contact"
+                submissionKind="contact"
+              />
             </div>
 
             <div className="flex lg:col-span-1">

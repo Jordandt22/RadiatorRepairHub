@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import { updateBusinessHours } from "@/lib/api/businessHoursUpdate";
@@ -468,9 +468,5 @@ function BusinessHoursSectionContent({
 }
 
 export default function BusinessHoursSection(props) {
-  return (
-    <ToastProvider>
-      <BusinessHoursSectionContent {...props} />
-    </ToastProvider>
-  );
+  return <BusinessHoursSectionContent {...props} />;
 }

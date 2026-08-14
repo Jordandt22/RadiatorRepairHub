@@ -2,10 +2,11 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import AffiliateProductCard from "@/components/blogs/AffiliateProductCard";
 
-function AffiliateDisclosure({ className = "" }) {
+function AffiliateDisclosure({ className = "", children = null }) {
   return (
     <p className={`text-xs leading-relaxed text-muted-foreground ${className}`}>
-      As an Amazon Associate, RadiatorRepairHub earns from qualifying purchases.
+      {children ??
+        "As an Amazon Associate, RadiatorRepairHub earns from qualifying purchases."}
     </p>
   );
 }
@@ -16,6 +17,8 @@ export function AffiliateProductsSection({
   variant = "related",
   blogSlug,
   description = null,
+  descriptionVariant = "default",
+  disclosure = null,
 }) {
   if (!products?.length) return null;
 
@@ -37,28 +40,39 @@ export function AffiliateProductsSection({
         className={`mb-4 space-y-1 ${isShowcase ? "mx-auto max-w-3xl text-center" : ""}`}
       >
         <h2
-          className={`font-heading tracking-tight text-foreground ${
-            isRecommended
-              ? "text-xl font-bold md:text-2xl"
-              : isShowcase
-                ? "text-3xl font-semibold"
-                : "text-2xl font-bold md:text-[1.65rem]"
-          }`}
+          className={`font-heading tracking-tight text-foreground ${isRecommended
+            ? "text-xl font-semibold md:text-2xl"
+            : isShowcase
+              ? "text-3xl font-semibold"
+              : "text-xl font-semibold tracking-tight md:text-2xl"
+            }`}
         >
           {title}
         </h2>
         {description ? (
-          <p
-            className={`text-base text-muted-foreground md:text-lg ${
-              isShowcase ? "mx-auto max-w-3xl" : "max-w-2xl"
-            }`}
-          >
-            {description}
-          </p>
+          descriptionVariant === "notice" ? (
+            <div
+              className={`rounded-lg border border-amber-200 bg-amber-50 p-4 my-4 ${isShowcase ? "mx-auto max-w-3xl" : "max-w-3xl"
+                }`}
+            >
+              <p className="text-sm leading-relaxed text-amber-950 md:text-base">
+                {description}
+              </p>
+            </div>
+          ) : (
+            <p
+              className={`text-base text-muted-foreground md:text-lg ${isShowcase ? "mx-auto max-w-3xl" : "max-w-3xl"
+                }`}
+            >
+              {description}
+            </p>
+          )
         ) : null}
         <AffiliateDisclosure
-          className={isShowcase ? "mx-auto max-w-3xl" : ""}
-        />
+          className={isShowcase ? "mx-auto max-w-3xl" : "max-w-3xl"}
+        >
+          {disclosure}
+        </AffiliateDisclosure>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

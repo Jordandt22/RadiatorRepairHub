@@ -7,9 +7,9 @@ export default function VerifiedBadge({
 }) {
   const sizeClasses =
     size === "md"
-      ? "gap-1.5 px-2.5 py-1 text-xs"
-      : "gap-1 px-2 py-0.5 text-[11px]";
-  const iconClass = size === "md" ? "size-3.5" : "size-3";
+      ? "gap-2 px-3 py-1 text-sm"
+      : "gap-1.5 px-3 py-1 text-sm";
+  const iconClass = size === "md" ? "size-3.5" : "size-3.5";
 
   return (
     <span

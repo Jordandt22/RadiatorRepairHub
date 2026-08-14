@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import { updateBusinessAbout } from "@/lib/api/businessAbout";
@@ -49,6 +49,7 @@ function AboutSectionContent({
   imageId,
   cdnStored,
   imageAlt,
+  showImage = true,
 }) {
   const router = useRouter();
   const { showCustomSuccess } = useToast();
@@ -138,31 +139,38 @@ function AboutSectionContent({
   return (
     <div className="order-1 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
       <BusinessSectionHeader
-        title="About Our Business"
+        title="About"
         businessId={businessId}
         onEdit={() => setOpen(true)}
+        titleClassName="text-xl font-semibold tracking-tight text-foreground font-heading md:text-2xl"
       />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-        <div className="space-y-4 md:col-span-2">
-          <p className="text-sm leading-relaxed text-muted-foreground md:text-base whitespace-pre-wrap">
-            {initialDescription || "No description available."}
-          </p>
-        </div>
+      {showImage ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+          <div className="space-y-4 md:col-span-2">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground md:text-base">
+              {initialDescription || "No description available."}
+            </p>
+          </div>
 
-        <div className="relative h-48 w-full overflow-hidden rounded-lg bg-muted md:h-64">
-          <BusinessImage
-            src={imageUrl}
-            businessId={businessId}
-            imageId={imageId}
-            cdnStored={Boolean(cdnStored)}
-            alt={imageAlt}
-            sizes={BUSINESS_ABOUT_IMAGE_SIZES}
-            variant={CF_IMAGE_VARIANT.about}
-            className="object-cover object-center"
-            iconSize="sm"
-          />
+          <div className="relative h-48 w-full overflow-hidden rounded-lg bg-muted md:h-64">
+            <BusinessImage
+              src={imageUrl}
+              businessId={businessId}
+              imageId={imageId}
+              cdnStored={Boolean(cdnStored)}
+              alt={imageAlt}
+              sizes={BUSINESS_ABOUT_IMAGE_SIZES}
+              variant={CF_IMAGE_VARIANT.about}
+              className="object-cover object-center"
+              iconSize="sm"
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground md:text-base">
+          {initialDescription || "No description available."}
+        </p>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">
@@ -247,9 +255,5 @@ function AboutSectionContent({
 }
 
 export default function AboutSection(props) {
-  return (
-    <ToastProvider>
-      <AboutSectionContent {...props} />
-    </ToastProvider>
-  );
+  return <AboutSectionContent {...props} />;
 }

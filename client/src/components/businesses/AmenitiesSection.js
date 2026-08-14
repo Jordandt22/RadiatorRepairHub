@@ -21,7 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
 import {
@@ -229,9 +229,5 @@ function AmenitiesSectionContent({ businessId, features = {} }) {
 }
 
 export default function AmenitiesSection(props) {
-  return (
-    <ToastProvider>
-      <AmenitiesSectionContent {...props} />
-    </ToastProvider>
-  );
+  return <AmenitiesSectionContent {...props} />;
 }

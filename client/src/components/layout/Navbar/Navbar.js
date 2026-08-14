@@ -148,17 +148,14 @@ function Navbar() {
   };
 
   const accountControl = isSignedIn ? (
-    <UserAccountMenu
-      user={user}
-      triggerClassName={isHome ? "ring-offset-transparent" : "ring-offset-white"}
-    />
+    <UserAccountMenu user={user} variant={isHome ? "home" : "default"} />
   ) : (
     <Link
       href="/signin"
       className={
         isHome
-          ? "inline-flex items-center gap-1.5 rounded-full border-2 border-white/35 px-4 py-1.5 font-medium text-white transition-colors duration-200 hover:bg-white/10"
-          : "inline-flex items-center gap-1.5 rounded-full border-2 border-primary px-4 py-1.5 font-medium text-primary transition-colors duration-200 hover:bg-tint"
+          ? "inline-flex items-center gap-1.5 rounded-full border border-white/40 px-4 py-1.5 font-medium text-white transition-colors duration-200 hover:bg-white/10"
+          : "inline-flex items-center gap-1.5 rounded-full border border-primary px-4 py-1.5 font-medium text-primary transition-colors duration-200 hover:bg-tint"
       }
       aria-label="Sign in to your business account"
     >
@@ -334,7 +331,7 @@ function Navbar() {
               <Link
                 href="/signin"
                 onClick={closeMobileMenu}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-primary px-4 py-3 font-medium text-primary transition-colors duration-200 hover:bg-tint"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 font-medium text-primary transition-colors duration-200 hover:bg-tint"
                 aria-label="Sign in to your business account"
               >
                 Sign In

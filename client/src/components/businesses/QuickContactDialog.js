@@ -26,7 +26,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { usePostHog } from "posthog-js/react";
 import {
@@ -568,9 +568,5 @@ export default function QuickContactDialog(props) {
     return null;
   }
 
-  return (
-    <ToastProvider>
-      <QuickContactDialogContent {...props} />
-    </ToastProvider>
-  );
+  return <QuickContactDialogContent {...props} />;
 }

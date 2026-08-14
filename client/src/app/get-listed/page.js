@@ -6,7 +6,6 @@ import {
   Search,
   Users,
 } from "lucide-react";
-import { ToastProvider } from "@/contexts/ToastProvider";
 import ContactForm from "@/components/pages/contact/ContactForm";
 import GetListedHeader from "@/components/pages/get-listed/GetListedHeader";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
@@ -169,18 +168,16 @@ const Page = () => {
               </p>
             </div>
 
-            <ToastProvider>
-              <ContactForm
-                prefilledSubject="Business Listing Request"
-                lockSubject={true}
-                formTitle="Submit Your Business"
-                namePlaceholder="Enter your full business name"
-                nameLabel="Full Business Name"
-                showSubjectInput={false}
-                analyticsPage="get-listed"
-                submissionKind="get-listed"
-              />
-            </ToastProvider>
+            <ContactForm
+              prefilledSubject="Business Listing Request"
+              lockSubject={true}
+              formTitle="Submit Your Business"
+              namePlaceholder="Enter your full business name"
+              nameLabel="Full Business Name"
+              showSubjectInput={false}
+              analyticsPage="get-listed"
+              submissionKind="get-listed"
+            />
           </section>
 
           <section className="rounded-lg border border-border bg-card p-6 md:p-8">

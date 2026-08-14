@@ -12,7 +12,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import {
   cancelClaimRequest,
   completeClaimRequest,
@@ -549,9 +549,5 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
 }
 
 export default function ClaimVerifyForm(props) {
-  return (
-    <ToastProvider>
-      <ClaimVerifyFormContent {...props} />
-    </ToastProvider>
-  );
+  return <ClaimVerifyFormContent {...props} />;
 }

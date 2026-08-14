@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 
-import { ToastProvider } from "@/contexts/ToastProvider";
 import HeroSearchBar from "./HeroSearchBar";
 
 function HeroContent({ popularStates = [] }) {
@@ -50,9 +49,7 @@ function HeroContent({ popularStates = [] }) {
             the U.S.
           </p>
 
-          <ToastProvider>
-            <HeroSearchBar heroInView={heroInView} />
-          </ToastProvider>
+          <HeroSearchBar heroInView={heroInView} />
 
           {popularStates.length > 0 ? (
             <motion.div

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
 import OwnedBusinessCard from "@/components/dashboard/OwnedBusinessCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import { signOut } from "@/lib/auth/session";
 
 function DashboardContentInner() {
@@ -159,9 +159,5 @@ function DashboardContentInner() {
 }
 
 export default function DashboardContent() {
-  return (
-    <ToastProvider>
-      <DashboardContentInner />
-    </ToastProvider>
-  );
+  return <DashboardContentInner />;
 }

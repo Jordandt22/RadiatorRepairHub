@@ -21,7 +21,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import {
   fetchPrimaryCategories,
@@ -460,9 +460,5 @@ function ServiceCategoriesSectionContent({
 }
 
 export default function ServiceCategoriesSection(props) {
-  return (
-    <ToastProvider>
-      <ServiceCategoriesSectionContent {...props} />
-    </ToastProvider>
-  );
+  return <ServiceCategoriesSectionContent {...props} />;
 }

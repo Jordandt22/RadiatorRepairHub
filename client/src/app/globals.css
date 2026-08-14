@@ -92,46 +92,13 @@ html {
   transform: translateZ(0);
 }
 
-/* Custom Toast Styles */
+/* Custom toast shell (Sonner host) */
 .custom-toast {
-  width: fit-content !important;
   background: transparent !important;
-  border-radius: 16px !important;
-  backdrop-filter: blur(10px) !important;
   border: none !important;
+  box-shadow: none !important;
   padding: 0 !important;
   margin: 0 !important;
-}
-
-/* Toast Animation Enhancements */
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideOutRight {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
-
-.custom-toast {
-  animation: slideInRight 0.3s ease-out !important;
-}
-
-.custom-toast.Toastify__toast--exiting {
-  animation: slideOutRight 0.3s ease-in !important;
 }
 
 /* Fade in up animation for server components */

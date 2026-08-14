@@ -1,11 +1,11 @@
 import { IBM_Plex_Sans } from "next/font/google";
-import { Toaster } from "sonner";
 import Script from "next/script";
 import "./globals.css";
 import { PostHogProvider } from "./providers";
 
 // Components
 import SiteChrome from "@/components/layout/SiteChrome";
+import { ToastProvider } from "@/contexts/ToastProvider";
 import { ALL_KEYWORDS } from "@/lib/seo/keywords";
 import { DEFAULT_OG_IMAGE, INDEX_ROBOTS } from "@/lib/seo/metadata";
 import {
@@ -205,22 +205,15 @@ export default async function RootLayout({ children }) {
         )}
 
         <PostHogProvider>
-          <SiteChrome
-            businessEmail={getBusinessEmail()}
-            businessPhoneDigits={getBusinessPhoneDigits()}
-            topStates={topStates}
-          >
-            {children}
-          </SiteChrome>
-
-          <Toaster
-            toastOptions={{
-              style: {
-                background: "transparent",
-                boxShadow: "none",
-              },
-            }}
-          />
+          <ToastProvider>
+            <SiteChrome
+              businessEmail={getBusinessEmail()}
+              businessPhoneDigits={getBusinessPhoneDigits()}
+              topStates={topStates}
+            >
+              {children}
+            </SiteChrome>
+          </ToastProvider>
         </PostHogProvider>
       </body>
     </html>

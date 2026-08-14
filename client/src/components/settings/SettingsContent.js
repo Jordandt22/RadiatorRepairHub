@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import OwnerEditButton from "@/components/businesses/OwnerEditButton";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { signOut } from "@/lib/auth/session";
 import {
@@ -696,9 +696,5 @@ function SettingsContentInner() {
 }
 
 export default function SettingsContent() {
-  return (
-    <ToastProvider>
-      <SettingsContentInner />
-    </ToastProvider>
-  );
+  return <SettingsContentInner />;
 }

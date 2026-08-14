@@ -2,7 +2,6 @@ import React from "react";
 import { notFound } from "next/navigation";
 
 // Contexts
-import { ToastProvider } from "@/contexts/ToastProvider";
 import { FilterProvider } from "@/contexts/FilterProvider";
 
 // Components
@@ -51,20 +50,18 @@ async function BusinessesContainer({
         <SearchHeader title={searchParams?.title} />
       )}
 
-      <ToastProvider>
-        <FilterProvider>
-          <ContentWrapper
-            stateData={stateData}
-            cityData={cityData}
-            categoryData={categoryData}
-            searchParams={searchParams}
-            initialListings={initialError ? null : initialListings}
-            initialListingsPage={page}
-            initialSearchBody={searchBody}
-            affiliateProducts={affiliateProducts}
-          />
-        </FilterProvider>
-      </ToastProvider>
+      <FilterProvider>
+        <ContentWrapper
+          stateData={stateData}
+          cityData={cityData}
+          categoryData={categoryData}
+          searchParams={searchParams}
+          initialListings={initialError ? null : initialListings}
+          initialListingsPage={page}
+          initialSearchBody={searchBody}
+          affiliateProducts={affiliateProducts}
+        />
+      </FilterProvider>
     </div>
   );
 }

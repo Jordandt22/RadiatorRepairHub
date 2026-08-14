@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BadgeCheck, LayoutDashboard } from "lucide-react";
+import { ArrowRight, BadgeCheck, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import { claimBusiness } from "@/lib/api/businesses";
 import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
@@ -149,26 +149,24 @@ function ClaimedBusinessStatus({ businessId, lastEditedAt = null }) {
   }
 
   return (
-    <div className="mt-3 flex flex-col items-center gap-1.5">
-      <div className="flex w-full items-center justify-center gap-1.5 rounded-full bg-green-500 p-2 text-white">
-        <BadgeCheck className="size-5 shrink-0" aria-hidden="true" />
-        <p className="text-sm font-medium">Verified Business</p>
+    <div className="mt-3 flex flex-col items-center gap-2">
+      <div className="flex w-full items-center justify-center gap-1.5 rounded-full border border-green-600/20 bg-green-50 px-4 py-2.5 text-green-800">
+        <BadgeCheck className="size-4 shrink-0" aria-hidden="true" />
+        <p className="text-sm font-medium">Verified business</p>
       </div>
       {isOwner ? (
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false}
-          className="mt-1.5 w-full rounded-full gap-2 text-sm font-medium"
-          render={<Link href="/dashboard" />}
+        <Link
+          href="/dashboard"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-interactive hover:bg-muted"
         >
-          <LayoutDashboard className="size-4" />
-          My Dashboard
-        </Button>
+          <LayoutDashboard className="size-4 shrink-0" aria-hidden="true" />
+          My dashboard
+          <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </Link>
       ) : null}
       {editedDate ? (
-        <p className="mt-2 text-center text-xs font-medium text-muted-foreground">
-          Last Updated {editedDate}
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          Last updated {editedDate}
         </p>
       ) : null}
     </div>
@@ -216,12 +214,10 @@ export default function ClaimBusinessButton({
   }
 
   return (
-    <ToastProvider>
-      <ClaimBusinessButtonContent
-        businessId={businessId}
-        businessSlug={businessSlug}
-        businessName={businessName}
-      />
-    </ToastProvider>
+    <ClaimBusinessButtonContent
+      businessId={businessId}
+      businessSlug={businessSlug}
+      businessName={businessName}
+    />
   );
 }

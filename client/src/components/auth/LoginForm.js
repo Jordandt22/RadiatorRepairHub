@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import { loginOwner } from "@/lib/api/auth";
 import { persistSession } from "@/lib/auth/session";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -258,16 +258,14 @@ function LoginFormContent() {
 
 export default function LoginForm() {
   return (
-    <ToastProvider>
-      <Suspense
-        fallback={
-          <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300">
-            <p className="text-sm text-gray-500">Loading…</p>
-          </div>
-        }
-      >
-        <LoginFormContent />
-      </Suspense>
-    </ToastProvider>
+    <Suspense
+      fallback={
+        <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300">
+          <p className="text-sm text-gray-500">Loading…</p>
+        </div>
+      }
+    >
+      <LoginFormContent />
+    </Suspense>
   );
 }

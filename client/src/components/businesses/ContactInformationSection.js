@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import BusinessContactLinks from "@/components/businesses/BusinessContactLinks";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
@@ -302,9 +302,5 @@ function ContactInformationSectionContent({
 }
 
 export default function ContactInformationSection(props) {
-  return (
-    <ToastProvider>
-      <ContactInformationSectionContent {...props} />
-    </ToastProvider>
-  );
+  return <ContactInformationSectionContent {...props} />;
 }
