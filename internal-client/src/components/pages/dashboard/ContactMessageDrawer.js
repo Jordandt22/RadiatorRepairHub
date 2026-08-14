@@ -9,6 +9,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import {
+  ContactTypeBadge,
   IssueBadge,
   StatusBadge,
   UrgencyBadge,
@@ -67,7 +68,9 @@ export default function ContactMessageDrawer({ message, open, onOpenChange }) {
                 </a>
               </DetailRow>
               <DetailRow label="Phone">{message.phone || "—"}</DetailRow>
-              <DetailRow label="Vehicle">{message.vehicle || "—"}</DetailRow>
+              {message.contact_type === "questions" ? null : (
+                <DetailRow label="Vehicle">{message.vehicle || "—"}</DetailRow>
+              )}
               <DetailRow label="Business">
                 {message.business?.id ? (
                   <Link
@@ -84,16 +87,29 @@ export default function ContactMessageDrawer({ message, open, onOpenChange }) {
                   "—"
                 )}
               </DetailRow>
-              <DetailRow label="Issue">
-                <IssueBadge issue={message.issue} />
+              <DetailRow label="Type">
+                <ContactTypeBadge contactType={message.contact_type} />
               </DetailRow>
-              <DetailRow label="Urgency">
-                <UrgencyBadge urgency={message.urgency} />
-              </DetailRow>
+              {message.contact_type === "questions" ? null : (
+                <>
+                  <DetailRow label="Issue">
+                    <IssueBadge issue={message.issue} />
+                  </DetailRow>
+                  <DetailRow label="Urgency">
+                    <UrgencyBadge urgency={message.urgency} />
+                  </DetailRow>
+                </>
+              )}
               <DetailRow label="Status">
                 <StatusBadge status={message.status} />
               </DetailRow>
-              <DetailRow label="Additional details">
+              <DetailRow
+                label={
+                  message.contact_type === "questions"
+                    ? "Message"
+                    : "Additional details"
+                }
+              >
                 <p className="whitespace-pre-wrap">
                   {message.additional_details || "—"}
                 </p>

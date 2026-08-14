@@ -16,12 +16,71 @@ const ISSUE_LABELS = {
   other: "Other",
 };
 
+const CONTACT_TYPE_LABELS = {
+  need_service: "Need Service",
+  questions: "Questions",
+};
+
 export const formatUrgencyLabel = (urgency) => {
   return URGENCY_LABELS[urgency] ?? "N/A";
 };
 
 export const formatIssueLabel = (issue) => {
   return ISSUE_LABELS[issue] ?? "N/A";
+};
+
+export const formatContactTypeLabel = (contactType) => {
+  return CONTACT_TYPE_LABELS[contactType] ?? "N/A";
+};
+
+const inquiryEmailRow = (
+  label,
+  value,
+  { first = false, width = 120, verticalAlign = false } = {},
+) => {
+  const widthStyle = first ? ` width: ${width}px;` : "";
+  const valign = verticalAlign ? " vertical-align: top;" : "";
+  return `
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;${widthStyle}${valign}">${label}:</td>
+      <td style="padding: 8px 0;">${value ?? "N/A"}</td>
+    </tr>`;
+};
+
+export const buildContactInquiryDetailRows = (
+  {
+    name,
+    phone,
+    email,
+    vehicle,
+    issue,
+    urgency,
+    additionalDetails,
+    contactType,
+  },
+  { width = 120 } = {},
+) => {
+  const isQuestions = contactType === "questions";
+  const detailsLabel = isQuestions ? "Message" : "Additional Details";
+  const rows = [
+    inquiryEmailRow("Name", name, { first: true, width }),
+    inquiryEmailRow("Email", email),
+    inquiryEmailRow("Phone", phone),
+    inquiryEmailRow("Type", formatContactTypeLabel(contactType)),
+  ];
+
+  if (!isQuestions) {
+    rows.push(
+      inquiryEmailRow("Vehicle", vehicle),
+      inquiryEmailRow("Issue", formatIssueLabel(issue)),
+      inquiryEmailRow("Urgency", formatUrgencyLabel(urgency)),
+    );
+  }
+
+  rows.push(
+    inquiryEmailRow(detailsLabel, additionalDetails, { verticalAlign: true }),
+  );
+  return rows.join("");
 };
 
 export const getWebBaseUrl = () => {
@@ -102,6 +161,7 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
       issue,
       urgency,
       additionalDetails,
+      contactType,
       isClaimed,
       businessSlug,
     },
@@ -111,34 +171,16 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
   <p>Someone found your business on RadiatorRepairHub and wanted to contact you.</p>
 
   <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold; width: 120px;">Name:</td>
-      <td style="padding: 8px 0;">${name ?? "N/A"}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Email:</td>
-      <td style="padding: 8px 0;">${email ?? "N/A"}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Phone:</td>
-      <td style="padding: 8px 0;">${phone ?? "N/A"}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Vehicle:</td>
-      <td style="padding: 8px 0;">${vehicle ?? "N/A"}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Issue:</td>
-      <td style="padding: 8px 0;">${formatIssueLabel(issue)}</td>
-    </tr>
-     <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Urgency:</td>
-      <td style="padding: 8px 0;">${formatUrgencyLabel(urgency)}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Additional Details:</td>
-      <td style="padding: 8px 0;">${additionalDetails ?? "N/A"}</td>
-    </tr>
+    ${buildContactInquiryDetailRows({
+      name,
+      phone,
+      email,
+      vehicle,
+      issue,
+      urgency,
+      additionalDetails,
+      contactType,
+    })}
   </table>
 
   <p>We're passing this along for free, no strings attached.</p>
@@ -185,6 +227,7 @@ export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
       issue,
       urgency,
       additionalDetails,
+      contactType,
       autoSent = false,
     },
   ) => `
@@ -205,34 +248,19 @@ export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
         autoSent ? "Auto-sent" : "Needs review (Pending)"
       }</td>
     </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Name:</td>
-      <td style="padding: 8px 0;">${name ?? "N/A"}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Email:</td>
-      <td style="padding: 8px 0;">${email ?? "N/A"}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Phone:</td>
-      <td style="padding: 8px 0;">${phone ?? "N/A"}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Vehicle:</td>
-      <td style="padding: 8px 0;">${vehicle ?? "N/A"}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Issue:</td>
-      <td style="padding: 8px 0;">${formatIssueLabel(issue)}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold;">Urgency:</td>
-      <td style="padding: 8px 0;">${formatUrgencyLabel(urgency)}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Additional Details:</td>
-      <td style="padding: 8px 0;">${additionalDetails ?? "N/A"}</td>
-    </tr>
+    ${buildContactInquiryDetailRows(
+      {
+        name,
+        phone,
+        email,
+        vehicle,
+        issue,
+        urgency,
+        additionalDetails,
+        contactType,
+      },
+      { width: 140 },
+    )}
   </table>
 
   <p>${

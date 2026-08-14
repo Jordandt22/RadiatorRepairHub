@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import debounce from "lodash.debounce";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,19 @@ const ISSUE_OPTIONS = [
   "Other",
 ];
 
+const CONTACT_TYPE_OPTIONS = [
+  {
+    value: "need_service",
+    label: "Need service / repair",
+  },
+  {
+    value: "questions",
+    label: "General question",
+  },
+];
+
 const INITIAL_FORM = {
+  contactType: "need_service",
   name: "",
   phone: "",
   email: "",
@@ -149,13 +162,19 @@ function QuickContactDialogContent({
       next.phone = "Enter a valid 10-digit phone number.";
     }
 
-    if (!form.issue) {
-      next.issue = "Please select a reason for contact.";
-    }
+    if (form.contactType === "questions") {
+      if (form.additionalDetails.trim().length < 10) {
+        next.additionalDetails = "Please provide at least 10 characters.";
+      }
+    } else {
+      if (!form.issue) {
+        next.issue = "Please select a reason for contact.";
+      }
 
-    if (form.issue === "Other" && !form.additionalDetails.trim()) {
-      next.additionalDetails =
-        "Please describe your issue when selecting Other.";
+      if (form.issue === "Other" && !form.additionalDetails.trim()) {
+        next.additionalDetails =
+          "Please describe your issue when selecting Other.";
+      }
     }
 
     setErrors(next);
@@ -173,15 +192,21 @@ function QuickContactDialogContent({
     setIsSubmitting(true);
 
     try {
-      const issue = ISSUE_LABEL_TO_ENUM[form.issue];
+      const isQuestions = form.contactType === "questions";
+      const issue = isQuestions
+        ? undefined
+        : ISSUE_LABEL_TO_ENUM[form.issue];
       const { error } = await submitQuickContact({
         businessId: businessId || undefined,
+        contactType: form.contactType,
         name: form.name.trim(),
         email: form.email.trim(),
         phone: form.phone.trim(),
-        vehicleModel: form.vehicleModel.trim() || undefined,
+        vehicleModel: isQuestions
+          ? undefined
+          : form.vehicleModel.trim() || undefined,
         issue,
-        urgency: form.urgency,
+        urgency: isQuestions ? undefined : form.urgency,
         additionalDetails: form.additionalDetails.trim() || undefined,
       });
 
@@ -194,7 +219,7 @@ function QuickContactDialogContent({
           setErrors((prev) => ({ ...prev, ...error.message }));
           showCustomError(
             error.message.email ||
-              "Please fix the errors below before submitting.",
+            "Please fix the errors below before submitting.",
             "Validation Error"
           );
           return;
@@ -209,8 +234,9 @@ function QuickContactDialogContent({
       }
 
       capture("contact_form_submitted", {
+        contact_type: form.contactType,
         issue,
-        urgency: form.urgency,
+        urgency: isQuestions ? undefined : form.urgency,
       });
 
       suppressCancelRef.current = true;
@@ -284,6 +310,7 @@ function QuickContactDialogContent({
   };
 
   const detailsRequired = form.issue === "Other";
+  const isQuestions = form.contactType === "questions";
   const triggerElement =
     trigger ?? (
       <Button
@@ -305,260 +332,345 @@ function QuickContactDialogContent({
 
   return (
     <>
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={triggerElement}>{triggerContent}</DialogTrigger>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogTrigger render={triggerElement}>{triggerContent}</DialogTrigger>
 
-      <DialogContent className="scrollbar-subtle sm:max-w-xl lg:max-w-2xl max-h-[min(90vh,44rem)] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Send className="size-4" />
-            Quick Contact
-          </DialogTitle>
-          <DialogDescription>
-            {businessName
-              ? `Reach out to ${businessName}`
-              : "Reach out about an issue you have"}
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent className="scrollbar-subtle sm:max-w-xl lg:max-w-2xl max-h-[min(90vh,44rem)] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="size-4" />
+              Quick Contact
+            </DialogTitle>
+            <DialogDescription>
+              {businessName
+                ? `Reach out to ${businessName} about a repair or a general question`
+                : "Reach out about a repair or a general question"}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="grid gap-4" noValidate>
-          <div className="grid gap-1.5">
-            <label
-              htmlFor="qc-name"
-              className="text-sm font-medium text-foreground"
-            >
-              Name <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="qc-name"
-              name="name"
-              autoComplete="name"
-              value={form.name}
-              onChange={(e) => updateField("name", e.target.value)}
-              aria-invalid={!!errors.name}
-              placeholder="John Doe"
-              disabled={isSubmitting}
-            />
-            {errors.name && (
-              <p className="text-xs text-destructive">{errors.name}</p>
-            )}
-          </div>
+          <form onSubmit={handleSubmit} className="grid gap-4" noValidate>
+            <fieldset className="grid gap-2">
+              <legend className="text-sm font-medium text-foreground mb-2">
+                How can they help?{" "}
+                <span className="text-destructive">*</span>
+              </legend>
+              <RadioGroup
+                name="qc-contact-type"
+                value={form.contactType ?? "need_service"}
+                onValueChange={(value) => {
+                  if (!value) return;
+                  updateField("contactType", value);
+                  setErrors((prev) => {
+                    if (!prev.issue && !prev.additionalDetails) return prev;
+                    const next = { ...prev };
+                    delete next.issue;
+                    delete next.additionalDetails;
+                    return next;
+                  });
+                }}
+                className="gap-2"
+                disabled={isSubmitting}
+              >
+                {CONTACT_TYPE_OPTIONS.map((option) => (
+                  <label
+                    key={option.value}
+                    className="flex cursor-pointer items-start gap-2 rounded-lg border border-border px-3 py-2 text-sm text-foreground hover:bg-muted"
+                  >
+                    <RadioGroupItem value={option.value} className="mt-0.5" />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </RadioGroup>
+            </fieldset>
 
-          <div className="grid gap-1.5">
-            <label
-              htmlFor="qc-email"
-              className="text-sm font-medium text-foreground"
-            >
-              Email <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="qc-email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={form.email}
-              onChange={(e) => updateField("email", e.target.value)}
-              aria-invalid={!!errors.email}
-              placeholder="example@gmail.com"
-              disabled={isSubmitting}
-            />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email}</p>
-            )}
-          </div>
-
-          <div className="grid gap-1.5">
-            <label
-              htmlFor="qc-phone"
-              className="text-sm font-medium text-foreground"
-            >
-              Phone{" "}
-              <span className="text-muted-foreground font-normal">
-                (optional)
-              </span>
-            </label>
-            <Input
-              id="qc-phone"
-              name="phone"
-              type="tel"
-              autoComplete="tel"
-              value={form.phone}
-              onChange={(e) => updateField("phone", e.target.value)}
-              aria-invalid={!!errors.phone}
-              placeholder="(555) 123-4567"
-              disabled={isSubmitting}
-            />
-            {errors.phone && (
-              <p className="text-xs text-destructive">{errors.phone}</p>
-            )}
-          </div>
-
-          <div className="grid gap-1.5">
-            <label className="text-sm font-medium text-foreground">
-              Issue / Reason for Contact{" "}
-              <span className="text-destructive">*</span>
-            </label>
-            <Combobox
-              items={ISSUE_OPTIONS}
-              value={form.issue}
-              onValueChange={(value) => updateField("issue", value)}
-              disabled={isSubmitting}
-            >
-              <ComboboxInput
-                placeholder="Select an issue"
-                className="w-full"
-                aria-invalid={!!errors.issue}
+            <div className="grid gap-1.5">
+              <label
+                htmlFor="qc-name"
+                className="text-sm font-medium text-foreground"
+              >
+                Name <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="qc-name"
+                name="name"
+                autoComplete="name"
+                value={form.name}
+                onChange={(e) => updateField("name", e.target.value)}
+                aria-invalid={!!errors.name}
+                placeholder="John Doe"
                 disabled={isSubmitting}
               />
-              <ComboboxContent>
-                <ComboboxEmpty>No matching issue.</ComboboxEmpty>
-                <ComboboxList>
-                  {(item) => (
-                    <ComboboxItem key={item} value={item}>
-                      {item}
-                    </ComboboxItem>
-                  )}
-                </ComboboxList>
-              </ComboboxContent>
-            </Combobox>
-            {errors.issue && (
-              <p className="text-xs text-destructive">{errors.issue}</p>
-            )}
-          </div>
+              {errors.name && (
+                <p className="text-xs text-destructive">{errors.name}</p>
+              )}
+            </div>
 
-          <div className="grid gap-1.5">
-            <label
-              htmlFor="qc-vehicle"
-              className="text-sm font-medium text-foreground"
-            >
-              Vehicle Model{" "}
-              <span className="text-muted-foreground font-normal">
-                (optional)
-              </span>
-            </label>
-            <Input
-              id="qc-vehicle"
-              name="vehicleModel"
-              value={form.vehicleModel}
-              onChange={(e) => updateField("vehicleModel", e.target.value)}
-              placeholder="e.g. 2018 Honda Civic"
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <span className="text-sm font-medium text-foreground">
-              Urgency <span className="text-destructive">*</span>
-            </span>
-            <RadioGroup
-              value={form.urgency}
-              onValueChange={(value) => updateField("urgency", value)}
-              className="grid gap-2"
-              disabled={isSubmitting}
-            >
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <RadioGroupItem value="asap" />
-                ASAP
+            <div className="grid gap-1.5">
+              <label
+                htmlFor="qc-email"
+                className="text-sm font-medium text-foreground"
+              >
+                Email <span className="text-destructive">*</span>
               </label>
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <RadioGroupItem value="can-wait" />
-                Can Wait
-              </label>
-            </RadioGroup>
-            <p className="text-xs text-muted-foreground">
-              Your message will still be sent as soon as possible, this is for
-              the shops.
-            </p>
-          </div>
+              <Input
+                id="qc-email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={form.email}
+                onChange={(e) => updateField("email", e.target.value)}
+                aria-invalid={!!errors.email}
+                placeholder="example@gmail.com"
+                disabled={isSubmitting}
+              />
+              {errors.email && (
+                <p className="text-xs text-destructive">{errors.email}</p>
+              )}
+            </div>
 
-          <div className="grid gap-1.5">
-            <label
-              htmlFor="qc-details"
-              className="text-sm font-medium text-foreground"
-            >
-              Additional Details{" "}
-              {detailsRequired ? (
-                <span className="text-destructive">*</span>
-              ) : (
+            <div className="grid gap-1.5">
+              <label
+                htmlFor="qc-phone"
+                className="text-sm font-medium text-foreground"
+              >
+                Phone{" "}
                 <span className="text-muted-foreground font-normal">
                   (optional)
                 </span>
+              </label>
+              <Input
+                id="qc-phone"
+                name="phone"
+                type="tel"
+                autoComplete="tel"
+                value={form.phone}
+                onChange={(e) => updateField("phone", e.target.value)}
+                aria-invalid={!!errors.phone}
+                placeholder="(555) 123-4567"
+                disabled={isSubmitting}
+              />
+              {errors.phone && (
+                <p className="text-xs text-destructive">{errors.phone}</p>
               )}
-            </label>
-            <Textarea
-              id="qc-details"
-              name="additionalDetails"
-              value={form.additionalDetails}
-              onChange={(e) =>
-                updateField("additionalDetails", e.target.value)
-              }
-              aria-invalid={!!errors.additionalDetails}
-              placeholder={
-                detailsRequired
-                  ? "Please describe your issue..."
-                  : "Anything else the shop should know..."
-              }
-              rows={3}
-              disabled={isSubmitting}
-            />
-            {errors.additionalDetails && (
-              <p className="text-xs text-destructive">
-                {errors.additionalDetails}
-              </p>
-            )}
-          </div>
+            </div>
 
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            By sending this message, you agree to our{" "}
-            <Link
-              href="/terms"
-              className="text-interactive hover:text-primary underline"
-            >
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/privacy"
-              className="text-interactive hover:text-primary underline"
-            >
-              Privacy Policy
-            </Link>
-            .
-          </p>
+            <AnimatePresence mode="wait" initial={false}>
+              {isQuestions ? (
+                <motion.div
+                  key="questions-fields"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="grid gap-1.5"
+                >
+                  <label
+                    htmlFor="qc-details"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    Your question <span className="text-destructive">*</span>
+                  </label>
+                  <Textarea
+                    id="qc-details"
+                    name="additionalDetails"
+                    value={form.additionalDetails}
+                    onChange={(e) =>
+                      updateField("additionalDetails", e.target.value)
+                    }
+                    aria-invalid={!!errors.additionalDetails}
+                    placeholder="What would you like to ask this business?"
+                    rows={4}
+                    disabled={isSubmitting}
+                  />
+                  {errors.additionalDetails && (
+                    <p className="text-xs text-destructive">
+                      {errors.additionalDetails}
+                    </p>
+                  )}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="need-service-fields"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="grid gap-4"
+                >
+                  <div className="grid gap-1.5">
+                    <label className="text-sm font-medium text-foreground">
+                      Issue / Reason for Contact{" "}
+                      <span className="text-destructive">*</span>
+                    </label>
+                    <Combobox
+                      items={ISSUE_OPTIONS}
+                      value={form.issue}
+                      onValueChange={(value) => updateField("issue", value)}
+                      disabled={isSubmitting}
+                    >
+                      <ComboboxInput
+                        placeholder="Select an issue"
+                        className="w-full"
+                        aria-invalid={!!errors.issue}
+                        disabled={isSubmitting}
+                      />
+                      <ComboboxContent>
+                        <ComboboxEmpty>No matching issue.</ComboboxEmpty>
+                        <ComboboxList>
+                          {(item) => (
+                            <ComboboxItem key={item} value={item}>
+                              {item}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
+                    {errors.issue && (
+                      <p className="text-xs text-destructive">{errors.issue}</p>
+                    )}
+                  </div>
 
-          <DialogFooter className="pt-2">
-            <DialogClose
-              render={
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={`px-8 ${formButtonClassName}`}
-                  disabled={isSubmitting}
-                />
-              }
-            >
-              Cancel
-            </DialogClose>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className={`gap-2 px-12 ${formButtonClassName}`}
-            >
-              <Send className="size-4" />
-              {isSubmitting ? "Sending..." : "Send"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+                  <div className="grid gap-1.5">
+                    <label
+                      htmlFor="qc-vehicle"
+                      className="text-sm font-medium text-foreground"
+                    >
+                      Vehicle Model{" "}
+                      <span className="text-muted-foreground font-normal">
+                        (optional)
+                      </span>
+                    </label>
+                    <Input
+                      id="qc-vehicle"
+                      name="vehicleModel"
+                      value={form.vehicleModel}
+                      onChange={(e) =>
+                        updateField("vehicleModel", e.target.value)
+                      }
+                      placeholder="e.g. 2018 Honda Civic"
+                      disabled={isSubmitting}
+                    />
+                  </div>
 
-    <PostSubmitSurveyDialog
-      open={surveyOpen}
-      onOpenChange={setSurveyOpen}
-      formType="quick_contact"
-      businessId={businessId || null}
-    />
+                  <div className="grid gap-2">
+                    <span className="text-sm font-medium text-foreground">
+                      Urgency <span className="text-destructive">*</span>
+                    </span>
+                    <RadioGroup
+                      name="qc-urgency"
+                      value={form.urgency ?? "asap"}
+                      onValueChange={(value) => {
+                        if (!value) return;
+                        updateField("urgency", value);
+                      }}
+                      className="grid gap-2"
+                      disabled={isSubmitting}
+                    >
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <RadioGroupItem value="asap" />
+                        ASAP
+                      </label>
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <RadioGroupItem value="can-wait" />
+                        Can Wait
+                      </label>
+                    </RadioGroup>
+                    <p className="text-xs text-muted-foreground">
+                      Your message will still be sent as soon as possible, this is for the business.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-1.5">
+                    <label
+                      htmlFor="qc-details"
+                      className="text-sm font-medium text-foreground"
+                    >
+                      Additional Details{" "}
+                      {detailsRequired ? (
+                        <span className="text-destructive">*</span>
+                      ) : (
+                        <span className="text-muted-foreground font-normal">
+                          (optional)
+                        </span>
+                      )}
+                    </label>
+                    <Textarea
+                      id="qc-details"
+                      name="additionalDetails"
+                      value={form.additionalDetails}
+                      onChange={(e) =>
+                        updateField("additionalDetails", e.target.value)
+                      }
+                      aria-invalid={!!errors.additionalDetails}
+                      placeholder={
+                        detailsRequired
+                          ? "Please describe your issue..."
+                          : "Anything else the shop should know..."
+                      }
+                      rows={3}
+                      disabled={isSubmitting}
+                    />
+                    {errors.additionalDetails && (
+                      <p className="text-xs text-destructive">
+                        {errors.additionalDetails}
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              By sending this message, you agree to our{" "}
+              <Link
+                href="/terms"
+                className="text-interactive hover:text-primary underline"
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy"
+                className="text-interactive hover:text-primary underline"
+              >
+                Privacy Policy
+              </Link>
+              .
+            </p>
+
+            <DialogFooter className="pt-2">
+              <DialogClose
+                render={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={`px-8 ${formButtonClassName}`}
+                    disabled={isSubmitting}
+                  />
+                }
+              >
+                Cancel
+              </DialogClose>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className={`gap-2 px-12 ${formButtonClassName}`}
+              >
+                <Send className="size-4" />
+                {isSubmitting ? "Sending..." : "Send"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <PostSubmitSurveyDialog
+        open={surveyOpen}
+        onOpenChange={setSurveyOpen}
+        formType="quick_contact"
+        businessId={businessId || null}
+      />
     </>
   );
 }

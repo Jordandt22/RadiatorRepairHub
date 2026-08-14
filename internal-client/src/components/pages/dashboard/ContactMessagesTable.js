@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  ContactTypeBadge,
   IssueBadge,
   StatusBadge,
   UrgencyBadge,
@@ -125,7 +126,8 @@ function MessagesTable({
             </TableHead>
             <TableHead className="w-[14%]">Name</TableHead>
             <TableHead className="w-[16%]">Business</TableHead>
-            <TableHead className="w-[16%]">Email</TableHead>
+            <TableHead className="w-[14%]">Email</TableHead>
+            <TableHead className="w-[10%]">Type</TableHead>
             <TableHead className="w-[10%]">Issue</TableHead>
             <TableHead className="w-[10%]">Urgency</TableHead>
             <TableHead className="w-[10%]">Status</TableHead>
@@ -193,6 +195,9 @@ function MessagesTable({
                   <span className="block truncate" title={message.email}>
                     {message.email}
                   </span>
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  <ContactTypeBadge contactType={message.contact_type} />
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <IssueBadge issue={message.issue} />

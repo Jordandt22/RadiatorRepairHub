@@ -31,6 +31,7 @@ export const buildFreeLeadEmailPayload = ({
     issue: message.issue,
     urgency: message.urgency,
     additionalDetails: message.additional_details,
+    contactType: message.contact_type,
     isClaimed: message.business?.is_claimed,
     businessSlug: message.business?.slug,
   }),
