@@ -1,26 +1,35 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-
-// Components
 import CategoriesGrid from "./CategoriesGrid";
 import PageHeader from "@/components/layout/Header/PageHeader";
 
-function CategoriesPage({ primaryCategories = [] }) {
+function CategoriesPage({ categoriesWithCounts = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [sort, setSort] = useState("alpha");
 
   const filteredCategories = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return primaryCategories;
-    }
+    const query = searchTerm.trim().toLowerCase();
+    const matched = query
+      ? categoriesWithCounts.filter((category) =>
+          category.name.toLowerCase().includes(query)
+        )
+      : [...categoriesWithCounts];
 
-    return primaryCategories.filter((category) =>
-      category.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, primaryCategories]);
+    return matched.sort((a, b) => {
+      if (sort === "most" || sort === "least") {
+        const diff =
+          (Number(b.business_count) || 0) - (Number(a.business_count) || 0);
+        if (diff !== 0) {
+          return sort === "most" ? diff : -diff;
+        }
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }, [searchTerm, sort, categoriesWithCounts]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <PageHeader
         breadcrumbItems={[
           { name: "Home", url: "/" },
@@ -28,12 +37,18 @@ function CategoriesPage({ primaryCategories = [] }) {
         ]}
         pageTitle="Service Categories"
         pageDescription="Explore all the automotive service categories available. Find specialized repair shops and services for your specific vehicle needs."
+        headerLink={{
+          label: "Search",
+          href: "/search?page=1&sort=most_reviews",
+        }}
       />
       <CategoriesGrid
         categories={filteredCategories}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        totalCategories={primaryCategories.length}
+        sort={sort}
+        onSortChange={setSort}
+        totalCategories={categoriesWithCounts.length}
         filteredCount={filteredCategories.length}
       />
     </div>

@@ -1,63 +1,99 @@
-import React from "react";
-import Link from "next/link";
-import StateSearch from "./StateSearch";
+"use client";
 
-function StatesGrid({ states, searchTerm, onSearchChange }) {
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { ArrowRight, MapPin } from "lucide-react";
+import BusinessCount from "@/components/content/BusinessCount";
+import AnimatedStaggerRows from "@/components/ui/AnimatedStaggerRows";
+import StateSearch from "./StateSearch";
+import StateSort from "./StateSort";
+
+function StateCard({ state }) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 font-heading">
-          All States
-        </h2>
-        <p className="text-gray-600">
-          Browse through {states.length} different states
-        </p>
+    <div className="flex flex-col rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:border-interactive">
+      <Link
+        href={`/state/${state.code}`}
+        className="group flex min-w-0 items-center gap-3"
+      >
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
+          <MapPin className="h-5 w-5 text-primary" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate font-heading text-base font-semibold text-foreground">
+            {state.name}
+          </h3>
+          <span className="text-sm text-muted-foreground">
+            {state.code} · <BusinessCount count={state.business_count} />
+          </span>
+        </div>
+        <ArrowRight
+          className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-interactive"
+          aria-hidden="true"
+        />
+      </Link>
+      <Link
+        href={`/states/${state.code}/cities`}
+        className="mt-4 inline-flex w-full items-center justify-center rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:bg-muted"
+      >
+        Cities
+      </Link>
+    </div>
+  );
+}
+
+function StatesGrid({
+  states,
+  searchTerm,
+  onSearchChange,
+  sort,
+  onSortChange,
+  totalStates,
+  filteredCount,
+}) {
+  const isFirstRender = useRef(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setRefreshKey((key) => key + 1);
+  }, [searchTerm, sort]);
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <p className="mb-6 text-sm text-muted-foreground">
+        <span className="font-semibold text-green-700">
+          {(filteredCount ?? states.length).toLocaleString()}
+        </span>{" "}
+        {(filteredCount ?? states.length) === 1 ? "State" : "States"}
+        {searchTerm?.trim() && totalStates
+          ? ` of ${totalStates.toLocaleString()}`
+          : null}
+      </p>
+
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-stretch">
+        <StateSearch searchTerm={searchTerm} onSearchChange={onSearchChange} />
+        <StateSort sort={sort} onSortChange={onSortChange} />
       </div>
 
-      <StateSearch searchTerm={searchTerm} onSearchChange={onSearchChange} />
-
       {!states || states.length === 0 ? (
-        <div className="text-center mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <div className="mt-16 text-center">
+          <h2 className="mb-4 font-heading text-2xl font-bold text-foreground">
             No States Found
           </h2>
-          <p className="text-gray-600">
-            No states match your search criteria. Try adjusting your search
-            term.
+          <p className="text-muted-foreground">
+            No states match your search. Try a different name or abbreviation.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {states.map((state) => (
-            <div
-              key={state.id}
-              className="bg-white rounded-lg shadow-sm p-6 border border-gray-200"
-            >
-              <div className="text-center">
-                <div className="text-2xl font-heading font-bold text-gray-900 mb-2">
-                  {state.name}
-                </div>
-                <div className="text-sm text-gray-500 font-medium">
-                  {state.code}
-                </div>
-                <div className="flex flex-col mt-3 gap-4">
-                  <Link
-                    href={`/state/${state.code}`}
-                    className="text-sm font-medium text-gray-400 hover:text-blue-500"
-                  >
-                    View Services →
-                  </Link>
-                  <Link
-                    href={`/states/${state.code}/cities`}
-                    className="text-xs px-4 py-2 bg-white border-1 border-gray-200 text-gray-900 rounded-md font-medium hover:bg-blue-500 hover:text-white duration-200"
-                  >
-                    View Cities
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <AnimatedStaggerRows
+          items={states}
+          getKey={(state) => state.id || state.code}
+          refreshKey={refreshKey}
+          renderItem={(state) => <StateCard state={state} />}
+        />
       )}
     </div>
   );

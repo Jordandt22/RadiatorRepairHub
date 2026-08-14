@@ -65,24 +65,24 @@ export default function EmailConfirmedContent() {
         <Check className="size-8 stroke-[2.5]" />
       </div>
 
-      <h1 className="font-heading text-2xl font-bold text-gray-900 sm:text-3xl">
+      <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
         Email Confirmed
       </h1>
 
-      <p className="mt-3 text-base text-gray-600">
+      <p className="mt-3 text-base text-muted-foreground">
         Thanks, we received your confirmation.
       </p>
 
-      <p className="mt-4 text-sm leading-relaxed text-gray-600">
+      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
         For an email address update to finish, make sure you confirm from{" "}
-        <span className="font-medium text-gray-800">both</span> your old and new
-        email inboxes. If you still have a confirmation link waiting, open it to
-        complete the change.
+        <span className="font-medium text-foreground">both</span> your old and
+        new email inboxes. If you still have a confirmation link waiting, open
+        it to complete the change.
       </p>
 
       <Link
         href="/settings"
-        className={`mt-8 inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 ${
+        className={`mt-8 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 ${
           ready ? "" : "pointer-events-none opacity-70"
         }`}
         aria-disabled={!ready}

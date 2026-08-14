@@ -12,17 +12,19 @@ function ErrorDisplay({
 }) {
   return (
     <div>
-      <div className="flex flex-col items-center mt-12 md:mt-28 h-screen px-4">
-        <h1 className="text-6xl font-bold text-red-500 mb-4 text-center">
+      <div className="mt-12 flex h-screen flex-col items-center px-4 md:mt-28">
+        <h1 className="mb-4 text-center text-6xl font-bold text-destructive">
           {status}
         </h1>
-        <p className="text-lg bg-red-300 text-red-900 px-4 py-1 rounded-md mb-4 text-center capitalize">
+        <p className="mb-4 rounded-full bg-destructive/10 px-4 py-1 text-center text-lg capitalize text-destructive">
           {code.replace("-", " ")}
         </p>
-        <p className="text-lg text-gray-600 mb-8 text-center">{message}</p>
+        <p className="mb-8 text-center text-lg text-muted-foreground">
+          {message}
+        </p>
         <Link
           href={link.path}
-          className="text-white bg-blue-500 font-medium px-4 py-2 rounded-md hover:bg-blue-600 duration-300 hover:scale-105 block capitalize"
+          className="block rounded-full bg-primary px-4 py-2 font-medium capitalize text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
         >
           {link.text}
         </Link>

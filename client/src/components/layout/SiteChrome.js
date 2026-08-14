@@ -18,6 +18,7 @@ export default function SiteChrome({
   children,
   businessEmail = null,
   businessPhoneDigits = null,
+  topStates = null,
 }) {
   const pathname = usePathname();
   const hidePublicChrome = isProtectedPath(pathname);
@@ -33,6 +34,7 @@ export default function SiteChrome({
       <Footer
         businessEmail={businessEmail}
         businessPhoneDigits={businessPhoneDigits}
+        topStates={topStates}
       />
       <BackToTop />
     </>

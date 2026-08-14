@@ -1,8 +1,5 @@
 import React from "react";
-
-// Components
-import Header from "./Header";
-import FeaturedGrid from "./FeaturedGrid";
+import FeaturedPage from "./FeaturedPage";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import { fetchFeaturedBusinesses } from "@/lib/api/businesses";
 
@@ -20,12 +17,7 @@ async function FeaturedBusinessesPage() {
       );
     }
 
-    return (
-      <div className="min-h-screen bg-gray-50 pb-32">
-        <Header />
-        <FeaturedGrid businesses={businesses || []} />
-      </div>
-    );
+    return <FeaturedPage businesses={businesses || []} />;
   } catch {
     return (
       <ErrorDisplay

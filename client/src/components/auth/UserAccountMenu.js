@@ -19,6 +19,7 @@ import { signOut } from "@/lib/auth/session";
 export default function UserAccountMenu({
   user,
   align = "end",
+  variant = "default",
   triggerClassName = "",
   onNavigate,
 }) {
@@ -28,6 +29,7 @@ export default function UserAccountMenu({
     typeof user?.email === "string" && user.email.trim()
       ? user.email.trim()
       : "";
+  const isHome = variant === "home";
 
   const handleNavigate = () => {
     onNavigate?.();
@@ -49,23 +51,36 @@ export default function UserAccountMenu({
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger
-        className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full outline-none ${triggerClassName}`}
+        className={`inline-flex size-9 shrink-0 items-center justify-center rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-interactive/40 ${
+          isHome
+            ? "hover:bg-white/15 focus-visible:ring-white/50"
+            : "hover:bg-tint focus-visible:ring-primary/30"
+        } ${triggerClassName}`}
         aria-label="Account menu"
       >
-        <Avatar size="lg" className="cursor-pointer hover:scale-90 hover:opacity-75 transition-all duration-300">
-          <AvatarFallback className="bg-blue-600 text-white">
-            <User className="size-5" aria-hidden="true" />
+        <Avatar size="default" className="size-9 after:border-transparent">
+          <AvatarFallback
+            className={
+              isHome
+                ? "border border-white/55 bg-white/40 text-white"
+                : "bg-primary text-primary-foreground"
+            }
+          >
+            <User className="size-4" aria-hidden="true" />
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={align} className="min-w-52 w-auto">
+      <DropdownMenuContent
+        align={align}
+        className="min-w-52 w-auto rounded-lg border border-border bg-card p-1 shadow-md"
+      >
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="truncate normal-case tracking-normal text-xs">
+          <DropdownMenuLabel className="truncate px-2 py-1.5 text-xs font-normal normal-case tracking-normal text-muted-foreground">
             {email || "Signed in"}
           </DropdownMenuLabel>
           <DropdownMenuItem
             render={<Link href="/settings" onClick={handleNavigate} />}
-            className="cursor-pointer hover:bg-gray-200"
+            className="cursor-pointer"
           >
             <Settings />
             Settings

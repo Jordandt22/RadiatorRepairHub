@@ -11,18 +11,18 @@ export default function SiteSupportContactLines({ className = "" }) {
   return (
     <div className={className}>
       {email ? (
-        <p className="mt-4 text-gray-700">
+        <p className="mt-4 text-foreground">
           <strong>Email:</strong>{" "}
           <a
             href={`mailto:${email}`}
-            className="text-blue-600 hover:text-blue-800 underline"
+            className="text-interactive underline transition-colors hover:text-interactive/80"
           >
             {email}
           </a>
         </p>
       ) : null}
       {hasPhone ? (
-        <p className="mt-2 text-gray-700">
+        <p className="mt-2 text-foreground">
           <strong>Phone / SMS:</strong>{" "}
           <SitePhoneLinks className="inline" showLabel={false} />
         </p>

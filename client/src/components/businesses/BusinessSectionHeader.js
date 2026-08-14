@@ -7,7 +7,7 @@ export default function BusinessSectionHeader({
   title,
   businessId,
   as: Tag = "h2",
-  titleClassName = "text-xl md:text-2xl font-bold text-gray-900 font-heading",
+  titleClassName = "text-xl md:text-2xl font-bold text-foreground font-heading",
   className = "mb-3 md:mb-4",
   trailing = null,
   onEdit,

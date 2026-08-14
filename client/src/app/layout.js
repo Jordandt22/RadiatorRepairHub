@@ -1,11 +1,11 @@
-import { Inter, Oswald } from "next/font/google";
-import { Toaster } from "sonner";
+import { IBM_Plex_Sans } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { PostHogProvider } from "./providers";
 
 // Components
 import SiteChrome from "@/components/layout/SiteChrome";
+import { ToastProvider } from "@/contexts/ToastProvider";
 import { ALL_KEYWORDS } from "@/lib/seo/keywords";
 import { DEFAULT_OG_IMAGE, INDEX_ROBOTS } from "@/lib/seo/metadata";
 import {
@@ -13,16 +13,12 @@ import {
   getBusinessPhoneDigits,
   getBusinessPhoneE164,
 } from "@/lib/businessContactInfo";
+import { fetchStateBusinessCounts } from "@/lib/api/location";
 
-const inter = Inter({
+const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const oswald = Oswald({
-  subsets: ["latin"],
-  variable: "--font-oswald",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-plex",
   display: "swap",
 });
 
@@ -76,8 +72,8 @@ export const metadata = {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
     "mobile-web-app-capable": "yes",
-    "theme-color": "#2563eb",
-    "msapplication-TileColor": "#2563eb",
+    "theme-color": "#2B50AA",
+    "msapplication-TileColor": "#2B50AA",
     "msapplication-config": "/browserconfig.xml",
   },
 };
@@ -86,9 +82,13 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  themeColor: "#2B50AA",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const { data: stateCountsData } = await fetchStateBusinessCounts({ limit: 5 });
+  const topStates = stateCountsData?.states ?? [];
+
   // Organization Schema
   const organizationSchema = {
     "@context": "https://schema.org",
@@ -183,7 +183,7 @@ export default function RootLayout({ children }) {
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body
-        className={`${inter.variable} ${oswald.variable} font-sans antialiased`}
+        className={`${plexSans.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         {/* Google Analytics */}
@@ -205,21 +205,15 @@ export default function RootLayout({ children }) {
         )}
 
         <PostHogProvider>
-          <SiteChrome
-            businessEmail={getBusinessEmail()}
-            businessPhoneDigits={getBusinessPhoneDigits()}
-          >
-            {children}
-          </SiteChrome>
-
-          <Toaster
-            toastOptions={{
-              style: {
-                background: "transparent",
-                boxShadow: "none",
-              },
-            }}
-          />
+          <ToastProvider>
+            <SiteChrome
+              businessEmail={getBusinessEmail()}
+              businessPhoneDigits={getBusinessPhoneDigits()}
+              topStates={topStates}
+            >
+              {children}
+            </SiteChrome>
+          </ToastProvider>
         </PostHogProvider>
       </body>
     </html>

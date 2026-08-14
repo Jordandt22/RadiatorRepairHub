@@ -1,53 +1,95 @@
-import React from "react";
-import Link from "next/link";
-import CitySearch from "./CitySearch";
+"use client";
 
-function CitiesGrid({ cities, stateData, searchTerm, onSearchChange }) {
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { ArrowRight, MapPin } from "lucide-react";
+import BusinessCount from "@/components/content/BusinessCount";
+import AnimatedStaggerRows from "@/components/ui/AnimatedStaggerRows";
+import CitySearch from "./CitySearch";
+import CitySort from "./CitySort";
+
+function CityCard({ city, stateData }) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 font-heading">
-          Cities in {stateData.name}
-        </h2>
-        <p className="text-gray-600">
-          Browse through {cities.length} different cities
-        </p>
+    <Link
+      href={`/state/${stateData.code}/city/${city.slug}`}
+      className="group flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:border-interactive"
+    >
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
+        <MapPin className="h-5 w-5 text-primary" aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <h3 className="truncate font-heading text-base font-semibold text-foreground">
+          {city.name}
+        </h3>
+        <span className="text-sm text-muted-foreground">
+          {stateData.code} · <BusinessCount count={city.business_count} />
+        </span>
+      </div>
+      <ArrowRight
+        className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-interactive"
+        aria-hidden="true"
+      />
+    </Link>
+  );
+}
+
+function CitiesGrid({
+  cities,
+  stateData,
+  searchTerm,
+  onSearchChange,
+  sort,
+  onSortChange,
+  totalCities,
+  filteredCount,
+}) {
+  const isFirstRender = useRef(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setRefreshKey((key) => key + 1);
+  }, [searchTerm, sort]);
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <p className="mb-6 text-sm text-muted-foreground">
+        <span className="font-semibold text-green-700">
+          {(filteredCount ?? cities.length).toLocaleString()}
+        </span>{" "}
+        {(filteredCount ?? cities.length) === 1 ? "City" : "Cities"}
+        {searchTerm?.trim() && totalCities
+          ? ` of ${totalCities.toLocaleString()}`
+          : null}{" "}
+        in {stateData.name}
+      </p>
+
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-stretch">
+        <CitySearch searchTerm={searchTerm} onSearchChange={onSearchChange} />
+        <CitySort sort={sort} onSortChange={onSortChange} />
       </div>
 
-      <CitySearch searchTerm={searchTerm} onSearchChange={onSearchChange} />
-
       {!cities || cities.length === 0 ? (
-        <div className="text-center mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <div className="mt-16 text-center">
+          <h2 className="mb-4 font-heading text-2xl font-bold text-foreground">
             No Cities Found
           </h2>
-          <p className="text-gray-600">
-            No cities match your search criteria. Try adjusting your search
-            term.
+          <p className="text-muted-foreground">
+            No cities match your search. Try a different city name.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {cities.map((city) => (
-            <Link
-              key={city.id}
-              href={`/state/${stateData.code}/city/${city.slug}`}
-              className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-6 border border-gray-200 hover:border-blue-300 hover:scale-105"
-            >
-              <div className="text-center">
-                <div className="text-2xl font-heading font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 mb-2">
-                  {city.name}
-                </div>
-                <div className="text-sm text-gray-500 font-medium">
-                  {stateData.code}
-                </div>
-                <div className="mt-3 text-xs text-gray-400 group-hover:text-blue-500 transition-colors duration-200">
-                  View Services →
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <AnimatedStaggerRows
+          items={cities}
+          getKey={(city) => city.id}
+          refreshKey={refreshKey}
+          renderItem={(city) => (
+            <CityCard city={city} stateData={stateData} />
+          )}
+        />
       )}
     </div>
   );

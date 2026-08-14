@@ -4,17 +4,21 @@ import {
   successHandler,
 } from "../helpers/customErrorHandler.js";
 import {
+  getAllPrimaryCategories,
+  getAllSecondaryCategories,
+  getPrimaryCategoryBySlug,
+  getPrimaryCategoryBusinessCounts,
+  getTopPrimaryCategoriesByBusinessCount,
+} from "../supabase/supabase.functions.js";
+import {
   cacheData,
   getCacheData,
   getPrimaryCategoriesKey,
   getSecondaryCategoriesKey,
   getPrimaryCategoryBySlugKey,
+  getTopPrimaryCategoriesKey,
+  getPrimaryCategoryBusinessCountsKey,
 } from "../redis/redis.js";
-import {
-  getAllPrimaryCategories,
-  getAllSecondaryCategories,
-  getPrimaryCategoryBySlug,
-} from "../supabase/supabase.functions.js";
 
 const { SUPABASE_ERROR } = errorCodes;
 
@@ -33,6 +37,59 @@ export const getPrimaryCategories = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "There was an error fetching primary categories.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getPrimaryCategoryBusinessCountsHandler = async (req, res) => {
+  const { key, interval } = getPrimaryCategoryBusinessCountsKey();
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getPrimaryCategoryBusinessCounts();
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching primary category business counts.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getTopPrimaryCategoriesHandler = async (req, res) => {
+  const parsed = Number.parseInt(String(req.query.limit ?? "4"), 10);
+  const limit = Number.isFinite(parsed)
+    ? Math.min(20, Math.max(1, parsed))
+    : 4;
+
+  const { key, interval } = getTopPrimaryCategoriesKey(limit);
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getTopPrimaryCategoriesByBusinessCount(limit);
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching top primary categories.",
           error
         )
       );

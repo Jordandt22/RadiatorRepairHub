@@ -102,7 +102,7 @@ export default function BranchBoundBanner() {
           href="https://branchbound.app"
           target="_blank"
           rel="noopener noreferrer"
-          className={`w-fit mx-auto mt-8 inline-flex items-center justify-center rounded-full bg-[#189c6a] px-10 py-2 text-base sm:text-lg font-normal text-white shadow-lg transition-all hover:bg-[#11724d] focus:outline-none hover:scale-95 font-heading tracking-wide`}
+          className={`mx-auto mt-8 inline-flex w-fit items-center justify-center rounded-full bg-[#189c6a] px-10 py-2 font-heading text-base font-normal tracking-wide text-white transition-colors hover:bg-[#11724d] focus:outline-none sm:text-lg`}
         >
           Start Your Adventure
         </a>
@@ -110,7 +110,7 @@ export default function BranchBoundBanner() {
         <button
           type="button"
           onClick={handleDismiss}
-          className="w-fit mx-auto mt-8 text-sm sm:text-base rounded-full py-2 px-6 text-gray-200  hover:bg-white/20 focus:outline-none hover:scale-95 transition-all duration-300 cursor-pointer"
+          className="mx-auto mt-8 w-fit cursor-pointer rounded-full px-6 py-2 text-sm text-gray-200 transition-colors duration-200 hover:bg-white/20 focus:outline-none sm:text-base"
           aria-label="Dismiss banner"
         >
           Don&apos;t show again for 3 days

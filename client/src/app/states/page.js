@@ -1,6 +1,7 @@
 import React from "react";
 import StatesPage from "@/components/pages/states/StatesPage";
 import STATES from "@/lib/data/states";
+import { fetchStateBusinessCounts } from "@/lib/api/location";
 
 export const metadata = {
   title:
@@ -44,6 +45,20 @@ export const metadata = {
 };
 
 async function Page() {
+  const { data: countsData } = await fetchStateBusinessCounts({
+    codes: STATES.map((state) => state.code),
+  });
+  const countByCode = new Map(
+    (countsData?.states ?? []).map((state) => [
+      String(state.code).toUpperCase(),
+      state.business_count ?? 0,
+    ])
+  );
+  const statesWithCounts = STATES.map((state) => ({
+    ...state,
+    business_count: countByCode.get(String(state.code).toUpperCase()) ?? 0,
+  }));
+
   // ItemList Schema for States
   const itemListSchema = {
     "@context": "https://schema.org",
@@ -68,7 +83,7 @@ async function Page() {
           __html: JSON.stringify(itemListSchema),
         }}
       />
-      <StatesPage />
+      <StatesPage statesWithCounts={statesWithCounts} />
     </>
   );
 }

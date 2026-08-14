@@ -12,7 +12,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import {
   cancelClaimRequest,
   completeClaimRequest,
@@ -231,8 +231,7 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
             flow: "create_account",
             requires_login: true,
           });
-          showCustomSuccess(
-            "Your business has been claimed. Please sign in to continue."
+          showCustomSuccess("Your business has been claimed. Please sign in to continue."
           );
           router.push("/signin");
           return;
@@ -275,30 +274,30 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
 
   if (isAuthLoading) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 font-heading">
+      <div className="rounded-lg border border-border bg-card p-8">
+        <h2 className="mb-2 font-heading text-2xl font-bold tracking-tight text-foreground">
           Complete your claim
         </h2>
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-8 border-t-5 border-blue-300">
-      <h2 className="text-2xl font-bold text-gray-900 mb-2 font-heading">
+    <div className="rounded-lg border border-border bg-card p-8">
+      <h2 className="mb-2 font-heading text-2xl font-bold tracking-tight text-foreground">
         Complete your claim
       </h2>
-      <p className="text-gray-600 mb-6">
+      <p className="mb-6 text-muted-foreground">
         {isSignedIn ? (
           <>
             Enter the verification code sent to the listing email to claim{" "}
-            <span className="font-medium text-gray-900">{business.title}</span>.
+            <span className="font-medium text-foreground">{business.title}</span>.
           </>
         ) : (
           <>
             Create an account to claim{" "}
-            <span className="font-medium text-gray-900">{business.title}</span>.
+            <span className="font-medium text-foreground">{business.title}</span>.
           </>
         )}
       </p>
@@ -348,7 +347,7 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
             <Button
               type="button"
               variant="link"
-              className="h-auto shrink-0 p-0 text-sm text-blue-600"
+              className="h-auto shrink-0 p-0 text-sm text-interactive"
               disabled={busy}
               onClick={handleResend}
             >
@@ -428,7 +427,7 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   onClick={() => setShowPassword((prev) => !prev)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   disabled={busy}
@@ -476,7 +475,7 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   onClick={() => setShowPassword((prev) => !prev)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   disabled={busy}
@@ -501,7 +500,7 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
                 href="/terms"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 underline"
+                className="text-interactive underline transition-colors hover:text-interactive/80"
               >
                 Terms of Service
               </Link>{" "}
@@ -510,7 +509,7 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 underline"
+                className="text-interactive underline transition-colors hover:text-interactive/80"
               >
                 Privacy Policy
               </Link>
@@ -531,7 +530,7 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
           </Button>
           <Button
             type="submit"
-            className="px-8 bg-blue-600 text-white hover:bg-blue-700"
+            className="px-8"
             disabled={busy}
           >
             {isSubmitting
@@ -549,9 +548,5 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
 }
 
 export default function ClaimVerifyForm(props) {
-  return (
-    <ToastProvider>
-      <ClaimVerifyFormContent {...props} />
-    </ToastProvider>
-  );
+  return <ClaimVerifyFormContent {...props} />;
 }

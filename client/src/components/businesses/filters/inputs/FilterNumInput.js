@@ -12,7 +12,7 @@ function FilterNumInput({ label, name, min, max, step }) {
     <div>
       <label
         htmlFor={`filter-${name}`}
-        className="block text-sm font-medium text-gray-700 mb-2"
+        className="block text-sm font-medium text-foreground mb-2"
       >
         {label} ({min} - {max})
       </label>
@@ -38,7 +38,7 @@ function FilterNumInput({ label, name, min, max, step }) {
             updateFilter(name, String(val));
           }
         }}
-        className="w-full px-3 py-2 border-2 border-gray-200 rounded-md cursor-pointer bg-white focus:border-blue-500 outline-none duration-200"
+        className="w-full px-3 py-2 border border-border rounded-md cursor-pointer bg-card focus:border-ring outline-none duration-200"
         aria-label={`${label} between ${min} and ${max}`}
         aria-describedby={`${name}-range-description`}
       />

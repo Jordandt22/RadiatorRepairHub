@@ -1,167 +1,77 @@
 "use client";
 
-import React from "react";
+import { CircleAlert, CircleCheck, Info, X } from "lucide-react";
 import { toast } from "sonner";
 
-export default function CustomToast({ message, title, id, color }) {
-  // Define styles based on color type
-  const containerStyles =
-    "relative flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl shadow-lg w-fit max-w-xs sm:max-w-sm md:max-w-md";
-  const iconStyles =
-    "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0";
-  const iconColorStyles =
-    "w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center";
-  const textStyles = "text-xs sm:text-sm font-semibold mb-1";
-  const messageStyles = "text-xs sm:text-sm leading-relaxed";
-  const closeButtonStyles =
-    "absolute top-2 right-2 sm:top-3 sm:right-3 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer hover:scale-110 sm:hover:scale-120";
-  const getStyles = (color) => {
-    switch (color) {
-      case "red":
-        return {
-          container: `bg-red-50 ${containerStyles}`,
-          icon: `${iconStyles} bg-red-100`,
-          iconColor: `${iconColorStyles} bg-red-500`,
-          text: `${textStyles} text-red-800`,
-          message: `${messageStyles} text-red-700`,
-          closeButton: `${closeButtonStyles} text-red-400 hover:text-red-600`,
-        };
-      case "green":
-        return {
-          container: `bg-green-50 ${containerStyles}`,
-          icon: `${iconStyles} bg-green-100`,
-          iconColor: `${iconColorStyles} bg-green-500`,
-          text: `${textStyles} text-green-800`,
-          message: `${messageStyles} text-green-700`,
-          closeButton: `${closeButtonStyles} text-green-400 hover:text-green-600`,
-        };
-      case "blue":
-        return {
-          container: `bg-blue-50 ${containerStyles}`,
-          icon: `${iconStyles} bg-blue-100`,
-          iconColor: `${iconColorStyles} bg-blue-500`,
-          text: `${textStyles} text-blue-800`,
-          message: `${messageStyles} text-blue-700`,
-          closeButton: `${closeButtonStyles} text-blue-400 hover:text-blue-600`,
-        };
-      default:
-        return {
-          container: `bg-gray-50 ${containerStyles}`,
-          icon: `${iconStyles} bg-gray-100`,
-          iconColor: `${iconColorStyles} bg-gray-500`,
-          text: `${textStyles} text-gray-800`,
-          message: `${messageStyles} text-gray-700`,
-          closeButton: `${closeButtonStyles} text-gray-400 hover:text-gray-600`,
-        };
-    }
-  };
+const TONE_STYLES = {
+  red: {
+    container: "border-red-200 bg-red-50 text-red-950",
+    iconWrap: "bg-red-100 text-red-700",
+    title: "text-red-950",
+    message: "text-red-800/90",
+    dismiss: "text-red-700/70 hover:bg-red-100 hover:text-red-900",
+    Icon: CircleAlert,
+    ariaPrefix: "Error",
+    live: "assertive",
+    role: "alert",
+  },
+  green: {
+    container: "border-green-200 bg-green-50 text-green-950",
+    iconWrap: "bg-green-100 text-green-700",
+    title: "text-green-950",
+    message: "text-green-800/90",
+    dismiss: "text-green-700/70 hover:bg-green-100 hover:text-green-900",
+    Icon: CircleCheck,
+    ariaPrefix: "Success",
+    live: "polite",
+    role: "status",
+  },
+  blue: {
+    container: "border-primary/25 bg-tint text-foreground",
+    iconWrap: "bg-white/70 text-primary",
+    title: "text-foreground",
+    message: "text-muted-foreground",
+    dismiss: "text-muted-foreground hover:bg-white/60 hover:text-foreground",
+    Icon: Info,
+    ariaPrefix: "Notification",
+    live: "polite",
+    role: "status",
+  },
+};
 
-  const styles = getStyles(color);
-
-  const getToastRole = (color) => {
-    switch (color) {
-      case "red":
-        return "alert";
-      case "green":
-        return "status";
-      default:
-        return "status";
-    }
-  };
-
-  const getToastAriaLabel = (color, title) => {
-    switch (color) {
-      case "red":
-        return `Error: ${title}`;
-      case "green":
-        return `Success: ${title}`;
-      default:
-        return `Notification: ${title}`;
-    }
-  };
+export default function CustomToast({ message, title, id, color = "blue" }) {
+  const tone = TONE_STYLES[color] ?? TONE_STYLES.blue;
+  const Icon = tone.Icon;
+  const heading = title || tone.ariaPrefix;
 
   return (
     <div
-      className={styles.container}
-      role={getToastRole(color)}
-      aria-live="polite"
-      aria-label={getToastAriaLabel(color, title)}
+      className={`relative flex w-full md:min-w-sm md:max-w-lg items-start gap-3 rounded-2xl border p-4 shadow-none ${tone.container}`}
+      role={tone.role}
+      aria-live={tone.live}
+      aria-label={`${tone.ariaPrefix}: ${heading}`}
     >
-      <div className="flex-shrink-0">
-        <div className={styles.icon}>
-          <div className={styles.iconColor}>
-            {color === "red" ? (
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
-            ) : color === "green" ? (
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            ) : (
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="flex-1 pr-8 sm:pr-12 md:pr-16 lg:pr-20">
-        <h4 className={styles.text}>{title}</h4>
-        <p className={styles.message}>{message}</p>
-      </div>
-      <button
-        onClick={() => toast.dismiss(id)}
-        className={styles.closeButton}
-        aria-label={`Dismiss ${title} notification`}
+      <span
+        className={`mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full ${tone.iconWrap}`}
+        aria-hidden="true"
       >
-        <svg
-          className="w-4 h-4 sm:w-5 sm:h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
+        <Icon className="size-4" />
+      </span>
+
+      <div className="min-w-0 flex-1 pr-6">
+        <h4 className={`text-sm font-semibold ${tone.title}`}>{heading}</h4>
+        <p className={`mt-0.5 text-sm leading-relaxed ${tone.message}`}>
+          {message}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => toast.dismiss(id)}
+        className={`absolute top-3 right-3 rounded-full p-1 transition-colors ${tone.dismiss}`}
+        aria-label={`Dismiss ${heading} notification`}
+      >
+        <X className="size-4" aria-hidden="true" />
       </button>
     </div>
   );

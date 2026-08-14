@@ -44,7 +44,7 @@ export default async function ClaimVerifyPage({ params }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         pageTitle="Claim your business"
@@ -57,19 +57,19 @@ export default async function ClaimVerifyPage({ params }) {
         }}
       />
 
-      <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-4 pb-12">
+      <div className="mx-auto mt-4 max-w-xl px-4 py-8 pb-12 sm:px-6 lg:px-8">
         <ClaimVerifyForm
           claimRequestId={data.claimRequestId}
           business={data.business}
         />
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-muted-foreground">
           Need help?{" "}
           <Link
             href="/contact"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
+            className="text-interactive transition-colors hover:underline"
           >
             Contact support
           </Link>

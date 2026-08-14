@@ -16,6 +16,10 @@ function Header() {
       breadcrumbItems={breadcrumbItems}
       pageTitle={pageTitle}
       pageDescription={pageDescription}
+      headerLink={{
+        label: "Search",
+        href: "/search?page=1&sort=most_reviews",
+      }}
     />
   );
 }

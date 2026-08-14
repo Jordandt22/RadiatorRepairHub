@@ -15,7 +15,7 @@ export default function ProtectedLayout({ children }) {
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger className="cursor-pointer p-1 transition-all duration-200 hover:bg-gray-200 hover:scale-105" />
+              <SidebarTrigger className="cursor-pointer rounded-md p-1 transition-colors duration-200 hover:bg-muted" />
               <ProtectedBreadcrumb />
             </div>
           </header>

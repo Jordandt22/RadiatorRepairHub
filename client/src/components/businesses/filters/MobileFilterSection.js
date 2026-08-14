@@ -15,7 +15,7 @@ import PrimaryCategoriesDropdown from "./dropdowns/PrimaryCategoriesDropdown";
 import FeaturesCheckboxes from "./checkboxes/FeaturesCheckboxes";
 import SecondaryCategoriesCheckboxes from "./checkboxes/SecondaryCategoriesCheckboxes";
 
-function MobileFilterSection({ stateData, cityData, page }) {
+function MobileFilterSection({ stateData, cityData, categoryData, page }) {
   const {
     filters,
     updateOpenFilter,
@@ -34,13 +34,13 @@ function MobileFilterSection({ stateData, cityData, page }) {
       />
 
       {/* Popup */}
-      <div className="relative bg-white min-h-screen">
+      <div className="relative bg-card min-h-screen">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between z-60">
-          <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+        <div className="sticky top-0 bg-card border-b border-border px-4 py-3 flex items-center justify-between z-60">
+          <h2 className="text-lg font-semibold text-foreground">Filters</h2>
           <button
             onClick={() => setShowFilters(false)}
-            className="p-2 rounded-md hover:bg-gray-100"
+            className="rounded-full p-2 hover:bg-muted"
           >
             <svg
               className="w-5 h-5"
@@ -87,7 +87,7 @@ function MobileFilterSection({ stateData, cityData, page }) {
           />
 
           {/* Primary Category */}
-          <PrimaryCategoriesDropdown />
+          {!categoryData && <PrimaryCategoriesDropdown />}
 
           {/* Secondary Categories */}
           <SecondaryCategoriesCheckboxes />
@@ -96,8 +96,8 @@ function MobileFilterSection({ stateData, cityData, page }) {
           <FeaturesCheckboxes />
 
           {/* Open Hours */}
-          <div className="bg-slate-100 p-4 rounded-md">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="rounded-lg bg-muted p-4">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Open Hours
             </label>
             <div className="flex gap-6">
@@ -108,9 +108,9 @@ function MobileFilterSection({ stateData, cityData, page }) {
                   onChange={(e) =>
                     updateOpenFilter("weekdays", e.target.checked)
                   }
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-border text-primary focus:ring-ring"
                 />
-                <span className="ml-2 text-sm text-gray-700">Weekdays</span>
+                <span className="ml-2 text-sm text-foreground">Weekdays</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -119,16 +119,16 @@ function MobileFilterSection({ stateData, cityData, page }) {
                   onChange={(e) =>
                     updateOpenFilter("weekends", e.target.checked)
                   }
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-border text-primary focus:ring-ring"
                 />
-                <span className="ml-2 text-sm text-gray-700">Weekends</span>
+                <span className="ml-2 text-sm text-foreground">Weekends</span>
               </label>
             </div>
           </div>
         </div>
 
         {/* Footer with Apply and Clear Buttons */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4">
+        <div className="sticky bottom-0 bg-card border-t border-border p-4">
           <div className="flex gap-2">
             <button
               onClick={() => {
@@ -137,18 +137,24 @@ function MobileFilterSection({ stateData, cityData, page }) {
                   appliedFilters,
                   stateData,
                   cityData,
-                  page
+                  page,
+                  { categoryData }
                 );
               }}
-              className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-gray-300 rounded-md hover:bg-blue-800 cursor-pointer transition-all duration-300"
+              className="flex-1 cursor-pointer rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
             >
               Apply Filters
             </button>
             <button
               onClick={() =>
-                clearAllFilters(stateData, cityData, appliedFilters)
+                clearAllFilters(
+                  stateData,
+                  cityData,
+                  appliedFilters,
+                  categoryData
+                )
               }
-              className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-200 cursor-pointer transition-all duration-300"
+              className="flex-1 cursor-pointer rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted"
             >
               Clear All Filters
             </button>

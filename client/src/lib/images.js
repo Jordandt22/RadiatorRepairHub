@@ -1,6 +1,6 @@
-// Production: skip /_next/image for Google-hosted fallbacks (502 / hotlink issues on Vercel).
-// Cloudflare Images URLs are already optimized; use unoptimized next/image for those too.
-export const bypassImageOptimizer = process.env.NODE_ENV === "production";
+// Skip /_next/image for Google-hosted fallbacks (403/502 hotlink blocks) and
+// Cloudflare Images URLs (already optimized at the edge).
+export const bypassImageOptimizer = true;
 
 /** Listing card thumbs. */
 export const BUSINESS_CARD_IMAGE_SIZES =

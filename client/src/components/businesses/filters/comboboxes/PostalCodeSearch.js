@@ -168,7 +168,7 @@ function PostalCodeSearch({ stateData }) {
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-foreground mb-2">
         Postal Code
       </label>
       <div className="relative" ref={dropdownRef}>
@@ -184,10 +184,10 @@ function PostalCodeSearch({ stateData }) {
             postalCodesUrl ? "Search postal codes..." : "Select a state first"
           }
           disabled={!postalCodesUrl}
-          className={`w-full px-3 py-2 pr-10 border-2 rounded-md outline-none duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed ${
+          className={`w-full px-3 py-2 pr-10 border bg-card rounded-md outline-none duration-200 disabled:bg-muted disabled:cursor-not-allowed ${
             isInvalid
-              ? "border-red-500 focus:border-red-500"
-              : "border-gray-200 focus:border-blue-500"
+              ? "border-destructive focus:border-destructive"
+              : "border-border focus:border-ring"
           }`}
         />
 
@@ -196,7 +196,7 @@ function PostalCodeSearch({ stateData }) {
             <button
               type="button"
               onClick={handleClearInput}
-              className="w-4 h-4 text-gray-400 hover:scale-125 hover:text-red-400 duration-200 cursor-pointer"
+              className="w-4 h-4 text-muted-foreground hover:text-destructive duration-200 cursor-pointer"
             >
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -211,26 +211,26 @@ function PostalCodeSearch({ stateData }) {
         )}
 
         {isOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-10 w-full mt-1 bg-popover border border-border rounded-md shadow-md max-h-60 overflow-auto">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option, index) => (
                 <div
                   key={`postal-code-${option.id}`}
                   ref={(el) => (optionRefs.current[index] = el)}
                   onClick={() => handleOptionSelect(option)}
-                  className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
+                  className={`px-3 py-2 cursor-pointer hover:bg-muted ${
                     filters.postal_code_id === option.id
-                      ? "bg-green-50 text-green-600"
+                      ? "bg-tint text-primary"
                       : highlightedIndex === index
-                      ? "bg-blue-100 text-blue-700"
-                      : "text-gray-900"
+                      ? "bg-muted text-foreground"
+                      : "text-foreground"
                   }`}
                 >
                   {option.code}
                 </div>
               ))
             ) : (
-              <div className="px-3 py-2 text-gray-500">
+              <div className="px-3 py-2 text-muted-foreground">
                 No postal codes found
               </div>
             )}

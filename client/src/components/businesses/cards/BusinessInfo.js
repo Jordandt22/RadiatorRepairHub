@@ -46,16 +46,16 @@ function BusinessInfo({ business, setActiveCard }) {
     <BackOfCard title="Business Info" setActiveCard={setActiveCard}>
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
-          <Phone className="w-5 h-5 text-gray-600" />
-          <p className="text-sm text-gray-600">{business.phone}</p>
+          <Phone className="w-5 h-5 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">{business.phone}</p>
         </div>
         {availableFeatures.map((item) => (
           <div
             className="flex items-center gap-2"
             key={business.id + " " + item.value}
           >
-            <item.icon className="w-5 h-5 text-gray-600" />
-            <p className="text-sm text-gray-600 capitalize ">{item.value}</p>
+            <item.icon className="w-5 h-5 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground capitalize ">{item.value}</p>
           </div>
         ))}
       </div>

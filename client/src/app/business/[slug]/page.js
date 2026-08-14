@@ -2,14 +2,19 @@ import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  ArrowRight,
   MapPin,
+  MapPinned,
+  Search,
   Star,
   ExternalLink,
+  Tags,
 } from "lucide-react";
 
 // Components
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessHeroBanner from "@/components/businesses/BusinessHeroBanner";
+import BusinessHeroActions from "@/components/businesses/BusinessHeroActions";
 import ClaimBusinessButton from "@/components/businesses/ClaimBusinessButton";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import ContactInformationSection from "@/components/businesses/ContactInformationSection";
@@ -17,15 +22,18 @@ import ServiceCategoriesSection from "@/components/businesses/ServiceCategoriesS
 import AmenitiesSection from "@/components/businesses/AmenitiesSection";
 import AboutSection from "@/components/businesses/AboutSection";
 import BusinessHoursSection from "@/components/businesses/BusinessHoursSection";
+import VerifiedBadge from "@/components/businesses/VerifiedBadge";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
+import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import {
   DEFAULT_OG_IMAGE,
   NOINDEX_ROBOTS,
   INDEX_ROBOTS,
 } from "@/lib/seo/metadata";
 import { fetchBusinessBySlug } from "@/lib/api/businesses";
+import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { getBusinessDisplayImage } from "@/lib/images";
 
 function getGoogleMapsQuery(business) {
@@ -129,6 +137,16 @@ async function Page({ params }) {
     if (!business) {
       return notFound();
     }
+
+    const featuredProducts = business.is_claimed
+      ? []
+      : (
+          await fetchActiveAffiliateProductsByAliases([
+            "valvoline",
+            "radiator-cap",
+            "coolant-funnel",
+          ])
+        ).data?.products ?? [];
 
     const mapsQuery = getGoogleMapsQuery(business);
 
@@ -248,9 +266,18 @@ async function Page({ params }) {
       { name: business.title, url: `/business/${slug}` },
     ];
 
+    const hasHeroImage = Boolean(getBusinessDisplayImage(business));
+    const cityHref = `/state/${business.state.code}/city/${business.city.slug}`;
+    const stateHref = `/state/${business.state.code}`;
+    const categoryHref = business.primary_category
+      ? `/category/${business.primary_category.slug}`
+      : null;
+    const mapsHref = mapsQuery
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`
+      : null;
+
     return (
       <>
-        {/* Structured Data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -258,102 +285,124 @@ async function Page({ params }) {
           }}
         />
 
-        <div className="min-h-screen bg-gray-50 pb-16 md:pb-32">
-          {/* Hero Section with Business Image */}
+        <div className="min-h-screen bg-background pb-24 md:pb-32">
           <BusinessHeroBanner
             src={business.image_url}
             businessId={business.id}
             imageId={business.primary_image_id}
             cdnStored={Boolean(business.cdn_stored)}
             alt={`${business.title} - Radiator Repair Services in ${business.city.name}, ${business.state.name}`}
+            top={
+              <div className="mx-auto hidden w-full max-w-7xl px-4 pt-6 sm:px-6 md:block md:pt-8 lg:px-8">
+                <BreadcrumbList
+                  items={breadcrumbItems}
+                  navStyles="w-fit max-w-full rounded-lg bg-black/40 p-2 pl-4 pr-6 text-sm backdrop-blur-sm"
+                />
+              </div>
+            }
           >
-            <div className="w-full p-3 sm:p-4 md:p-6 text-white max-w-7xl mx-auto hidden md:block">
-              <BreadcrumbList
-                items={breadcrumbItems}
-                navStyles="text-gray-600 mb-4 md:mb-6 bg-slate-900 rounded-lg p-2 pl-4 pr-8 w-fit text-sm"
-              />
-            </div>
+            <div className="mx-auto w-full max-w-7xl px-4 pb-8 text-white sm:px-6 md:pb-10 lg:px-8">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="font-heading text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-5xl">
+                  {business.title}
+                </h1>
+              </div>
 
-            <div className="w-full p-3 sm:p-4 md:p-6 text-white max-w-7xl mx-auto">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-2 md:mb-4 leading-tight">
-                {business.title}
-              </h1>
-              {business.local_note && (
-                <p className="text-sm md:text-base italic text-gray-200 mb-2 md:mb-4">
-                  📍 {business.local_note}
+              {business.local_note ? (
+                <p className="mt-3 max-w-3xl text-sm italic text-white/80 md:text-base">
+                  {business.local_note}
                 </p>
-              )}
-              <div className="flex items-center gap-2 flex-wrap">
+              ) : null}
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
                 <div className="flex items-center">
-                  <Star className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 fill-current" />
-                  <span className="ml-1 font-semibold text-base md:text-lg">
+                  <Star className="h-4 w-4 fill-current text-yellow-400 md:h-5 md:w-5" />
+                  <span className="ml-1 text-base font-semibold md:text-lg">
                     {business.total_score}
                   </span>
                 </div>
-                <span className="text-sm md:text-lg mr-2">
+                <span className="mr-2 text-sm text-white/85 md:text-base">
                   ({business.reviews_count.toLocaleString()} reviews)
                 </span>
                 <OpenStatus hours={business.hours} timezone={business.timezone} />
+                {business.is_claimed ? <VerifiedBadge size="md" /> : null}
+              </div>
+
+              <div className="hidden md:block">
+                <BusinessHeroActions
+                  businessId={business.id}
+                  businessName={business.title}
+                  phone={business.phone}
+                  email={business.email}
+                  mapsQuery={mapsQuery}
+                  placement="hero"
+                />
               </div>
             </div>
           </BusinessHeroBanner>
 
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-              {/* Main Content — contents on mobile so cards can interleave with sidebar via order */}
+          <BusinessHeroActions
+            businessId={business.id}
+            businessName={business.title}
+            phone={business.phone}
+            email={business.email}
+            mapsQuery={mapsQuery}
+            placement="sticky"
+          />
+
+          <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 md:px-6 md:py-8 lg:px-8">
+            <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
               <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-8">
-                {/* Description */}
                 <AboutSection
                   businessId={business.id}
                   description={business.description || ""}
                   imageUrl={business.image_url}
                   imageId={business.primary_image_id}
                   cdnStored={Boolean(business.cdn_stored)}
-                  imageAlt={`${business.title} - ${business.keywords && business.keywords.length > 0
-                    ? business.keywords[0]
-                    : "radiator repair services"
-                    } in ${business.city.name}, ${business.state.name}`}
+                  showImage={!hasHeroImage}
+                  imageAlt={`${business.title} - ${
+                    business.keywords && business.keywords.length > 0
+                      ? business.keywords[0]
+                      : "radiator repair services"
+                  } in ${business.city.name}, ${business.state.name}`}
                 />
 
-                {/* Categories */}
                 <ServiceCategoriesSection
                   businessId={business.id}
                   primaryCategory={business.primary_category}
                   secondaryCategories={business.secondary_categories || []}
                 />
 
-                {/* Map Section */}
-                <div className="order-6 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-3">
+                <div className="order-6 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
                   <BusinessSectionHeader
-                    title="Business Location"
-                    businessId={business.id}
+                    title="Location"
+                    titleClassName="text-xl font-semibold tracking-tight text-foreground font-heading md:text-2xl"
                   />
                   <div className="space-y-3 md:space-y-4">
                     <div className="flex items-start gap-2 md:gap-3">
-                      <MapPin className="w-4 h-4 md:w-5 md:h-5 text-gray-600 mt-1 flex-shrink-0" />
-                      <p className="text-sm md:text-base text-gray-700 break-words">
+                      <MapPin className="mt-1 h-4 w-4 shrink-0 text-muted-foreground md:h-5 md:w-5" />
+                      <p className="break-words text-sm text-foreground md:text-base">
                         {business.address}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Link
-                        href={`/state/${business.state.code}/city/${business.city.slug}`}
-                        className="text-white bg-blue-600 rounded-full px-4 md:px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95 text-sm md:text-base"
+                        href={cityHref}
+                        className="rounded-full bg-tint px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-secondary md:px-5"
                       >
-                        Radiator Repair in {business.city.name}
+                        Radiator repair in {business.city.name}
                       </Link>
                       <Link
-                        href={`/state/${business.state.code}`}
-                        className="text-white bg-blue-600 rounded-full px-4 md:px-6 font-medium py-1 hover:bg-blue-700 duration-300 hover:scale-95 text-sm md:text-base"
+                        href={stateHref}
+                        className="rounded-full bg-tint px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-secondary md:px-5"
                       >
-                        {business.state.name} Services
+                        {business.state.name} services
                       </Link>
                     </div>
 
-                    {/* Google Maps Embed — prefer place_id, then lat/lng, then address */}
-                    {mapsQuery && (
-                      <div className="w-full h-64 md:h-96 rounded-lg overflow-hidden">
+                    {mapsQuery ? (
+                      <div className="h-64 w-full overflow-hidden rounded-lg md:h-96">
                         {process.env.GOOGLE_MAPS_API_KEY ? (
                           <iframe
                             src={`https://www.google.com/maps/embed/v1/place?key=${process.env.GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(mapsQuery)}`}
@@ -366,78 +415,79 @@ async function Page({ params }) {
                             title={`Map showing location of ${business.title}`}
                           />
                         ) : (
-                          <div className="flex h-full items-center justify-center bg-gray-100 px-6 text-center">
+                          <div className="flex h-full items-center justify-center bg-muted px-6 text-center">
                             <Link
-                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`}
+                              href={mapsHref}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
+                              className="inline-flex items-center gap-2 font-medium text-interactive hover:text-primary"
                             >
-                              <MapPin className="w-5 h-5" />
+                              <MapPin className="h-5 w-5" />
                               View {business.address || business.title} on
                               Google Maps
                             </Link>
                           </div>
                         )}
                       </div>
-                    )}
+                    ) : null}
 
-                    {business.url && (
-                      <div className="pt-4">
+                    {mapsHref ? (
+                      <div className="pt-2">
                         <Link
-                          href={business.url}
+                          href={mapsHref}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                         >
-                          <ExternalLink className="w-4 h-4" />
-                          View on Google Maps
+                          <ExternalLink className="h-4 w-4" />
+                          Open in Google Maps
                         </Link>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </div>
 
-              {/* Sidebar — contents on mobile so reviews/contact/hours sit after About */}
               <div className="contents lg:flex lg:flex-col lg:gap-6">
-                {/* Rating Summary */}
-                <div className="order-2 bg-white rounded-xl shadow-lg p-4 md:p-6 lg:order-1">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-heading">
+                <div className="order-2 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
+                  <h2 className="mb-3 font-heading text-xl font-semibold tracking-tight text-foreground md:mb-4 md:text-2xl">
                     Customer Reviews
                   </h2>
                   <div className="text-center">
-                    <div className="flex flex-col items-center justify-center gap-4 mb-2">
-                      <span className="text-3xl font-bold text-gray-900 bg-gray-100 px-4 py-2 rounded-md">
+                    <div className="mb-2 flex flex-col items-center justify-center gap-4">
+                      <span className="rounded-md bg-muted px-4 py-2 text-3xl font-bold text-foreground">
                         {business.total_score}
                       </span>
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`w-6 h-6 ${i < Math.floor(business.total_score)
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
-                              }`}
+                            className={`h-6 w-6 ${
+                              i < Math.floor(business.total_score)
+                                ? "fill-current text-yellow-400"
+                                : "text-border"
+                            }`}
                           />
                         ))}
                       </div>
                     </div>
-                    <p className="text-gray-600">
-                      Based on {business.reviews_count.toLocaleString()} Verified Reviews
+                    <p className="text-sm text-muted-foreground">
+                      Based on {business.reviews_count.toLocaleString()}{" "}
+                      verified reviews
+                      {business.url ? " from Google" : null}.
                     </p>
 
-                    {business.url && (
+                    {business.url ? (
                       <Link
                         href={business.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-4 text-sm text-white bg-blue-600 rounded-full px-6 font-medium py-2 hover:bg-blue-700 duration-300 hover:scale-95 flex items-center gap-2 justify-center"
+                        className="mt-4 flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                       >
-                        View All Reviews
+                        View all reviews
                         <ExternalLink className="size-4" />
                       </Link>
-                    )}
+                    ) : null}
 
                     <ClaimBusinessButton
                       businessId={business.id}
@@ -451,7 +501,6 @@ async function Page({ params }) {
                   </div>
                 </div>
 
-                {/* Contact Information */}
                 <ContactInformationSection
                   businessId={business.id}
                   businessName={business.title}
@@ -460,24 +509,130 @@ async function Page({ params }) {
                   website={business.website}
                 />
 
-                {/* Business Hours */}
                 <BusinessHoursSection
                   businessId={business.id}
                   hours={business.hours || []}
                   timezone={business.timezone}
                 />
 
-                {/* Amenities */}
                 <AmenitiesSection
                   businessId={business.id}
                   features={business.features || {}}
                 />
               </div>
             </div>
-          </div>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <DirectoryDisclaimer className="mt-8" />
+            <section className="mt-10 border-t border-border pt-10">
+              <h2 className="mb-4 font-heading text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+                Explore nearby
+              </h2>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <Link
+                  href={cityHref}
+                  className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
+                    <MapPinned className="h-6 w-6 text-primary" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
+                        {business.city.name}
+                      </h3>
+                      <ArrowRight
+                        className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      More radiator repair shops in this city
+                    </p>
+                  </div>
+                </Link>
+                <Link
+                  href={stateHref}
+                  className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
+                    <MapPin className="h-6 w-6 text-primary" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
+                        {business.state.name}
+                      </h3>
+                      <ArrowRight
+                        className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Browse shops across the state
+                    </p>
+                  </div>
+                </Link>
+                {categoryHref ? (
+                  <Link
+                    href={categoryHref}
+                    className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
+                      <Tags className="h-6 w-6 text-primary" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
+                          {business.primary_category.name}
+                        </h3>
+                        <ArrowRight
+                          className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Similar businesses in this category
+                      </p>
+                    </div>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/search?page=1&sort=most_reviews"
+                    className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
+                      <Search className="h-6 w-6 text-primary" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
+                          Search directory
+                        </h3>
+                        <ArrowRight
+                          className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Find radiator repair near you
+                      </p>
+                    </div>
+                  </Link>
+                )}
+              </div>
+            </section>
+
+            {!business.is_claimed && featuredProducts.length > 0 ? (
+              <AffiliateProductsSection
+                products={featuredProducts}
+                title="Cooling tools & supplies"
+                description="Optional DIY supplies recommended by RadiatorRepairHub. These products are not sold, endorsed, or affiliated with this business."
+                descriptionVariant="notice"
+                disclosure="Product links are RadiatorRepairHub Amazon Associate recommendations. As an Amazon Associate, RadiatorRepairHub earns from qualifying purchases. This shop is not responsible for these products or purchases."
+                variant="related"
+              />
+            ) : null}
+
+            <DirectoryDisclaimer className="mt-10" />
           </div>
         </div>
       </>

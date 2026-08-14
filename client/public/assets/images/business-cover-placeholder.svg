@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="RadiatorRepairHub business listing placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="45%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#2B50AA"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#shine)"/>
+  <circle cx="980" cy="120" r="180" fill="#3b82f6" fill-opacity="0.15"/>
+  <circle cx="160" cy="560" r="220" fill="#0090C1" fill-opacity="0.12"/>
+  <g fill="none" stroke="#93c5fd" stroke-opacity="0.4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Storefront -->
+    <path d="M430 360h340v120H430z"/>
+    <path d="M410 360l50-70h280l50 70"/>
+    <rect x="470" y="395" width="70" height="85" rx="6"/>
+    <rect x="660" y="395" width="70" height="85" rx="6"/>
+    <path d="M560 480v-70h80v70"/>
+    <circle cx="625" cy="445" r="4" fill="#93c5fd" fill-opacity="0.5" stroke="none"/>
+  </g>
+  <text x="600" y="555" text-anchor="middle" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="36" font-weight="700">RadiatorRepairHub</text>
+  <text x="600" y="598" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="20">Shop photo coming soon</text>
+</svg>

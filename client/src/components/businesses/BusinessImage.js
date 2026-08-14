@@ -10,6 +10,9 @@ import {
   getBusinessImageId,
 } from "@/lib/images";
 
+export const BUSINESS_COVER_PLACEHOLDER =
+  "/assets/images/business-cover-placeholder.svg";
+
 function BusinessImage({
   src,
   businessId,
@@ -22,9 +25,9 @@ function BusinessImage({
   priority = false,
   showIcon = true,
   iconSize = "md",
-  // "message" = No image available UI; "solid" = blank colored background
-  fallback = "message",
-  fallbackClassName = "bg-slate-900",
+  // "placeholder" = branded SVG; "message" = No image available UI; "solid" = blank bg
+  fallback = "placeholder",
+  fallbackClassName = "bg-muted",
   variant = CF_IMAGE_VARIANT.card,
 }) {
   const cfImageId = getBusinessImageId({
@@ -51,6 +54,21 @@ function BusinessImage({
       );
     }
 
+    if (fallback === "placeholder") {
+      return (
+        <Image
+          src={BUSINESS_COVER_PLACEHOLDER}
+          alt=""
+          fill={fill}
+          sizes={sizes}
+          className={className}
+          priority={priority}
+          unoptimized
+          aria-hidden="true"
+        />
+      );
+    }
+
     const iconClass =
       iconSize === "lg"
         ? "w-16 h-16 md:w-20 md:h-20"
@@ -67,16 +85,16 @@ function BusinessImage({
       iconSize === "lg" ? "text-sm md:text-lg" : "text-sm";
 
     return (
-      <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+      <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/80">
         <div className="text-center">
           {showIcon && (
             <div
-              className={`${iconClass} bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-2`}
+              className={`${iconClass} bg-muted rounded-full flex items-center justify-center mx-auto mb-2`}
             >
-              <CircleAlert className={`${alertClass} text-gray-500`} />
+              <CircleAlert className={`${alertClass} text-muted-foreground`} />
             </div>
           )}
-          <p className={`text-gray-500 ${textClass}`}>No image available</p>
+          <p className={`text-muted-foreground ${textClass}`}>No image available</p>
         </div>
       </div>
     );

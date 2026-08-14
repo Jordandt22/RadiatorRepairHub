@@ -489,6 +489,165 @@ export const getAllPrimaryCategories = async () => {
   return { data, error };
 };
 
+/**
+ * Primary categories with business counts (all categories).
+ */
+export const getPrimaryCategoryBusinessCounts = async () => {
+  const [categoriesRes, businessesRes] = await Promise.all([
+    getAllPrimaryCategories(),
+    fetchAllAdminRows("businesses", "primary_category_id"),
+  ]);
+
+  if (categoriesRes.error) {
+    return { data: null, error: categoriesRes.error };
+  }
+  if (businessesRes.error) {
+    return { data: null, error: businessesRes.error };
+  }
+
+  const countByCategory = new Map();
+  for (const biz of businessesRes.data ?? []) {
+    const id = biz.primary_category_id;
+    if (!id) continue;
+    countByCategory.set(id, (countByCategory.get(id) ?? 0) + 1);
+  }
+
+  const categories = (categoriesRes.data ?? []).map((category) => ({
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    business_count: countByCategory.get(category.id) ?? 0,
+  }));
+
+  return { data: { categories }, error: null };
+};
+
+/**
+ * Top primary categories by business count.
+ * @param {number} limit
+ */
+export const getTopPrimaryCategoriesByBusinessCount = async (limit = 4) => {
+  const { data, error } = await getPrimaryCategoryBusinessCounts();
+  if (error) {
+    return { data: null, error };
+  }
+
+  const categories = [...(data?.categories ?? [])]
+    .sort(
+      (a, b) =>
+        b.business_count - a.business_count ||
+        a.name.localeCompare(b.name)
+    )
+    .slice(0, Math.max(1, limit));
+
+  return { data: { categories }, error: null };
+};
+
+/**
+ * State business counts. Optional codes filter (e.g. CA,TX) or limit (top N).
+ * @param {{ codes?: string[], limit?: number }} options
+ */
+export const getStateBusinessCounts = async ({ codes, limit } = {}) => {
+  const [statesRes, businessesRes] = await Promise.all([
+    getAllStates(),
+    fetchAllAdminRows("businesses", "state_id"),
+  ]);
+
+  if (statesRes.error) {
+    return { data: null, error: statesRes.error };
+  }
+  if (businessesRes.error) {
+    return { data: null, error: businessesRes.error };
+  }
+
+  const countByState = new Map();
+  for (const biz of businessesRes.data ?? []) {
+    const id = biz.state_id;
+    if (!id) continue;
+    countByState.set(id, (countByState.get(id) ?? 0) + 1);
+  }
+
+  let states = (statesRes.data ?? []).map((state) => ({
+    id: state.id,
+    name: state.name,
+    code: state.code,
+    business_count: countByState.get(state.id) ?? 0,
+  }));
+
+  if (Array.isArray(codes) && codes.length > 0) {
+    const codeSet = new Set(
+      codes.map((code) => String(code).trim().toUpperCase()).filter(Boolean)
+    );
+    states = states.filter((state) => codeSet.has(String(state.code).toUpperCase()));
+    states.sort((a, b) => {
+      const aIndex = codes.findIndex(
+        (c) => String(c).toUpperCase() === String(a.code).toUpperCase()
+      );
+      const bIndex = codes.findIndex(
+        (c) => String(c).toUpperCase() === String(b.code).toUpperCase()
+      );
+      return aIndex - bIndex;
+    });
+  } else {
+    states.sort(
+      (a, b) =>
+        b.business_count - a.business_count ||
+        a.name.localeCompare(b.name)
+    );
+    if (typeof limit === "number" && limit > 0) {
+      states = states.slice(0, limit);
+    }
+  }
+
+  return { data: { states }, error: null };
+};
+
+/**
+ * City business counts for a single state.
+ * @param {string} state_id
+ */
+export const getCityBusinessCounts = async (state_id) => {
+  const citiesRes = await getAllCities(state_id);
+  if (citiesRes.error) {
+    return { data: null, error: citiesRes.error };
+  }
+
+  const rows = [];
+  let start = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("city_id")
+      .eq("state_id", state_id)
+      .range(start, start + ADMIN_LOCATION_PAGE_SIZE - 1);
+
+    if (error) return { data: null, error };
+
+    rows.push(...(data ?? []));
+    if (!data || data.length < ADMIN_LOCATION_PAGE_SIZE) break;
+    start += ADMIN_LOCATION_PAGE_SIZE;
+  }
+
+  const countByCity = new Map();
+  for (const biz of rows) {
+    const id = biz.city_id;
+    if (!id) continue;
+    countByCity.set(id, (countByCity.get(id) ?? 0) + 1);
+  }
+
+  const cities = (citiesRes.data ?? [])
+    .map((city) => ({
+      id: city.id,
+      name: city.name,
+      slug: city.slug,
+      state_id: city.state_id,
+      business_count: countByCity.get(city.id) ?? 0,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  return { data: { cities }, error: null };
+};
+
 export const getAllSecondaryCategories = async () => {
   const { data, error } = await supabase
     .from("secondary_categories")
@@ -3700,7 +3859,7 @@ const AFFILIATE_PRODUCT_SELECT =
   "id, provider, product_link, affiliate_link, title, description, image_url, is_active, created_at";
 
 const PUBLIC_AFFILIATE_PRODUCT_SELECT =
-  "id, provider, product_link, affiliate_link, title, description, image_url";
+  "id, provider, product_link, affiliate_link, title, description, image_url, created_at";
 
 export const getActiveAffiliateProductsByIds = async (ids) => {
   if (!ids?.length) return { data: [], error: null };

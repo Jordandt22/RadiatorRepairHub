@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BadgeCheck, LayoutDashboard } from "lucide-react";
+import { ArrowRight, BadgeCheck, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ToastProvider, useToast } from "@/contexts/ToastProvider";
+import { useToast } from "@/contexts/ToastProvider";
 import { claimBusiness } from "@/lib/api/businesses";
 import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
@@ -22,14 +22,14 @@ import { usePostHog } from "posthog-js/react";
 function ClaimStatusLabel({ children, reason, showHowToClaim = false }) {
   return (
     <div className="mt-3 text-center">
-      <p className="text-sm font-medium text-gray-500">{children}</p>
+      <p className="text-sm font-medium text-muted-foreground">{children}</p>
       {reason ? (
-        <p className="mt-0.5 text-xs text-gray-400">{reason}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground/70">{reason}</p>
       ) : null}
       {showHowToClaim ? (
         <Link
           href="/how-to-claim"
-          className="mt-1.5 inline-block text-xs text-blue-600 hover:underline"
+          className="mt-1.5 inline-block text-xs text-interactive hover:underline"
         >
           Why can&apos;t I claim?
         </Link>
@@ -101,7 +101,7 @@ function ClaimBusinessButtonContent({
       <Button
         type="button"
         variant="outline"
-        className="mt-3 w-full rounded-full gap-2 text-sm font-medium border-2 border-amber-500 text-amber-600 hover:bg-amber-50 hover:scale-95 hover:text-amber-700"
+        className="mt-3 w-full rounded-full gap-2 text-sm font-medium border border-amber-500 text-amber-600 hover:bg-amber-50 hover:text-amber-700"
         disabled={isSubmitting}
         onClick={handleClaim}
       >
@@ -121,7 +121,7 @@ function ClaimBusinessButtonContent({
           </DialogHeader>
           <DialogFooter>
             <DialogClose
-              render={<Button type="button" className="w-full sm:w-auto bg-blue-500 px-8 hover:bg-blue-600 hover:scale-95" />}
+              render={<Button type="button" className="w-full sm:w-auto px-8" />}
             >
               Got it
             </DialogClose>
@@ -149,26 +149,24 @@ function ClaimedBusinessStatus({ businessId, lastEditedAt = null }) {
   }
 
   return (
-    <div className="mt-3 flex flex-col items-center gap-1.5">
-      <div className="flex w-full items-center justify-center gap-1.5 rounded-full bg-green-500 p-2 text-white">
-        <BadgeCheck className="size-5 shrink-0" aria-hidden="true" />
-        <p className="text-sm font-medium">Verified Business</p>
+    <div className="mt-3 flex flex-col items-center gap-2">
+      <div className="flex w-full items-center justify-center gap-1.5 rounded-full border border-green-600/20 bg-green-50 px-4 py-2.5 text-green-800">
+        <BadgeCheck className="size-4 shrink-0" aria-hidden="true" />
+        <p className="text-sm font-medium">Verified business</p>
       </div>
       {isOwner ? (
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false}
-          className="mt-1.5 w-full rounded-full gap-2 text-sm font-medium"
-          render={<Link href="/dashboard" />}
+        <Link
+          href="/dashboard"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-interactive hover:bg-muted"
         >
-          <LayoutDashboard className="size-4" />
-          My Dashboard
-        </Button>
+          <LayoutDashboard className="size-4 shrink-0" aria-hidden="true" />
+          My dashboard
+          <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </Link>
       ) : null}
       {editedDate ? (
-        <p className="mt-2 text-center text-xs font-medium text-gray-600">
-          Last Updated {editedDate}
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          Last updated {editedDate}
         </p>
       ) : null}
     </div>
@@ -216,12 +214,10 @@ export default function ClaimBusinessButton({
   }
 
   return (
-    <ToastProvider>
-      <ClaimBusinessButtonContent
-        businessId={businessId}
-        businessSlug={businessSlug}
-        businessName={businessName}
-      />
-    </ToastProvider>
+    <ClaimBusinessButtonContent
+      businessId={businessId}
+      businessSlug={businessSlug}
+      businessName={businessName}
+    />
   );
 }

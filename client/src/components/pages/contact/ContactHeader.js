@@ -7,15 +7,15 @@ function ContactHeader() {
     { name: "Contact", url: "/contact" },
   ];
 
-  const pageTitle = "Contact RadiatorRepairHub";
-  const pageDescription =
-    "Questions about our directory, a listing, partnerships, or the website? Message the RadiatorRepairHub team here. To reach a repair shop, use Quick Contact on that business's page.";
-
   return (
     <PageHeader
       breadcrumbItems={breadcrumbItems}
-      pageTitle={pageTitle}
-      pageDescription={pageDescription}
+      pageTitle="Contact RadiatorRepairHub"
+      pageDescription="Directory support, listing issues, partnerships, and website feedback. To reach a repair shop, use Quick Contact on that business's page."
+      headerLink={{
+        href: "/search?page=1&sort=most_reviews",
+        label: "Search for a shop",
+      }}
     />
   );
 }

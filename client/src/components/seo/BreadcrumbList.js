@@ -13,13 +13,13 @@ const BreadcrumbList = ({ items, navStyles, variant = "dark" }) => {
 
   const isLight = variant === "light";
   const linkClass = isLight
-    ? "text-gray-600 hover:text-blue-600"
-    : "text-gray-300 hover:text-blue-400";
-  const currentClass = isLight ? "text-gray-500" : "text-gray-400";
+    ? "text-muted-foreground hover:text-interactive"
+    : "text-white/70 hover:text-white";
+  const currentClass = isLight ? "text-muted-foreground/80" : "text-white/60";
   const middleClass = isLight
-    ? "text-gray-600 group-hover/link:text-blue-600"
-    : "text-gray-300 group-hover/link:text-blue-400";
-  const chevronClass = isLight ? "text-gray-400" : "text-gray-500";
+    ? "text-muted-foreground group-hover/link:text-interactive"
+    : "text-white/70 group-hover/link:text-white";
+  const chevronClass = isLight ? "text-muted-foreground/60" : "text-white/40";
 
   // Generate BreadcrumbList structured data
   const breadcrumbSchema = {
@@ -89,9 +89,7 @@ const BreadcrumbList = ({ items, navStyles, variant = "dark" }) => {
                 // Middle items (clickable)
                 <Link
                   href={item.url}
-                  className={`group/link inline-flex items-center text-sm font-medium ${
-                    isLight ? "hover:text-blue-600" : "hover:text-blue-400"
-                  }`}
+                  className="group/link inline-flex items-center text-sm font-medium"
                 >
                   <span
                     className={`ml-1 text-sm font-medium md:ml-2 capitalize ${middleClass}`}

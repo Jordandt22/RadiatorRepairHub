@@ -12,6 +12,8 @@ import {
   getAllCitiesKey,
   getCityBySlugKey,
   getPostalCodesByStateKey,
+  getStateBusinessCountsKey,
+  getCityBusinessCountsKey,
 } from "../redis/redis.js";
 import {
   getAllStates,
@@ -20,6 +22,8 @@ import {
   getAllPostalCodes,
   getPostalCodesByState,
   getCityBySlug,
+  getStateBusinessCounts,
+  getCityBusinessCounts,
 } from "../supabase/supabase.functions.js";
 
 const { SUPABASE_ERROR } = errorCodes;
@@ -39,6 +43,76 @@ export const getStates = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "There was an error fetching states.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getStateBusinessCountsHandler = async (req, res) => {
+  const codesParam =
+    typeof req.query.codes === "string" ? req.query.codes.trim() : "";
+  const codes = codesParam
+    ? codesParam
+        .split(",")
+        .map((code) => code.trim().toUpperCase())
+        .filter(Boolean)
+    : undefined;
+
+  const parsedLimit = Number.parseInt(String(req.query.limit ?? ""), 10);
+  const limit =
+    !codes && Number.isFinite(parsedLimit)
+      ? Math.min(50, Math.max(1, parsedLimit))
+      : codes
+        ? undefined
+        : 6;
+
+  const codesKey = codes?.length ? codes.join(",") : "";
+  const { key, interval } = getStateBusinessCountsKey({
+    codesKey,
+    limit: codes?.length ? null : limit,
+  });
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getStateBusinessCounts({ codes, limit });
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching state business counts.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getCityBusinessCountsHandler = async (req, res) => {
+  const { state_id } = req.params;
+  const { key, interval } = getCityBusinessCountsKey(state_id);
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getCityBusinessCounts(state_id);
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching city business counts.",
           error
         )
       );

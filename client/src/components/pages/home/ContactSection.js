@@ -1,119 +1,24 @@
-import React from "react";
-import Link from "next/link";
-import { Mail, Phone, Clock, MessageCircle, ArrowRight } from "lucide-react";
-import { getBusinessEmail, getBusinessPhoneDigits } from "@/lib/businessContactInfo";
-import SitePhoneLinks from "@/components/contact/SitePhoneLinks";
+import {
+  formatBusinessPhoneDisplay,
+  getBusinessEmail,
+  getBusinessPhoneDigits,
+  getBusinessPhoneSmsHref,
+  getBusinessPhoneTelHref,
+} from "@/lib/businessContactInfo";
+
+import ContactSectionContent from "./ContactSectionContent";
 
 function ContactSection() {
   const email = getBusinessEmail();
-  const hasPhone = Boolean(getBusinessPhoneDigits());
+  const phoneDigits = getBusinessPhoneDigits();
 
   return (
-    <section className="py-20 mb-32 bg-white text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-4xl text-gray-900 font-bold mb-4 font-heading">
-            Get In Touch
-          </h2>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-            Questions about the RadiatorRepairHub directory, listings, or
-            partnerships? Contact our team — to reach a repair shop, use Quick
-            Contact on their business page.
-          </p>
-        </div>
-
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col md:flex-row align-centers justify-center gap-4 md:gap-8 lg:gap-16 mb-12 md:mb-16 flex-wrap">
-            {email ? (
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg mb-1 text-gray-900">
-                    Email Us
-                  </h3>
-                  <p className="text-gray-600 mb-2">Send us an email anytime</p>
-                  <a
-                    href={`mailto:${email}`}
-                    className="text-blue-600 hover:text-blue-700 transition-colors duration-300 break-all"
-                  >
-                    {email}
-                  </a>
-                </div>
-              </div>
-            ) : null}
-
-            {hasPhone ? (
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Phone className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg mb-1 text-gray-900">
-                    Call or Text Us
-                  </h3>
-                  <p className="text-gray-600 mb-2">
-                    Phone and SMS for directory support
-                  </p>
-                  <SitePhoneLinks showLabel={false} />
-                </div>
-              </div>
-            ) : null}
-
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-1 text-gray-900">
-                  Quick Response
-                </h3>
-                <p className="text-gray-600">
-                  We typically respond within 24 hours
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <div className="bg-blue-50 rounded-xl p-8 border border-blue-200">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-                  <MessageCircle className="w-8 h-8 text-white" />
-                </div>
-              </div>
-              <h3 className="text-2xl font-semibold mb-4 font-heading text-gray-900">
-                Have a Question?
-              </h3>
-              <p className="text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
-                <strong>Directory support</strong>, listing questions,{" "}
-                <strong>partnerships</strong>, or website feedback? Message the
-                RadiatorRepairHub team. Want your shop in the directory?{" "}
-                <strong>Get listed</strong> for free. Need a repair shop?
-                Contact them from their business page.
-              </p>
-              <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
-                <Link
-                  href="/get-listed"
-                  className="w-full flex justify-center align-center md:w-auto items-center px-8 py-2 border-2 rounded-full bg-white border-blue-600 text-blue-600 font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                  <span>Get Listed</span>
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Link>
-                <Link
-                  href="/contact"
-                  className="w-full flex justify-center align-center md:w-auto items-center px-8 py-2 border-2 rounded-full border-blue-600 bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                  <span>Contact Us</span>
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <ContactSectionContent
+      email={email}
+      phoneDisplay={phoneDigits ? formatBusinessPhoneDisplay(phoneDigits) : null}
+      phoneTelHref={phoneDigits ? getBusinessPhoneTelHref(phoneDigits) : null}
+      phoneSmsHref={phoneDigits ? getBusinessPhoneSmsHref(phoneDigits) : null}
+    />
   );
 }
 
