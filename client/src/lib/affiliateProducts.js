@@ -6,9 +6,16 @@
 export const AFFILIATE_PRODUCT_ALIASES = {
   valvoline: "89657c5b-7906-4ba7-a4b1-ef86e670ba2b",
   "prestone-asian": "1bdacdb8-c8a0-41f2-a8e7-fb40be2e7855",
+  "prestone-dexcool": "bd463b98-c75f-4663-a13b-dc7c29af49b0",
+  "zerex-g05": "b8564dfd-4562-415b-83ba-bab5ee1217ec",
+  "radiator-flush": "b571b7ab-6888-4f99-8aae-da2eb2b59ea0",
   "radiator-cap": "9e60e8e3-d97d-4901-ba89-d2057980e569",
+  "radiator-cap-13": "24f6ce56-b6ce-47b8-977a-da903d74f42e",
   "ir-thermometer": "9bab2d35-4e14-453d-9a59-5504a01296e0",
   "coolant-funnel": "802b381b-bbfd-4232-886e-86aff0bf1418",
+  "coolant-funnel-lisle": "75f7b2e6-1373-494f-80d8-cd85a21febc6",
+  "combustion-leak-detector": "df2388f0-ed62-4c2e-8c13-303e684e7d15",
+  "coolant-pressure-tester": "6f637396-c8ff-4d48-981b-81ff2baca399",
 };
 
 const UUID_REGEX =

@@ -80,14 +80,6 @@ function FAQPageContent({ sections = [], allFaqs = [] }) {
             </p>
           </div>
 
-          <p className="mb-6 text-center text-sm text-muted-foreground">
-            <span className="font-semibold text-green-700">
-              {visibleCount.toLocaleString()}
-            </span>{" "}
-            {visibleCount === 1 ? "Question" : "Questions"}
-            {isSearching ? ` of ${allFaqs.length.toLocaleString()}` : null}
-          </p>
-
           <div className="mb-8">
             <FAQSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
           </div>

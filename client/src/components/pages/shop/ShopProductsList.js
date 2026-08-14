@@ -13,50 +13,36 @@ const CATEGORY_OPTIONS = [
   { value: "tools", label: "Tools" },
 ];
 
-const ALIAS_CATEGORY_BY_ID = {
-  [AFFILIATE_PRODUCT_ALIASES.valvoline]: "coolant",
-  [AFFILIATE_PRODUCT_ALIASES["prestone-asian"]]: "coolant",
-  [AFFILIATE_PRODUCT_ALIASES["radiator-cap"]]: "caps",
-  [AFFILIATE_PRODUCT_ALIASES["ir-thermometer"]]: "tools",
-  [AFFILIATE_PRODUCT_ALIASES["coolant-funnel"]]: "tools",
+/** Alias slug → shop category. Unknown products only appear under All. */
+const PRODUCT_CATEGORY_BY_ALIAS = {
+  valvoline: "coolant",
+  "prestone-asian": "coolant",
+  "prestone-dexcool": "coolant",
+  "zerex-g05": "coolant",
+  "radiator-flush": "coolant",
+  "radiator-cap": "caps",
+  "radiator-cap-13": "caps",
+  "ir-thermometer": "tools",
+  "coolant-funnel": "tools",
+  "coolant-funnel-lisle": "tools",
+  "combustion-leak-detector": "tools",
+  "coolant-pressure-tester": "tools",
 };
+
+const PRODUCT_CATEGORY_BY_ID = Object.fromEntries(
+  Object.entries(PRODUCT_CATEGORY_BY_ALIAS).map(([alias, category]) => [
+    AFFILIATE_PRODUCT_ALIASES[alias],
+    category,
+  ])
+);
 
 function getProductTimestamp(date) {
   const parsed = Date.parse(date ?? "");
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
-function inferProductCategory(product) {
-  if (ALIAS_CATEGORY_BY_ID[product.id]) {
-    return ALIAS_CATEGORY_BY_ID[product.id];
-  }
-
-  const text = `${product.title ?? ""} ${product.description ?? ""}`.toLowerCase();
-
-  if (
-    text.includes("coolant") ||
-    text.includes("antifreeze") ||
-    text.includes("prestone") ||
-    text.includes("valvoline")
-  ) {
-    return "coolant";
-  }
-
-  if (text.includes("radiator cap") || /\bcap\b/.test(text)) {
-    return "caps";
-  }
-
-  if (
-    text.includes("funnel") ||
-    text.includes("thermometer") ||
-    text.includes("infrared") ||
-    text.includes("tool") ||
-    text.includes("kit")
-  ) {
-    return "tools";
-  }
-
-  return "tools";
+function getProductCategory(product) {
+  return PRODUCT_CATEGORY_BY_ID[product.id] ?? null;
 }
 
 function sortProducts(products, sort) {
@@ -86,7 +72,7 @@ function ShopProductsList({ products }) {
 
   const filteredProducts = useMemo(() => {
     const matched = products.filter((product) => {
-      if (category !== "all" && inferProductCategory(product) !== category) {
+      if (category !== "all" && getProductCategory(product) !== category) {
         return false;
       }
 
@@ -115,33 +101,34 @@ function ShopProductsList({ products }) {
 
   return (
     <div className="space-y-8">
-      <p className="text-sm text-muted-foreground">
-        <span className="font-semibold text-green-700">
-          {filteredProducts.length.toLocaleString()}
-        </span>{" "}
-        {filteredProducts.length === 1 ? "Product" : "Products"}
-        {isFiltering ? ` of ${products.length.toLocaleString()}` : null}
-      </p>
+      <div className="flex justify-between items-center">
 
-      <div className="flex flex-wrap gap-2">
-        {CATEGORY_OPTIONS.map((option) => {
-          const isActive = category === option.value;
-          return (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setCategory(option.value)}
-              className={`inline-flex rounded-full border px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-                isActive
+        <div className="flex flex-wrap gap-2">
+          {CATEGORY_OPTIONS.map((option) => {
+            const isActive = category === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setCategory(option.value)}
+                className={`inline-flex rounded-full border px-4 py-2 text-sm font-medium transition-colors duration-200 ${isActive
                   ? "border-primary/20 bg-tint text-primary"
                   : "border-border bg-card text-foreground hover:border-interactive"
-              }`}
-              aria-pressed={isActive}
-            >
-              {option.label}
-            </button>
-          );
-        })}
+                  }`}
+                aria-pressed={isActive}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-sm text-muted-foreground">
+          <span className="font-semibold text-green-700">
+            {filteredProducts.length.toLocaleString()}
+          </span>{" "}
+          {filteredProducts.length === 1 ? "Product" : "Products"}
+          {isFiltering ? ` of ${products.length.toLocaleString()}` : null}
+        </p>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">

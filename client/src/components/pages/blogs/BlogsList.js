@@ -150,10 +150,10 @@ function BlogsList({ posts }) {
   const filteredPosts = useMemo(() => {
     const matched = isSearching
       ? posts.filter((post) => {
-          const title = post.metadata.title?.toLowerCase() ?? "";
-          const description = post.metadata.description?.toLowerCase() ?? "";
-          return title.includes(query) || description.includes(query);
-        })
+        const title = post.metadata.title?.toLowerCase() ?? "";
+        const description = post.metadata.description?.toLowerCase() ?? "";
+        return title.includes(query) || description.includes(query);
+      })
       : [...posts];
 
     return sortPosts(matched, sort);
@@ -173,14 +173,6 @@ function BlogsList({ posts }) {
 
   return (
     <div className="space-y-10">
-      <p className="text-sm text-muted-foreground">
-        <span className="font-semibold text-green-700">
-          {filteredPosts.length.toLocaleString()}
-        </span>{" "}
-        {filteredPosts.length === 1 ? "Article" : "Articles"}
-        {isSearching ? ` of ${posts.length.toLocaleString()}` : null}
-      </p>
-
       <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
         <BlogSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         <BlogSort sort={sort} onSortChange={setSort} />
