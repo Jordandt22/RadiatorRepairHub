@@ -19,11 +19,12 @@ const BROWSE_LINKS = [
   { label: "Featured", path: "/featured" },
   { label: "Categories", path: "/categories" },
   { label: "States", path: "/states" },
+  { label: "Shop", path: "/shop" },
 ];
 
 const RESOURCE_LINKS = [
   { label: "Blogs", path: "/blogs" },
-  { label: "Shop", path: "/shop" },
+  { label: "Get Listed", path: "/get-listed" },
   { label: "How to Claim", path: "/how-to-claim" },
   { label: "FAQ", path: "/faq" },
 ];
@@ -36,7 +37,9 @@ function isBrowseActive(pathname) {
     pathname.startsWith("/category/") ||
     pathname === "/states" ||
     pathname.startsWith("/states/") ||
-    pathname.startsWith("/state/")
+    pathname.startsWith("/state/") ||
+    pathname === "/shop" ||
+    pathname.startsWith("/shop/")
   );
 }
 
@@ -44,7 +47,8 @@ function isResourcesActive(pathname) {
   return (
     pathname === "/blogs" ||
     pathname.startsWith("/blogs/") ||
-    pathname === "/shop" ||
+    pathname === "/get-listed" ||
+    pathname.startsWith("/get-listed/") ||
     pathname === "/how-to-claim" ||
     pathname.startsWith("/how-to-claim/") ||
     pathname === "/faq"

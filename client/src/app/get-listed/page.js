@@ -1,70 +1,97 @@
 import React from "react";
 import Link from "next/link";
-import { CheckCircle, Users, Search, Eye, TrendingUp } from "lucide-react";
-
-// Contexts
+import {
+  BadgeCheck,
+  Eye,
+  Search,
+  Users,
+} from "lucide-react";
 import { ToastProvider } from "@/contexts/ToastProvider";
-
-// Components
 import ContactForm from "@/components/pages/contact/ContactForm";
 import GetListedHeader from "@/components/pages/get-listed/GetListedHeader";
+import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 import SitePhoneLinks from "@/components/contact/SitePhoneLinks";
 import {
   getBusinessEmail,
   getBusinessPhoneDigits,
 } from "@/lib/businessContactInfo";
+import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
 
-export const metadata = {
-  title: "Get Listed | Add Your Radiator Repair Business - RadiatorRepairHub",
-  description:
-    "List your radiator repair business on RadiatorRepairHub for free. Show up when customers search by city or category for cooling system repair.",
+const pageTitle =
+  "Get Listed | Add Your Radiator Repair Business - RadiatorRepairHub";
+const pageDescription =
+  "List your radiator repair business on RadiatorRepairHub for free. Show up when customers search by city or category for cooling system repair.";
+
+export const metadata = buildPageMetadata({
+  title: pageTitle,
+  description: pageDescription,
   keywords:
     "get listed, radiator repair business listing, auto repair directory, business listing, radiator repair marketing, cooling system business",
-  openGraph: {
-    title: "Get Listed | Add Your Radiator Repair Business - RadiatorRepairHub",
+  path: "/get-listed",
+});
+
+const BENEFITS = [
+  {
+    icon: Users,
+    title: "Reach local customers",
     description:
-      "List your radiator repair business on RadiatorRepairHub for free. Show up when customers search by city or category for cooling system repair.",
-    type: "website",
-    locale: "en_US",
-    siteName: "RadiatorRepairHub",
-    url: "https://radiatorrepairhub.com/get-listed",
-    images: [
-      {
-        url: "https://radiatorrepairhub.com/assets/logos/logo.png",
-        width: 1200,
-        height: 630,
-        alt: "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
-      },
-    ],
+      "Show up for people searching for radiator repair services in your area.",
   },
-  alternates: {
-    canonical: "https://radiatorrepairhub.com/get-listed",
+  {
+    icon: Eye,
+    title: "Show services and contact info",
+    description:
+      "Put your hours, services, and contact details in one place.",
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
+  {
+    icon: Search,
+    title: "Appear by city and category",
+    description:
+      "Be found when customers search by location or repair type.",
   },
-};
+  {
+    icon: BadgeCheck,
+    title: "Claim and manage later",
+    description:
+      "After your listing is live, claim it to update photos, hours, and other business information.",
+  },
+];
+
+const NEXT_STEPS = [
+  "We review your submission within 2–3 business days.",
+  "Once approved, your business appears in the directory.",
+  "You receive an email confirmation when the listing goes live.",
+];
+
+const RELATED_LINKS = [
+  {
+    title: "How to claim",
+    description: "Claim an existing listing and manage it with an account",
+    href: "/how-to-claim",
+  },
+  {
+    title: "FAQ",
+    description: "Answers about listings, claiming, and using the directory",
+    href: "/faq",
+  },
+  {
+    title: "Contact us",
+    description: "Reach the team about listing help or partnerships",
+    href: "/contact",
+  },
+];
 
 const Page = () => {
   const businessEmail = getBusinessEmail();
   const hasPhone = Boolean(getBusinessPhoneDigits());
 
-  // Service Schema for Business Listing
   const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",
     name: "Business Listing Service",
     description: "List your radiator repair business on RadiatorRepairHub",
     provider: {
-      "@id": "https://radiatorrepairhub.com/#organization",
+      "@id": `${SITE_URL}/#organization`,
     },
     serviceType: "Business Directory Listing",
     areaServed: {
@@ -79,33 +106,6 @@ const Page = () => {
     },
   };
 
-  const benefits = [
-    {
-      icon: Users,
-      title: "Reach local customers",
-      description:
-        "Show up for people searching for radiator repair services in your area.",
-    },
-    {
-      icon: Eye,
-      title: "Show services, reviews, and contact info",
-      description:
-        "Put your business details, services, and reviews in one place.",
-    },
-    {
-      icon: Search,
-      title: "Appear in search by city and category",
-      description:
-        "Be found when customers search by location or repair type.",
-    },
-    {
-      icon: TrendingUp,
-      title: "Stay findable online",
-      description:
-        "Keep a public listing customers can use to call or message you.",
-    },
-  ];
-
   return (
     <>
       <script
@@ -115,185 +115,167 @@ const Page = () => {
         }}
       />
       <div className="min-h-screen bg-background pb-24">
-        {/* Header */}
         <GetListedHeader />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-8">
-          {/* Benefits Section */}
-          <div className="mb-20">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-semibold tracking-tight text-foreground mb-4 font-heading">
+        <div className="mx-auto max-w-4xl space-y-12 px-4 py-12 sm:px-6 lg:px-8">
+          <section>
+            <div className="mb-8 text-center">
+              <h2 className="mb-3 font-heading text-3xl font-semibold tracking-tight text-foreground">
                 Why List Your Business?
               </h2>
-              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
                 Add your shop to the RadiatorRepairHub directory so local
                 drivers can find you when they need cooling system repair.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {benefits.map((benefit, index) => {
-                const IconComponent = benefit.icon;
-                return (
-                  <div
-                    key={index}
-                    className="bg-card rounded-lg border border-border p-6"
-                  >
-                    <div className="w-12 h-12 bg-tint rounded-lg flex items-center justify-center mb-4">
-                      <IconComponent className="w-6 h-6 text-primary" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      {benefit.title}
-                    </h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      {benefit.description}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Business Listing Form */}
-          <div className="mb-16">
-            <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-semibold tracking-tight text-foreground mb-4 font-heading">
-                  Submit Your Business
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Fill out the form below to get your business listed in our
-                  directory.
-                </p>
-                <p className="text-base text-muted-foreground mt-3 max-w-2xl mx-auto">
-                  Already in the directory?{" "}
-                  <Link
-                    href="/how-to-claim"
-                    className="text-interactive hover:text-primary underline"
-                  >
-                    Claim your listing
-                  </Link>{" "}
-                  from the business page instead of submitting a duplicate.
-                </p>
-              </div>
-
-              {/* Custom ContactForm with pre-filled subject */}
-              <div className="relative">
-                <ToastProvider>
-                  <ContactForm
-                    prefilledSubject="Business Listing Request"
-                    lockSubject={true}
-                    formTitle="Submit Your Business"
-                    namePlaceholder="Enter your full business name"
-                    nameLabel="Full Business Name"
-                    showSubjectInput={false}
-                    analyticsPage="get-listed"
-                    submissionKind="get-listed"
-                  />
-                </ToastProvider>
-              </div>
-            </div>
-          </div>
-
-          {/* Process Explanation */}
-          <div className="mb-16">
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-card rounded-lg border border-border p-8">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    <CheckCircle className="w-8 h-8 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-foreground mb-4">
-                      What Happens Next?
-                    </h3>
-                    <ol className="list-decimal space-y-3 pl-5 text-muted-foreground">
-                      <li>
-                        We&apos;ll review your submission within 2-3 business
-                        days.
-                      </li>
-                      <li>
-                        Once approved, your business will appear in our
-                        directory.
-                      </li>
-                      <li>
-                        You&apos;ll receive an email confirmation when your
-                        listing goes live.
-                      </li>
-                    </ol>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Free Listing Note */}
-          <div className="mb-8">
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-tint rounded-lg border border-border p-8 text-center">
-                <h3 className="text-2xl font-semibold mb-3 font-heading text-primary">
-                  Free Business Listings
-                </h3>
-                <p className="text-lg text-foreground">
-                  Currently, all listings are free. Paid premium options will be
-                  available in the future.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Contact CTA */}
-          <div className="mb-16">
-            <div className="max-w-4xl mx-auto text-center">
-              <div className="bg-card rounded-lg border border-border p-8">
-                <h3 className="text-xl font-semibold text-foreground mb-4">
-                  Need Help?
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Have questions about listing your business? Email, call, or
-                  text us — we&apos;re here to help!
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                  {businessEmail ? (
-                    <a
-                      href={`mailto:${businessEmail}`}
-                      className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors duration-200"
-                    >
-                      {businessEmail}
-                    </a>
-                  ) : null}
-                  {hasPhone ? (
-                    <div className="text-sm text-foreground">
-                      <SitePhoneLinks showLabel={true} />
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Legal Disclaimer */}
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center text-sm text-muted-foreground">
-              <p>
-                By submitting your business, you agree to our{" "}
-                <a
-                  href="/terms"
-                  className="text-interactive hover:text-primary underline"
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {BENEFITS.map(({ title, description, icon: Icon }) => (
+                <div
+                  key={title}
+                  className="rounded-lg border border-border bg-card p-6"
                 >
-                  Terms of Service
-                </a>{" "}
-                and{" "}
-                <a
-                  href="/privacy"
-                  className="text-interactive hover:text-primary underline"
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-tint">
+                    <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
+                  </div>
+                  <h3 className="mb-2 font-heading text-lg font-semibold text-foreground">
+                    {title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <div className="mb-8 text-center">
+              <h2 className="mb-3 font-heading text-3xl font-semibold tracking-tight text-foreground">
+                Submit Your Business
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Fill out the form below to get your business listed.
+              </p>
+              <p className="mx-auto mt-3 max-w-2xl text-base text-muted-foreground">
+                Already in the directory?{" "}
+                <Link
+                  href="/how-to-claim"
+                  className="font-medium text-interactive underline hover:text-primary"
                 >
-                  Privacy Policy
-                </a>
-                .
+                  Claim your listing
+                </Link>{" "}
+                from the business page instead of submitting a duplicate.
               </p>
             </div>
-          </div>
+
+            <ToastProvider>
+              <ContactForm
+                prefilledSubject="Business Listing Request"
+                lockSubject={true}
+                formTitle="Submit Your Business"
+                namePlaceholder="Enter your full business name"
+                nameLabel="Full Business Name"
+                showSubjectInput={false}
+                analyticsPage="get-listed"
+                submissionKind="get-listed"
+              />
+            </ToastProvider>
+          </section>
+
+          <section className="rounded-lg border border-border bg-card p-6 md:p-8">
+            <h2 className="mb-2 font-heading text-2xl font-semibold tracking-tight text-foreground">
+              What Happens Next?
+            </h2>
+            <p className="mb-6 text-sm text-muted-foreground">
+              Listings are currently free. Paid premium options may be available
+              in the future.
+            </p>
+            <ol className="space-y-4">
+              {NEXT_STEPS.map((step, index) => (
+                <li key={step} className="flex gap-4">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                    {index + 1}
+                  </span>
+                  <p className="pt-1 leading-relaxed text-muted-foreground">
+                    {step}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="rounded-lg border border-border bg-card p-8 text-center">
+              <h3 className="mb-2 font-heading text-xl font-semibold text-foreground">
+                Need help?
+              </h3>
+              <p className="mb-6 text-muted-foreground">
+                Questions about listing your business? Email, call, or text us.
+              </p>
+              <div className="flex flex-col items-center gap-3">
+                {businessEmail ? (
+                  <a
+                    href={`mailto:${businessEmail}`}
+                    className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    {businessEmail}
+                  </a>
+                ) : null}
+                {hasPhone ? (
+                  <SitePhoneLinks
+                    showLabel={true}
+                    linkClassName="text-interactive underline hover:text-primary"
+                  />
+                ) : null}
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center justify-center rounded-full border border-border bg-card px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  Contact form
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border bg-card p-8 text-center">
+              <h3 className="mb-2 font-heading text-xl font-semibold text-foreground">
+                Already listed?
+              </h3>
+              <p className="mb-6 text-muted-foreground">
+                Claim your listing to update hours, photos, and contact details.
+              </p>
+              <Link
+                href="/how-to-claim"
+                className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                How to claim
+              </Link>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="mb-6 font-heading text-2xl font-semibold tracking-tight text-foreground">
+              Related Topics
+            </h2>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {RELATED_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="group rounded-lg border border-border bg-background p-6 transition-colors duration-200 hover:border-interactive"
+                >
+                  <h3 className="mb-2 font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
+                    {link.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {link.description}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <DirectoryDisclaimer className="mb-4" />
         </div>
       </div>
     </>

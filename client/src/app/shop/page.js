@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import BreadcrumbList from "@/components/seo/BreadcrumbList";
+import PageHeader from "@/components/layout/Header/PageHeader";
 import ShopProductsList from "@/components/pages/shop/ShopProductsList";
 import { fetchActiveAffiliateProducts } from "@/lib/api/affiliate-products";
 import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
@@ -43,10 +43,6 @@ async function ShopPage() {
         description: product.description || undefined,
         image: product.image_url || undefined,
         url: product.affiliate_link || product.product_link,
-        brand: {
-          "@type": "Brand",
-          name: "Amazon",
-        },
       },
     })),
   };
@@ -60,63 +56,38 @@ async function ShopPage() {
         />
       ) : null}
 
-      <div className="mx-auto max-w-5xl px-6 py-10 md:py-14">
-        <BreadcrumbList items={breadcrumbItems} variant="light" />
+      <PageHeader
+        breadcrumbItems={breadcrumbItems}
+        pageTitle="Shop"
+        pageDescription="Cooling system tools and supplies we recommend alongside our repair guides—for common DIY top-offs, diagnosis, and maintenance."
+        headerLink={{
+          label: "View blogs",
+          href: "/blogs",
+        }}
+      />
 
-        <header className="mb-10">
-          <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            Shop
-          </h1>
-          <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
-            Cooling system tools and supplies we recommend alongside our repair
-            guides, chosen for common DIY top-offs, diagnosis, and maintenance.
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground/80">
-            As an Amazon Associate, RadiatorRepairHub earns from qualifying
-            purchases.
-          </p>
-        </header>
+      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+        <p className="mb-3 text-sm text-muted-foreground">
+          As an Amazon Associate, RadiatorRepairHub earns from qualifying
+          purchases.
+        </p>
 
-        <section className="mb-10 space-y-4 text-base leading-relaxed text-foreground md:text-lg">
-          <p className="bg-tint p-4 rounded-lg">
+        <div className="mb-10 rounded-lg border border-primary/20 bg-tint p-4 md:p-5">
+          <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
             Start with the right coolant for your vehicle, a correctly rated
             radiator cap, and simple tools that help you spot overheating early.
             Always match coolant type and cap pressure to your owner&apos;s
             manual and never open a hot cooling system.
           </p>
-          <p>
-            Prefer a walkthrough first? Read{" "}
-            <Link
-              href="/blogs/radiator-cap-symptoms-and-replacement"
-              className="font-medium text-interactive underline decoration-interactive/30 underline-offset-2 hover:text-primary"
-            >
-              radiator cap symptoms
-            </Link>
-            ,{" "}
-            <Link
-              href="/blogs/radiator-flush-what-to-expect-and-cost"
-              className="font-medium text-interactive underline decoration-interactive/30 underline-offset-2 hover:text-primary"
-            >
-              what a radiator flush involves
-            </Link>
-            , or{" "}
-            <Link
-              href="/blogs/why-is-my-car-overheating"
-              className="font-medium text-interactive underline decoration-interactive/30 underline-offset-2 hover:text-primary"
-            >
-              why cars overheat
-            </Link>
-            .
-          </p>
-        </section>
+        </div>
 
         <ShopProductsList products={products} />
 
-        <section className="mt-14 border-t border-border pt-10">
+        <section className="mt-14 space-y-8 border-t border-border pt-10">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="font-heading text-xl font-bold text-foreground">
-                Need Guidance First?
+              <h2 className="font-heading text-xl font-semibold text-foreground">
+                Need guidance first?
               </h2>
               <p className="mt-1 text-muted-foreground">
                 Read our cooling system guides before you buy or DIY.
@@ -124,10 +95,28 @@ async function ShopPage() {
             </div>
             <Link
               href="/blogs"
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
             >
               View blogs
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="font-heading text-xl font-semibold text-foreground">
+                Looking for a shop?
+              </h2>
+              <p className="mt-1 text-muted-foreground">
+                Search the directory for radiator repair near you.
+              </p>
+            </div>
+            <Link
+              href="/search?page=1&sort=most_reviews"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors duration-200 hover:bg-muted"
+            >
+              Search directory
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>
         </section>

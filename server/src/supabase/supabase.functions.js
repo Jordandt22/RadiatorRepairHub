@@ -3859,7 +3859,7 @@ const AFFILIATE_PRODUCT_SELECT =
   "id, provider, product_link, affiliate_link, title, description, image_url, is_active, created_at";
 
 const PUBLIC_AFFILIATE_PRODUCT_SELECT =
-  "id, provider, product_link, affiliate_link, title, description, image_url";
+  "id, provider, product_link, affiliate_link, title, description, image_url, created_at";
 
 export const getActiveAffiliateProductsByIds = async (ids) => {
   if (!ids?.length) return { data: [], error: null };

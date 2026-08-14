@@ -570,12 +570,12 @@ const ContactForm = ({
         <div className="pt-4">
           {isSubmitting ? (
             <div
-              className="w-full flex items-center justify-center px-6 py-4 rounded-lg font-semibold bg-muted text-muted-foreground transition-colors duration-300 cursor-not-allowed"
+              className="flex w-full cursor-not-allowed items-center justify-center rounded-full bg-muted px-6 py-4 font-semibold text-muted-foreground transition-colors duration-300"
               role="status"
               aria-live="polite"
             >
               <div
-                className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mr-4"
+                className="mr-4 h-5 w-5 animate-spin rounded-full border-b-2 border-primary"
                 aria-hidden="true"
               ></div>
               {isGetListed ? "Submitting..." : "Sending Message..."}
@@ -584,14 +584,12 @@ const ContactForm = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className={
-                "w-full flex items-center justify-center px-6 py-4 rounded-lg font-semibold text-primary-foreground transition-colors duration-200 cursor-pointer bg-primary hover:bg-primary/90"
-              }
+              className="flex w-full cursor-pointer items-center justify-center rounded-full bg-primary px-6 py-4 font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
               aria-label={
                 isGetListed ? "Submit listing request" : "Send contact message"
               }
             >
-              <Send className="w-5 h-5 mr-2" aria-hidden="true" />
+              <Send className="mr-2 h-5 w-5" aria-hidden="true" />
               {isGetListed ? "Submit Listing Request" : "Send Message"}
             </button>
           )}

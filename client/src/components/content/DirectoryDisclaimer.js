@@ -4,20 +4,20 @@ import Link from "next/link";
 function DirectoryDisclaimer({ className = "mt-12" }) {
   return (
     <section className={className} aria-label="Directory disclaimer">
-      <div className="bg-gray-100 border border-gray-200 rounded-xl p-8">
-        <p className="text-gray-700 leading-relaxed mb-4">
-          <strong>Please note:</strong> RadiatorRepairHub is a business
-          directory only. We do not provide radiator repair services,
-          estimates, or appointments.
+      <div className="rounded-lg border border-border bg-card p-8">
+        <p className="mb-4 leading-relaxed text-muted-foreground">
+          <strong className="text-foreground">Please note:</strong>{" "}
+          RadiatorRepairHub is a business directory only. We do not provide
+          radiator repair services, estimates, or appointments.
         </p>
-        <p className="text-gray-700 leading-relaxed mb-3">
+        <p className="mb-3 leading-relaxed text-muted-foreground">
           If you need actual service, please:
         </p>
-        <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4 ml-2">
+        <ul className="mb-4 ml-2 list-inside list-disc space-y-2 text-muted-foreground">
           <li>
             <Link
-              href="/search"
-              className="text-blue-600 hover:text-blue-800 underline"
+              href="/search?page=1&sort=most_reviews"
+              className="font-medium text-interactive underline hover:text-primary"
             >
               Use our search
             </Link>{" "}
@@ -27,7 +27,7 @@ function DirectoryDisclaimer({ className = "mt-12" }) {
             Contact the business directly using their listed contact information
           </li>
         </ul>
-        <p className="text-gray-700 leading-relaxed">
+        <p className="leading-relaxed text-muted-foreground">
           Contact us if you need help finding shops near you.
         </p>
       </div>
