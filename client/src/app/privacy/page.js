@@ -11,13 +11,13 @@ import {
 export const metadata = {
   title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
   description:
-    "How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing reports, and accounts.",
+    "How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing reports, accounts, analytics, and affiliate product links.",
   keywords:
     "privacy policy, data protection, personal information, GDPR, CCPA, privacy rights, data security",
   openGraph: {
     title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
     description:
-      "How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing reports, and accounts.",
+      "How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing reports, accounts, analytics, and affiliate product links.",
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
@@ -37,7 +37,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date("2026-08-09").toLocaleDateString("en-US", {
+  const lastUpdated = new Date("2026-08-13").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -65,12 +65,12 @@ function PrivacyPage() {
         {
           label: "Contact Information:",
           description:
-            "Name, email address, phone number, and mailing address when you contact us directly by email or phone outside of our online forms.",
+            "Name, email address, and phone number when you contact us directly by email, phone, or SMS outside of our online forms. If you voluntarily include a mailing address in that communication, we may retain it as part of the correspondence.",
         },
         {
           label: "Business Information:",
           description:
-            "If you're a business owner requesting to be listed, we may collect business name, Google listing link, contact details, and related information needed to create or update a directory listing.",
+            "If you're a business owner requesting to be listed or updating a claimed listing, we may collect business name, Google listing link, phone number, email address, website, hours, services, photos, and related information needed to create or update a directory listing. When you change a listing phone number or email through your account, we may verify those values before saving them.",
         },
         {
           label: "Business Claim Information:",
@@ -93,9 +93,9 @@ function PrivacyPage() {
             "Content of messages, emails, or other communications you send to us, including general contact form messages, Quick Contact inquiry details, claim-related emails, listing report details, and optional site feedback survey comments.",
         },
         {
-          label: "Feedback and Reviews:",
+          label: "Directory Ratings and Reviews:",
           description:
-            "Any reviews, ratings, or feedback you choose to submit about listed businesses, as well as optional site feedback survey responses about RadiatorRepairHub.",
+            "Listings may display aggregated ratings and review counts sourced from third-party public sources such as Google. We do not operate an on-site form for submitting reviews of listed businesses. Optional site feedback survey responses about RadiatorRepairHub are collected separately as described above.",
         },
         {
           label: "Account Information:",
@@ -110,7 +110,7 @@ function PrivacyPage() {
         {
           label: "Usage Data:",
           description:
-            "Pages visited, time spent on pages, search queries, click patterns, and navigation paths.",
+            "Pages visited, time spent on pages, search queries, click patterns (including clicks on affiliate product links), and navigation paths.",
         },
         {
           label: "Device Information:",
@@ -140,12 +140,17 @@ function PrivacyPage() {
         {
           label: "Analytics Cookies:",
           description:
-            "Help us understand how visitors use our site. We use Google Analytics and PostHog to collect usage data such as pages visited, session duration, and navigation patterns.",
+            "Help us understand how visitors use our site. We use Google Analytics and PostHog to collect usage data such as pages visited, session duration, navigation patterns, and product-interaction events.",
         },
         {
           label: "Security and Performance Cookies:",
           description:
-            "Cloudflare may set cookies and use similar technologies to deliver content securely, protect against malicious traffic, and improve site performance.",
+            "Cloudflare may set cookies and use similar technologies to deliver content securely, protect against malicious traffic, and improve site performance. Our API also uses Arcjet for bot detection and rate limiting, which processes request IP addresses and related request metadata.",
+        },
+        {
+          label: "Affiliate Link Tracking:",
+          description:
+            "When you click an Amazon Associate or other affiliate product link on our Shop page, blog posts, or business listing pages, we may record an analytics event (for example, which product was clicked). Amazon or other retailers may also set their own cookies when you leave our site; those practices are governed by their privacy policies.",
         },
         {
           label: "Local Storage:",
@@ -191,12 +196,12 @@ function PrivacyPage() {
         {
           label: "Purpose:",
           description:
-            "Product analytics, page view tracking, session recording insights, and understanding how users interact with our site.",
+            "Product analytics, page view tracking, and understanding how users interact with our site (including search, forms, claims, and affiliate product clicks).",
         },
         {
           label: "Data Collected:",
           description:
-            "Page URLs, referrer, browser and device information, session identifiers, and interaction events. PostHog is configured to create user profiles only for identified users.",
+            "Page URLs, referrer, browser and device information, session identifiers, and interaction events. PostHog is configured to create user profiles only for identified users. We do not currently enable PostHog session recording on our site.",
         },
         {
           label: "Privacy Policy:",
@@ -214,7 +219,7 @@ function PrivacyPage() {
         {
           label: "Purpose:",
           description:
-            "Content delivery (CDN), DNS resolution, DDoS protection, bot mitigation, and web application security.",
+            "Content delivery (CDN), image delivery, DNS resolution, DDoS protection, bot mitigation, and web application security.",
         },
         {
           label: "Data Collected:",
@@ -224,6 +229,29 @@ function PrivacyPage() {
         {
           label: "Privacy Policy:",
           description: "https://www.cloudflare.com/privacypolicy/",
+        },
+      ],
+    },
+    {
+      title: "Arcjet",
+      bulletPoints: [
+        {
+          label: "Provider:",
+          description: "Arcjet Labs, Inc.",
+        },
+        {
+          label: "Purpose:",
+          description:
+            "Protect our API from bots, abuse, and excessive request volume through bot detection, shielding, and rate limiting.",
+        },
+        {
+          label: "Data Collected:",
+          description:
+            "Request IP address, request headers, and related request metadata needed to make security decisions. Request bodies are not sent to Arcjet for analysis under our current configuration.",
+        },
+        {
+          label: "Privacy Policy:",
+          description: "https://docs.arcjet.com/privacy/",
         },
       ],
     },
@@ -260,12 +288,12 @@ function PrivacyPage() {
         {
           label: "Purpose:",
           description:
-            "Database hosting and backend data storage for our directory, Contact and Get Listed submissions, Quick Contact messages, user accounts, business claim requests, listing reports, optional site feedback survey responses, and related operational records.",
+            "Database hosting, authentication, and backend data storage for our directory, Contact and Get Listed submissions, Quick Contact messages, user accounts, business claim requests, listing reports, optional site feedback survey responses, and related operational records.",
         },
         {
           label: "Data Collected:",
           description:
-            "Quick Contact submission data; account credentials and ownership links; claim-request records; listing report data (including reporter contact details and suggested corrections); site feedback survey answers (how you found us, whether you found what you were looking for, optional comments, form type, and related business identifiers when applicable); associated business identifiers; and operational metadata such as timestamps and processing status.",
+            "Contact and Get Listed submission data; Quick Contact submission data; account credentials and ownership links; claim-request records; listing report data (including reporter contact details and suggested corrections); site feedback survey answers (how you found us, whether you found what you were looking for, optional comments, form type, and related business identifiers when applicable); associated business identifiers; and operational metadata such as timestamps and processing status.",
         },
         {
           label: "Privacy Policy:",
@@ -274,7 +302,7 @@ function PrivacyPage() {
       ],
     },
     {
-      title: "Abstract API (Email Reputation)",
+      title: "Abstract API",
       bulletPoints: [
         {
           label: "Provider:",
@@ -283,16 +311,39 @@ function PrivacyPage() {
         {
           label: "Purpose:",
           description:
-            "Verify that email addresses submitted through Quick Contact and listing reports appear deliverable before we accept and store the submission.",
+            "Verify that email addresses submitted through Contact, Get Listed, Quick Contact, and listing reports appear deliverable before we accept and store the submission. When a claimed business owner updates listing contact details, we may also verify a changed email address (Email Reputation) and a changed phone number (Phone Intelligence).",
         },
         {
           label: "Data Collected:",
           description:
-            "The email address you submit on a Quick Contact form or listing report.",
+            "The email address you submit on Contact, Get Listed, Quick Contact, or listing report forms, and any email address or phone number a claimed owner submits when updating listing contact information.",
         },
         {
           label: "Privacy Policy:",
           description: "https://www.abstractapi.com/legal/privacy-policy",
+        },
+      ],
+    },
+    {
+      title: "Amazon (Amazon Associates)",
+      bulletPoints: [
+        {
+          label: "Provider:",
+          description: "Amazon.com, Inc. and its affiliates",
+        },
+        {
+          label: "Purpose:",
+          description:
+            "As an Amazon Associate, we may earn from qualifying purchases when you click product links on our Shop page, blog posts, home page, FAQ, or business listing pages and complete a purchase on Amazon. Product pages on our site include affiliate disclosures.",
+        },
+        {
+          label: "Data Collected:",
+          description:
+            "We may record analytics events when you click an affiliate product link. Amazon may collect information about your visit and purchases under its own privacy policy once you leave our site. We do not receive your Amazon account credentials or full order details from Amazon for these referrals.",
+        },
+        {
+          label: "Privacy Policy:",
+          description: "https://www.amazon.com/gp/help/customer/display.html?nodeId=468496",
         },
       ],
     },
@@ -341,6 +392,11 @@ function PrivacyPage() {
             "Allow claimed business owners to sign in, manage listing information, and maintain their accounts.",
         },
         {
+          label: "Affiliate Recommendations:",
+          description:
+            "Display Tools & Supplies and related product recommendations, measure affiliate link clicks, and participate in the Amazon Associates program.",
+        },
+        {
           label: "User Experience:",
           description: "Improve website functionality and user interface.",
         },
@@ -362,7 +418,7 @@ function PrivacyPage() {
         {
           label: "Performance Monitoring:",
           description:
-            "Identify and fix technical issues, and protect the site from abuse through Cloudflare security services.",
+            "Identify and fix technical issues, and protect the site and API from abuse through Cloudflare and Arcjet security services.",
         },
         {
           label: "Content Optimization:",
@@ -384,7 +440,7 @@ function PrivacyPage() {
         {
           label: "Security:",
           description:
-            "Protect against fraud, abuse, and security threats, including verifying email addresses submitted through Quick Contact and listing reports, and reviewing disputed or fraudulent business claims.",
+            "Protect against fraud, abuse, and security threats, including verifying email addresses submitted through Contact, Get Listed, Quick Contact, and listing reports; verifying changed listing phone numbers or emails on claimed listings; and reviewing disputed or fraudulent business claims.",
         },
         {
           label: "Legal Proceedings:",
@@ -397,10 +453,13 @@ function PrivacyPage() {
 
   const serviceProviderBulletPoints = [
     {
-      label: "Web hosting, application infrastructure, and database storage (Supabase, Vercel, Heroku)",
+      label: "Web hosting, application infrastructure, and database storage (Supabase, Vercel)",
     },
     {
-      label: "Content delivery, DNS, and security (Cloudflare)",
+      label: "Content delivery, DNS, images, and edge security (Cloudflare)",
+    },
+    {
+      label: "API bot protection and rate limiting (Arcjet)",
     },
     {
       label: "Website analytics (Google Analytics, PostHog)",
@@ -409,7 +468,10 @@ function PrivacyPage() {
       label: "Transactional email delivery (Resend)",
     },
     {
-      label: "Email address verification (Abstract API)",
+      label: "Email and phone verification (Abstract API)",
+    },
+    {
+      label: "Affiliate product referrals (Amazon Associates)",
     },
     {
       label: "Security and fraud prevention",
@@ -526,7 +588,8 @@ function PrivacyPage() {
             "Request deletion of your personal information, subject to legal requirements",
         },
         {
-          label: "Request removal of reviews or feedback you've submitted",
+          label:
+            "Request deletion of optional site feedback survey responses you submitted",
         },
       ],
     },
@@ -562,7 +625,7 @@ function PrivacyPage() {
     {
       title: "Third-Party Links and Services",
       content:
-        "Our directory contains links to third-party websites and businesses. This Privacy Policy does not apply to those third-party sites or services. We are not responsible for the privacy practices or content of third-party websites. We encourage you to review the privacy policies of any third-party sites you visit. For third-party services we use to operate our website (such as Google Analytics, PostHog, Cloudflare, Resend, Supabase, and Abstract API), see the Third-Party Services section above.",
+        "Our directory, blog, and Shop pages contain links to third-party websites, businesses, and retailers (including Amazon). This Privacy Policy does not apply to those third-party sites or services. We are not responsible for the privacy practices or content of third-party websites. We encourage you to review the privacy policies of any third-party sites you visit. For third-party services we use to operate our website (such as Google Analytics, PostHog, Cloudflare, Arcjet, Resend, Supabase, Abstract API, and Amazon Associates), see the Third-Party Services section above.",
     },
     {
       title: "International Data Transfers",
@@ -651,8 +714,9 @@ function PrivacyPage() {
             RadiatorRepairHub (&quot;we,&quot; &quot;our,&quot; &quot;us,&quot;
             or &quot;Company&quot;) operates the website {process.env.WEB_URL}{" "}
             (the &quot;Service&quot;), which provides a directory of radiator
-            repair businesses. We are committed to protecting your privacy and
-            handling your personal information responsibly.
+            repair businesses, related educational content, and Tools &amp;
+            Supplies product recommendations. We are committed to protecting
+            your privacy and handling your personal information responsibly.
           </p>
           <p className="mt-4 text-gray-700 leading-relaxed">
             This Privacy Policy explains how we collect, use, disclose, and

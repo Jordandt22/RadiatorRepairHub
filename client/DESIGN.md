@@ -10,14 +10,14 @@ Blue is the only brand accent. Use tokens, never raw Tailwind palette classes.
 
 | Role        | Hex       | Token / class                          |
 | ----------- | --------- | -------------------------------------- |
-| Primary     | `#1E6BB8` | `--primary` → `bg-primary`             |
-| Interactive | `#3B82C4` | `--interactive` → `text-interactive`   |
-| Tint        | `#E3F0FA` | `--tint` → `bg-tint`                   |
+| Primary     | `#2B50AA` | `--primary` → `bg-primary`             |
+| Interactive | `#0090C1` | `--interactive` → `text-interactive`   |
+| Tint        | `#E7F0FF` | `--tint` → `bg-tint`                   |
 | Page        | `#F7F9FB` | `--background` → `bg-background`       |
 | Surface     | `#FFFFFF` | `--card` → `bg-card`                   |
 | Text        | `#1A2332` | `--foreground` → `text-foreground`     |
 | Muted text  | `#5C6B7A` | `--muted-foreground`                   |
-| Border      | `#D5DEE6` | `--border` → `border-border`           |
+| Border      | `#C1CFDA` | `--border` → `border-border`           |
 
 Semantic colors (not brand): quiet green for open/verified, red for
 closed/errors, amber only for true warnings. Never use emerald, purple,

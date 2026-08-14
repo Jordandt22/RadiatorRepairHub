@@ -10,14 +10,14 @@ import {
 export const metadata = {
   title: "Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
   description:
-    "RadiatorRepairHub terms of service: directory use, Quick Contact, business claims, listing reports, accounts, and user responsibilities.",
+    "RadiatorRepairHub terms of service: directory use, Quick Contact, business claims, listing reports, accounts, Shop affiliate links, and user responsibilities.",
   keywords:
     "terms of service, user agreement, legal terms, terms and conditions, service agreement, user rights",
   openGraph: {
     title:
       "Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
     description:
-      "RadiatorRepairHub terms of service: directory use, Quick Contact, business claims, listing reports, accounts, and user responsibilities.",
+      "RadiatorRepairHub terms of service: directory use, Quick Contact, business claims, listing reports, accounts, Shop affiliate links, and user responsibilities.",
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
@@ -36,7 +36,7 @@ function TermsPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date("2026-08-09").toLocaleDateString("en-US", {
+  const lastUpdated = new Date("2026-08-13").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -44,13 +44,15 @@ function TermsPage() {
 
   const serviceDescriptionPoints = [
     "A searchable database of radiator repair shops and service providers",
-    "Business contact information, locations, and service details",
+    "Business contact information, locations, hours, services, photos, and third-party review summaries",
     "Search and filtering capabilities",
+    "Educational blog and FAQ content about radiator repair and using the directory",
     "General contact forms for directory questions, listing help, and feedback",
     "Quick Contact, a tool to submit service inquiries to listed businesses",
-    "Business claiming, so eligible owners can verify listing email access and create an account to manage their listing",
+    "Business claiming, so eligible owners can verify listing email access and create an account to manage their listing through a dashboard and account settings",
     "Report Info, a tool to report incorrect claim contact details, incorrect or outdated listing info, or inappropriate listing content",
     "An optional short site feedback survey that may appear after you submit certain forms",
+    "A Tools & Supplies Shop and related product recommendations, including Amazon Associate affiliate links",
   ];
 
   const quickContactTermsPoints = [
@@ -59,7 +61,7 @@ function TermsPage() {
     "After a successful Contact, Get Listed, or Quick Contact submission, we may show an optional short site feedback survey. Responses are voluntary and described in our Privacy Policy.",
     "Quick Contact messages are reviewed before they may be forwarded to a listed business; delivery is not guaranteed and may take additional time.",
     "We may decline, flag, archive, or not forward messages that appear fraudulent, abusive, incomplete, undeliverable, or otherwise inappropriate.",
-    "We may verify the email address you provide before accepting a Quick Contact submission.",
+    "We may verify the email address you provide before accepting Contact, Get Listed, Quick Contact, or listing report submissions.",
     "We facilitate communication between you and listed businesses but do not guarantee a response, appointment, quote, or repair outcome.",
     "Your repair or service relationship, if any, is solely between you and the listed business.",
   ];
@@ -70,7 +72,8 @@ function TermsPage() {
     "We may send a verification code or link to the email address associated with the listing. Access to that inbox is part of how we confirm eligibility.",
     "We may deny, pause, expire, cancel, or reverse a claim if we cannot verify authorization, if eligibility requirements are not met, or if we suspect fraud or abuse.",
     "Self-serve claiming may be unavailable when a listing has no email on file or when the same email is shared across multiple listings. In those cases, use Report Info or contact us for help.",
-    "After a successful claim, you may create or use an account to manage the claimed listing, subject to these Terms and our Privacy Policy.",
+    "After a successful claim, you may create or use an account to manage the claimed listing through the dashboard and account settings, subject to these Terms and our Privacy Policy.",
+    "When you update listing contact details through your account, we may verify changed phone numbers or email addresses before saving them.",
     "Claiming does not transfer ownership of our directory data or grant you rights beyond managing your listing through the Service.",
   ];
 
@@ -83,6 +86,14 @@ function TermsPage() {
     "After a successful Report Info submission, we may show an optional short site feedback survey. Responses are voluntary and described in our Privacy Policy.",
   ];
 
+  const affiliateTermsPoints = [
+    "Our Shop page and certain blog, home, FAQ, and business listing pages may display Tools & Supplies or other product recommendations with links to third-party retailers such as Amazon.",
+    "As an Amazon Associate, RadiatorRepairHub may earn from qualifying purchases. Product sections include affiliate disclosures.",
+    "Affiliate product links open on third-party sites. Purchases, shipping, returns, warranties, and product quality are solely between you and the retailer.",
+    "We do not guarantee product availability, pricing, compatibility, or fitness for your vehicle or repair needs.",
+    "Affiliate recommendations are not endorsements of any listed radiator repair business, and listed businesses are not responsible for affiliate products shown near their listings.",
+  ];
+
   const capacityRequirements = [
     "You have the legal capacity to enter into this Agreement",
     "You are not prohibited from using the Service under applicable law",
@@ -93,6 +104,8 @@ function TermsPage() {
     "Search for radiator repair businesses in your area",
     "View business contact information and details",
     "Contact businesses through provided information",
+    "Read blog, FAQ, and other educational content on the Service",
+    "Browse Tools & Supplies recommendations and follow affiliate product links",
     "Submit general inquiries through our site contact forms",
     "Submit service inquiries to listed businesses through Quick Contact, subject to review",
     "Claim an eligible business listing you are authorized to represent, and manage that listing through your account",
@@ -167,6 +180,8 @@ function TermsPage() {
     "The safety or legality of interactions with listed businesses",
     "That a business claim will succeed, remain approved, or resolve ownership disputes",
     "That a listing report will result in a specific correction or outcome",
+    "The accuracy of third-party review scores or review counts displayed on listings",
+    "Affiliate product availability, pricing, compatibility, or purchase outcomes on Amazon or other retailers",
   ];
 
   const technicalLimitationsPoints = [
@@ -193,6 +208,7 @@ function TermsPage() {
     "Fraudulent or deceptive business practices",
     "Failure of a business to respond to a Quick Contact or other inquiry",
     "Disputes over business ownership or who may claim a listing",
+    "Purchases, shipping, returns, or product issues arising from affiliate or third-party retailer links",
   ];
 
   const indemnificationPoints = [
@@ -302,9 +318,10 @@ function TermsPage() {
             Age Requirements
           </h3>
           <p className="mt-2 text-gray-700 leading-relaxed">
-            You must be at least 13 years of age to use this Service. If you are
-            under 13, you may only use the Service with the involvement and
-            consent of a parent or legal guardian.
+            You must be at least 13 years of age to use this Service. The
+            Service is not intended for children under 13, and we do not
+            knowingly collect personal information from children under 13. If
+            you are under 13, you may not use the Service.
           </p>
 
           <h3 className="text-xl font-heading font-semibold mt-6 mb-4">
@@ -425,6 +442,11 @@ function TermsPage() {
             <li className="mb-2 ml-6">
               • Not independently verified by us for every listing, even when a
               listing shows as claimed
+            </li>
+            <li className="mb-2 ml-6">
+              • May include aggregated ratings or review counts from third-party
+              sources such as Google; we do not host an on-site review
+              submission form for listed businesses
             </li>
           </ul>
 
@@ -573,6 +595,34 @@ function TermsPage() {
 
         <section className="mb-12">
           <h2 className="text-3xl font-heading font-bold mt-6">
+            Tools &amp; Supplies and Affiliate Links
+          </h2>
+          <p className="mt-4 text-gray-700 leading-relaxed">
+            Parts of the Service include product recommendations and a Shop
+            experience. By using those features, you agree to the following:
+          </p>
+          <ul className="mt-4 text-gray-700 space-y-2">
+            {affiliateTermsPoints.map((point, index) => (
+              <li key={index} className="mb-2 ml-6">
+                • {point}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-gray-700 leading-relaxed">
+            More detail on how affiliate click analytics work is described in
+            our{" "}
+            <a
+              href="/privacy"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Privacy Policy
+            </a>
+            .
+          </p>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="text-3xl font-heading font-bold mt-6">
             Intellectual Property Rights
           </h2>
 
@@ -642,8 +692,12 @@ function TermsPage() {
               interaction tracking
             </li>
             <li className="mb-2 ml-6">
-              • <strong>Cloudflare</strong> - content delivery, DNS, security,
-              and bot protection
+              • <strong>Cloudflare</strong> - content delivery, DNS, images,
+              security, and bot protection
+            </li>
+            <li className="mb-2 ml-6">
+              • <strong>Arcjet</strong> - API bot protection, shielding, and
+              rate limiting
             </li>
             <li className="mb-2 ml-6">
               • <strong>Resend</strong> - transactional email for Contact, Get
@@ -651,13 +705,20 @@ function TermsPage() {
               notifications, and related communications
             </li>
             <li className="mb-2 ml-6">
-              • <strong>Supabase</strong> - database storage for directory,
-              contact inquiries, listing requests, contact messages, accounts,
-              claim requests, and listing reports
+              • <strong>Supabase</strong> - database storage and authentication
+              for directory data, contact inquiries, listing requests, contact
+              messages, accounts, claim requests, listing reports, and feedback
+              surveys
             </li>
             <li className="mb-2 ml-6">
               • <strong>Abstract API</strong> - email address verification for
-              Contact, Get Listed, Quick Contact, and listing report submissions
+              Contact, Get Listed, Quick Contact, and listing report
+              submissions, and email/phone verification for claimed listing
+              contact updates
+            </li>
+            <li className="mb-2 ml-6">
+              • <strong>Amazon Associates</strong> - affiliate product referrals
+              from our Shop and related recommendation sections
             </li>
           </ul>
           <p className="mt-4 text-gray-700 leading-relaxed">
