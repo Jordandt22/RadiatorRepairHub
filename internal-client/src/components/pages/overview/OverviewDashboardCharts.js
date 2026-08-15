@@ -179,7 +179,7 @@ export default function OverviewDashboardCharts({ stats = null }) {
         />
         <OverviewStatPieCard
           title="Claim eligibility"
-          description="Able, no email, duplicate email, and claimed"
+          description="Able, no email, email review, duplicate email, and claimed"
           centerLabel="Businesses"
           valueLabel="Businesses"
           chart={stats?.claim_eligibility}

@@ -85,6 +85,7 @@ import {
 } from "../../redis/redis.js";
 import { clearClaimCodeCache } from "../../lib/claimHelpers.js";
 import { buildFreeLeadEmailPayload } from "../../lib/contactMessageSend.js";
+import { isEmailUnderReview } from "../../lib/emailStatus.js";
 import {
   applyOutreachDevelopmentCap,
   buildOutreachEmailContent,
@@ -510,6 +511,11 @@ export const sendContactMessages = async (req, res) => {
 
     if (!businessEmail) {
       skipped.push({ id, reason: "missing_business_email" });
+      continue;
+    }
+
+    if (isEmailUnderReview(message.business?.email_status)) {
+      skipped.push({ id, reason: "email_under_review" });
       continue;
     }
 
@@ -2185,6 +2191,20 @@ export const clearBusinessEmails = async (req, res) => {
   );
 };
 
+const invalidatePublicBusinessListingCaches = async (businesses = []) => {
+  for (const business of businesses) {
+    if (!business?.id) continue;
+    const { key: businessIdCacheKey } = getBusinessByIdKey(business.id);
+    await deleteCacheData(businessIdCacheKey);
+    if (business.slug) {
+      const { key: businessSlugCacheKey } = getBusinessBySlugKey(business.slug);
+      await deleteCacheData(businessSlugCacheKey);
+    }
+  }
+  await deleteCacheDataByPrefix("FEATURED_BUSINESSES");
+  await deleteCacheDataByPrefix("SEARCHED_BUSINESSES");
+};
+
 export const markBusinessEmailStatus = async (req, res) => {
   const { business_ids, email_status } = req.body;
 
@@ -2206,6 +2226,8 @@ export const markBusinessEmailStatus = async (req, res) => {
   }
 
   await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+  await invalidatePublicBusinessListingCaches(data ?? []);
 
   const markedIds = (data ?? []).map((row) => row.id);
 
@@ -2248,12 +2270,7 @@ export const updateBusinessEmail = async (req, res) => {
   }
 
   try {
-    const { key: businessIdCacheKey } = getBusinessByIdKey(data.id);
-    await deleteCacheData(businessIdCacheKey);
-    if (data.slug) {
-      const { key: businessSlugCacheKey } = getBusinessBySlugKey(data.slug);
-      await deleteCacheData(businessSlugCacheKey);
-    }
+    await invalidatePublicBusinessListingCaches([data]);
   } catch {
     // best-effort cache cleanup
   }
@@ -2339,12 +2356,7 @@ export const updateBusinessListing = async (req, res) => {
   }
 
   try {
-    const { key: businessIdCacheKey } = getBusinessByIdKey(data.id);
-    await deleteCacheData(businessIdCacheKey);
-    if (data.slug) {
-      const { key: businessSlugCacheKey } = getBusinessBySlugKey(data.slug);
-      await deleteCacheData(businessSlugCacheKey);
-    }
+    await invalidatePublicBusinessListingCaches([data]);
   } catch {
     // best-effort cache cleanup
   }
@@ -3357,11 +3369,16 @@ export const getOutreachHistoryList = async (req, res) => {
           req.query.email_changed_or_missing === "false"
         ? false
         : null;
+  const businessId =
+    typeof req.query.business_id === "string" && req.query.business_id.trim()
+      ? req.query.business_id.trim()
+      : null;
 
   const { data, count, error } = await fetchOutreachHistory(page, limit, {
     outreachType,
     q,
     emailChangedOrMissing,
+    businessId,
   });
 
   if (error) {
@@ -3392,6 +3409,7 @@ export const getOutreachHistoryList = async (req, res) => {
       outreach_type: outreachType,
       q,
       email_changed_or_missing: emailChangedOrMissing,
+      business_id: businessId,
     })
   );
 };

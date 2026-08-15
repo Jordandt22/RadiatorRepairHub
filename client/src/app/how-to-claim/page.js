@@ -67,6 +67,11 @@ function buildClaimFaqs(supportEmail) {
         "If incorrect or missing contact info is blocking your claim, open your business listing and use the Report Info button under Contact Information. Choose the option for wrong claim contact info, tell us the correct details, and we'll review it so you can try claiming again.",
     },
     {
+      question: "Why does the listing say the email is being reviewed?",
+      answer:
+        "We sometimes pause claiming and Quick Contact while we confirm the listing email is correct. Use Report Info on the business page if the contact is wrong, and we'll review it so you can try claiming again.",
+    },
+    {
       question: "What if other listing details are wrong?",
       answer:
         "Use the same Report Info button on the business page to report outdated or incorrect listing content, or reach us through the contact page and choose Report a Listing Problem.",
@@ -137,6 +142,16 @@ export default function HowToClaimPage() {
                 A shared or corporate inbox is used by more than one listing.
                 Self-serve email claim is disabled so one account cannot lock
                 that inbox for every location.
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted p-4">
+              <h3 className="mb-1 font-semibold text-foreground">
+                Unclaimable: Email Being Reviewed
+              </h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Claiming is paused while we confirm the listing email is
+                correct. Use Report Info on the business page if the contact is
+                wrong.
               </p>
             </div>
           </div>

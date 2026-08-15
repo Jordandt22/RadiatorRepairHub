@@ -16,6 +16,7 @@ import {
   getBusinessByIdKey,
   setWithExactTtl,
   deleteCacheData,
+  deleteCacheDataByPrefix,
 } from "../redis/redis.js";
 import {
   getTopRatedBusinesses,
@@ -25,6 +26,7 @@ import {
   getBusinessClaimInfo,
   isBusinessEmailShared,
   getBusinessLastEditedAt,
+  getBusinessEmailStatus,
   insertClaimRequest,
   updateClaimRequestStatus,
   getClaimRequestWithBusiness,
@@ -75,6 +77,11 @@ import {
   failClaimForMaxAttempts,
   expireStalePendingClaimsForBusiness,
 } from "../lib/claimHelpers.js";
+import {
+  EMAIL_STATUS,
+  EMAIL_UNDER_REVIEW_MESSAGE,
+  isEmailUnderReview,
+} from "../lib/emailStatus.js";
 import { verifyEmailReputation } from "../abstract/emailReputation.js";
 import { verifyPhoneNumber } from "../abstract/phoneValidation.js";
 import { verifyWebsiteReachable } from "../lib/websiteReachability.js";
@@ -93,6 +100,11 @@ const generateClaimCode = (length = 6) => {
   }
   return code;
 };
+
+const respondEmailUnderReview = (res) =>
+  res
+    .status(422)
+    .json(customErrorHandler(YUP_ERROR, EMAIL_UNDER_REVIEW_MESSAGE));
 
 export const claimBusiness = async (req, res) => {
   const { businessId } = req.body;
@@ -124,6 +136,10 @@ export const claimBusiness = async (req, res) => {
           "This business cannot be claimed because it has no email on file."
         )
       );
+  }
+
+  if (isEmailUnderReview(business.email_status)) {
+    return respondEmailUnderReview(res);
   }
 
   const { isShared, error: sharedEmailError } =
@@ -382,6 +398,10 @@ export const getClaimRequest = async (req, res) => {
       );
   }
 
+  if (isEmailUnderReview(business.email_status)) {
+    return respondEmailUnderReview(res);
+  }
+
   return res.status(200).json(
     successHandler({
       claimRequestId: claim.claim_request_id,
@@ -550,6 +570,10 @@ export const completeClaim = async (req, res) => {
           "This business cannot be claimed because it has no email on file."
         )
       );
+  }
+
+  if (isEmailUnderReview(business.email_status)) {
+    return respondEmailUnderReview(res);
   }
 
   const { key: codeKey } = getClaimRequestCodeKey(claimRequestId);
@@ -855,6 +879,10 @@ export const resendClaim = async (req, res) => {
           "This business cannot be claimed because it has no email on file."
         )
       );
+  }
+
+  if (isEmailUnderReview(business.email_status)) {
+    return respondEmailUnderReview(res);
   }
 
   const { key, interval } = getClaimRequestCodeKey(claimRequestId);
@@ -1214,6 +1242,12 @@ export const updateBusinessContact = async (req, res) => {
       phone: normalizedPhone,
       email: normalizedEmail,
       website: savedWebsite,
+      ...(emailChanged
+        ? {
+            email_status: EMAIL_STATUS.CHECKED,
+            email_status_marked_at: new Date().toISOString(),
+          }
+        : {}),
     },
     accessToken
   );
@@ -1233,6 +1267,10 @@ export const updateBusinessContact = async (req, res) => {
   const { data: business } = await getBusinessById(businessId);
   if (business) {
     await invalidateBusinessCache(business);
+  }
+  if (emailChanged) {
+    await deleteCacheDataByPrefix("FEATURED_BUSINESSES");
+    await deleteCacheDataByPrefix("SEARCHED_BUSINESSES");
   }
 
   return res.status(200).json(
@@ -1814,10 +1852,20 @@ export const getBusiness = async (req, res) => {
     }
   }
 
+  let emailStatus = business?.email_status ?? null;
+  if (business?.id) {
+    const { data: liveEmailStatus, error: emailStatusError } =
+      await getBusinessEmailStatus(business.id);
+    if (!emailStatusError && liveEmailStatus != null) {
+      emailStatus = liveEmailStatus;
+    }
+  }
+
   res.status(200).json(
     successHandler({
       ...business,
       last_edited_at: lastEditedAt,
+      email_status: emailStatus,
       has_duplicate_email: isShared,
     })
   );

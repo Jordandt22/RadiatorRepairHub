@@ -31,6 +31,7 @@ export default function EmailCleanerMarkStatusDialog({
   open,
   onOpenChange,
   selectedCount = 0,
+  initialStatus = null,
   onConfirm,
   confirmPending = false,
   confirmError = null,
@@ -39,9 +40,12 @@ export default function EmailCleanerMarkStatusDialog({
 
   useEffect(() => {
     if (open) {
-      setStatus(null);
+      const match = initialStatus
+        ? EMAIL_STATUS_OPTIONS.find((option) => option.id === initialStatus)
+        : null;
+      setStatus(match ?? null);
     }
-  }, [open]);
+  }, [open, initialStatus]);
 
   const handleConfirm = () => {
     if (!status?.id) return;

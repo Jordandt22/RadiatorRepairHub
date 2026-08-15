@@ -683,6 +683,7 @@ export const OUTREACH_TYPES = [
 export const CLAIM_ELIGIBILITY_VALUES = [
   "able",
   "no_email",
+  "email_review",
   "duplicate_email",
   "claimed",
 ];
@@ -883,6 +884,15 @@ export const GetOutreachHistoryQuerySchema = Yup.object({
     .nullable()
     .optional(),
   email_changed_or_missing: optionalBoolQuery,
+  business_id: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .uuid("Invalid business ID")
+    .nullable()
+    .optional(),
 });
 
 export const GetOutreachHistoryMatchingIdsSchema = Yup.object({

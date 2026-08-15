@@ -88,6 +88,7 @@ function DetailedBusinessCard({ business, priority = false }) {
             businessId={business.id}
             businessName={business.title}
             email={business.email}
+            emailStatus={business.email_status}
             phone={business.phone}
             trigger={
               <Button

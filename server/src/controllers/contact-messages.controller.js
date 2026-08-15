@@ -13,6 +13,10 @@ import { verifyEmailReputation } from "../abstract/emailReputation.js";
 import { resendClient } from "../resend/resend.js";
 import { sendFreeLeadToBusiness } from "../lib/contactMessageSend.js";
 import {
+  EMAIL_UNDER_REVIEW_MESSAGE,
+  isEmailUnderReview,
+} from "../lib/emailStatus.js";
+import {
   UNDER_REVIEW_MESSAGE,
   MESSAGE_ON_ITS_WAY,
   ADMIN_NEW_CONTACT_MESSAGE,
@@ -61,6 +65,12 @@ export const createContactMessage = async (req, res) => {
 
     business = businessData;
     businessName = business.title ?? null;
+
+    if (isEmailUnderReview(business.email_status)) {
+      return res
+        .status(422)
+        .json(customErrorHandler(YUP_ERROR, EMAIL_UNDER_REVIEW_MESSAGE));
+    }
   }
 
   // Verify Email
@@ -148,7 +158,7 @@ export const createContactMessage = async (req, res) => {
       : null,
   };
 
-  if (businessEmail) {
+  if (businessEmail && !isEmailUnderReview(business?.email_status)) {
     const leadResult = await sendFreeLeadToBusiness({
       message: messageForLead,
       businessEmail,

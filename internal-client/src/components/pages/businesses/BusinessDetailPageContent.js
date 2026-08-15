@@ -2,27 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeftIcon, ExternalLinkIcon, PencilIcon } from "lucide-react";
+import { ArrowLeftIcon, ExternalLinkIcon } from "lucide-react";
 import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
+import BusinessDetailEmailTab from "@/components/pages/businesses/BusinessDetailEmailTab";
+import BusinessDetailImagesTab from "@/components/pages/businesses/BusinessDetailImagesTab";
+import BusinessDetailListingTab from "@/components/pages/businesses/BusinessDetailListingTab";
+import BusinessDetailLocationTab from "@/components/pages/businesses/BusinessDetailLocationTab";
 import BusinessDetailSkeleton from "@/components/pages/businesses/BusinessDetailSkeleton";
+import BusinessDetailTabs, {
+  resolveBusinessDetailTab,
+} from "@/components/pages/businesses/BusinessDetailTabs";
 import BusinessListingEditDialog from "@/components/pages/businesses/BusinessListingEditDialog";
-import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
-import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
-import { formatFullDate } from "@/components/pages/dashboard/formatDate";
-
-function DetailCard({ label, children }) {
-  return (
-    <div className="min-w-0 rounded-lg border border-border bg-background p-4">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="mt-1.5 text-sm text-foreground">{children}</dd>
-    </div>
-  );
-}
 
 function formatListingError(error) {
   const message = error?.message;
@@ -39,17 +34,26 @@ function formatListingError(error) {
 export default function BusinessDetailPageContent() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = params?.id;
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
   const [editError, setEditError] = useState(null);
+  const [markStatusError, setMarkStatusError] = useState(null);
+  const activeTab = resolveBusinessDetailTab(searchParams.get("tab"));
 
   useEffect(() => {
     if (isReady && !accessToken) {
       router.replace("/");
     }
   }, [isReady, accessToken, router]);
+
+  const handleTabChange = (nextTab) => {
+    const next = new URLSearchParams(searchParams.toString());
+    next.set("tab", nextTab);
+    router.replace(`/businesses/${id}?${next.toString()}`, { scroll: false });
+  };
 
   const { data, error, isLoading } = useQuery({
     queryKey: ["admin-business", id],
@@ -104,6 +108,44 @@ export default function BusinessDetailPageContent() {
     },
   });
 
+  const markStatusMutation = useMutation({
+    mutationFn: async (email_status) => {
+      const result = await fetchApi("/admin/businesses/email-status", {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify({
+          business_ids: [id],
+          email_status,
+        }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to mark status");
+      }
+
+      return result.data;
+    },
+    onMutate: () => {
+      setMarkStatusError(null);
+    },
+    onSuccess: async () => {
+      setMarkStatusError(null);
+      await queryClient.invalidateQueries({ queryKey: ["admin-business", id] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-businesses"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["admin-businesses-with-emails"],
+      });
+    },
+    onError: (err) => {
+      setMarkStatusError(err.message || "Failed to mark status");
+    },
+  });
+
   if (!isReady || !accessToken) {
     return null;
   }
@@ -141,7 +183,6 @@ export default function BusinessDetailPageContent() {
       ? `${process.env.NEXT_PUBLIC_WEB_URL}/business/${data.slug}`
       : null;
   const isClaimed = Boolean(data.is_claimed);
-  const hasOwner = Boolean(data.owner_uid);
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-4 md:gap-10 md:px-8 md:py-6">
@@ -181,183 +222,38 @@ export default function BusinessDetailPageContent() {
         ) : null}
       </div>
 
-      <section className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold tracking-tight">Listing</h2>
-          <Button
-            variant="outline"
-            size="sm"
-            className="cursor-pointer rounded-full"
-            onClick={() => {
-              setEditError(null);
-              setEditOpen(true);
-            }}
-          >
-            <PencilIcon />
-            Edit
-          </Button>
-        </div>
-        <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <DetailCard label="Title">{data.title || "—"}</DetailCard>
-          <DetailCard label="Slug">{data.slug || "—"}</DetailCard>
-          <DetailCard label="Address">{data.address || "—"}</DetailCard>
-          <DetailCard label="Phone">{data.phone || "—"}</DetailCard>
-          <DetailCard label="Email">
-            {data.email ? (
-              <a
-                href={`mailto:${data.email}`}
-                className="break-all underline underline-offset-2"
-              >
-                {data.email}
-              </a>
-            ) : (
-              "—"
-            )}
-          </DetailCard>
-          <DetailCard label="Website">
-            {data.website ? (
-              <a
-                href={data.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="break-all underline underline-offset-2"
-              >
-                {data.website}
-              </a>
-            ) : (
-              "—"
-            )}
-          </DetailCard>
-          <DetailCard label="Score">
-            <BusinessScoreBadge score={data.total_score} />
-          </DetailCard>
-          <DetailCard label="Reviews">
-            <BusinessReviewsBadge count={data.reviews_count} />
-          </DetailCard>
-          <DetailCard label="Claimed">
-            <BusinessClaimedBadge isClaimed={isClaimed} />
-          </DetailCard>
-          <DetailCard label="Last edited">
-            {formatFullDate(data.last_edited_at)}
-          </DetailCard>
-          <DetailCard label="Created">
-            {formatFullDate(data.created_at)}
-          </DetailCard>
-          <DetailCard label="Place ID">
-            {data.place_id ? (
-              <span className="break-all font-mono text-xs">{data.place_id}</span>
-            ) : (
-              "—"
-            )}
-          </DetailCard>
-          <DetailCard label="Business ID">
-            <span className="break-all font-mono text-xs">{data.id}</span>
-          </DetailCard>
-        </dl>
-      </section>
+      <BusinessDetailTabs value={activeTab} onValueChange={handleTabChange} />
 
-      <section className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold tracking-tight">Content & SEO</h2>
-          <Button
-            variant="outline"
-            size="sm"
-            className="cursor-pointer rounded-full"
-            onClick={() => {
-              setEditError(null);
-              setEditOpen(true);
-            }}
-          >
-            <PencilIcon />
-            Edit
-          </Button>
-        </div>
-        <dl className="grid gap-3">
-          <DetailCard label="About description">
-            {data.description ? (
-              <p className="whitespace-pre-wrap leading-relaxed">
-                {data.description}
-              </p>
-            ) : (
-              "—"
-            )}
-          </DetailCard>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <DetailCard label="Title tag">{data.title_tag || "—"}</DetailCard>
-            <DetailCard label="Local note">
-              {data.local_note ? (
-                <p className="whitespace-pre-wrap leading-relaxed">
-                  {data.local_note}
-                </p>
-              ) : (
-                "—"
-              )}
-            </DetailCard>
-          </div>
-          <DetailCard label="Meta description">
-            {data.meta_description ? (
-              <p className="whitespace-pre-wrap leading-relaxed">
-                {data.meta_description}
-              </p>
-            ) : (
-              "—"
-            )}
-          </DetailCard>
-          <DetailCard label="Keywords">
-            {Array.isArray(data.keywords) && data.keywords.length > 0 ? (
-              <div className="flex flex-wrap gap-1.5">
-                {data.keywords.map((keyword, index) => (
-                  <span
-                    key={`${keyword}-${index}`}
-                    className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-xs"
-                  >
-                    {keyword}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              "—"
-            )}
-          </DetailCard>
-        </dl>
-      </section>
+      {activeTab === "listing" ? (
+        <BusinessDetailListingTab
+          data={data}
+          onEdit={() => {
+            setEditError(null);
+            setEditOpen(true);
+          }}
+        />
+      ) : null}
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold tracking-tight">Owner</h2>
-        {isClaimed && hasOwner ? (
-          <dl className="grid gap-3 sm:grid-cols-2">
-            <DetailCard label="Owner email">
-              {data.owner_email ? (
-                <Link
-                  href={`/users/${data.owner_uid}`}
-                  className="break-all underline underline-offset-2"
-                >
-                  {data.owner_email}
-                </Link>
-              ) : (
-                <Link
-                  href={`/users/${data.owner_uid}`}
-                  className="underline underline-offset-2"
-                >
-                  View owner
-                </Link>
-              )}
-            </DetailCard>
-            <DetailCard label="Owner UID">
-              <Link
-                href={`/users/${data.owner_uid}`}
-                className="break-all font-mono text-xs underline underline-offset-2"
-              >
-                {data.owner_uid}
-              </Link>
-            </DetailCard>
-          </dl>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            This listing is not claimed.
-          </p>
-        )}
-      </section>
+      {activeTab === "email" ? (
+        <BusinessDetailEmailTab
+          business={data}
+          accessToken={accessToken}
+          logout={logout}
+          markStatusPending={markStatusMutation.isPending}
+          markStatusError={markStatusError}
+          onMarkStatus={(emailStatus) =>
+            markStatusMutation.mutateAsync(emailStatus)
+          }
+        />
+      ) : null}
+
+      {activeTab === "location" ? (
+        <BusinessDetailLocationTab data={data} />
+      ) : null}
+
+      {activeTab === "images" ? (
+        <BusinessDetailImagesTab data={data} />
+      ) : null}
 
       <BusinessListingEditDialog
         open={editOpen}

@@ -35,6 +35,7 @@ import {
   submitQuickContact,
 } from "@/lib/api/contact-messages";
 import { shouldShowPostSubmitSurvey } from "@/lib/feedbackSurvey";
+import { isEmailUnderReview } from "@/lib/emailStatus";
 import PostSubmitSurveyDialog from "@/components/feedback/PostSubmitSurveyDialog";
 
 const SUBMIT_DEBOUNCE_MS = 2000;
@@ -676,7 +677,7 @@ function QuickContactDialogContent({
 }
 
 export default function QuickContactDialog(props) {
-  if (!hasBusinessEmail(props.email)) {
+  if (!hasBusinessEmail(props.email) || isEmailUnderReview(props.emailStatus)) {
     return null;
   }
 

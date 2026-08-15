@@ -47,6 +47,7 @@ export function isClaimInviteOldEnoughForFollowup(
 export const CLAIM_ELIGIBILITY = Object.freeze({
   ABLE: "able",
   NO_EMAIL: "no_email",
+  EMAIL_REVIEW: "email_review",
   DUPLICATE_EMAIL: "duplicate_email",
   CLAIMED: "claimed",
 });
