@@ -197,7 +197,7 @@ export default function ClaimBusinessButton({
   const hasEmail =
     typeof email === "string" ? Boolean(email.trim()) : Boolean(email);
 
-  if (hasEmail && isEmailUnderReview(emailStatus)) {
+  if (isEmailUnderReview(emailStatus)) {
     return (
       <ClaimStatusLabel reason={EMAIL_UNDER_REVIEW_MESSAGE} showHowToClaim>
         Unclaimable

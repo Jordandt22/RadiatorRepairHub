@@ -223,7 +223,7 @@ export const getBusinessEmailStatus = async (business_id) => {
 
   const { data, error } = await supabase
     .from("businesses")
-    .select("email_status")
+    .select("email, email_status")
     .eq("id", business_id)
     .maybeSingle();
 
@@ -231,7 +231,17 @@ export const getBusinessEmailStatus = async (business_id) => {
     return { data: null, error };
   }
 
-  return { data: data?.email_status ?? null, error: null };
+  if (!data) {
+    return { data: null, error: null };
+  }
+
+  return {
+    data: {
+      email: data.email ?? null,
+      email_status: data.email_status ?? null,
+    },
+    error: null,
+  };
 };
 
 export const getBusinessSlugsForSitemap = async () => {

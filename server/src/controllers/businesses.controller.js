@@ -1823,10 +1823,23 @@ export const getBusiness = async (req, res) => {
     await cacheData(key, interval, business);
   }
 
+  let email = business?.email ?? null;
+  let emailStatus = business?.email_status ?? null;
+  if (business?.id) {
+    const { data: liveEmail, error: emailStatusError } =
+      await getBusinessEmailStatus(business.id);
+    if (!emailStatusError && liveEmail) {
+      email = liveEmail.email ?? null;
+      if (liveEmail.email_status != null) {
+        emailStatus = liveEmail.email_status;
+      }
+    }
+  }
+
   // Always compute at response time so claimability stays correct if emails change
   // while a listing is still cached.
   const { isShared, error: sharedEmailError } = await isBusinessEmailShared(
-    business?.email
+    email
   );
 
   if (sharedEmailError) {
@@ -1852,18 +1865,10 @@ export const getBusiness = async (req, res) => {
     }
   }
 
-  let emailStatus = business?.email_status ?? null;
-  if (business?.id) {
-    const { data: liveEmailStatus, error: emailStatusError } =
-      await getBusinessEmailStatus(business.id);
-    if (!emailStatusError && liveEmailStatus != null) {
-      emailStatus = liveEmailStatus;
-    }
-  }
-
   res.status(200).json(
     successHandler({
       ...business,
+      email,
       last_edited_at: lastEditedAt,
       email_status: emailStatus,
       has_duplicate_email: isShared,
