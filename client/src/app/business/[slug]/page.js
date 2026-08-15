@@ -141,12 +141,12 @@ async function Page({ params }) {
     const featuredProducts = business.is_claimed
       ? []
       : (
-          await fetchActiveAffiliateProductsByAliases([
-            "valvoline",
-            "radiator-cap",
-            "coolant-funnel",
-          ])
-        ).data?.products ?? [];
+        await fetchActiveAffiliateProductsByAliases([
+          "valvoline",
+          "radiator-cap",
+          "coolant-funnel",
+        ])
+      ).data?.products ?? [];
 
     const mapsQuery = getGoogleMapsQuery(business);
 
@@ -362,11 +362,10 @@ async function Page({ params }) {
                   imageId={business.primary_image_id}
                   cdnStored={Boolean(business.cdn_stored)}
                   showImage={!hasHeroImage}
-                  imageAlt={`${business.title} - ${
-                    business.keywords && business.keywords.length > 0
+                  imageAlt={`${business.title} - ${business.keywords && business.keywords.length > 0
                       ? business.keywords[0]
                       : "radiator repair services"
-                  } in ${business.city.name}, ${business.state.name}`}
+                    } in ${business.city.name}, ${business.state.name}`}
                 />
 
                 <ServiceCategoriesSection
@@ -464,11 +463,10 @@ async function Page({ params }) {
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-6 w-6 ${
-                              i < Math.floor(business.total_score)
+                            className={`h-6 w-6 ${i < Math.floor(business.total_score)
                                 ? "fill-current text-yellow-400"
                                 : "text-border"
-                            }`}
+                              }`}
                           />
                         ))}
                       </div>
@@ -629,7 +627,7 @@ async function Page({ params }) {
               <AffiliateProductsSection
                 products={featuredProducts}
                 title="Cooling tools & supplies"
-                description="Optional DIY supplies recommended by RadiatorRepairHub. These products are not sold, endorsed, or affiliated with this business."
+                description={`Optional DIY supplies recommended by RadiatorRepairHub. These products are not sold, endorsed, or affiliated with ${business?.title ?? "this business"}.`}
                 descriptionVariant="notice"
                 disclosure="Product links are RadiatorRepairHub Amazon Associate recommendations. As an Amazon Associate, RadiatorRepairHub earns from qualifying purchases. This shop is not responsible for these products or purchases."
                 variant="related"
