@@ -739,7 +739,7 @@ export const getListingReports = async (page, limit, status = null) => {
 const ADMIN_BUSINESS_SELECT =
   "id, title, slug, email, phone, address, website, is_claimed, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
-const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords`;
+const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), business_images(image_id, is_primary, created_at)`;
 
 const sanitizeAdminBusinessSearch = (q) => sanitizeIlikeSearch(q);
 
@@ -3838,12 +3838,21 @@ const mapOutreachHistoryListRow = (row) => {
 export const getOutreachHistory = async (
   page,
   limit,
-  { outreachType = null, q = null, emailChangedOrMissing = null } = {}
+  {
+    outreachType = null,
+    q = null,
+    emailChangedOrMissing = null,
+    businessId = null,
+  } = {}
 ) => {
   let query = supabase
     .from("outreach_history_list")
     .select(OUTREACH_HISTORY_LIST_SELECT, { count: "exact" })
     .order("sent_at", { ascending: false });
+
+  if (businessId) {
+    query = query.eq("business_id", businessId);
+  }
 
   if (outreachType) {
     query = query.eq("outreach_type", outreachType);

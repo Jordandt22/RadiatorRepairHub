@@ -43,13 +43,13 @@ function ClaimBusinessButtonContent({
   businessId,
   businessSlug,
   businessName,
+  email,
 }) {
   const { showCustomError } = useToast();
   const posthog = usePostHog();
   const { isSignedIn } = useIsSignedIn();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
-  const [maskedEmail, setMaskedEmail] = useState("");
 
   const capture = (event, props = {}) => {
     posthog?.capture(event, {
@@ -68,7 +68,7 @@ function ClaimBusinessButtonContent({
     setIsSubmitting(true);
     capture("claim_started");
     try {
-      const { data, error } = await claimBusiness(businessId);
+      const { error } = await claimBusiness(businessId);
 
       if (error) {
         capture("claim_failed", {
@@ -87,7 +87,6 @@ function ClaimBusinessButtonContent({
       }
 
       capture("claim_code_sent");
-      setMaskedEmail(data?.maskedEmail || "");
       setSuccessOpen(true);
     } catch {
       capture("claim_failed", { stage: "start" });
@@ -116,8 +115,10 @@ function ClaimBusinessButtonContent({
             <DialogTitle>Check your inbox</DialogTitle>
             <DialogDescription>
               We&apos;ve sent a verification code to{" "}
-              {maskedEmail || "the email"} on file for this business. Check your
-              inbox and click the link to complete your claim.
+              <strong className="font-semibold text-foreground">
+                {email || "the email on file for this business"}
+              </strong>. Check your inbox and click the link to
+              complete your claim.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -228,6 +229,7 @@ export default function ClaimBusinessButton({
       businessId={businessId}
       businessSlug={businessSlug}
       businessName={businessName}
+      email={email}
     />
   );
 }

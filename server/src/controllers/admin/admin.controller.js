@@ -3369,11 +3369,16 @@ export const getOutreachHistoryList = async (req, res) => {
           req.query.email_changed_or_missing === "false"
         ? false
         : null;
+  const businessId =
+    typeof req.query.business_id === "string" && req.query.business_id.trim()
+      ? req.query.business_id.trim()
+      : null;
 
   const { data, count, error } = await fetchOutreachHistory(page, limit, {
     outreachType,
     q,
     emailChangedOrMissing,
+    businessId,
   });
 
   if (error) {
@@ -3404,6 +3409,7 @@ export const getOutreachHistoryList = async (req, res) => {
       outreach_type: outreachType,
       q,
       email_changed_or_missing: emailChangedOrMissing,
+      business_id: businessId,
     })
   );
 };
