@@ -334,6 +334,7 @@ async function Page({ params }) {
                   businessName={business.title}
                   phone={business.phone}
                   email={business.email}
+                  emailStatus={business.email_status}
                   mapsQuery={mapsQuery}
                   placement="hero"
                 />
@@ -346,6 +347,7 @@ async function Page({ params }) {
             businessName={business.title}
             phone={business.phone}
             email={business.email}
+            emailStatus={business.email_status}
             mapsQuery={mapsQuery}
             placement="sticky"
           />
@@ -494,6 +496,7 @@ async function Page({ params }) {
                       businessSlug={business.slug}
                       businessName={business.title}
                       email={business.email}
+                      emailStatus={business.email_status}
                       isClaimed={Boolean(business.is_claimed)}
                       hasDuplicateEmail={Boolean(business.has_duplicate_email)}
                       lastEditedAt={business.last_edited_at}
@@ -507,6 +510,7 @@ async function Page({ params }) {
                   phone={business.phone}
                   email={business.email}
                   website={business.website}
+                  emailStatus={business.email_status}
                 />
 
                 <BusinessHoursSection

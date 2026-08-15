@@ -15,6 +15,7 @@ export default function BusinessHeroActions({
   businessName,
   phone,
   email,
+  emailStatus = null,
   mapsQuery,
   placement = "hero",
 }) {
@@ -55,6 +56,7 @@ export default function BusinessHeroActions({
       businessId={businessId}
       businessName={businessName}
       email={email}
+      emailStatus={emailStatus}
       phone={phone}
       trigger={
         <button type="button" className={secondaryClass} />

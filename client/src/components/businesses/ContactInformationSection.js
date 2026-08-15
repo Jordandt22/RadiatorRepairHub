@@ -18,6 +18,8 @@ import BusinessContactLinks from "@/components/businesses/BusinessContactLinks";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
 import ReportInfoDialog from "@/components/businesses/ReportInfoDialog";
 import { updateBusinessContact } from "@/lib/api/businessContact";
+import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
+import { isEmailUnderReview } from "@/lib/emailStatus";
 
 function isValidPhone(value) {
   const digits = value.replace(/\D/g, "");
@@ -75,9 +77,12 @@ function ContactInformationSectionContent({
   phone: initialPhone,
   email: initialEmail,
   website: initialWebsite,
+  emailStatus = null,
 }) {
   const router = useRouter();
   const { showCustomSuccess } = useToast();
+  const { isOwner } = useIsBusinessOwner(businessId);
+  const emailUnderReview = isEmailUnderReview(emailStatus) && !isOwner;
   const [open, setOpen] = useState(false);
   const [phone, setPhone] = useState(initialPhone || "");
   const [email, setEmail] = useState(initialEmail || "");
@@ -173,6 +178,7 @@ function ContactInformationSectionContent({
         phone={initialPhone}
         email={initialEmail}
         website={initialWebsite}
+        emailUnderReview={emailUnderReview}
       />
 
       <div className="mt-4 md:mt-5 space-y-3">
@@ -180,6 +186,7 @@ function ContactInformationSectionContent({
           businessId={businessId}
           businessName={businessName}
           email={initialEmail}
+          emailStatus={emailStatus}
           phone={initialPhone}
         />
         <ReportInfoDialog

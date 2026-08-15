@@ -216,6 +216,24 @@ export const getBusinessLastEditedAt = async (business_id) => {
   return { data: data?.last_edited_at ?? null, error: null };
 };
 
+export const getBusinessEmailStatus = async (business_id) => {
+  if (!business_id) {
+    return { data: null, error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("email_status")
+    .eq("id", business_id)
+    .maybeSingle();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  return { data: data?.email_status ?? null, error: null };
+};
+
 export const getBusinessSlugsForSitemap = async () => {
   const pageSize = 1000;
   let from = 0;
@@ -680,7 +698,7 @@ export const insertContactMessage = async (payload) => {
 export const getBusinessClaimInfo = async (business_id) => {
   const { data, error } = await supabase
     .from("businesses")
-    .select("id, title, slug, email, phone, is_claimed")
+    .select("id, title, slug, email, phone, is_claimed, email_status")
     .eq("id", business_id)
     .single();
 
@@ -1151,7 +1169,7 @@ export const updateBusinessesEmailStatus = async (ids, emailStatus) => {
       email_status_marked_at: new Date().toISOString(),
     })
     .in("id", ids)
-    .select("id, email_status, email_status_marked_at");
+    .select("id, slug, email_status, email_status_marked_at");
 
   return { data, error };
 };
@@ -1160,11 +1178,16 @@ export const updateBusinessesEmailStatus = async (ids, emailStatus) => {
  * Update a single business email (admin email cleaner).
  */
 export const updateBusinessEmail = async (id, email) => {
+  const markedAt = new Date().toISOString();
   const { data, error } = await supabase
     .from("businesses")
-    .update({ email })
+    .update({
+      email,
+      email_status: "checked",
+      email_status_marked_at: markedAt,
+    })
     .eq("id", id)
-    .select("id, title, slug, email")
+    .select("id, title, slug, email, email_status, email_status_marked_at")
     .single();
 
   return { data, error };
@@ -1188,24 +1211,50 @@ export const updateBusinessListing = async (
     keywords,
   }
 ) => {
+  const { data: existing, error: existingError } = await supabase
+    .from("businesses")
+    .select("email")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (existingError) {
+    return { data: null, error: existingError };
+  }
+
+  const existingEmail =
+    typeof existing?.email === "string" && existing.email.trim()
+      ? existing.email.trim()
+      : null;
+  const nextEmail =
+    typeof email === "string" && email.trim() ? email.trim() : null;
+  const emailChanged = existingEmail !== nextEmail;
+  const markedAt = new Date().toISOString();
+
+  const update = {
+    title,
+    email,
+    website,
+    phone,
+    address,
+    description,
+    title_tag,
+    meta_description,
+    local_note,
+    keywords,
+    last_edited_at: markedAt,
+  };
+
+  if (emailChanged) {
+    update.email_status = "checked";
+    update.email_status_marked_at = markedAt;
+  }
+
   const { data, error } = await supabase
     .from("businesses")
-    .update({
-      title,
-      email,
-      website,
-      phone,
-      address,
-      description,
-      title_tag,
-      meta_description,
-      local_note,
-      keywords,
-      last_edited_at: new Date().toISOString(),
-    })
+    .update(update)
     .eq("id", id)
     .select(
-      "id, title, slug, email, website, phone, address, description, title_tag, meta_description, local_note, keywords, last_edited_at"
+      "id, title, slug, email, website, phone, address, description, title_tag, meta_description, local_note, keywords, last_edited_at, email_status, email_status_marked_at"
     )
     .single();
 
@@ -1316,6 +1365,7 @@ const OUTREACH_TYPE_STAT_LABELS = {
 const CLAIM_ELIGIBILITY_STAT_LABELS = {
   able: "Able",
   no_email: "No email",
+  email_review: "Email review",
   duplicate_email: "Duplicate email",
   claimed: "Claimed",
 };
@@ -1409,6 +1459,12 @@ export const getAdminDashboardStats = async () => {
       supabase
         .from("outreach_business_list")
         .select("id", { count: "exact", head: true })
+        .eq("claim_eligibility", "email_review")
+    ),
+    countExact(
+      supabase
+        .from("outreach_business_list")
+        .select("id", { count: "exact", head: true })
         .eq("claim_eligibility", "claimed")
     ),
     countExact(
@@ -1467,6 +1523,7 @@ export const getAdminDashboardStats = async () => {
     ableRes,
     noEmailRes,
     duplicateEmailRes,
+    emailReviewRes,
     claimedRes,
     claimInviteRes,
     ownershipClaimRes,
@@ -1573,6 +1630,11 @@ export const getAdminDashboardStats = async () => {
       key: "duplicate_email",
       label: CLAIM_ELIGIBILITY_STAT_LABELS.duplicate_email,
       count: duplicateEmailRes.count,
+    },
+    {
+      key: "email_review",
+      label: CLAIM_ELIGIBILITY_STAT_LABELS.email_review,
+      count: emailReviewRes.count,
     },
     {
       key: "claimed",
@@ -2429,7 +2491,7 @@ export const getClaimRequestWithBusiness = async (claim_request_id) => {
   const { data, error } = await supabase
     .from("claim_requests")
     .select(
-      "claim_request_id, business_id, status, attempts, last_attempted_at, business:businesses(id, title, slug, email, is_claimed)"
+      "claim_request_id, business_id, status, attempts, last_attempted_at, business:businesses(id, title, slug, email, is_claimed, email_status)"
     )
     .eq("claim_request_id", claim_request_id)
     .maybeSingle();
@@ -3020,18 +3082,26 @@ export const getOwnedBusiness = async (businessId, ownerUid, accessToken) => {
 export const updateOwnedBusinessContact = async (
   businessId,
   ownerUid,
-  { phone, email, website },
+  { phone, email, website, email_status, email_status_marked_at },
   accessToken
 ) => {
   const client = createUserSupabaseClient(accessToken);
+  const update = {
+    phone,
+    email,
+    website,
+    last_edited_at: new Date().toISOString(),
+  };
+
+  if (email_status) {
+    update.email_status = email_status;
+    update.email_status_marked_at =
+      email_status_marked_at ?? new Date().toISOString();
+  }
+
   const { data, error } = await client
     .from("businesses")
-    .update({
-      phone,
-      email,
-      website,
-      last_edited_at: new Date().toISOString(),
-    })
+    .update(update)
     .eq("id", businessId)
     .eq("owner_uid", ownerUid)
     .select("id, phone, email, website, last_edited_at")
@@ -3365,7 +3435,7 @@ export const getContactMessagesByIds = async (ids) => {
   const { data, error } = await supabase
     .from("contact_messages")
     .select(
-      "*, business:businesses(id, email, title, slug, address, city_id, postal_code_id, is_claimed)"
+      "*, business:businesses(id, email, title, slug, address, city_id, postal_code_id, is_claimed, email_status)"
     )
     .in("contact_message_id", ids);
 

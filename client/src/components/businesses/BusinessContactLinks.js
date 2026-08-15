@@ -10,6 +10,7 @@ export default function BusinessContactLinks({
   phone,
   email,
   website,
+  emailUnderReview = false,
 }) {
   const posthog = usePostHog();
 
@@ -40,7 +41,14 @@ export default function BusinessContactLinks({
         </div>
       )}
 
-      {email ? (
+      {emailUnderReview ? (
+        <div className="flex items-center gap-2 md:gap-3">
+          <Mail className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground flex-shrink-0" />
+          <span className="text-sm text-muted-foreground">
+            Email is under review
+          </span>
+        </div>
+      ) : email ? (
         <div className="flex items-center gap-2 md:gap-3">
           <Mail className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground flex-shrink-0" />
           <a

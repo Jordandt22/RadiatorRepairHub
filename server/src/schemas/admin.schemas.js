@@ -683,6 +683,7 @@ export const OUTREACH_TYPES = [
 export const CLAIM_ELIGIBILITY_VALUES = [
   "able",
   "no_email",
+  "email_review",
   "duplicate_email",
   "claimed",
 ];

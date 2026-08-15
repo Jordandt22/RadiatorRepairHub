@@ -17,6 +17,7 @@ import { useToast } from "@/contexts/ToastProvider";
 import { claimBusiness } from "@/lib/api/businesses";
 import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
+import { isEmailUnderReview, EMAIL_UNDER_REVIEW_MESSAGE } from "@/lib/emailStatus";
 import { usePostHog } from "posthog-js/react";
 
 function ClaimStatusLabel({ children, reason, showHowToClaim = false }) {
@@ -178,6 +179,7 @@ export default function ClaimBusinessButton({
   businessSlug,
   businessName,
   email,
+  emailStatus = null,
   isClaimed = false,
   hasDuplicateEmail = false,
   lastEditedAt = null,
@@ -193,6 +195,14 @@ export default function ClaimBusinessButton({
 
   const hasEmail =
     typeof email === "string" ? Boolean(email.trim()) : Boolean(email);
+
+  if (hasEmail && isEmailUnderReview(emailStatus)) {
+    return (
+      <ClaimStatusLabel reason={EMAIL_UNDER_REVIEW_MESSAGE} showHowToClaim>
+        Unclaimable
+      </ClaimStatusLabel>
+    );
+  }
 
   if (!hasEmail) {
     return (

@@ -25,6 +25,7 @@ export const OUTREACH_SENDER_TYPE_OPTIONS = OUTREACH_TYPE_OPTIONS.filter(
 export const CLAIM_ELIGIBILITY_FILTERS = [
   { id: "able", label: "Able" },
   { id: "no_email", label: "No contact" },
+  { id: "email_review", label: "Email review" },
   { id: "duplicate_email", label: "Duplicate contact" },
   { id: "claimed", label: "Claimed" },
 ];
@@ -47,6 +48,7 @@ export const HISTORY_EMAIL_FILTERS = [
 export const CLAIM_ELIGIBILITY_LABELS = {
   able: "Able",
   no_email: "No contact",
+  email_review: "Email review",
   duplicate_email: "Duplicate contact",
   claimed: "Claimed",
 };

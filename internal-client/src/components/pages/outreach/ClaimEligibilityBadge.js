@@ -3,6 +3,7 @@ import {
   CheckCircle2Icon,
   CopyIcon,
   MailXIcon,
+  ShieldAlertIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CLAIM_ELIGIBILITY_LABELS } from "@/components/pages/outreach/outreachConstants";
@@ -19,6 +20,10 @@ const STYLES = {
   no_email: {
     className: "border-transparent bg-zinc-100 text-zinc-700",
     icon: MailXIcon,
+  },
+  email_review: {
+    className: "border-transparent bg-amber-100 text-amber-900",
+    icon: ShieldAlertIcon,
   },
   duplicate_email: {
     className: "border-transparent bg-amber-100 text-amber-900",
