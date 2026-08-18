@@ -92,10 +92,13 @@ const PLACEHOLDER_EMAILS = new Set([
   "sample@gmail.com",
   "email@gmail.com",
   "user@website.com",
+  "info@website.com",
   "mymail@mailservice.com",
   "address@youremail.com",
   "micah@micahrich.com",
   "john@doe.com",
+  "eben@eyebytes.com",
+  "hello@rfuenzalida.com",
 ]);
 
 const STRICT_EMAIL_RE =

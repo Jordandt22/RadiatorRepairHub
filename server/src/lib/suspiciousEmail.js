@@ -116,6 +116,66 @@ export function getSuspiciousEmailReasons(email, businessTitle = "") {
     reasons.push("disposable_domain");
   }
 
+  if (trimmed.includes("webleads")) {
+    reasons.push("webleads");
+  }
+
+  if (trimmed.includes("formsubmission")) {
+    reasons.push("formsubmission");
+  }
+
+  if (trimmed.includes("hello")) {
+    reasons.push("hello");
+  }
+
+  if (trimmed.includes("web")) {
+    reasons.push("web");
+  }
+
+  if (trimmed.includes("internet")) {
+    reasons.push("internet");
+  }
+
+  if (trimmed.includes("privacy")) {
+    reasons.push("privacy");
+  }
+
+  if (trimmed.includes("hi")) {
+    reasons.push("hi");
+  }
+
+  if (trimmed.includes("hr")) {
+    reasons.push("hr");
+  }
+
+  if (trimmed.includes("fontsize")) {
+    reasons.push("fontsize");
+  }
+
+  if (trimmed.includes("guest")) {
+    reasons.push("guest");
+  }
+
+  if (trimmed.includes("care")) {
+    reasons.push("care");
+  }
+
+  if (trimmed.includes("work")) {
+    reasons.push("work");
+  }
+
+  if (trimmed.includes("order")) {
+    reasons.push("order");
+  }
+
+  if (trimmed.includes("manager")) {
+    reasons.push("manager");
+  }
+
+  if (trimmed.includes("marketing")) {
+    reasons.push("marketing");
+  }
+
   const titleTokens = tokenizeBusinessTitle(businessTitle);
   if (titleTokens.length >= 2) {
     const localNormalized = local.replace(/[^a-z0-9]/gi, "");
@@ -149,4 +209,19 @@ export const SUSPICIOUS_EMAIL_REASON_LABELS = {
   placeholder: "Placeholder",
   disposable_domain: "Disposable domain",
   unrelated_to_business: "Unrelated to name",
+  webleads: "WebLeads lead-gen",
+  formsubmission: "Form submission lead-gen",
+  hello: "Generic hello address",
+  web: "Generic web address",
+  internet: "Generic internet address",
+  privacy: "Privacy policy address",
+  hi: "Generic hi address",
+  hr: "HR department address",
+  fontsize: "CSS/font artifact",
+  guest: "Guest account address",
+  care: "Customer care address",
+  work: "Generic work address",
+  order: "Orders department address",
+  manager: "Manager department address",
+  marketing: "Marketing department address",
 };
