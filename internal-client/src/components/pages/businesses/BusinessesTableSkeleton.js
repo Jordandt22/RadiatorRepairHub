@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-function CardSkeleton({ showOwnerEmail, showScore, showLastEdited }) {
+function CardSkeleton({ showOwnerEmail, showClaimInvite, showScore, showLastEdited }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="min-w-0 flex-1 space-y-2">
@@ -21,6 +21,12 @@ function CardSkeleton({ showOwnerEmail, showScore, showLastEdited }) {
           <Skeleton className="h-3 w-16" />
           <Skeleton className="h-3 w-24" />
           {showOwnerEmail ? (
+            <>
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-3 w-28" />
+            </>
+          ) : null}
+          {showClaimInvite ? (
             <>
               <Skeleton className="h-3 w-20" />
               <Skeleton className="h-3 w-28" />
@@ -46,6 +52,7 @@ export default function BusinessesTableSkeleton({
   activeTab = "all",
 }) {
   const showOwnerEmail = activeTab === "claimed";
+  const showClaimInvite = activeTab === "claimed";
   const showScore = activeTab === "all";
   const showLastEdited = activeTab === "claimed";
   const showSelection = activeTab === "claimed";
@@ -58,6 +65,7 @@ export default function BusinessesTableSkeleton({
             <CardSkeleton
               key={index}
               showOwnerEmail={showOwnerEmail}
+              showClaimInvite={showClaimInvite}
               showScore={showScore}
               showLastEdited={showLastEdited}
             />
@@ -77,6 +85,7 @@ export default function BusinessesTableSkeleton({
               ) : null}
               <TableHead>Email</TableHead>
               {showOwnerEmail ? <TableHead>Owner email</TableHead> : null}
+              {showClaimInvite ? <TableHead>Claim invite</TableHead> : null}
               <TableHead>Phone</TableHead>
               <TableHead>Claimed</TableHead>
               {showLastEdited ? <TableHead>Last edited</TableHead> : null}
@@ -115,6 +124,11 @@ export default function BusinessesTableSkeleton({
                 {showOwnerEmail ? (
                   <TableCell>
                     <Skeleton className="h-4 w-40" />
+                  </TableCell>
+                ) : null}
+                {showClaimInvite ? (
+                  <TableCell>
+                    <Skeleton className="h-5 w-28 rounded-full" />
                   </TableCell>
                 ) : null}
                 <TableCell>

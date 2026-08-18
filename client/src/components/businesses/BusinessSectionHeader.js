@@ -9,6 +9,7 @@ export default function BusinessSectionHeader({
   as: Tag = "h2",
   titleClassName = "text-xl md:text-2xl font-bold text-foreground font-heading",
   className = "mb-3 md:mb-4",
+  titleBadge = null,
   trailing = null,
   onEdit,
 }) {
@@ -16,7 +17,10 @@ export default function BusinessSectionHeader({
 
   return (
     <div className={`flex items-center justify-between gap-2 ${className}`}>
-      <Tag className={titleClassName}>{title}</Tag>
+      <div className="flex min-w-0 items-center gap-2">
+        <Tag className={titleClassName}>{title}</Tag>
+        {titleBadge}
+      </div>
       <div className="flex shrink-0 items-center gap-2">
         {trailing}
         {isOwner ? (

@@ -13,7 +13,11 @@ import {
   getBusinessPhoneDigits,
   getBusinessPhoneE164,
 } from "@/lib/businessContactInfo";
-import { fetchStateBusinessCounts } from "@/lib/api/location";
+import {
+  DIRECTORY_STATE_COUNTS_LIMIT,
+  FOOTER_STATE_COUNTS_LIMIT,
+  fetchStateBusinessCountsByLimit,
+} from "@/lib/api/cachedReads";
 
 const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
@@ -86,8 +90,13 @@ export const viewport = {
 };
 
 export default async function RootLayout({ children }) {
-  const { data: stateCountsData } = await fetchStateBusinessCounts({ limit: 5 });
-  const topStates = stateCountsData?.states ?? [];
+  const { data: stateCountsData } = await fetchStateBusinessCountsByLimit(
+    DIRECTORY_STATE_COUNTS_LIMIT
+  );
+  const topStates = (stateCountsData?.states ?? []).slice(
+    0,
+    FOOTER_STATE_COUNTS_LIMIT
+  );
 
   // Organization Schema
   const organizationSchema = {

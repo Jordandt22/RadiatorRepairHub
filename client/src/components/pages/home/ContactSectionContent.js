@@ -12,11 +12,10 @@ import { fadeIn, useHomeSectionInView } from "@/components/ui/homeSectionMotion"
 export default function ContactSectionContent({
   email,
   phoneDisplay,
-  phoneTelHref,
   phoneSmsHref,
 }) {
   const { ref, inView, reduceMotion } = useHomeSectionInView();
-  const hasPhone = Boolean(phoneDisplay && phoneTelHref && phoneSmsHref);
+  const hasPhone = Boolean(phoneDisplay && phoneSmsHref);
 
   return (
     <section ref={ref} className="mb-16 bg-background py-16">
@@ -80,28 +79,17 @@ export default function ContactSectionContent({
                       />
                     </span>
                     <h3 className="mb-1 font-heading text-lg font-semibold text-foreground">
-                      Call or Text Us
+                      Text Us
                     </h3>
                     <p className="mb-3 text-sm text-muted-foreground">
-                      Phone and SMS for directory support
+                      Text only for directory support
                     </p>
-                    <span>
-                      <a
-                        href={phoneTelHref}
-                        className="text-interactive transition-colors duration-200 hover:text-primary"
-                      >
-                        {phoneDisplay}
-                      </a>
-                      <span className="mx-1.5 text-muted-foreground" aria-hidden="true">
-                        ·
-                      </span>
-                      <a
-                        href={phoneSmsHref}
-                        className="text-interactive transition-colors duration-200 hover:text-primary"
-                      >
-                        Text Us
-                      </a>
-                    </span>
+                    <a
+                      href={phoneSmsHref}
+                      className="text-interactive transition-colors duration-200 hover:text-primary"
+                    >
+                      {phoneDisplay}
+                    </a>
                   </div>
                 </AnimatedStaggerItem>
               ) : null}

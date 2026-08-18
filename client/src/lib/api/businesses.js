@@ -1,17 +1,21 @@
 import { fetchApi } from "./fetchApi";
 import { fetchAuthenticatedApi } from "./fetchAuthenticatedApi";
 
-const REFERENCE_CACHE = { cache: "no-store" };
+const BUSINESS_REVALIDATE_SECONDS = 60 * 10;
+const SITEMAP_REVALIDATE_SECONDS = 60 * 60 * 24;
+const BUSINESS_CACHE = { revalidate: BUSINESS_REVALIDATE_SECONDS };
+const SITEMAP_CACHE = { revalidate: SITEMAP_REVALIDATE_SECONDS };
+const NO_STORE = { cache: "no-store" };
 
-export async function fetchBusinessSlugsForSitemap(options = REFERENCE_CACHE) {
+export async function fetchBusinessSlugsForSitemap(options = SITEMAP_CACHE) {
   return fetchApi("/businesses/sitemap-slugs", options);
 }
 
-export async function fetchBusinessBySlug(slug, options = REFERENCE_CACHE) {
+export async function fetchBusinessBySlug(slug, options = BUSINESS_CACHE) {
   return fetchApi(`/businesses/${slug}`, options);
 }
 
-export async function fetchFeaturedBusinesses(options = REFERENCE_CACHE) {
+export async function fetchFeaturedBusinesses(options = BUSINESS_CACHE) {
   return fetchApi("/businesses/featured", options);
 }
 
@@ -33,7 +37,7 @@ export async function fetchBusinessesByCategory(
   primaryCategoryId,
   page = 1,
   limit = 12,
-  options = REFERENCE_CACHE
+  options = { revalidate: 300 }
 ) {
   return fetchBusinessesSearch(
     {
@@ -55,7 +59,7 @@ export async function claimBusiness(businessId) {
   });
 }
 
-export async function fetchClaimRequest(claimRequestId, options = REFERENCE_CACHE) {
+export async function fetchClaimRequest(claimRequestId, options = NO_STORE) {
   return fetchApi(`/businesses/claim/${claimRequestId}`, options);
 }
 

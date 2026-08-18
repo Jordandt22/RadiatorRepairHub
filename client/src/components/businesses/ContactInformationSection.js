@@ -19,7 +19,7 @@ import QuickContactDialog from "@/components/businesses/QuickContactDialog";
 import ReportInfoDialog from "@/components/businesses/ReportInfoDialog";
 import { updateBusinessContact } from "@/lib/api/businessContact";
 import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
-import { isEmailUnderReview } from "@/lib/emailStatus";
+import { isEmailUnderReview, isEmailUnverified } from "@/lib/emailStatus";
 
 function isValidPhone(value) {
   const digits = value.replace(/\D/g, "");
@@ -78,11 +78,14 @@ function ContactInformationSectionContent({
   email: initialEmail,
   website: initialWebsite,
   emailStatus = null,
+  isClaimed = false,
 }) {
   const router = useRouter();
   const { showCustomSuccess } = useToast();
   const { isOwner } = useIsBusinessOwner(businessId);
   const emailUnderReview = isEmailUnderReview(emailStatus) && !isOwner;
+  const emailUnverified =
+    isEmailUnverified(emailStatus, { isClaimed }) && !isOwner;
   const [open, setOpen] = useState(false);
   const [phone, setPhone] = useState(initialPhone || "");
   const [email, setEmail] = useState(initialEmail || "");
@@ -170,6 +173,13 @@ function ContactInformationSectionContent({
         title="Contact Information"
         businessId={businessId}
         onEdit={() => setOpen(true)}
+        titleBadge={
+          emailUnverified ? (
+            <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+              Unverified
+            </span>
+          ) : null
+        }
       />
 
       <BusinessContactLinks

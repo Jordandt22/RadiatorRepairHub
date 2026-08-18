@@ -1,7 +1,7 @@
 import React from "react";
 import BusinessesContainer from "@/components/businesses/BusinessesContainer";
 import { notFound } from "next/navigation";
-import { fetchPrimaryCategoryBySlug } from "@/lib/api/categories";
+import { fetchPrimaryCategoryBySlug } from "@/lib/api/cachedReads";
 import { CATEGORY_KEYWORDS } from "@/lib/seo/keywords";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS, SITE_URL } from "@/lib/seo/metadata";
 import { getListingsPage } from "@/lib/businesses/listingsSearch";

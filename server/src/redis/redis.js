@@ -288,7 +288,7 @@ export const getAdminBusinessesKey = (
   reviewsTier = null,
   emailFilter = null
 ) => ({
-  key: `ADMIN_BUSINESSES?V:7&PAGE:${page}&LIMIT:${limit}&CLAIMED:${
+  key: `ADMIN_BUSINESSES?V:8&PAGE:${page}&LIMIT:${limit}&CLAIMED:${
     claimed === true ? "true" : "all"
   }&Q:${q ?? ""}&STATE:${stateCode ?? ""}&CITY:${citySlug ?? ""}&POSTAL:${
     postalCode ?? ""

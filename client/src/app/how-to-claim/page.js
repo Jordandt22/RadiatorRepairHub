@@ -79,8 +79,8 @@ function buildClaimFaqs(supportEmail) {
     {
       question: "What if someone else already claimed my business by mistake?",
       answer: supportEmail
-        ? `Contact RadiatorRepairHub support right away at ${supportEmail}, by phone/SMS, or through the contact page. We'll help verify ownership and resolve mistaken claims.`
-        : "Contact RadiatorRepairHub support right away by phone/SMS or through the contact page. We'll help verify ownership and resolve mistaken claims.",
+        ? `Contact RadiatorRepairHub support right away at ${supportEmail}, by text, or through the contact page. We'll help verify ownership and resolve mistaken claims.`
+        : "Contact RadiatorRepairHub support right away by text or through the contact page. We'll help verify ownership and resolve mistaken claims.",
     },
     {
       question: "Is claiming free?",
@@ -273,7 +273,7 @@ export default function HowToClaimPage() {
               {hasPhone ? (
                 <>
                   {supportEmail ? ", " : " "}
-                  by phone or SMS (
+                  by text (
                   <SitePhoneLinks
                     className="inline"
                     showLabel={false}

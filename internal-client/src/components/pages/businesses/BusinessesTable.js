@@ -17,6 +17,7 @@ import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge
 import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
 import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import BusinessesEmptyState from "@/components/pages/businesses/BusinessesEmptyState";
+import ClaimInviteTypeBadge from "@/components/pages/businesses/ClaimInviteTypeBadge";
 
 function OwnerEmailCell({ ownerEmail, ownerUid }) {
   if (!ownerEmail) {
@@ -53,6 +54,7 @@ function OwnerEmailCell({ ownerEmail, ownerUid }) {
 function BusinessesTableView({
   businesses,
   showOwnerEmail,
+  showClaimInvite,
   showScore,
   showLastEdited,
   showSelection,
@@ -92,7 +94,10 @@ function BusinessesTableView({
             ) : null}
             <TableHead className="w-[18%]">Email</TableHead>
             {showOwnerEmail ? (
-              <TableHead className="w-[18%]">Owner email</TableHead>
+              <TableHead className="w-[16%]">Owner email</TableHead>
+            ) : null}
+            {showClaimInvite ? (
+              <TableHead className="w-[14%]">Claim invite</TableHead>
             ) : null}
             <TableHead className="w-[12%]">Phone</TableHead>
             <TableHead className="w-[10%]">Claimed</TableHead>
@@ -159,6 +164,11 @@ function BusinessesTableView({
                     />
                   </TableCell>
                 ) : null}
+                {showClaimInvite ? (
+                  <TableCell className="max-w-0">
+                    <ClaimInviteTypeBadge type={row.claim_invite_type} />
+                  </TableCell>
+                ) : null}
                 <TableCell className="max-w-0 whitespace-nowrap">
                   <span className="block truncate">{row.phone ?? "—"}</span>
                 </TableCell>
@@ -200,6 +210,7 @@ function BusinessesTableView({
 function BusinessesCardList({
   businesses,
   showOwnerEmail,
+  showClaimInvite,
   showScore,
   showLastEdited,
   showSelection,
@@ -288,6 +299,14 @@ function BusinessesCardList({
                   </dd>
                 </>
               ) : null}
+              {showClaimInvite ? (
+                <>
+                  <dt className="text-muted-foreground">Claim invite</dt>
+                  <dd className="min-w-0 truncate">
+                    <ClaimInviteTypeBadge type={row.claim_invite_type} />
+                  </dd>
+                </>
+              ) : null}
               <dt className="text-muted-foreground">Phone</dt>
               <dd>{row.phone ?? "—"}</dd>
               {showLastEdited ? (
@@ -331,6 +350,7 @@ export default function BusinessesTable({
   onToggleAll,
 }) {
   const showOwnerEmail = activeTab === "claimed";
+  const showClaimInvite = activeTab === "claimed";
   const showScore = activeTab === "all";
   const showLastEdited = activeTab === "claimed";
   const showSelection =
@@ -350,6 +370,7 @@ export default function BusinessesTable({
       <BusinessesCardList
         businesses={businesses}
         showOwnerEmail={showOwnerEmail}
+        showClaimInvite={showClaimInvite}
         showScore={showScore}
         showLastEdited={showLastEdited}
         showSelection={showSelection}
@@ -360,6 +381,7 @@ export default function BusinessesTable({
       <BusinessesTableView
         businesses={businesses}
         showOwnerEmail={showOwnerEmail}
+        showClaimInvite={showClaimInvite}
         showScore={showScore}
         showLastEdited={showLastEdited}
         showSelection={showSelection}

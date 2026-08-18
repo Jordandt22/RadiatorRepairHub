@@ -10,6 +10,7 @@ import {
 import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
 import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
 import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
+import ClaimInviteTypeBadge from "@/components/pages/businesses/ClaimInviteTypeBadge";
 import { formatFullDate } from "@/components/pages/dashboard/formatDate";
 
 function ClaimedBusinessesEmptyState() {
@@ -36,9 +37,10 @@ function ClaimedBusinessesTableView({ businesses }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[32%]">Business</TableHead>
-            <TableHead className="w-[22%]">Email</TableHead>
-            <TableHead className="w-[14%]">Phone</TableHead>
+            <TableHead className="w-[26%]">Business</TableHead>
+            <TableHead className="w-[18%]">Email</TableHead>
+            <TableHead className="w-[16%]">Claim invite</TableHead>
+            <TableHead className="w-[12%]">Phone</TableHead>
             <TableHead className="w-[10%]">Score</TableHead>
             <TableHead className="w-[10%] text-right">Reviews</TableHead>
             <TableHead className="w-[12%]">Last edited</TableHead>
@@ -61,6 +63,9 @@ function ClaimedBusinessesTableView({ businesses }) {
                 >
                   {row.email ?? "—"}
                 </span>
+              </TableCell>
+              <TableCell className="max-w-0">
+                <ClaimInviteTypeBadge type={row.claim_invite_type} />
               </TableCell>
               <TableCell className="whitespace-nowrap text-sm">
                 {row.phone ?? "—"}
@@ -106,6 +111,10 @@ function ClaimedBusinessesCardList({ businesses }) {
           <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm">
             <dt className="text-muted-foreground">Email</dt>
             <dd className="truncate">{row.email ?? "—"}</dd>
+            <dt className="text-muted-foreground">Claim invite</dt>
+            <dd className="min-w-0 truncate">
+              <ClaimInviteTypeBadge type={row.claim_invite_type} />
+            </dd>
             <dt className="text-muted-foreground">Phone</dt>
             <dd>{row.phone ?? "—"}</dd>
             <dt className="text-muted-foreground">Last edited</dt>

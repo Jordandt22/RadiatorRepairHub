@@ -32,7 +32,7 @@ import {
   NOINDEX_ROBOTS,
   INDEX_ROBOTS,
 } from "@/lib/seo/metadata";
-import { fetchBusinessBySlug } from "@/lib/api/businesses";
+import { fetchBusinessBySlug } from "@/lib/api/cachedReads";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { getBusinessDisplayImage } from "@/lib/images";
 
@@ -509,6 +509,7 @@ async function Page({ params }) {
                   email={business.email}
                   website={business.website}
                   emailStatus={business.email_status}
+                  isClaimed={Boolean(business.is_claimed)}
                 />
 
                 <BusinessHoursSection
