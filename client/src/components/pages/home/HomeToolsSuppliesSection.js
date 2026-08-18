@@ -5,9 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 import AffiliateProductCard from "@/components/blogs/AffiliateProductCard";
-import AnimatedStaggerGrid, {
-  AnimatedStaggerItem,
-} from "@/components/ui/AnimatedStaggerGrid";
+import HomeSnapCarousel from "@/components/pages/home/HomeSnapCarousel";
 import { fadeIn, useHomeSectionInView } from "@/components/ui/homeSectionMotion";
 
 function AffiliateDisclosure({ className = "" }) {
@@ -42,20 +40,13 @@ export default function HomeToolsSuppliesSection({ products = [] }) {
           <AffiliateDisclosure className="mx-auto max-w-3xl" />
         </motion.div>
 
-        <AnimatedStaggerGrid
-          inView={inView}
-          reduceMotion={reduceMotion}
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-        >
+        <HomeSnapCarousel label="Tools and supplies" fullWidthMobile>
           {products.map((product) => (
-            <AnimatedStaggerItem key={product.id} reduceMotion={reduceMotion} className="h-full">
-              <AffiliateProductCard
-                product={product}
-                variant="showcase"
-              />
-            </AnimatedStaggerItem>
+            <div key={product.id} className="h-full w-full">
+              <AffiliateProductCard product={product} variant="showcase" />
+            </div>
           ))}
-        </AnimatedStaggerGrid>
+        </HomeSnapCarousel>
 
         <motion.div
           className="mt-6 text-center"

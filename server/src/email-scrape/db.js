@@ -3,7 +3,10 @@ import {
   buildIlikeOrFilter,
   sanitizeIlikeSearch,
 } from "../lib/sanitizeSearch.js";
-import { MAX_EMAIL_SCRAPED_ATTEMPTS } from "./constants.js";
+import {
+  EMAIL_SCRAPE_ORPHAN_AFTER_MS,
+  MAX_EMAIL_SCRAPED_ATTEMPTS,
+} from "./constants.js";
 
 function summarizeBatchStatuses(batches = []) {
   const total_batches = batches.length;
@@ -143,9 +146,12 @@ export async function markEmailScrapeJobRunning(jobId) {
     .update({
       status: "running",
       started_at: new Date().toISOString(),
+      completed_at: null,
+      failed_at: null,
+      failed_data: null,
     })
     .eq("id", jobId)
-    .in("status", ["pending", "running"])
+    .in("status", ["pending", "running", "failed"])
     .select("*")
     .maybeSingle();
 
@@ -213,6 +219,45 @@ export async function failEmailScrapeBatch(batchId, failedData) {
 
   if (error) throw error;
   return data;
+}
+
+export async function resetEmailScrapeBatchForRetry(batchId) {
+  const { data, error } = await supabase
+    .from("email_scrape_batches")
+    .update({
+      status: "pending",
+      started_at: null,
+      completed_at: null,
+      failed_at: null,
+      failed_data: null,
+      succeeded_count: 0,
+      failed_count: 0,
+      skipped_count: 0,
+      result_payload: null,
+    })
+    .eq("id", batchId)
+    .in("status", ["pending", "running", "failed"])
+    .select("*")
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function listOrphanedRunningEmailScrapeBatches() {
+  const cutoff = new Date(
+    Date.now() - EMAIL_SCRAPE_ORPHAN_AFTER_MS
+  ).toISOString();
+
+  const { data, error } = await supabase
+    .from("email_scrape_batches")
+    .select("id, job_id, batch_index, status, started_at")
+    .eq("status", "running")
+    .lt("started_at", cutoff)
+    .order("started_at", { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
 }
 
 export async function refreshEmailScrapeJobProgress(jobId) {

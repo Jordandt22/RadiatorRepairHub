@@ -149,6 +149,11 @@ import {
 } from "../../email-scrape/db.js";
 import { startEmailScrapeJob } from "../../email-scrape/startJob.js";
 import {
+  EmailScrapeRetryError,
+  retryEmailScrapeBatch,
+  retryStuckEmailScrapeBatchesForJob,
+} from "../../email-scrape/retry.js";
+import {
   deleteApifyScrapeJobs,
   getApifyScrapeJobDetail,
   hasActiveApifyScrapeJob,
@@ -4208,6 +4213,54 @@ export const createEmailScrapeJobHandler = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "There was an error creating the email scrape job.",
+          error
+        )
+      );
+  }
+};
+
+export const retryEmailScrapeBatchHandler = async (req, res) => {
+  const { batchId } = req.params;
+
+  try {
+    const data = await retryEmailScrapeBatch(batchId);
+    return res.status(200).json(successHandler(data));
+  } catch (error) {
+    if (error instanceof EmailScrapeRetryError) {
+      return res
+        .status(error.status)
+        .json(customErrorHandler(YUP_ERROR, error.message));
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error retrying the email scrape batch.",
+          error
+        )
+      );
+  }
+};
+
+export const retryStuckEmailScrapeBatchesHandler = async (req, res) => {
+  const { jobId } = req.params;
+
+  try {
+    const data = await retryStuckEmailScrapeBatchesForJob(jobId);
+    return res.status(200).json(successHandler(data));
+  } catch (error) {
+    if (error instanceof EmailScrapeRetryError) {
+      return res
+        .status(error.status)
+        .json(customErrorHandler(YUP_ERROR, error.message));
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error retrying stuck email scrape batches.",
           error
         )
       );

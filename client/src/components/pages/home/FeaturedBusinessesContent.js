@@ -4,12 +4,12 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
-import AnimatedBusinessGrid from "@/components/businesses/cards/AnimatedBusinessGrid";
+import DetailedBusinessCard from "@/components/businesses/cards/DetailedBusinessCard";
+import HomeSnapCarousel from "@/components/pages/home/HomeSnapCarousel";
 import { fadeIn, useHomeSectionInView } from "@/components/ui/homeSectionMotion";
 
 export default function FeaturedBusinessesContent({ businesses = [] }) {
   const { ref, inView, reduceMotion } = useHomeSectionInView();
-  const list = businesses.slice(0, 3);
 
   return (
     <section
@@ -31,11 +31,14 @@ export default function FeaturedBusinessesContent({ businesses = [] }) {
           </p>
         </motion.div>
 
-        {list.length > 0 ? (
-          <AnimatedBusinessGrid
-            businesses={list}
-            className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
-          />
+        {businesses.length > 0 ? (
+          <HomeSnapCarousel label="Featured businesses" fullWidthMobile>
+            {businesses.map((business) => (
+              <div key={business.id} className="h-full w-full">
+                <DetailedBusinessCard business={business} />
+              </div>
+            ))}
+          </HomeSnapCarousel>
         ) : (
           <div className="mt-12 text-center">
             <p className="text-muted-foreground">No Featured Businesses Found</p>

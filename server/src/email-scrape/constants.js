@@ -3,6 +3,16 @@ export const EMAIL_SCRAPE_BATCH_SIZE = 20;
 /** Stop selecting businesses after this many scrape attempts. */
 export const MAX_EMAIL_SCRAPED_ATTEMPTS = 2;
 
+/**
+ * 20 businesses * 6 pages * 10s timeout is ~20 min worst case.
+ * Keep the BullMQ lock above that so a slow batch is not marked stalled.
+ */
+export const EMAIL_SCRAPE_JOB_LOCK_DURATION_MS = 2_400_000;
+export const EMAIL_SCRAPE_STALLED_INTERVAL_MS = 600_000;
+
+/** Re-enqueue running batches whose claim is older than the lock. */
+export const EMAIL_SCRAPE_ORPHAN_AFTER_MS = EMAIL_SCRAPE_JOB_LOCK_DURATION_MS;
+
 export const FETCH_TIMEOUT_MS = 10_000;
 export const DELAY_MIN_MS = 400;
 export const DELAY_MAX_MS = 600;

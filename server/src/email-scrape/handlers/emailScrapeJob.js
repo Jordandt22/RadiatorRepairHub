@@ -5,6 +5,7 @@ import {
   getEmailScrapeBatch,
   markEmailScrapeJobRunning,
   refreshEmailScrapeJobProgress,
+  resetEmailScrapeBatchForRetry,
 } from "../db.js";
 import { processEmailScrapeBusinesses } from "../process.js";
 
@@ -18,13 +19,17 @@ export async function processEmailScrapeJob({ batchId, jobId }) {
     throw new Error(`email scrape batch not found: ${batchId}`);
   }
 
-  if (existing.status !== "pending") {
+  if (existing.status === "completed" || existing.status === "failed") {
     return {
       batchId,
       jobId: existing.job_id,
       status: existing.status,
       skipped: true,
     };
+  }
+
+  if (existing.status === "running") {
+    await resetEmailScrapeBatchForRetry(batchId);
   }
 
   const claimed = await claimEmailScrapeBatch(batchId);

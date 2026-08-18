@@ -18,15 +18,17 @@ export function getEmailScrapeQueue() {
   return emailScrapeQueue;
 }
 
+const EMAIL_SCRAPE_JOB_OPTS = {
+  removeOnComplete: 100,
+  removeOnFail: 200,
+  attempts: 2,
+};
+
 export async function enqueueEmailScrapeBatchJob({ batchId, jobId }) {
   return getEmailScrapeQueue().add(
     "email-scrape-batch",
     { batchId, jobId },
-    {
-      removeOnComplete: 100,
-      removeOnFail: 200,
-      attempts: 1,
-    }
+    EMAIL_SCRAPE_JOB_OPTS
   );
 }
 
@@ -37,12 +39,14 @@ export async function enqueueEmailScrapeBatchJobs(batches) {
   const jobs = batches.map((batch) => ({
     name: "email-scrape-batch",
     data: { batchId: batch.id, jobId: batch.job_id },
-    opts: {
-      removeOnComplete: 100,
-      removeOnFail: 200,
-      attempts: 1,
-    },
+    opts: EMAIL_SCRAPE_JOB_OPTS,
   }));
 
   return queue.addBulk(jobs);
+}
+
+export async function closeEmailScrapeQueue() {
+  if (!emailScrapeQueue) return;
+  await emailScrapeQueue.close();
+  emailScrapeQueue = null;
 }

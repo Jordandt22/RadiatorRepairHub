@@ -83,7 +83,7 @@ function DetailedBusinessCard({ business, priority = false }) {
           </div>
         </div>
 
-        <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-4">
+        <div className="mt-auto flex min-w-0 flex-wrap items-center justify-between gap-2 border-t border-border pt-4">
           <QuickContactDialog
             businessId={business.id}
             businessName={business.title}
