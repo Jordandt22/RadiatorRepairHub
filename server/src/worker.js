@@ -9,7 +9,15 @@ import {
   INGEST_INSERT_STALLED_INTERVAL_MS,
 } from "./ingest/constants.js";
 import { CDN_UPLOAD_QUEUE_NAME } from "./cdn-upload/queues.js";
-import { EMAIL_SCRAPE_QUEUE_NAME } from "./email-scrape/queues.js";
+import {
+  closeEmailScrapeQueue,
+  EMAIL_SCRAPE_QUEUE_NAME,
+} from "./email-scrape/queues.js";
+import {
+  EMAIL_SCRAPE_JOB_LOCK_DURATION_MS,
+  EMAIL_SCRAPE_STALLED_INTERVAL_MS,
+} from "./email-scrape/constants.js";
+import { reconcileOrphanedEmailScrapeBatches } from "./email-scrape/retry.js";
 import {
   APIFY_SCRAPE_QUEUE_NAME,
   APIFY_JOB_LOCK_DURATION_MS,
@@ -72,7 +80,12 @@ const cdnUploadWorker = new Worker(
 const emailScrapeWorker = new Worker(
   EMAIL_SCRAPE_QUEUE_NAME,
   async (job) => processEmailScrapeJob(job.data),
-  { connection, concurrency: 2 }
+  {
+    connection,
+    concurrency: 2,
+    lockDuration: EMAIL_SCRAPE_JOB_LOCK_DURATION_MS,
+    stalledInterval: EMAIL_SCRAPE_STALLED_INTERVAL_MS,
+  }
 );
 
 const apifyScrapeWorker = new Worker(
@@ -142,6 +155,22 @@ reconcileOutreachScheduler()
     );
   });
 
+reconcileOrphanedEmailScrapeBatches()
+  .then((retried) => {
+    if (retried.length > 0) {
+      logger.info(
+        { count: retried.length, batches: retried },
+        "Orphaned email scrape batches re-enqueued"
+      );
+    }
+  })
+  .catch((err) => {
+    logger.error(
+      { err: err?.message || err },
+      "Email scrape orphan reconciliation failed"
+    );
+  });
+
 async function shutdown() {
   logger.info("Shutting down worker...");
   await Promise.all([
@@ -155,6 +184,7 @@ async function shutdown() {
     outreachSendWorker.close(),
     closeOutreachQueues(),
     closeApifyScrapeQueue(),
+    closeEmailScrapeQueue(),
   ]);
   process.exit(0);
 }

@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeftIcon, EyeIcon } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeftIcon, EyeIcon, RefreshCwIcon } from "lucide-react";
 import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
@@ -159,9 +159,12 @@ export default function EmailScrapeJobDetailPageContent() {
   const params = useParams();
   const jobId = params?.["job_id"];
   const { accessToken, isReady, logout } = useAuth();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("batches");
   const [page, setPage] = useState(1);
   const [paginationJobId, setPaginationJobId] = useState(jobId);
+  const [retryError, setRetryError] = useState(null);
+  const [retryMessage, setRetryMessage] = useState(null);
 
   if (jobId !== paginationJobId) {
     setPaginationJobId(jobId);
@@ -203,6 +206,44 @@ export default function EmailScrapeJobDetailPageContent() {
   const job = detailQuery.data?.job;
   const batches = detailQuery.data?.batches ?? [];
   const results = Array.isArray(job?.result_payload) ? job.result_payload : [];
+  const stuckBatchCount = batches.filter((batch) =>
+    ["running", "failed"].includes(batch.status),
+  ).length;
+
+  const retryStuckMutation = useMutation({
+    mutationFn: async () => {
+      const result = await fetchApi(
+        `/admin/email-scrape/jobs/${jobId}/retry-stuck`,
+        { method: "POST", accessToken },
+      );
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+      if (result.error) {
+        throw new Error(
+          result.error.message || "Failed to retry stuck batches",
+        );
+      }
+      return result.data;
+    },
+    onMutate: () => {
+      setRetryError(null);
+      setRetryMessage(null);
+    },
+    onSuccess: (data) => {
+      const retried = data?.retried?.length ?? 0;
+      setRetryMessage(
+        retried > 0
+          ? `Re-queued ${retried} stuck batch${retried === 1 ? "" : "es"}.`
+          : "No stuck batches to retry.",
+      );
+      queryClient.invalidateQueries({ queryKey: ["email-scrape-job", jobId] });
+    },
+    onError: (err) => {
+      setRetryError(err.message || "Failed to retry stuck batches");
+    },
+  });
 
   const grouped = useMemo(() => {
     return {
@@ -277,6 +318,22 @@ export default function EmailScrapeJobDetailPageContent() {
             Email scrape job
           </h1>
           <EmailScrapeStatusBadge status={job.status} />
+          {stuckBatchCount > 0 ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer rounded-full px-4"
+              disabled={retryStuckMutation.isPending}
+              onClick={() => retryStuckMutation.mutate()}
+            >
+              <RefreshCwIcon
+                className={
+                  retryStuckMutation.isPending ? "animate-spin" : undefined
+                }
+              />
+              Retry stuck batches ({stuckBatchCount})
+            </Button>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
@@ -319,6 +376,12 @@ export default function EmailScrapeJobDetailPageContent() {
 
         {job.failed_data?.message ? (
           <p className="text-sm text-destructive">{job.failed_data.message}</p>
+        ) : null}
+        {retryError ? (
+          <p className="text-sm text-destructive">{retryError}</p>
+        ) : null}
+        {retryMessage ? (
+          <p className="text-sm text-muted-foreground">{retryMessage}</p>
         ) : null}
       </div>
 

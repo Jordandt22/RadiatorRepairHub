@@ -61,25 +61,19 @@ export default function HowItWorksContent() {
           animate={inView ? "visible" : "hidden"}
           variants={staggerContainer(reduceMotion)}
         >
-          {STEPS.map((item, index) => (
+          {STEPS.map((item) => (
             <motion.li
               key={item.step}
-              className="relative"
+              className="rounded-lg border-2 border-primary/20 bg-primary/30 p-6"
               variants={staggerItem(reduceMotion)}
             >
-              {index < STEPS.length - 1 ? (
-                <span
-                  className="absolute top-5 left-16 hidden h-px bg-white/25 lg:block lg:right-[-12px]"
-                  aria-hidden="true"
-                />
-              ) : null}
-              <p className="mb-3 font-heading text-3xl font-bold tracking-tight text-white/90">
+              <p className="mb-3 font-heading text-3xl font-bold tracking-tight text-white">
                 {String(item.step).padStart(2, "0")}
               </p>
               <h3 className="mb-2 font-heading text-lg font-semibold text-white">
                 {item.title}
               </h3>
-              <p className="text-sm leading-relaxed text-white/65">
+              <p className="text-sm leading-relaxed text-white/70">
                 {item.description}
               </p>
             </motion.li>

@@ -9,6 +9,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   EyeIcon,
+  RefreshCwIcon,
   ShieldAlertIcon,
   TagIcon,
   XIcon,
@@ -75,6 +76,8 @@ export default function EmailScrapeBatchDetailPageContent() {
   const [markStatusOpen, setMarkStatusOpen] = useState(false);
   const [markSuspiciousOpen, setMarkSuspiciousOpen] = useState(false);
   const [markStatusError, setMarkStatusError] = useState(null);
+  const [retryError, setRetryError] = useState(null);
+  const [retryMessage, setRetryMessage] = useState(null);
 
   if (batchId !== paginationBatchId) {
     setPaginationBatchId(batchId);
@@ -177,6 +180,36 @@ export default function EmailScrapeBatchDetailPageContent() {
     },
     onError: (err) => {
       setMarkStatusError(err.message || "Failed to mark status");
+    },
+  });
+
+  const retryMutation = useMutation({
+    mutationFn: async () => {
+      const result = await fetchApi(
+        `/admin/email-scrape/batches/${batchId}/retry`,
+        { method: "POST", accessToken },
+      );
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to retry batch");
+      }
+      return result.data;
+    },
+    onMutate: () => {
+      setRetryError(null);
+      setRetryMessage(null);
+    },
+    onSuccess: () => {
+      setRetryMessage("Batch re-queued.");
+      queryClient.invalidateQueries({
+        queryKey: ["email-scrape-batch", batchId],
+      });
+    },
+    onError: (err) => {
+      setRetryError(err.message || "Failed to retry batch");
     },
   });
 
@@ -417,6 +450,22 @@ export default function EmailScrapeBatchDetailPageContent() {
             Batch #{(batch.batch_index ?? 0) + 1}
           </h1>
           <EmailScrapeStatusBadge status={batch.status} />
+          {["pending", "running", "failed"].includes(batch.status) ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer rounded-full px-4"
+              disabled={retryMutation.isPending}
+              onClick={() => retryMutation.mutate()}
+            >
+              <RefreshCwIcon
+                className={
+                  retryMutation.isPending ? "animate-spin" : undefined
+                }
+              />
+              Retry batch
+            </Button>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
@@ -453,6 +502,12 @@ export default function EmailScrapeBatchDetailPageContent() {
 
         {batch.failed_data?.message ? (
           <p className="text-sm text-destructive">{batch.failed_data.message}</p>
+        ) : null}
+        {retryError ? (
+          <p className="text-sm text-destructive">{retryError}</p>
+        ) : null}
+        {retryMessage ? (
+          <p className="text-sm text-muted-foreground">{retryMessage}</p>
         ) : null}
       </div>
 

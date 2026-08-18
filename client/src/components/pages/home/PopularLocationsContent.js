@@ -46,10 +46,14 @@ export default function PopularLocationsContent({ states = [] }) {
         <AnimatedStaggerGrid
           inView={inView}
           reduceMotion={reduceMotion}
-          className="grid grid-cols-2 gap-3 md:grid-cols-3"
+          className="grid grid-cols-1 gap-3 md:grid-cols-3"
         >
-          {states.map((state) => (
-            <AnimatedStaggerItem key={state.code} reduceMotion={reduceMotion}>
+          {states.slice(0, 6).map((state, index) => (
+            <AnimatedStaggerItem
+              key={state.code}
+              reduceMotion={reduceMotion}
+              className={index >= 3 ? "max-md:hidden" : undefined}
+            >
               <Link
                 href={`/state/${state.code}`}
                 className="group flex items-center gap-3 rounded-lg border border-border bg-background p-4 transition-card-hover ease-out hover:scale-95 hover:border-interactive motion-reduce:transition-none motion-reduce:hover:scale-100"

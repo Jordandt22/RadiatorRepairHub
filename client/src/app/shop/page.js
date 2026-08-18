@@ -37,13 +37,8 @@ async function ShopPage() {
     itemListElement: products.map((product, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      item: {
-        "@type": "Product",
-        name: product.title,
-        description: product.description || undefined,
-        image: product.image_url || undefined,
-        url: product.affiliate_link || product.product_link,
-      },
+      name: product.title,
+      url: product.affiliate_link || product.product_link,
     })),
   };
 

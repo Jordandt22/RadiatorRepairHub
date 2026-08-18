@@ -45,8 +45,8 @@ export default function ContactSectionContent({
             >
               {email ? (
                 <AnimatedStaggerItem reduceMotion={reduceMotion} className="h-full">
-                  <div className="h-full rounded-lg border border-border bg-card p-6">
-                    <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
+                  <div className="flex h-full flex-col items-center rounded-lg border border-border bg-card p-6 text-center">
+                    <span className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
                       <Mail
                         className="h-5 w-5 text-primary"
                         aria-hidden="true"
@@ -71,8 +71,8 @@ export default function ContactSectionContent({
 
               {hasPhone ? (
                 <AnimatedStaggerItem reduceMotion={reduceMotion} className="h-full">
-                  <div className="h-full rounded-lg border border-border bg-card p-6">
-                    <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
+                  <div className="flex h-full flex-col items-center rounded-lg border border-border bg-card p-6 text-center">
+                    <span className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
                       <Phone
                         className="h-5 w-5 text-primary"
                         aria-hidden="true"

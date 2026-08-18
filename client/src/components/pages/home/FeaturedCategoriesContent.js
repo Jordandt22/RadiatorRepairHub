@@ -62,7 +62,7 @@ export default function FeaturedCategoriesContent({ categories = [] }) {
         <AnimatedStaggerGrid
           inView={inView}
           reduceMotion={reduceMotion}
-          className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4"
+          className="grid grid-cols-1 gap-3 md:grid-cols-3"
         >
           {categories.map((category) => {
             const Icon = CATEGORY_ICONS[category.slug] || Tag;

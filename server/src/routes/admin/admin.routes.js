@@ -82,6 +82,8 @@ import {
   getEmailScrapeBatchById,
   getEmailScrapeBusinesses,
   createEmailScrapeJobHandler,
+  retryEmailScrapeBatchHandler,
+  retryStuckEmailScrapeBatchesHandler,
   deleteEmailScrapeJobsHandler,
   getApifyScrapeJobs,
   getApifyScrapeJobById,
@@ -660,6 +662,18 @@ adminRouter.post(
   "/email-scrape/jobs",
   bodyValidator(CreateEmailScrapeJobSchema),
   serverErrorCatcherWrapper(createEmailScrapeJobHandler)
+);
+
+adminRouter.post(
+  "/email-scrape/jobs/:jobId/retry-stuck",
+  paramsValidator(GetEmailScrapeJobParamsSchema),
+  serverErrorCatcherWrapper(retryStuckEmailScrapeBatchesHandler)
+);
+
+adminRouter.post(
+  "/email-scrape/batches/:batchId/retry",
+  paramsValidator(GetEmailScrapeBatchParamsSchema),
+  serverErrorCatcherWrapper(retryEmailScrapeBatchHandler)
 );
 
 adminRouter.delete(

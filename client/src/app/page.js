@@ -38,10 +38,16 @@ export default async function Home() {
   const [affiliateRes, categoriesRes, statesRes] = await Promise.all([
     fetchActiveAffiliateProductsByAliases([
       "valvoline",
+      "prestone-dexcool",
+      "radiator-flush",
       "radiator-cap",
+      "radiator-cap-13",
+      "coolant-funnel",
       "ir-thermometer",
+      "combustion-leak-detector",
+      "coolant-pressure-tester",
     ]),
-    fetchTopPrimaryCategories({ limit: 4 }),
+    fetchTopPrimaryCategories({ limit: 3 }),
     fetchStateBusinessCountsByLimit(DIRECTORY_STATE_COUNTS_LIMIT),
   ]);
 
