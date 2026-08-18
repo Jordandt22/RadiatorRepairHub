@@ -15,7 +15,10 @@ import { EXTRA_FAQS } from "@/lib/seo/faqs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { fetchTopPrimaryCategories } from "@/lib/api/categories";
-import { fetchStateBusinessCounts } from "@/lib/api/location";
+import {
+  DIRECTORY_STATE_COUNTS_LIMIT,
+  fetchStateBusinessCountsByLimit,
+} from "@/lib/api/cachedReads";
 
 const homeTitle =
   "Find Radiator Repair Shops Nationwide | RadiatorRepairHub Directory";
@@ -39,7 +42,7 @@ export default async function Home() {
       "ir-thermometer",
     ]),
     fetchTopPrimaryCategories({ limit: 4 }),
-    fetchStateBusinessCounts({ limit: 6 }),
+    fetchStateBusinessCountsByLimit(DIRECTORY_STATE_COUNTS_LIMIT),
   ]);
 
   const featuredProducts = affiliateRes.data?.products ?? [];

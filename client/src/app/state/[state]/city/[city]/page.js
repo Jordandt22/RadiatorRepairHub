@@ -7,9 +7,9 @@ import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
 // Data
 import STATES from "@/lib/data/states";
-import { fetchCityBySlug } from "@/lib/api/location";
+import { fetchCityBySlug } from "@/lib/api/cachedReads";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 600;
 
 export async function generateStaticParams() {
   const topCities = [

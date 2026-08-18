@@ -7,7 +7,7 @@ import STATES from "@/lib/data/states";
 import { fetchCitiesByStateId, fetchCityBusinessCounts } from "@/lib/api/location";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 // Generate metadata for cities page
 export async function generateMetadata({ params }) {
