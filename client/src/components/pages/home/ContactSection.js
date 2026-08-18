@@ -3,7 +3,6 @@ import {
   getBusinessEmail,
   getBusinessPhoneDigits,
   getBusinessPhoneSmsHref,
-  getBusinessPhoneTelHref,
 } from "@/lib/businessContactInfo";
 
 import ContactSectionContent from "./ContactSectionContent";
@@ -16,7 +15,6 @@ function ContactSection() {
     <ContactSectionContent
       email={email}
       phoneDisplay={phoneDigits ? formatBusinessPhoneDisplay(phoneDigits) : null}
-      phoneTelHref={phoneDigits ? getBusinessPhoneTelHref(phoneDigits) : null}
       phoneSmsHref={phoneDigits ? getBusinessPhoneSmsHref(phoneDigits) : null}
     />
   );

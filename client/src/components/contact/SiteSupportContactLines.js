@@ -23,7 +23,7 @@ export default function SiteSupportContactLines({ className = "" }) {
       ) : null}
       {hasPhone ? (
         <p className="mt-2 text-foreground">
-          <strong>Phone / SMS:</strong>{" "}
+          <strong>Text only:</strong>{" "}
           <SitePhoneLinks className="inline" showLabel={false} />
         </p>
       ) : null}

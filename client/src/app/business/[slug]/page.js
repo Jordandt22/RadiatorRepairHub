@@ -509,6 +509,7 @@ async function Page({ params }) {
                   email={business.email}
                   website={business.website}
                   emailStatus={business.email_status}
+                  isClaimed={Boolean(business.is_claimed)}
                 />
 
                 <BusinessHoursSection

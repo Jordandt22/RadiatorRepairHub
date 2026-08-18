@@ -9,6 +9,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   EyeIcon,
+  ShieldAlertIcon,
   TagIcon,
   XIcon,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import EmailScrapeStatusBadge from "@/components/pages/email-scrape/EmailScrapeStatusBadge";
 import EmailCleanerStatusBadge from "@/components/pages/email-cleaner/EmailCleanerStatusBadge";
 import EmailCleanerMarkStatusDialog from "@/components/pages/email-cleaner/EmailCleanerMarkStatusDialog";
+import EmailScrapeMarkSuspiciousDialog from "@/components/pages/email-scrape/EmailScrapeMarkSuspiciousDialog";
 import EmailScrapeTableSkeleton from "@/components/pages/email-scrape/EmailScrapeTableSkeleton";
 import IngestCountBadge from "@/components/pages/add-businesses/IngestCountBadge";
 import IngestPayloadTable from "@/components/pages/add-businesses/IngestPayloadTable";
@@ -71,6 +73,7 @@ export default function EmailScrapeBatchDetailPageContent() {
   const [paginationBatchId, setPaginationBatchId] = useState(batchId);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [markStatusOpen, setMarkStatusOpen] = useState(false);
+  const [markSuspiciousOpen, setMarkSuspiciousOpen] = useState(false);
   const [markStatusError, setMarkStatusError] = useState(null);
 
   if (batchId !== paginationBatchId) {
@@ -165,6 +168,7 @@ export default function EmailScrapeBatchDetailPageContent() {
     },
     onSuccess: async () => {
       setMarkStatusOpen(false);
+      setMarkSuspiciousOpen(false);
       setSelectedIds(new Set());
       setMarkStatusError(null);
       await queryClient.invalidateQueries({
@@ -466,6 +470,20 @@ export default function EmailScrapeBatchDetailPageContent() {
               onClick={() => {
                 if (markStatusDisabled) return;
                 setMarkStatusError(null);
+                setMarkSuspiciousOpen(true);
+              }}
+            >
+              <ShieldAlertIcon />
+              Mark Suspicious
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer rounded-full"
+              disabled={markStatusDisabled}
+              onClick={() => {
+                if (markStatusDisabled) return;
+                setMarkStatusError(null);
                 setMarkStatusOpen(true);
               }}
             >
@@ -509,6 +527,18 @@ export default function EmailScrapeBatchDetailPageContent() {
         ) : null}
       </section>
 
+      <EmailScrapeMarkSuspiciousDialog
+        open={markSuspiciousOpen}
+        onOpenChange={(open) => {
+          if (markStatusMutation.isPending) return;
+          setMarkSuspiciousOpen(open);
+          if (!open) setMarkStatusError(null);
+        }}
+        selectedCount={selectedIds.size}
+        onConfirm={() => markStatusMutation.mutate("suspicious")}
+        confirmPending={markStatusMutation.isPending}
+        confirmError={markStatusError}
+      />
       <EmailCleanerMarkStatusDialog
         open={markStatusOpen}
         onOpenChange={(open) => {

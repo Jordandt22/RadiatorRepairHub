@@ -208,7 +208,7 @@ const Page = () => {
                 Need help?
               </h3>
               <p className="mb-6 text-muted-foreground">
-                Questions about listing your business? Email, call, or text us.
+                Questions about listing your business? Email or text us.
               </p>
               <div className="flex flex-col items-center gap-3">
                 {businessEmail ? (

@@ -3,7 +3,6 @@ import Link from "next/link";
 import {
   formatBusinessPhoneDisplay,
   getBusinessPhoneSmsHref,
-  getBusinessPhoneTelHref,
 } from "@/lib/businessContactInfo";
 
 const FALLBACK_TOP_STATES = [
@@ -50,7 +49,6 @@ function Footer({
   const email = businessEmail;
   const phoneDigits = businessPhoneDigits;
   const phoneDisplay = formatBusinessPhoneDisplay(phoneDigits);
-  const telHref = getBusinessPhoneTelHref(phoneDigits);
   const smsHref = getBusinessPhoneSmsHref(phoneDigits);
 
   return (
@@ -80,21 +78,12 @@ function Footer({
                 ) : null}
                 {phoneDigits ? (
                   <p>
-                    <span className="text-white/40">Call or Text: </span>
-                    <a
-                      href={telHref}
-                      className="text-white/70 transition-colors hover:text-white"
-                    >
-                      {phoneDisplay}
-                    </a>
-                    <span className="mx-1.5 text-white/30" aria-hidden="true">
-                      ·
-                    </span>
+                    <span className="text-white/40">Text only: </span>
                     <a
                       href={smsHref}
                       className="text-white/70 transition-colors hover:text-white"
                     >
-                      SMS
+                      {phoneDisplay}
                     </a>
                   </p>
                 ) : null}

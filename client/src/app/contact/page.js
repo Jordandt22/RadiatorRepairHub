@@ -133,7 +133,7 @@ const Page = () => {
                       </div>
                       <div>
                         <h3 className="mb-1 font-semibold text-foreground">
-                          Call or text
+                          Text only
                         </h3>
                         <p className="mb-2 text-sm text-muted-foreground">
                           Directory support only, not a repair shop line.

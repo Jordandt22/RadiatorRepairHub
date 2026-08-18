@@ -13,6 +13,7 @@ import {
   REVIEW_TIERS,
 } from "../lib/adminBusinessTiers.js";
 import { getSuspiciousEmailReasons } from "../lib/suspiciousEmail.js";
+import { CLAIM_INVITE_OUTREACH_TYPES } from "../lib/outreachSend.js";
 import {
   buildIlikeOrFilter,
   sanitizeIlikeSearch,
@@ -789,6 +790,39 @@ const withOwnerEmails = async (businesses) => {
   }));
 };
 
+const withClaimInviteTypes = async (businesses) => {
+  const rows = businesses ?? [];
+  if (!rows.length) return rows;
+
+  const ids = rows.map((row) => row.id).filter(Boolean);
+  if (!ids.length) {
+    return rows.map((row) => ({ ...row, claim_invite_type: null }));
+  }
+
+  const { data, error } = await supabase
+    .from("outreach_history")
+    .select("business_id, outreach_type, sent_at")
+    .in("business_id", ids)
+    .eq("message_type", "email")
+    .in("outreach_type", [...CLAIM_INVITE_OUTREACH_TYPES])
+    .order("sent_at", { ascending: true });
+
+  if (error) {
+    return rows.map((row) => ({ ...row, claim_invite_type: null }));
+  }
+
+  const typeByBusinessId = new Map();
+  for (const row of data ?? []) {
+    if (!row?.business_id || typeByBusinessId.has(row.business_id)) continue;
+    typeByBusinessId.set(row.business_id, row.outreach_type ?? null);
+  }
+
+  return rows.map((row) => ({
+    ...row,
+    claim_invite_type: typeByBusinessId.get(row.id) ?? null,
+  }));
+};
+
 export const getAdminBusinesses = async (
   page,
   limit,
@@ -954,7 +988,9 @@ export const getAdminBusinesses = async (
     location = rest;
   }
 
-  const businesses = await withOwnerEmails(data);
+  const withOwners = await withOwnerEmails(data);
+  const businesses =
+    claimed === true ? await withClaimInviteTypes(withOwners) : withOwners;
 
   return { data: businesses, count, location, error: null };
 };
@@ -2848,7 +2884,7 @@ export const getAdminUserByUid = async (uid) => {
     return { data: null, error: businessesError };
   }
 
-  const claimedBusinesses = businesses ?? [];
+  const claimedBusinesses = await withClaimInviteTypes(businesses ?? []);
 
   return {
     data: {
