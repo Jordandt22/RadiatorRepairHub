@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import AffiliateProductCard from "@/components/blogs/AffiliateProductCard";
+import HomeSnapCarousel from "@/components/pages/home/HomeSnapCarousel";
 
 function AffiliateDisclosure({ className = "", children = null }) {
   return (
@@ -19,6 +20,7 @@ export function AffiliateProductsSection({
   description = null,
   descriptionVariant = "default",
   disclosure = null,
+  layout = "grid",
 }) {
   if (!products?.length) return null;
 
@@ -75,16 +77,30 @@ export function AffiliateProductsSection({
         </AffiliateDisclosure>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {products.map((product) => (
-          <AffiliateProductCard
-            key={product.id}
-            product={product}
-            variant={variant}
-            blogSlug={blogSlug}
-          />
-        ))}
-      </div>
+      {layout === "carousel" ? (
+        <HomeSnapCarousel label={title} fullWidthMobile>
+          {products.map((product) => (
+            <div key={product.id} className="h-full w-full">
+              <AffiliateProductCard
+                product={product}
+                variant={variant}
+                blogSlug={blogSlug}
+              />
+            </div>
+          ))}
+        </HomeSnapCarousel>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {products.map((product) => (
+            <AffiliateProductCard
+              key={product.id}
+              product={product}
+              variant={variant}
+              blogSlug={blogSlug}
+            />
+          ))}
+        </div>
+      )}
 
       <div className={`mt-6 ${isShowcase ? "text-center" : ""}`}>
         <Link

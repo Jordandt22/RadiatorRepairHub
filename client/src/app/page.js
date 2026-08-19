@@ -14,6 +14,7 @@ import { HOME_KEYWORDS } from "@/lib/seo/keywords";
 import { EXTRA_FAQS } from "@/lib/seo/faqs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
+import { FEATURED_AFFILIATE_PRODUCT_ALIASES } from "@/lib/affiliateProducts";
 import { fetchTopPrimaryCategories } from "@/lib/api/categories";
 import {
   DIRECTORY_STATE_COUNTS_LIMIT,
@@ -36,17 +37,7 @@ export const revalidate = 60;
 
 export default async function Home() {
   const [affiliateRes, categoriesRes, statesRes] = await Promise.all([
-    fetchActiveAffiliateProductsByAliases([
-      "valvoline",
-      "prestone-dexcool",
-      "radiator-flush",
-      "radiator-cap",
-      "radiator-cap-13",
-      "coolant-funnel",
-      "ir-thermometer",
-      "combustion-leak-detector",
-      "coolant-pressure-tester",
-    ]),
+    fetchActiveAffiliateProductsByAliases(FEATURED_AFFILIATE_PRODUCT_ALIASES),
     fetchTopPrimaryCategories({ limit: 3 }),
     fetchStateBusinessCountsByLimit(DIRECTORY_STATE_COUNTS_LIMIT),
   ]);

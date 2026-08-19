@@ -34,6 +34,7 @@ import {
 } from "@/lib/seo/metadata";
 import { fetchBusinessBySlug } from "@/lib/api/cachedReads";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
+import { FEATURED_AFFILIATE_PRODUCT_ALIASES } from "@/lib/affiliateProducts";
 import { getBusinessDisplayImage } from "@/lib/images";
 
 function getGoogleMapsQuery(business) {
@@ -68,25 +69,31 @@ export async function generateMetadata({ params }) {
     }
 
     const title = `Radiator Repair: ${business.title_tag} | ${business.city.name}, ${business.state.name} - RadiatorRepairHub`;
-    const description = `Expert radiator repair services at ${business.title
-      } in ${business.city.name}, ${business.state.name}. ${business.meta_description ||
+    const description = `Expert radiator repair services at ${
+      business.title
+    } in ${business.city.name}, ${business.state.name}. ${
+      business.meta_description ||
       business.local_note ||
       "Professional radiator repair and cooling system services for your vehicle."
-      } ${business.phone
+    } ${
+      business.phone
         ? `Call ${business.phone} for radiator repair today!`
         : "Contact us for quality radiator repair."
-      }`;
+    }`;
     const displayImage = getBusinessDisplayImage(business);
 
     return {
       title,
       description,
       keywords: business.keywords
-        ? `${business.keywords.join(", ")}, radiator repair, ${business.title
-        }, ${business.city.name}, ${business.state.name}`
-        : `${business.title}, radiator repair, ${business.city.name}, ${business.state.name
-        }, auto repair, cooling system repair, ${business.primary_category?.name || "automotive services"
-        }`,
+        ? `${business.keywords.join(", ")}, radiator repair, ${
+            business.title
+          }, ${business.city.name}, ${business.state.name}`
+        : `${business.title}, radiator repair, ${business.city.name}, ${
+            business.state.name
+          }, auto repair, cooling system repair, ${
+            business.primary_category?.name || "automotive services"
+          }`,
       openGraph: {
         title,
         description,
@@ -94,13 +101,13 @@ export async function generateMetadata({ params }) {
         locale: "en_US",
         images: displayImage
           ? [
-            {
-              url: displayImage,
-              width: 1200,
-              height: 630,
-              alt: business.title,
-            },
-          ]
+              {
+                url: displayImage,
+                width: 1200,
+                height: 630,
+                alt: business.title,
+              },
+            ]
           : [DEFAULT_OG_IMAGE],
         siteName: "RadiatorRepairHub",
       },
@@ -140,13 +147,11 @@ async function Page({ params }) {
 
     const featuredProducts = business.is_claimed
       ? []
-      : (
-        await fetchActiveAffiliateProductsByAliases([
-          "valvoline",
-          "radiator-cap",
-          "coolant-funnel",
-        ])
-      ).data?.products ?? [];
+      : ((
+          await fetchActiveAffiliateProductsByAliases(
+            FEATURED_AFFILIATE_PRODUCT_ALIASES
+          )
+        ).data?.products ?? []);
 
     const mapsQuery = getGoogleMapsQuery(business);
 
@@ -161,16 +166,16 @@ async function Page({ params }) {
       telephone: business.phone,
       ...(business.keywords &&
         business.keywords.length > 0 && {
-        keywords: business.keywords.join(", "),
-      }),
+          keywords: business.keywords.join(", "),
+        }),
       ...(business.highlights &&
         business.highlights.length > 0 && {
-        amenityFeature: business.highlights.map((highlight) => ({
-          "@type": "LocationFeatureSpecification",
-          name: highlight,
-          value: true,
-        })),
-      }),
+          amenityFeature: business.highlights.map((highlight) => ({
+            "@type": "LocationFeatureSpecification",
+            name: highlight,
+            value: true,
+          })),
+        }),
       address: {
         "@type": "PostalAddress",
         streetAddress: business.address,
@@ -181,22 +186,22 @@ async function Page({ params }) {
       geo:
         business.latitude && business.longitude
           ? {
-            "@type": "GeoCoordinates",
-            latitude: business.latitude,
-            longitude: business.longitude,
-          }
+              "@type": "GeoCoordinates",
+              latitude: business.latitude,
+              longitude: business.longitude,
+            }
           : undefined,
       image: getBusinessDisplayImage(business),
       ...(business.reviews_count > 0 &&
         business.total_score > 0 && {
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: business.total_score,
-          reviewCount: business.reviews_count,
-          bestRating: 5,
-          worstRating: 1,
-        },
-      }),
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: business.total_score,
+            reviewCount: business.reviews_count,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }),
       priceRange: "$$",
       openingHoursSpecification: business.hours
         ?.flatMap((day) => {
@@ -231,7 +236,8 @@ async function Page({ params }) {
             "@type": "Offer",
             itemOffered: {
               "@type": "Service",
-              name: business.primary_category?.name || "Radiator Repair Service",
+              name:
+                business.primary_category?.name || "Radiator Repair Service",
               description:
                 "Professional radiator repair and maintenance services",
             },
@@ -253,11 +259,11 @@ async function Page({ params }) {
       { name: "Categories", url: "/categories" },
       ...(business.primary_category
         ? [
-          {
-            name: business.primary_category.name,
-            url: `/category/${business.primary_category.slug}`,
-          },
-        ]
+            {
+              name: business.primary_category.name,
+              url: `/category/${business.primary_category.slug}`,
+            },
+          ]
         : []),
       {
         name: business.city.name,
@@ -324,7 +330,10 @@ async function Page({ params }) {
                 <span className="mr-2 text-sm text-white/85 md:text-base">
                   ({business.reviews_count.toLocaleString()} reviews)
                 </span>
-                <OpenStatus hours={business.hours} timezone={business.timezone} />
+                <OpenStatus
+                  hours={business.hours}
+                  timezone={business.timezone}
+                />
                 {business.is_claimed ? <VerifiedBadge size="md" /> : null}
               </div>
 
@@ -362,10 +371,11 @@ async function Page({ params }) {
                   imageId={business.primary_image_id}
                   cdnStored={Boolean(business.cdn_stored)}
                   showImage={!hasHeroImage}
-                  imageAlt={`${business.title} - ${business.keywords && business.keywords.length > 0
+                  imageAlt={`${business.title} - ${
+                    business.keywords && business.keywords.length > 0
                       ? business.keywords[0]
                       : "radiator repair services"
-                    } in ${business.city.name}, ${business.state.name}`}
+                  } in ${business.city.name}, ${business.state.name}`}
                 />
 
                 <ServiceCategoriesSection
@@ -463,10 +473,11 @@ async function Page({ params }) {
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-6 w-6 ${i < Math.floor(business.total_score)
+                            className={`h-6 w-6 ${
+                              i < Math.floor(business.total_score)
                                 ? "fill-current text-yellow-400"
                                 : "text-border"
-                              }`}
+                            }`}
                           />
                         ))}
                       </div>
@@ -535,7 +546,10 @@ async function Page({ params }) {
                   className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
                 >
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
-                    <MapPinned className="h-6 w-6 text-primary" aria-hidden="true" />
+                    <MapPinned
+                      className="h-6 w-6 text-primary"
+                      aria-hidden="true"
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
@@ -557,7 +571,10 @@ async function Page({ params }) {
                   className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
                 >
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
-                    <MapPin className="h-6 w-6 text-primary" aria-hidden="true" />
+                    <MapPin
+                      className="h-6 w-6 text-primary"
+                      aria-hidden="true"
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
@@ -580,7 +597,10 @@ async function Page({ params }) {
                     className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
                   >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
-                      <Tags className="h-6 w-6 text-primary" aria-hidden="true" />
+                      <Tags
+                        className="h-6 w-6 text-primary"
+                        aria-hidden="true"
+                      />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
@@ -603,7 +623,10 @@ async function Page({ params }) {
                     className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
                   >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
-                      <Search className="h-6 w-6 text-primary" aria-hidden="true" />
+                      <Search
+                        className="h-6 w-6 text-primary"
+                        aria-hidden="true"
+                      />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
@@ -627,11 +650,12 @@ async function Page({ params }) {
             {!business.is_claimed && featuredProducts.length > 0 ? (
               <AffiliateProductsSection
                 products={featuredProducts}
-                title="Cooling tools & supplies"
+                title="Recommended Amazon Tools & Supplies"
                 description={`Optional DIY supplies recommended by RadiatorRepairHub. These products are not sold, endorsed, or affiliated with ${business?.title ?? "this business"}.`}
                 descriptionVariant="notice"
                 disclosure="Product links are RadiatorRepairHub Amazon Associate recommendations. As an Amazon Associate, RadiatorRepairHub earns from qualifying purchases. This shop is not responsible for these products or purchases."
                 variant="related"
+                layout="carousel"
               />
             ) : null}
 
