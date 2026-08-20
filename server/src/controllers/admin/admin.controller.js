@@ -40,6 +40,7 @@ import {
   updateBusinessesEmailStatus as patchBusinessesEmailStatus,
   updateBusinessEmail as patchBusinessEmail,
   updateBusinessListing as patchBusinessListing,
+  updateAdminBusinessCategories as patchAdminBusinessCategories,
   unclaimBusinessesByIds,
   getAdminUsers as fetchAdminUsers,
   getAdminUserByUid as fetchAdminUserByUid,
@@ -2307,6 +2308,8 @@ export const updateBusinessListing = async (req, res) => {
     meta_description,
     local_note,
     keywords,
+    total_score,
+    reviews_count,
   } = req.body;
 
   const normalizedTitle = String(title ?? "").trim();
@@ -2339,6 +2342,8 @@ export const updateBusinessListing = async (req, res) => {
     meta_description: normalizedMetaDescription,
     local_note: normalizedLocalNote,
     keywords: normalizedKeywords,
+    total_score: Math.round(Number(total_score) * 10) / 10,
+    reviews_count: Math.trunc(Number(reviews_count)),
   });
 
   if (error) {
@@ -2384,7 +2389,67 @@ export const updateBusinessListing = async (req, res) => {
       meta_description: data.meta_description,
       local_note: data.local_note,
       keywords: data.keywords,
+      total_score: data.total_score,
+      reviews_count: data.reviews_count,
       last_edited_at: data.last_edited_at,
+    })
+  );
+};
+
+export const updateBusinessCategories = async (req, res) => {
+  const { business_id, primary_category_id, secondary_category_ids = [] } =
+    req.body;
+
+  const { data, error } = await patchAdminBusinessCategories(business_id, {
+    primaryCategoryId: primary_category_id,
+    secondaryCategoryIds: secondary_category_ids,
+  });
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(SUPABASE_ERROR, "Business not found.", error)
+        );
+    }
+    if (
+      error.code === "PRIMARY_NOT_FOUND" ||
+      error.code === "SECONDARY_NOT_FOUND"
+    ) {
+      return res
+        .status(422)
+        .json(customErrorHandler(YUP_ERROR, error.message, error));
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating the business categories.",
+          error
+        )
+      );
+  }
+
+  try {
+    await invalidatePublicBusinessListingCaches([data]);
+    await deleteCacheDataByPrefix("PRIMARY_CATEGORY_BUSINESS_COUNTS");
+  } catch {
+    // best-effort cache cleanup
+  }
+
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+  await deleteCacheDataByPrefix("ADMIN_LOCATIONS");
+
+  return res.status(200).json(
+    successHandler({
+      id: data.id,
+      slug: data.slug,
+      last_edited_at: data.last_edited_at,
+      primary_category: data.primary_category,
+      secondary_categories: data.secondary_categories,
     })
   );
 };

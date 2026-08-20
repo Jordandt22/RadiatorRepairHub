@@ -10,6 +10,7 @@ import { formatFullDate } from "@/components/pages/dashboard/formatDate";
 export default function BusinessDetailListingTab({
   data,
   onEdit,
+  onEditCategories,
 }) {
   const isClaimed = Boolean(data.is_claimed);
   const hasOwner = Boolean(data.owner_uid);
@@ -130,6 +131,49 @@ export default function BusinessDetailListingTab({
                     className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-xs"
                   >
                     {keyword}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              "—"
+            )}
+          </BusinessDetailCard>
+        </dl>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold tracking-tight">Categories</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer rounded-full"
+            onClick={onEditCategories}
+          >
+            <PencilIcon />
+            Edit
+          </Button>
+        </div>
+        <dl className="grid gap-3">
+          <BusinessDetailCard label="Primary category">
+            {data.primary_category?.name ? (
+              <span className="inline-flex rounded-full border border-transparent bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-800">
+                {data.primary_category.name}
+              </span>
+            ) : (
+              "—"
+            )}
+          </BusinessDetailCard>
+          <BusinessDetailCard label="Secondary categories">
+            {Array.isArray(data.secondary_categories) &&
+            data.secondary_categories.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {data.secondary_categories.map((category) => (
+                  <span
+                    key={category.id ?? category.name}
+                    className="rounded-full border border-transparent bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-800"
+                  >
+                    {category.name}
                   </span>
                 ))}
               </div>
