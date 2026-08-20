@@ -750,7 +750,12 @@ export const getListingReports = async (page, limit, status = null) => {
 const ADMIN_BUSINESS_SELECT =
   "id, title, slug, email, phone, address, website, is_claimed, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
-const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), business_images(image_id, is_primary, created_at)`;
+const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, created_at)`;
+
+const flattenAdminSecondaryCategories = (rows) =>
+  (rows ?? [])
+    .map((item) => item?.secondary_categories)
+    .filter(Boolean);
 
 const sanitizeAdminBusinessSearch = (q) => sanitizeIlikeSearch(q);
 
@@ -1024,7 +1029,15 @@ export const getAdminBusinessById = async (id) => {
   }
 
   const [business] = await withOwnerEmails([data]);
-  return { data: business, error: null };
+  return {
+    data: {
+      ...business,
+      secondary_categories: flattenAdminSecondaryCategories(
+        business.secondary_categories
+      ),
+    },
+    error: null,
+  };
 };
 
 const EMAIL_CLEANER_BUSINESS_SELECT =
@@ -1255,6 +1268,8 @@ export const updateBusinessListing = async (
     meta_description,
     local_note,
     keywords,
+    total_score,
+    reviews_count,
   }
 ) => {
   const { data: existing, error: existingError } = await supabase
@@ -1287,6 +1302,8 @@ export const updateBusinessListing = async (
     meta_description,
     local_note,
     keywords,
+    total_score,
+    reviews_count,
     last_edited_at: markedAt,
   };
 
@@ -1300,11 +1317,154 @@ export const updateBusinessListing = async (
     .update(update)
     .eq("id", id)
     .select(
-      "id, title, slug, email, website, phone, address, description, title_tag, meta_description, local_note, keywords, last_edited_at, email_status, email_status_marked_at"
+      "id, title, slug, email, website, phone, address, description, title_tag, meta_description, local_note, keywords, total_score, reviews_count, last_edited_at, email_status, email_status_marked_at"
     )
     .single();
 
   return { data, error };
+};
+
+/**
+ * Update primary + secondary categories for a business (admin business detail).
+ */
+export const updateAdminBusinessCategories = async (
+  id,
+  { primaryCategoryId, secondaryCategoryIds }
+) => {
+  const uniqueSecondaryIds = [...new Set(secondaryCategoryIds ?? [])];
+
+  const { data: existing, error: existingError } = await supabase
+    .from("businesses")
+    .select("id, slug")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (existingError) {
+    return { data: null, error: existingError };
+  }
+
+  if (!existing) {
+    return {
+      data: null,
+      error: { code: "PGRST116", message: "Business not found" },
+    };
+  }
+
+  const { data: primary, error: primaryError } = await supabase
+    .from("primary_categories")
+    .select("id, name, slug")
+    .eq("id", primaryCategoryId)
+    .maybeSingle();
+
+  if (primaryError) {
+    return { data: null, error: primaryError };
+  }
+
+  if (!primary) {
+    return {
+      data: null,
+      error: {
+        code: "PRIMARY_NOT_FOUND",
+        message: "Primary category not found.",
+      },
+    };
+  }
+
+  let secondaryRows = [];
+  if (uniqueSecondaryIds.length > 0) {
+    const { data, error: secondaryLookupError } = await supabase
+      .from("secondary_categories")
+      .select("id, name, slug")
+      .in("id", uniqueSecondaryIds);
+
+    if (secondaryLookupError) {
+      return { data: null, error: secondaryLookupError };
+    }
+
+    secondaryRows = data ?? [];
+    if (secondaryRows.length !== uniqueSecondaryIds.length) {
+      return {
+        data: null,
+        error: {
+          code: "SECONDARY_NOT_FOUND",
+          message: "One or more secondary categories were not found.",
+        },
+      };
+    }
+  }
+
+  const markedAt = new Date().toISOString();
+  const { data: updated, error: updateError } = await supabase
+    .from("businesses")
+    .update({
+      primary_category_id: primaryCategoryId,
+      last_edited_at: markedAt,
+    })
+    .eq("id", id)
+    .select("id, slug, last_edited_at")
+    .single();
+
+  if (updateError) {
+    return { data: null, error: updateError };
+  }
+
+  const { data: currentRows, error: currentError } = await supabase
+    .from("business_secondary_categories")
+    .select("secondary_category_id")
+    .eq("business_id", id);
+
+  if (currentError) {
+    return { data: null, error: currentError };
+  }
+
+  const currentSet = new Set(
+    (currentRows ?? []).map((row) => row.secondary_category_id)
+  );
+  const nextSet = new Set(uniqueSecondaryIds);
+  const toDelete = [...currentSet].filter((categoryId) => !nextSet.has(categoryId));
+  const toInsert = [...nextSet].filter((categoryId) => !currentSet.has(categoryId));
+
+  if (toDelete.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("business_secondary_categories")
+      .delete()
+      .eq("business_id", id)
+      .in("secondary_category_id", toDelete);
+
+    if (deleteError) {
+      return { data: null, error: deleteError };
+    }
+  }
+
+  if (toInsert.length > 0) {
+    const { error: insertError } = await supabase
+      .from("business_secondary_categories")
+      .insert(
+        toInsert.map((secondary_category_id) => ({
+          business_id: id,
+          secondary_category_id,
+        }))
+      );
+
+    if (insertError) {
+      return { data: null, error: insertError };
+    }
+  }
+
+  const secondaryById = new Map(secondaryRows.map((row) => [row.id, row]));
+
+  return {
+    data: {
+      id: updated.id,
+      slug: updated.slug,
+      last_edited_at: updated.last_edited_at,
+      primary_category: primary,
+      secondary_categories: uniqueSecondaryIds
+        .map((categoryId) => secondaryById.get(categoryId))
+        .filter(Boolean),
+    },
+    error: null,
+  };
 };
 
 /**

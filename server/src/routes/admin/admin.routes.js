@@ -35,6 +35,7 @@ import {
   markBusinessEmailStatus,
   updateBusinessEmail,
   updateBusinessListing,
+  updateBusinessCategories,
   unclaimBusinesses,
   getUsers,
   getUserByUid,
@@ -126,6 +127,7 @@ import {
   MarkBusinessEmailStatusSchema,
   UpdateBusinessEmailSchema,
   UpdateBusinessListingSchema,
+  UpdateBusinessCategoriesSchema,
   UnclaimBusinessesSchema,
   GetAdminUsersQuerySchema,
   DeleteAdminUsersSchema,
@@ -321,6 +323,12 @@ adminRouter.patch(
   "/businesses/listing",
   bodyValidator(UpdateBusinessListingSchema),
   serverErrorCatcherWrapper(updateBusinessListing)
+);
+
+adminRouter.patch(
+  "/businesses/categories",
+  bodyValidator(UpdateBusinessCategoriesSchema),
+  serverErrorCatcherWrapper(updateBusinessCategories)
 );
 
 adminRouter.patch(

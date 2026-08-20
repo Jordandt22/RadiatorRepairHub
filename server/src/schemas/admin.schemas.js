@@ -612,6 +612,50 @@ export const UpdateBusinessListingSchema = Yup.object({
     )
     .max(30, "At most 30 keywords")
     .required("Keywords are required"),
+  total_score: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return undefined;
+      const num = Number(originalValue);
+      if (!Number.isFinite(num)) return originalValue;
+      return Math.round(num * 10) / 10;
+    })
+    .typeError("Score must be a number")
+    .min(0, "Score must be 0 or higher")
+    .max(5, "Score cannot be more than 5")
+    .required("Score is required"),
+  reviews_count: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return undefined;
+      const num = Number(originalValue);
+      if (!Number.isFinite(num)) return originalValue;
+      return Math.trunc(num);
+    })
+    .typeError("Reviews must be a number")
+    .integer("Reviews must be a whole number")
+    .min(0, "Reviews cannot be negative")
+    .max(1000000, "Reviews count is too large")
+    .required("Reviews count is required"),
+});
+
+export const UpdateBusinessCategoriesSchema = Yup.object({
+  business_id: Yup.string()
+    .uuid("Invalid business ID")
+    .required("Business ID is required"),
+  primary_category_id: Yup.string()
+    .uuid("Invalid primary category ID")
+    .required("Primary category is required"),
+  secondary_category_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid secondary category ID"))
+    .max(10, "You can select up to 10 secondary categories")
+    .default([])
+    .test(
+      "unique-secondary",
+      "Secondary categories must be unique",
+      (value) => {
+        if (!value?.length) return true;
+        return new Set(value).size === value.length;
+      }
+    ),
 });
 
 export const GetAdminBusinessParamsSchema = Yup.object({

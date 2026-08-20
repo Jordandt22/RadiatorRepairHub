@@ -114,7 +114,40 @@ const listingEditSchema = Yup.object({
     .test("keyword-length", "Each keyword must be 100 characters or fewer", (value) => {
       return parseKeywordsInput(value).every((keyword) => keyword.length <= 100);
     }),
+  total_score: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return undefined;
+      const num = Number(originalValue);
+      if (!Number.isFinite(num)) return originalValue;
+      return Math.round(num * 10) / 10;
+    })
+    .typeError("Score must be a number")
+    .min(0, "Score must be 0 or higher")
+    .max(5, "Score cannot be more than 5")
+    .required("Score is required"),
+  reviews_count: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return undefined;
+      const num = Number(originalValue);
+      if (!Number.isFinite(num)) return originalValue;
+      return Math.trunc(num);
+    })
+    .typeError("Reviews must be a number")
+    .integer("Reviews must be a whole number")
+    .min(0, "Reviews cannot be negative")
+    .max(1000000, "Reviews count is too large")
+    .required("Reviews count is required"),
 });
+
+function formatScoreInput(score) {
+  if (score == null || Number.isNaN(Number(score))) return "";
+  return Number(score).toFixed(1);
+}
+
+function formatReviewsInput(count) {
+  if (count == null || Number.isNaN(Number(count))) return "";
+  return String(Math.trunc(Number(count)));
+}
 
 function getInitialValues(business) {
   return {
@@ -123,6 +156,8 @@ function getInitialValues(business) {
     website: business?.website ?? "",
     phone: business?.phone ?? "",
     address: business?.address ?? "",
+    total_score: formatScoreInput(business?.total_score),
+    reviews_count: formatReviewsInput(business?.reviews_count),
     description: business?.description ?? "",
     title_tag: business?.title_tag ?? "",
     meta_description: business?.meta_description ?? "",
@@ -163,6 +198,8 @@ export default function BusinessListingEditDialog({
         meta_description: values.meta_description.trim(),
         local_note: values.local_note.trim(),
         keywords: parseKeywordsInput(values.keywords),
+        total_score: Number(values.total_score),
+        reviews_count: Number(values.reviews_count),
       });
     },
   });
@@ -191,7 +228,8 @@ export default function BusinessListingEditDialog({
         <DialogHeader>
           <DialogTitle>Edit listing</DialogTitle>
           <DialogDescription>
-            Update contact details, About text, and SEO fields for this listing.
+            Update contact details, score, reviews, About text, and SEO fields
+            for this listing.
           </DialogDescription>
         </DialogHeader>
 
@@ -315,6 +353,63 @@ export default function BusinessListingEditDialog({
               touched={formik.touched.address}
               error={formik.errors.address}
             />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor="business-listing-score">Score</Label>
+              <Input
+                id="business-listing-score"
+                name="total_score"
+                type="number"
+                inputMode="decimal"
+                min={0}
+                max={5}
+                step={0.1}
+                autoComplete="off"
+                disabled={submitPending}
+                value={formik.values.total_score}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                placeholder="4.2"
+                aria-invalid={
+                  formik.touched.total_score && formik.errors.total_score
+                    ? true
+                    : undefined
+                }
+              />
+              <FieldError
+                touched={formik.touched.total_score}
+                error={formik.errors.total_score}
+              />
+            </div>
+
+            <div className="grid gap-1.5">
+              <Label htmlFor="business-listing-reviews">Reviews count</Label>
+              <Input
+                id="business-listing-reviews"
+                name="reviews_count"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                autoComplete="off"
+                disabled={submitPending}
+                value={formik.values.reviews_count}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                placeholder="16"
+                aria-invalid={
+                  formik.touched.reviews_count && formik.errors.reviews_count
+                    ? true
+                    : undefined
+                }
+              />
+              <FieldError
+                touched={formik.touched.reviews_count}
+                error={formik.errors.reviews_count}
+              />
+            </div>
           </div>
 
           <div className="grid gap-1.5 border-t border-border pt-4">

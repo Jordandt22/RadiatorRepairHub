@@ -17,6 +17,7 @@ import BusinessDetailSkeleton from "@/components/pages/businesses/BusinessDetail
 import BusinessDetailTabs, {
   resolveBusinessDetailTab,
 } from "@/components/pages/businesses/BusinessDetailTabs";
+import BusinessListingCategoriesEditDialog from "@/components/pages/businesses/BusinessListingCategoriesEditDialog";
 import BusinessListingEditDialog from "@/components/pages/businesses/BusinessListingEditDialog";
 
 function formatListingError(error) {
@@ -40,6 +41,8 @@ export default function BusinessDetailPageContent() {
   const { accessToken, isReady, logout } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
   const [editError, setEditError] = useState(null);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [categoriesError, setCategoriesError] = useState(null);
   const [markStatusError, setMarkStatusError] = useState(null);
   const activeTab = resolveBusinessDetailTab(searchParams.get("tab"));
 
@@ -105,6 +108,36 @@ export default function BusinessDetailPageContent() {
     },
     onError: (err) => {
       setEditError(err.message || "Failed to update listing");
+    },
+  });
+
+  const updateCategoriesMutation = useMutation({
+    mutationFn: async (payload) => {
+      const result = await fetchApi("/admin/businesses/categories", {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify(payload),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(formatListingError(result.error));
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      setCategoriesError(null);
+      setCategoriesOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ["admin-business", id] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-businesses"] });
+    },
+    onError: (err) => {
+      setCategoriesError(err.message || "Failed to update categories");
     },
   });
 
@@ -231,6 +264,10 @@ export default function BusinessDetailPageContent() {
             setEditError(null);
             setEditOpen(true);
           }}
+          onEditCategories={() => {
+            setCategoriesError(null);
+            setCategoriesOpen(true);
+          }}
         />
       ) : null}
 
@@ -267,6 +304,23 @@ export default function BusinessDetailPageContent() {
         onSubmit={async (payload) => {
           setEditError(null);
           await updateListingMutation.mutateAsync(payload);
+        }}
+      />
+
+      <BusinessListingCategoriesEditDialog
+        open={categoriesOpen}
+        onOpenChange={(next) => {
+          if (!next) setCategoriesError(null);
+          setCategoriesOpen(next);
+        }}
+        business={data}
+        accessToken={accessToken}
+        logout={logout}
+        submitPending={updateCategoriesMutation.isPending}
+        submitError={categoriesError}
+        onSubmit={async (payload) => {
+          setCategoriesError(null);
+          await updateCategoriesMutation.mutateAsync(payload);
         }}
       />
     </div>
