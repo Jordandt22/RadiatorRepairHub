@@ -18,6 +18,18 @@ export const AFFILIATE_PRODUCT_ALIASES = {
   "coolant-pressure-tester": "6f637396-c8ff-4d48-981b-81ff2baca399",
 };
 
+export const FEATURED_AFFILIATE_PRODUCT_ALIASES = [
+  "valvoline",
+  "prestone-dexcool",
+  "radiator-flush",
+  "radiator-cap",
+  "radiator-cap-13",
+  "coolant-funnel",
+  "ir-thermometer",
+  "combustion-leak-detector",
+  "coolant-pressure-tester",
+];
+
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
