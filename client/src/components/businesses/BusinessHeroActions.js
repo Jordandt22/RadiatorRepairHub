@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { MapPin, MessageSquare, Phone } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
@@ -16,14 +15,11 @@ export default function BusinessHeroActions({
   phone,
   email,
   emailStatus = null,
-  mapsQuery,
+  mapsHref,
   placement = "hero",
 }) {
   const posthog = usePostHog();
   const isHero = placement === "hero";
-  const mapsHref = mapsQuery
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`
-    : null;
 
   const capture = (event) => {
     posthog?.capture(event, {
@@ -70,7 +66,7 @@ export default function BusinessHeroActions({
   );
 
   const directionsButton = mapsHref ? (
-    <Link
+    <a
       href={mapsHref}
       target="_blank"
       rel="noopener noreferrer"
@@ -79,7 +75,7 @@ export default function BusinessHeroActions({
     >
       <MapPin className="size-4 shrink-0" aria-hidden="true" />
       Directions
-    </Link>
+    </a>
   ) : null;
 
   if (isHero) {

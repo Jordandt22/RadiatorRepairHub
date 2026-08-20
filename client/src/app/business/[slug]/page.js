@@ -36,22 +36,11 @@ import { fetchBusinessBySlug } from "@/lib/api/cachedReads";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { FEATURED_AFFILIATE_PRODUCT_ALIASES } from "@/lib/affiliateProducts";
 import { getBusinessDisplayImage } from "@/lib/images";
-
-function getGoogleMapsQuery(business) {
-  if (business.place_id) {
-    return `place_id:${business.place_id}`;
-  }
-
-  if (business.latitude != null && business.longitude != null) {
-    return `${business.latitude},${business.longitude}`;
-  }
-
-  if (business.address) {
-    return business.address;
-  }
-
-  return null;
-}
+import {
+  getGoogleMapsDirectionsUrl,
+  getGoogleMapsEmbedQuery,
+  getGoogleMapsPlaceUrl,
+} from "@/lib/googleMaps";
 
 // Generate metadata for business pages
 export async function generateMetadata({ params }) {
@@ -153,7 +142,9 @@ async function Page({ params }) {
           )
         ).data?.products ?? []);
 
-    const mapsQuery = getGoogleMapsQuery(business);
+    const mapsQuery = getGoogleMapsEmbedQuery(business);
+    const mapsHref = getGoogleMapsPlaceUrl(business);
+    const directionsHref = getGoogleMapsDirectionsUrl(business);
 
     // Generate structured data for LocalBusiness
     const structuredData = {
@@ -278,10 +269,6 @@ async function Page({ params }) {
     const categoryHref = business.primary_category
       ? `/category/${business.primary_category.slug}`
       : null;
-    const mapsHref = mapsQuery
-      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`
-      : null;
-
     return (
       <>
         <script
@@ -344,7 +331,7 @@ async function Page({ params }) {
                   phone={business.phone}
                   email={business.email}
                   emailStatus={business.email_status}
-                  mapsQuery={mapsQuery}
+                  mapsHref={directionsHref}
                   placement="hero"
                 />
               </div>
@@ -357,7 +344,7 @@ async function Page({ params }) {
             phone={business.phone}
             email={business.email}
             emailStatus={business.email_status}
-            mapsQuery={mapsQuery}
+            mapsHref={directionsHref}
             placement="sticky"
           />
 
@@ -427,7 +414,7 @@ async function Page({ params }) {
                           />
                         ) : (
                           <div className="flex h-full items-center justify-center bg-muted px-6 text-center">
-                            <Link
+                            <a
                               href={mapsHref}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -436,7 +423,7 @@ async function Page({ params }) {
                               <MapPin className="h-5 w-5" />
                               View {business.address || business.title} on
                               Google Maps
-                            </Link>
+                            </a>
                           </div>
                         )}
                       </div>
@@ -444,7 +431,7 @@ async function Page({ params }) {
 
                     {mapsHref ? (
                       <div className="pt-2">
-                        <Link
+                        <a
                           href={mapsHref}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -452,7 +439,7 @@ async function Page({ params }) {
                         >
                           <ExternalLink className="h-4 w-4" />
                           Open in Google Maps
-                        </Link>
+                        </a>
                       </div>
                     ) : null}
                   </div>
