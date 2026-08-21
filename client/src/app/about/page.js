@@ -84,7 +84,7 @@ const DRIVER_LINKS = [
   {
     title: "Search the directory",
     description: "Find radiator repair shops by city, ZIP, or category",
-    href: "/search?page=1&sort=most_reviews",
+    href: "/search?page=1&sort=verified",
   },
   {
     title: "FAQ",
@@ -167,7 +167,7 @@ function AboutPage() {
           pageTitle="About RadiatorRepairHub"
           pageDescription="A directory focused on radiator and cooling system repair. Search by location, compare listings, and contact shops directly."
           headerLink={{
-            href: "/search?page=1&sort=most_reviews",
+            href: "/search?page=1&sort=verified",
             label: "Search the directory",
           }}
         />

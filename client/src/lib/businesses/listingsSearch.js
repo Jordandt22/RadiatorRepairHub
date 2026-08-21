@@ -2,6 +2,11 @@
  * Shared default search body for directory listings (SSR + client SWR).
  * Keep in sync with FilterProvider defaults / ContentWrapper applied filters.
  */
+import {
+  DEFAULT_SORT_OPTION,
+  getSortOptionFromKey,
+} from "@/lib/businesses/sortOptions";
+
 export const LISTINGS_PAGE_LIMIT = 12;
 
 export function buildListingsSearchBody({
@@ -10,18 +15,7 @@ export function buildListingsSearchBody({
   categoryData = null,
   searchParams = {},
 } = {}) {
-  const sortOptions = {
-    most_reviews: 1,
-    least_reviews: 2,
-    highest_rating: 3,
-    lowest_rating: 4,
-  };
-
-  const sortKey =
-    typeof searchParams?.sort === "string"
-      ? searchParams.sort.toLowerCase()
-      : "";
-  const sort_option = sortOptions[sortKey] || 1;
+  const sort_option = getSortOptionFromKey(searchParams?.sort);
 
   let title = "";
   if (typeof searchParams?.title === "string") {
@@ -57,3 +51,5 @@ export function getListingsPage(searchParams = {}) {
   const parsed = Number(searchParams?.page);
   return !Number.isNaN(parsed) && parsed >= 1 ? parsed : 1;
 }
+
+export { DEFAULT_SORT_OPTION };

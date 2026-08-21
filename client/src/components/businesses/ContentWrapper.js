@@ -19,6 +19,10 @@ import {
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
+import {
+  DEFAULT_SORT_OPTION,
+  getSortOptionFromKey,
+} from "@/lib/businesses/sortOptions";
 
 // Components
 import FiltersWrapper from "./FiltersWrapper";
@@ -62,7 +66,7 @@ function ContentWrapper({
     const filterParams = { ...searchParams };
     delete filterParams.page;
     delete filterParams.sort;
-    let sort = 1;
+    let sort = DEFAULT_SORT_OPTION;
     let formattedFilters = { ...filters };
 
     if (stateData) delete formattedFilters.state_id;
@@ -90,15 +94,7 @@ function ContentWrapper({
     }
 
     // Validate Sort Param
-    const sortOptions = {
-      most_reviews: 1,
-      least_reviews: 2,
-      highest_rating: 3,
-      lowest_rating: 4,
-    };
-    if (sortParam && sortOptions[sortParam?.toLowerCase()]) {
-      sort = sortOptions[sortParam.toLowerCase()];
-    }
+    sort = getSortOptionFromKey(sortParam);
 
     // Validate Filter Params
     Object.keys(filterParams).map((key) => {
@@ -191,7 +187,7 @@ function ContentWrapper({
       ...prev,
       ...formattedFilters,
       features: formatFeatures(formattedFilters.features),
-      sort_option: sort || 1,
+      sort_option: sort || DEFAULT_SORT_OPTION,
     }));
   }, [searchParams, stateData, cityData, categoryData, sortParam, pathname]);
 

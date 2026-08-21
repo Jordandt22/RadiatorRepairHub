@@ -26,10 +26,10 @@ function HeroSearchBar({ heroInView }) {
         "business_search_submitted",
         getBusinessSearchAnalyticsProps(
           { title: "" },
-          { source: "hero", page: 1, sort_option: "most_reviews" }
+          { source: "hero", page: 1, sort_option: "verified" }
         )
       );
-      router.push(`/search?page=1&sort=most_reviews`);
+      router.push(`/search?page=1&sort=verified`);
       return;
     }
 
@@ -56,11 +56,11 @@ function HeroSearchBar({ heroInView }) {
       "business_search_submitted",
       getBusinessSearchAnalyticsProps(
         { title },
-        { source: "hero", page: 1, sort_option: "most_reviews" }
+        { source: "hero", page: 1, sort_option: "verified" }
       )
     );
     router.push(
-      `/search?title=${encodeURIComponent(title)}&page=1&sort=most_reviews`
+      `/search?title=${encodeURIComponent(title)}&page=1&sort=verified`
     );
   };
 

@@ -6,6 +6,7 @@ import { MoveLeft, MoveRight } from "lucide-react";
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
+import { DEFAULT_SORT_OPTION } from "@/lib/businesses/sortOptions";
 
 function Pagination({
   totalPages,
@@ -66,7 +67,7 @@ function Pagination({
           appliedFilters?.primary_category_id ?? filters.primary_category_id,
         secondary_categories:
           appliedFilters?.secondary_categories ?? filters.secondary_categories,
-        sort_option: appliedFilters?.sort_option || 1,
+        sort_option: appliedFilters?.sort_option || DEFAULT_SORT_OPTION,
       },
       categoryData
     );

@@ -70,7 +70,7 @@ const Page = () => {
             </p>
             <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
               <Link
-                href="/search?page=1&sort=most_reviews"
+                href="/search?page=1&sort=verified"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <Search className="h-4 w-4" aria-hidden="true" />

@@ -7,6 +7,10 @@ import { usePostHog } from "posthog-js/react";
 // Utils
 import { formatFeatures } from "@/lib/utils/utils";
 import { getBusinessSearchAnalyticsProps } from "@/lib/analytics/businessSearch";
+import {
+  DEFAULT_SORT_OPTION,
+  getSortKey,
+} from "@/lib/businesses/sortOptions";
 
 const FilterContext = createContext();
 export const useFilters = () => useContext(FilterContext);
@@ -78,14 +82,14 @@ export function FilterProvider({ children }) {
       ...prev,
       ...filters,
       features: formatFeatures(filters.features),
-      sort_option: sortNum || 1,
+      sort_option: sortNum || DEFAULT_SORT_OPTION,
     }));
   };
 
   // Filter URL
   const getFilterURL = (stateData, cityData, page, filters, categoryData) => {
     const paginationAndSortQueryParams = `page=${page}&sort=${getSortOption(
-      filters.sort_option || 1
+      filters.sort_option || DEFAULT_SORT_OPTION
     )}`;
     delete filters.sort_option;
     if (stateData) delete filters.state_id;
@@ -145,7 +149,7 @@ export function FilterProvider({ children }) {
 
   // Clear all filters
   const clearAllFilters = (stateData, cityData, appliedFilters, categoryData) => {
-    const sort_option = appliedFilters?.sort_option || 1;
+    const sort_option = appliedFilters?.sort_option || DEFAULT_SORT_OPTION;
     posthog?.capture(
       "business_search_filtered",
       getBusinessSearchAnalyticsProps(
@@ -174,16 +178,7 @@ export function FilterProvider({ children }) {
   };
 
   // Get sort option
-  const getSortOption = (sortNum) => {
-    const sortOptions = [
-      "most_reviews",
-      "least_reviews",
-      "highest_rating",
-      "lowest_rating",
-    ];
-
-    return sortOptions[sortNum - 1];
-  };
+  const getSortOption = (sortNum) => getSortKey(sortNum);
 
   // Update Sort Option
   const updateSortOption = (
@@ -285,7 +280,7 @@ export function FilterProvider({ children }) {
       ...formattedFilters,
     }));
 
-    const sort_option = appliedFilters?.sort_option || 1;
+    const sort_option = appliedFilters?.sort_option || DEFAULT_SORT_OPTION;
     const analyticsEvent =
       options.analyticsEvent || "business_search_filtered";
     const source = options.source || "filters";

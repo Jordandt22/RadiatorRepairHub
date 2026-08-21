@@ -9,19 +9,10 @@ import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 import STATES from "@/lib/data/states";
 import { fetchCityBySlug } from "@/lib/api/cachedReads";
 
+// ISR for city listings. Do not pair revalidate with a non-empty
+// generateStaticParams subset — Next 16 then 404s cities outside that list.
 export const revalidate = 600;
-
-export async function generateStaticParams() {
-  const topCities = [
-    { state: "CA", city: "los-angeles" },
-    { state: "TX", city: "houston" },
-    { state: "FL", city: "miami" },
-    { state: "NY", city: "new-york-city" },
-    { state: "PA", city: "philadelphia" },
-    { state: "IL", city: "chicago" },
-  ];
-  return topCities.map((item) => ({ ...item }));
-}
+export const dynamicParams = true;
 
 // Generate metadata for city pages
 export async function generateMetadata({ params }) {

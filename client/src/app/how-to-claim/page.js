@@ -113,7 +113,7 @@ export default function HowToClaimPage() {
         pageTitle="How to claim your business"
         pageDescription="Check eligibility, follow the email claim steps, and see what you can edit after claiming."
         headerLink={{
-          href: "/search?page=1&sort=most_reviews",
+          href: "/search?page=1&sort=verified",
           label: "Search for your listing",
         }}
       />
