@@ -127,7 +127,7 @@ export const getBusinessSlugsForSitemapKey = () => ({
 
 // State Businesses
 export const getBusinessesByStateKey = (state_id, page, limit) => ({
-  key: `STATE_BUSINESSES?STATE-ID:${state_id}&PAGE:${page}&LIMIT:${limit}`,
+  key: `STATE_BUSINESSES?ORD:claimed1&STATE-ID:${state_id}&PAGE:${page}&LIMIT:${limit}`,
   interval: 60 * 60 * 24 * 7,
 });
 
@@ -138,7 +138,7 @@ export const getCountBusinessesByStateKey = (state_id) => ({
 
 // City Businesses
 export const getBusinessesByCityKey = (city_id, state_id, page, limit) => ({
-  key: `CITY_BUSINESSES?CITY-ID:${city_id}&STATE-ID:${state_id}&PAGE:${page}&LIMIT:${limit}`,
+  key: `CITY_BUSINESSES?ORD:claimed1&CITY-ID:${city_id}&STATE-ID:${state_id}&PAGE:${page}&LIMIT:${limit}`,
   interval: 60 * 60 * 24 * 7,
 });
 
@@ -153,7 +153,7 @@ export const getCountBusinessesBySearchKey = (
   sort_option
 ) => ({
   key: createSearchBusinessKey(
-    `SEARCHED_BUSINESSES_COUNT?SORT-OPTION:${sort_option}`,
+    `SEARCHED_BUSINESSES_COUNT?ORD:claimed1&SORT-OPTION:${sort_option}`,
     searchParamValues
   ),
   interval: 60 * 30,
@@ -166,7 +166,7 @@ export const getSearchedBusinessesKey = (
   sort_option
 ) => ({
   key: createSearchBusinessKey(
-    `SEARCHED_BUSINESSES?PAGE:${page}&LIMIT:${limit}&SORT-OPTION:${sort_option}`,
+    `SEARCHED_BUSINESSES?ORD:claimed1&PAGE:${page}&LIMIT:${limit}&SORT-OPTION:${sort_option}`,
     searchParamValues
   ),
   interval: 60 * 30,
