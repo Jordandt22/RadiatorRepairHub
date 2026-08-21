@@ -282,8 +282,8 @@ export const getBusinessesByState = async (state_id, page, limit) => {
     .from("businesses")
     .select(listingBusinessSelect)
     .eq("state_id", state_id)
-    .order("reviews_count", { ascending: false })
     .order("is_claimed", { ascending: false })
+    .order("reviews_count", { ascending: false })
     .order("total_score", { ascending: false })
     .range((page - 1) * limit, page * limit - 1);
 
@@ -321,8 +321,8 @@ export const getBusinessesByCity = async (city_id, state_id, page, limit) => {
     .select(listingBusinessSelect)
     .eq("city_id", city_id)
     .eq("state_id", state_id)
-    .order("reviews_count", { ascending: false })
     .order("is_claimed", { ascending: false })
+    .order("reviews_count", { ascending: false })
     .order("total_score", { ascending: false })
     .range((page - 1) * limit, page * limit - 1);
 
@@ -356,15 +356,15 @@ export const searchBusinesses = async (
     }
   });
 
-  // Sorting by Total Score and Reviews Count
-  // Soft boost: on default-quality sorts, claimed/verified wins ties (not cases 2/4).
+  // Claimed-first on quality sorts (like Featured), then reviews/score.
+  // Reverse sorts (least reviews / lowest score) stay metric-first.
   switch (sort_option) {
     // Most Reviews
     case 1:
-      businessesQuery = businessesQuery.order("reviews_count", {
+      businessesQuery = businessesQuery.order("is_claimed", {
         ascending: false,
       });
-      businessesQuery = businessesQuery.order("is_claimed", {
+      businessesQuery = businessesQuery.order("reviews_count", {
         ascending: false,
       });
       businessesQuery = businessesQuery.order("total_score", {
@@ -384,10 +384,10 @@ export const searchBusinesses = async (
 
     // Highest Score
     case 3:
-      businessesQuery = businessesQuery.order("total_score", {
+      businessesQuery = businessesQuery.order("is_claimed", {
         ascending: false,
       });
-      businessesQuery = businessesQuery.order("is_claimed", {
+      businessesQuery = businessesQuery.order("total_score", {
         ascending: false,
       });
       businessesQuery = businessesQuery.order("reviews_count", {
@@ -405,12 +405,12 @@ export const searchBusinesses = async (
       });
       break;
 
-    // Default (Most Reviews + soft claimed boost)
+    // Default (claimed-first + most reviews)
     default:
-      businessesQuery = businessesQuery.order("reviews_count", {
+      businessesQuery = businessesQuery.order("is_claimed", {
         ascending: false,
       });
-      businessesQuery = businessesQuery.order("is_claimed", {
+      businessesQuery = businessesQuery.order("reviews_count", {
         ascending: false,
       });
       businessesQuery = businessesQuery.order("total_score", {
