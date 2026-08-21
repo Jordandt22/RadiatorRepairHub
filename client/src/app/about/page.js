@@ -48,7 +48,7 @@ const FEATURES = [
   {
     title: "Quick contact",
     description:
-      "Message a shop from its page, or call using the number listed there.",
+      "Message a claimed shop from its page, or call using the number listed there.",
     icon: MessageSquare,
   },
   {

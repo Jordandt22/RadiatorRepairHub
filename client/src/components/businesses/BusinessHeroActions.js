@@ -15,6 +15,7 @@ export default function BusinessHeroActions({
   phone,
   email,
   emailStatus = null,
+  isClaimed = false,
   mapsHref,
   placement = "hero",
 }) {
@@ -54,6 +55,7 @@ export default function BusinessHeroActions({
       email={email}
       emailStatus={emailStatus}
       phone={phone}
+      isClaimed={isClaimed}
       trigger={
         <button type="button" className={secondaryClass} />
       }

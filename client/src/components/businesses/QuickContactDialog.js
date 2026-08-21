@@ -677,7 +677,11 @@ function QuickContactDialogContent({
 }
 
 export default function QuickContactDialog(props) {
-  if (!hasBusinessEmail(props.email) || isEmailUnderReview(props.emailStatus)) {
+  if (
+    !props.isClaimed ||
+    !hasBusinessEmail(props.email) ||
+    isEmailUnderReview(props.emailStatus)
+  ) {
     return null;
   }
 

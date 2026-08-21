@@ -19,7 +19,7 @@ import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
 
 const pageTitle = "Contact RadiatorRepairHub | Directory Support & Feedback";
 const pageDescription =
-  "Contact the RadiatorRepairHub team about the directory, listings, partnerships, or website feedback. To reach a repair shop, use Quick Contact on that business's page.";
+  "Contact the RadiatorRepairHub team about the directory, listings, partnerships, or website feedback. To reach a claimed repair shop, use Quick Contact on that business's page.";
 
 export const metadata = buildPageMetadata({
   title: pageTitle,
@@ -38,7 +38,7 @@ const Page = () => {
     "@type": "ContactPage",
     name: "Contact RadiatorRepairHub",
     description:
-      "Contact the RadiatorRepairHub team for directory support, listing help, and partnerships. Use Quick Contact on a business page to reach a repair shop.",
+      "Contact the RadiatorRepairHub team for directory support, listing help, and partnerships. Use Quick Contact on a claimed business page to reach a repair shop.",
     url: `${SITE_URL}/contact`,
     mainEntity: {
       "@id": `${SITE_URL}/#organization`,
@@ -64,7 +64,7 @@ const Page = () => {
             <p className="mb-4 text-sm leading-relaxed text-muted-foreground md:text-base">
               This form reaches the RadiatorRepairHub team only. We cannot
               forward repair requests or schedule appointments. To message a
-              shop, open their listing and use{" "}
+              claimed shop, open their listing and use{" "}
               <strong className="text-foreground">Quick Contact</strong>, or
               call the number listed there.
             </p>
