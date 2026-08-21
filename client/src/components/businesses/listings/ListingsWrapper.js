@@ -6,6 +6,7 @@ import useSWR from "swr";
 // Utils
 import { postFetcher } from "@/lib/utils/utils";
 import { LISTINGS_PAGE_LIMIT } from "@/lib/businesses/listingsSearch";
+import { DEFAULT_SORT_OPTION } from "@/lib/businesses/sortOptions";
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
@@ -31,7 +32,7 @@ const DEFAULT_APPLIED_FILTERS = {
     weekdays: false,
     weekends: false,
   },
-  sort_option: 1,
+  sort_option: DEFAULT_SORT_OPTION,
 };
 
 export default function ListingsWrapper({
@@ -55,7 +56,7 @@ export default function ListingsWrapper({
       primary_category_id: categoryData
         ? categoryData.id
         : base.primary_category_id,
-      sort_option: base.sort_option || 1,
+      sort_option: base.sort_option || DEFAULT_SORT_OPTION,
     };
   }, [appliedFilters, initialSearchBody, stateData, cityData, categoryData]);
 

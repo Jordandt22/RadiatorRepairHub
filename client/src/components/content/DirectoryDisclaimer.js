@@ -16,7 +16,7 @@ function DirectoryDisclaimer({ className = "mt-12" }) {
         <ul className="mb-4 ml-2 list-inside list-disc space-y-2 text-muted-foreground">
           <li>
             <Link
-              href="/search?page=1&sort=most_reviews"
+              href="/search?page=1&sort=verified"
               className="font-medium text-interactive underline hover:text-primary"
             >
               Use our search

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
+import { DEFAULT_SORT_OPTION } from "@/lib/businesses/sortOptions";
 
 // Components
 import MobileBusinessCard from "../cards/MobileBusinessCard";
@@ -42,7 +43,7 @@ function Listings({ businesses, data, page, stateData, cityData, categoryData })
         data.page,
         {
           ...filters,
-          sort_option: appliedFilters?.sort_option || 1,
+          sort_option: appliedFilters?.sort_option || DEFAULT_SORT_OPTION,
         },
         categoryData
       );

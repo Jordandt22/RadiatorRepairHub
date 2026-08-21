@@ -1,5 +1,6 @@
 import { fetchApi } from "./fetchApi";
 import { fetchAuthenticatedApi } from "./fetchAuthenticatedApi";
+import { DEFAULT_SORT_OPTION } from "@/lib/businesses/sortOptions";
 
 const BUSINESS_REVALIDATE_SECONDS = 60 * 10;
 const SITEMAP_REVALIDATE_SECONDS = 60 * 60 * 24;
@@ -42,7 +43,7 @@ export async function fetchBusinessesByCategory(
   return fetchBusinessesSearch(
     {
       primary_category_id: primaryCategoryId,
-      sort_option: 1,
+      sort_option: DEFAULT_SORT_OPTION,
     },
     page,
     limit,

@@ -356,15 +356,14 @@ export const searchBusinesses = async (
     }
   });
 
-  // Claimed-first on quality sorts (like Featured), then reviews/score.
-  // Reverse sorts (least reviews / lowest score) stay metric-first.
+  // 5 / default: claimed-first (Verified). 1–4: metric-first + soft claimed boost.
   switch (sort_option) {
     // Most Reviews
     case 1:
-      businessesQuery = businessesQuery.order("is_claimed", {
+      businessesQuery = businessesQuery.order("reviews_count", {
         ascending: false,
       });
-      businessesQuery = businessesQuery.order("reviews_count", {
+      businessesQuery = businessesQuery.order("is_claimed", {
         ascending: false,
       });
       businessesQuery = businessesQuery.order("total_score", {
@@ -377,6 +376,9 @@ export const searchBusinesses = async (
       businessesQuery = businessesQuery.order("reviews_count", {
         ascending: true,
       });
+      businessesQuery = businessesQuery.order("is_claimed", {
+        ascending: false,
+      });
       businessesQuery = businessesQuery.order("total_score", {
         ascending: false,
       });
@@ -384,10 +386,10 @@ export const searchBusinesses = async (
 
     // Highest Score
     case 3:
-      businessesQuery = businessesQuery.order("is_claimed", {
+      businessesQuery = businessesQuery.order("total_score", {
         ascending: false,
       });
-      businessesQuery = businessesQuery.order("total_score", {
+      businessesQuery = businessesQuery.order("is_claimed", {
         ascending: false,
       });
       businessesQuery = businessesQuery.order("reviews_count", {
@@ -400,12 +402,16 @@ export const searchBusinesses = async (
       businessesQuery = businessesQuery.order("total_score", {
         ascending: true,
       });
+      businessesQuery = businessesQuery.order("is_claimed", {
+        ascending: false,
+      });
       businessesQuery = businessesQuery.order("reviews_count", {
         ascending: false,
       });
       break;
 
-    // Default (claimed-first + most reviews)
+    // Verified (claimed-first + most reviews)
+    case 5:
     default:
       businessesQuery = businessesQuery.order("is_claimed", {
         ascending: false,

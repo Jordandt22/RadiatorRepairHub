@@ -5,18 +5,15 @@ import { ChevronDown, Filter } from "lucide-react";
 
 import { useFilters } from "@/contexts/FilterProvider";
 import {
+  DEFAULT_SORT_OPTION,
+  SORT_MENU_OPTIONS,
+} from "@/lib/businesses/sortOptions";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-const SORT_OPTIONS = [
-  { value: 1, label: "Most Reviews" },
-  { value: 2, label: "Least Reviews" },
-  { value: 3, label: "Highest Rating" },
-  { value: 4, label: "Lowest Rating" },
-];
 
 function Filters({ stateData, cityData, categoryData }) {
   const {
@@ -28,9 +25,11 @@ function Filters({ stateData, cityData, categoryData }) {
   } = useFilters();
 
   const currentSort =
-    SORT_OPTIONS.find(
-      (option) => option.value === Number(appliedFilters?.sort_option || 1)
-    ) ?? SORT_OPTIONS[0];
+    SORT_MENU_OPTIONS.find(
+      (option) =>
+        option.value ===
+        Number(appliedFilters?.sort_option || DEFAULT_SORT_OPTION)
+    ) ?? SORT_MENU_OPTIONS[0];
 
   const handleSortChange = (sortNum) => {
     setShowFilters(false);
@@ -51,7 +50,7 @@ function Filters({ stateData, cityData, categoryData }) {
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="min-w-44 rounded-lg">
-          {SORT_OPTIONS.map((option) => (
+          {SORT_MENU_OPTIONS.map((option) => (
             <DropdownMenuItem
               key={option.value}
               className={`cursor-pointer rounded-md ${
