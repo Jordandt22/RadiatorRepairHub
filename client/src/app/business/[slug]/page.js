@@ -331,6 +331,7 @@ async function Page({ params }) {
                   phone={business.phone}
                   email={business.email}
                   emailStatus={business.email_status}
+                  isClaimed={Boolean(business.is_claimed)}
                   mapsHref={directionsHref}
                   placement="hero"
                 />
@@ -344,6 +345,7 @@ async function Page({ params }) {
             phone={business.phone}
             email={business.email}
             emailStatus={business.email_status}
+            isClaimed={Boolean(business.is_claimed)}
             mapsHref={directionsHref}
             placement="sticky"
           />

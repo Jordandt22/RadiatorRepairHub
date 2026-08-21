@@ -662,6 +662,7 @@ export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
   <p><strong>With your Claimed Listing, you can:</strong></p>
   <ul>
     <li>Update information about your business</li>
+    <li>Receive Quick Contact inquiries from customers</li>
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop and have higher priority in search results</li>
   </ul>
@@ -683,7 +684,7 @@ export const CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>We listed <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub so local customers can find radiator repair shops near them.</p>
 
-  <p>Claim your free listing to update your info, respond to leads, and show customers you're verified:</p>
+  <p>Claim your free listing to update your info, receive Quick Contact inquiries, and show customers you're verified:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Not sure how? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>

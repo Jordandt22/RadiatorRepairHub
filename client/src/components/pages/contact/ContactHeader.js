@@ -11,7 +11,7 @@ function ContactHeader() {
     <PageHeader
       breadcrumbItems={breadcrumbItems}
       pageTitle="Contact RadiatorRepairHub"
-      pageDescription="Directory support, listing issues, partnerships, and website feedback. To reach a repair shop, use Quick Contact on that business's page."
+      pageDescription="Directory support, listing issues, partnerships, and website feedback. To reach a claimed repair shop, use Quick Contact on that business's page."
       headerLink={{
         href: "/search?page=1&sort=most_reviews",
         label: "Search for a shop",

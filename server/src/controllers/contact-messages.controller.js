@@ -66,6 +66,15 @@ export const createContactMessage = async (req, res) => {
     business = businessData;
     businessName = business.title ?? null;
 
+    if (!business.is_claimed) {
+      return res.status(422).json(
+        customErrorHandler(
+          YUP_ERROR,
+          "Quick Contact is available for claimed businesses only. Please call or email the shop using the contact details on their listing."
+        )
+      );
+    }
+
     if (isEmailUnderReview(business.email_status)) {
       return res
         .status(422)

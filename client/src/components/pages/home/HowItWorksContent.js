@@ -30,7 +30,7 @@ const STEPS = [
     step: 4,
     title: "Contact the business",
     description:
-      "Use Quick Contact on the business page, or call or visit the shop directly",
+      "Use Quick Contact on claimed listings, or call or visit the shop directly",
   },
 ];
 

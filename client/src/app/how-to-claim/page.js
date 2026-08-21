@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { BadgeCheck, Clock3, Flag, ImageIcon, Search } from "lucide-react";
+import { BadgeCheck, Clock3, Flag, ImageIcon, MessageSquare, Search } from "lucide-react";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import FAQSection from "@/components/seo/FAQSection";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
@@ -24,6 +24,12 @@ const BENEFITS = [
     description:
       "Add or edit your About section, service categories, and photos so customers see current information.",
     icon: ImageIcon,
+  },
+  {
+    title: "Receive Quick Contact Inquiries",
+    description:
+      "Customers can message claimed listings through Quick Contact. Unclaimed listings show phone and email only.",
+    icon: MessageSquare,
   },
   {
     title: "Keep Contact Details Accurate",

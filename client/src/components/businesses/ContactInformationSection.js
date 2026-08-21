@@ -198,6 +198,7 @@ function ContactInformationSectionContent({
           email={initialEmail}
           emailStatus={emailStatus}
           phone={initialPhone}
+          isClaimed={isClaimed}
         />
         <ReportInfoDialog
           businessId={businessId}

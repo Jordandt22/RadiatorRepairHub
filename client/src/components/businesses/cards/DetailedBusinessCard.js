@@ -90,6 +90,7 @@ function DetailedBusinessCard({ business, priority = false }) {
             email={business.email}
             emailStatus={business.email_status}
             phone={business.phone}
+            isClaimed={Boolean(business.is_claimed)}
             trigger={
               <Button
                 type="button"
@@ -102,7 +103,7 @@ function DetailedBusinessCard({ business, priority = false }) {
           </QuickContactDialog>
           <Link
             href={`/business/${business.slug}`}
-            className="inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground px-4 py-2 rounded-full text-sm font-medium hover:bg-tint duration-300"
+            className="ml-auto inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground px-4 py-2 rounded-full text-sm font-medium hover:bg-tint duration-300"
           >
             View Details
             <MoveRight className="w-4 h-4" />
