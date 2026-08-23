@@ -846,6 +846,7 @@ export const getAdminBusinesses = async (
     scoreTier = null,
     reviewsTier = null,
     emailFilter = null,
+    websiteFilter = null,
   } = {}
 ) => {
   let location = null;
@@ -978,10 +979,19 @@ export const getAdminBusinesses = async (
     query = query.or("email.is.null,email.eq.");
   }
 
+  if (websiteFilter === "has") {
+    query = query.not("website", "is", null).neq("website", "");
+  } else if (websiteFilter === "none") {
+    query = query.or("website.is.null,website.eq.");
+  }
+
   const sanitized = sanitizeAdminBusinessSearch(q);
   if (sanitized) {
     query = query.or(
-      buildIlikeOrFilter(["title", "slug", "email", "phone"], sanitized)
+      buildIlikeOrFilter(
+        ["title", "slug", "email", "phone", "website"],
+        sanitized
+      )
     );
   }
 

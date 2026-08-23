@@ -108,6 +108,11 @@ const data = {
           icon: <MailSearchIcon />,
         },
         {
+          title: "Websites",
+          url: "/websites?tab=businesses",
+          icon: <GlobeIcon />,
+        },
+        {
           title: "Locations",
           url: "/locations?tab=states",
           icon: <MapPinIcon />,
