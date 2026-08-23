@@ -79,6 +79,7 @@ export const metadata = {
     "theme-color": "#2B50AA",
     "msapplication-TileColor": "#2B50AA",
     "msapplication-config": "/browserconfig.xml",
+    "google-adsense-account": "ca-pub-6504336368539075",
   },
 };
 
