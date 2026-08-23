@@ -19,9 +19,15 @@ export const EMAIL_FILTERS = [
   { id: "none", label: "No email" },
 ];
 
+export const WEBSITE_FILTERS = [
+  { id: "has", label: "Has website" },
+  { id: "none", label: "No website" },
+];
+
 export const SCORE_TIER_IDS = SCORE_TIERS.map((t) => t.id);
 export const REVIEW_TIER_IDS = REVIEW_TIERS.map((t) => t.id);
 export const EMAIL_FILTER_IDS = EMAIL_FILTERS.map((t) => t.id);
+export const WEBSITE_FILTER_IDS = WEBSITE_FILTERS.map((t) => t.id);
 
 export function getScoreTier(id) {
   return SCORE_TIERS.find((t) => t.id === id) ?? null;

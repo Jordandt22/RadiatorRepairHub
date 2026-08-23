@@ -18,3 +18,8 @@ export const EMAIL_FILTERS = [
   { id: "has", label: "Has contact" },
   { id: "none", label: "No contact" },
 ];
+
+export const WEBSITE_FILTERS = [
+  { id: "has", label: "Has website" },
+  { id: "none", label: "No website" },
+];

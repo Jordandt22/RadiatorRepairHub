@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import { SCORE_TIER_IDS, REVIEW_TIER_IDS, EMAIL_FILTER_IDS } from "../lib/adminBusinessTiers.js";
+import { SCORE_TIER_IDS, REVIEW_TIER_IDS, EMAIL_FILTER_IDS, WEBSITE_FILTER_IDS } from "../lib/adminBusinessTiers.js";
 import { normalizeWebsiteUrl } from "../lib/websiteReachability.js";
 import {
   DEFAULT_MAX_PLACES,
@@ -379,6 +379,15 @@ export const GetAdminBusinessesQuerySchema = Yup.object({
     .nullable()
     .oneOf([...EMAIL_FILTER_IDS, null], "Invalid email filter")
     .optional(),
+  website_filter: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...WEBSITE_FILTER_IDS, null], "Invalid website filter")
+    .optional(),
 });
 
 export const ADMIN_LOCATION_TABS = [
@@ -731,8 +740,6 @@ export const CLAIM_ELIGIBILITY_VALUES = [
   "duplicate_email",
   "claimed",
 ];
-
-export const WEBSITE_FILTER_IDS = ["has", "none"];
 
 const optionalBoolQuery = Yup.boolean()
   .transform((value, originalValue) => {

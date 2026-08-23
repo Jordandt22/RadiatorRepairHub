@@ -1989,6 +1989,11 @@ export const getBusinesses = async (req, res) => {
     req.query.email_filter.trim()
       ? req.query.email_filter.trim()
       : null;
+  const websiteFilter =
+    typeof req.query.website_filter === "string" &&
+    req.query.website_filter.trim()
+      ? req.query.website_filter.trim()
+      : null;
 
   const { key, interval } = getAdminBusinessesKey(
     page,
@@ -2000,7 +2005,8 @@ export const getBusinesses = async (req, res) => {
     postalCode,
     scoreTier,
     reviewsTier,
-    emailFilter
+    emailFilter,
+    websiteFilter
   );
   const cachedData = await getCacheData(key);
   if (cachedData) {
@@ -2019,6 +2025,7 @@ export const getBusinesses = async (req, res) => {
       scoreTier,
       reviewsTier,
       emailFilter,
+      websiteFilter,
     }
   );
   if (error) {
@@ -2065,6 +2072,7 @@ export const getBusinesses = async (req, res) => {
     score_tier: scoreTier,
     reviews_tier: reviewsTier,
     email_filter: emailFilter,
+    website_filter: websiteFilter,
   };
 
   await cacheData(key, interval, compiledData);
