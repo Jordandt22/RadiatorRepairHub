@@ -1,10 +1,12 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import CitiesPage from "@/components/pages/cities/CitiesPage";
+import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 
 // Data
 import STATES from "@/lib/data/states";
 import { fetchCitiesByStateId, fetchCityBusinessCounts } from "@/lib/api/location";
+import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
 export const revalidate = 3600;
@@ -54,10 +56,16 @@ async function Page({ params }) {
     return notFound();
   }
 
-  const [{ data: stateCities }, { data: countsData }] = await Promise.all([
-    fetchCitiesByStateId(stateData.id),
-    fetchCityBusinessCounts(stateData.id),
-  ]);
+  const [{ data: stateCities }, { data: countsData }, { data: affiliateData }] =
+    await Promise.all([
+      fetchCitiesByStateId(stateData.id),
+      fetchCityBusinessCounts(stateData.id),
+      fetchActiveAffiliateProductsByAliases([
+        "valvoline",
+        "radiator-cap",
+        "coolant-funnel",
+      ]),
+    ]);
   const countById = new Map(
     (countsData?.cities ?? []).map((city) => [city.id, city.business_count ?? 0])
   );
@@ -67,6 +75,7 @@ async function Page({ params }) {
       business_count: countById.get(city.id) ?? city.business_count ?? 0,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
+  const featuredProducts = affiliateData?.products ?? [];
 
   const collectionSchema = {
     "@context": "https://schema.org",
@@ -96,6 +105,19 @@ async function Page({ params }) {
         }}
       />
       <CitiesPage stateData={stateData} stateCities={sortedCities} />
+
+      {featuredProducts.length > 0 ? (
+        <section className="border-t border-border bg-card py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <AffiliateProductsSection
+              products={featuredProducts}
+              title="Tools & Supplies"
+              description="Coolant, radiator caps, and spill-proof funnels for common cooling system maintenance."
+              variant="showcase"
+            />
+          </div>
+        </section>
+      ) : null}
     </>
   );
 }

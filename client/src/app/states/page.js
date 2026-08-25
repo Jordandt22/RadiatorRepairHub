@@ -1,7 +1,11 @@
 import React from "react";
 import StatesPage from "@/components/pages/states/StatesPage";
+import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import STATES from "@/lib/data/states";
 import { fetchStateBusinessCounts } from "@/lib/api/location";
+import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
+
+export const revalidate = 60;
 
 export const metadata = {
   title:
@@ -45,9 +49,16 @@ export const metadata = {
 };
 
 async function Page() {
-  const { data: countsData } = await fetchStateBusinessCounts({
-    codes: STATES.map((state) => state.code),
-  });
+  const [{ data: countsData }, { data: affiliateData }] = await Promise.all([
+    fetchStateBusinessCounts({
+      codes: STATES.map((state) => state.code),
+    }),
+    fetchActiveAffiliateProductsByAliases([
+      "valvoline",
+      "radiator-cap",
+      "coolant-funnel",
+    ]),
+  ]);
   const countByCode = new Map(
     (countsData?.states ?? []).map((state) => [
       String(state.code).toUpperCase(),
@@ -58,6 +69,7 @@ async function Page() {
     ...state,
     business_count: countByCode.get(String(state.code).toUpperCase()) ?? 0,
   }));
+  const featuredProducts = affiliateData?.products ?? [];
 
   // ItemList Schema for States
   const itemListSchema = {
@@ -84,6 +96,19 @@ async function Page() {
         }}
       />
       <StatesPage statesWithCounts={statesWithCounts} />
+
+      {featuredProducts.length > 0 ? (
+        <section className="border-t border-border bg-card py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <AffiliateProductsSection
+              products={featuredProducts}
+              title="Tools & Supplies"
+              description="Coolant, radiator caps, and spill-proof funnels for common cooling system maintenance."
+              variant="showcase"
+            />
+          </div>
+        </section>
+      ) : null}
     </>
   );
 }
