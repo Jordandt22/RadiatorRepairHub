@@ -7,8 +7,12 @@ import {
   BLOG_AUTHOR_AVATAR,
   BLOG_COVER_IMAGE,
 } from "@/components/blogs/blogConstants";
+import AdSenseUnit from "@/components/ads/AdSenseUnit";
 import BlogSearch from "./BlogSearch";
 import BlogSort from "./BlogSort";
+
+/** Display unit under the featured post on /blogs */
+const BLOGS_DISPLAY_SLOT = "1404783217";
 
 function formatPostDate(date) {
   if (!date) return null;
@@ -179,8 +183,12 @@ function BlogsList({ posts }) {
       </div>
 
       {featuredPost ? (
-        <section aria-label="Featured post">
+        <section aria-label="Featured post" className="space-y-6">
           <FeaturedPost post={featuredPost} />
+          <AdSenseUnit
+            slot={BLOGS_DISPLAY_SLOT}
+            className="min-h-[90px] overflow-hidden rounded-lg"
+          />
         </section>
       ) : null}
 
