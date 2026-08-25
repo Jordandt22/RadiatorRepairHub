@@ -165,6 +165,7 @@ export default async function RootLayout({ children }) {
       <head>
         {/* Organization Schema */}
         <script
+          key="organization-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(organizationSchema),
@@ -172,25 +173,40 @@ export default async function RootLayout({ children }) {
         />
         {/* WebSite Schema */}
         <script
+          key="website-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(websiteSchema),
           }}
         />
         {/* Preload critical resources */}
-        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="//lh3.googleusercontent.com" />
-        <link rel="dns-prefetch" href="//streetviewpixels-pa.googleapis.com" />
+        <link key="dns-fonts" rel="dns-prefetch" href="//fonts.googleapis.com" />
+        <link
+          key="dns-gstatic"
+          rel="dns-prefetch"
+          href="//lh3.googleusercontent.com"
+        />
+        <link
+          key="dns-streetview"
+          rel="dns-prefetch"
+          href="//streetviewpixels-pa.googleapis.com"
+        />
 
         {/* Favicon and Icons */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link key="favicon-ico" rel="icon" href="/favicon.ico" sizes="any" />
         <link
+          key="favicon-svg"
+          rel="icon"
+          href="/favicon.svg"
+          type="image/svg+xml"
+        />
+        <link
+          key="apple-touch-icon"
           rel="apple-touch-icon"
           sizes="180x180"
           href="/apple-touch-icon.png"
         />
-        <link rel="manifest" href="/manifest.json" />
+        <link key="manifest" rel="manifest" href="/manifest.json" />
       </head>
       <body
         className={`${plexSans.variable} font-sans antialiased`}
@@ -200,6 +216,7 @@ export default async function RootLayout({ children }) {
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <>
             <Script
+              id="google-analytics-src"
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
               strategy="afterInteractive"
             />
@@ -213,6 +230,14 @@ export default async function RootLayout({ children }) {
             </Script>
           </>
         )}
+
+        {/* Google AdSense — manual units only; Auto ads stay off in the dashboard */}
+        <Script
+          id="google-adsense"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6504336368539075"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
 
         <PostHogProvider>
           <ToastProvider>

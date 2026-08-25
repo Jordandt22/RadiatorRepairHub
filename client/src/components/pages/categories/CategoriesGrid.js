@@ -21,8 +21,12 @@ import {
 } from "lucide-react";
 import BusinessCount from "@/components/content/BusinessCount";
 import AnimatedStaggerRows from "@/components/ui/AnimatedStaggerRows";
+import AdSenseUnit from "@/components/ads/AdSenseUnit";
 import CategorySearch from "./CategorySearch";
 import CategorySort from "./CategorySort";
+
+/** Display unit above the category count on /categories */
+const CATEGORIES_DISPLAY_SLOT = "2090239571";
 
 const getCategoryIcon = (categoryName) => {
   const name = (categoryName || "").toLowerCase();
@@ -131,6 +135,11 @@ function CategoriesGrid({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <AdSenseUnit
+        slot={CATEGORIES_DISPLAY_SLOT}
+        className="mb-6 min-h-[90px] overflow-hidden rounded-lg"
+      />
+
       <p className="mb-6 text-sm text-muted-foreground">
         <span className="font-semibold text-green-700">
           {(filteredCount ?? categories.length).toLocaleString()}

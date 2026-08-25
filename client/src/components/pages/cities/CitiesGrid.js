@@ -5,8 +5,12 @@ import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import BusinessCount from "@/components/content/BusinessCount";
 import AnimatedStaggerRows from "@/components/ui/AnimatedStaggerRows";
+import AdSenseUnit from "@/components/ads/AdSenseUnit";
 import CitySearch from "./CitySearch";
 import CitySort from "./CitySort";
+
+/** Display unit above the city count on state cities pages */
+const CITIES_DISPLAY_SLOT = "1971759429";
 
 function CityCard({ city, stateData }) {
   return (
@@ -56,6 +60,11 @@ function CitiesGrid({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <AdSenseUnit
+        slot={CITIES_DISPLAY_SLOT}
+        className="mb-6 min-h-[90px] overflow-hidden rounded-lg"
+      />
+
       <p className="mb-6 text-sm text-muted-foreground">
         <span className="font-semibold text-green-700">
           {(filteredCount ?? cities.length).toLocaleString()}
