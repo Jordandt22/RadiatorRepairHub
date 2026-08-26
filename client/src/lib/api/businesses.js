@@ -1,12 +1,7 @@
 import { fetchApi } from "./fetchApi";
 import { fetchAuthenticatedApi } from "./fetchAuthenticatedApi";
 import { DEFAULT_SORT_OPTION } from "@/lib/businesses/sortOptions";
-
-const BUSINESS_REVALIDATE_SECONDS = 60 * 10;
-const SITEMAP_REVALIDATE_SECONDS = 60 * 60 * 24;
-const BUSINESS_CACHE = { revalidate: BUSINESS_REVALIDATE_SECONDS };
-const SITEMAP_CACHE = { revalidate: SITEMAP_REVALIDATE_SECONDS };
-const NO_STORE = { cache: "no-store" };
+import { NO_STORE, SITEMAP_CACHE } from "@/lib/cachePolicy";
 
 export async function fetchBusinessSlugsForSitemap(options = SITEMAP_CACHE) {
   return fetchApi("/businesses/sitemap-slugs", options);
@@ -24,7 +19,7 @@ export async function fetchBusinessBySlug(slug, options = NO_STORE) {
 
 export async function fetchFeaturedBusinesses(
   { page = 1, limit = 12, sort = "featured", q = "" } = {},
-  options = BUSINESS_CACHE
+  options = NO_STORE
 ) {
   const params = new URLSearchParams({
     page: String(page),
@@ -41,7 +36,7 @@ export async function fetchFeaturedBusinesses(
   });
 }
 
-export async function fetchTopVerifiedBusinesses(options = BUSINESS_CACHE) {
+export async function fetchTopVerifiedBusinesses(options = NO_STORE) {
   return fetchApi("/businesses/top-verified", {
     ...options,
     next: {
@@ -55,7 +50,7 @@ export async function fetchBusinessesSearch(
   body,
   page = 1,
   limit = 12,
-  options = { revalidate: 300 }
+  options = NO_STORE
 ) {
   return fetchApi(`/businesses/search?page=${page}&limit=${limit}`, {
     method: "POST",
@@ -69,7 +64,7 @@ export async function fetchBusinessesByCategory(
   primaryCategoryId,
   page = 1,
   limit = 12,
-  options = { revalidate: 300 }
+  options = NO_STORE
 ) {
   return fetchBusinessesSearch(
     {

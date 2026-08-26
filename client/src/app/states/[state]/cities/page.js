@@ -9,7 +9,7 @@ import { fetchCitiesByStateId, fetchCityBusinessCounts } from "@/lib/api/locatio
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
-export const revalidate = 3600;
+export const revalidate = 120;
 
 // Generate metadata for cities page
 export async function generateMetadata({ params }) {

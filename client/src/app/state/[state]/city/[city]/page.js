@@ -11,7 +11,7 @@ import { fetchCityBySlug } from "@/lib/api/cachedReads";
 
 // ISR for city listings. Do not pair revalidate with a non-empty
 // generateStaticParams subset — Next 16 then 404s cities outside that list.
-export const revalidate = 600;
+export const revalidate = 120;
 export const dynamicParams = true;
 
 // Generate metadata for city pages

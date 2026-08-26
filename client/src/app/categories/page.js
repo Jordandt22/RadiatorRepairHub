@@ -4,7 +4,7 @@ import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSectio
 import { fetchPrimaryCategoryBusinessCounts } from "@/lib/api/categories";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 
-export const revalidate = 60;
+export const revalidate = 120;
 
 export const metadata = {
   title:

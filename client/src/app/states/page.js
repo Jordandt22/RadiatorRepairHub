@@ -5,7 +5,7 @@ import STATES from "@/lib/data/states";
 import { fetchStateBusinessCounts } from "@/lib/api/location";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 
-export const revalidate = 60;
+export const revalidate = 120;
 
 export const metadata = {
   title:

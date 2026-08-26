@@ -14,6 +14,8 @@ export const metadata = buildPageMetadata({
   path: "/featured",
 });
 
+export const revalidate = 120;
+
 async function Page({ searchParams }) {
   const searchParamsData = await searchParams;
 

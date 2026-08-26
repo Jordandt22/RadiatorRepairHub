@@ -33,7 +33,7 @@ export const metadata = buildPageMetadata({
   path: "/",
 });
 
-export const revalidate = 60;
+export const revalidate = 120;
 
 export default async function Home() {
   const [affiliateRes, categoriesRes, statesRes] = await Promise.all([

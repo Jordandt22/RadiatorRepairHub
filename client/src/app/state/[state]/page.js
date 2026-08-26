@@ -5,6 +5,9 @@ import STATES from "@/lib/data/states";
 import BusinessesContainer from "@/components/businesses/BusinessesContainer";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 
+export const revalidate = 120;
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   const topStates = ["CA", "TX", "FL", "NY", "WA"];
   return topStates.map((state) => ({ state }));

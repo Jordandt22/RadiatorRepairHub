@@ -6,6 +6,8 @@ import { CATEGORY_KEYWORDS } from "@/lib/seo/keywords";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS, SITE_URL } from "@/lib/seo/metadata";
 import { getListingsPage } from "@/lib/businesses/listingsSearch";
 
+export const revalidate = 120;
+
 function buildCategoryUrl(slug, page) {
   const base = `${SITE_URL}/category/${slug}`;
   return page <= 1 ? base : `${base}?page=${page}`;
