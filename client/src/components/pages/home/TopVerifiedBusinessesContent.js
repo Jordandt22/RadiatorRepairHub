@@ -8,7 +8,7 @@ import DetailedBusinessCard from "@/components/businesses/cards/DetailedBusiness
 import HomeSnapCarousel from "@/components/pages/home/HomeSnapCarousel";
 import { fadeIn, useHomeSectionInView } from "@/components/ui/homeSectionMotion";
 
-export default function FeaturedBusinessesContent({ businesses = [] }) {
+export default function TopVerifiedBusinessesContent({ businesses = [] }) {
   const { ref, inView, reduceMotion } = useHomeSectionInView();
 
   return (
@@ -24,15 +24,15 @@ export default function FeaturedBusinessesContent({ businesses = [] }) {
           variants={fadeIn(reduceMotion)}
         >
           <h2 className="mb-3 font-heading text-3xl font-semibold tracking-tight text-foreground">
-            Featured Businesses
+            Top Verified Businesses
           </h2>
           <p className="mx-auto max-w-3xl text-base text-muted-foreground md:text-lg">
-            Top-rated radiator repair shops recommended by our community
+            Claimed radiator repair shops with strong ratings from our community
           </p>
         </motion.div>
 
         {businesses.length > 0 ? (
-          <HomeSnapCarousel label="Featured businesses" fullWidthMobile>
+          <HomeSnapCarousel label="Top verified businesses" fullWidthMobile>
             {businesses.map((business) => (
               <div key={business.id} className="h-full w-full">
                 <DetailedBusinessCard business={business} />
@@ -41,7 +41,7 @@ export default function FeaturedBusinessesContent({ businesses = [] }) {
           </HomeSnapCarousel>
         ) : (
           <div className="mt-12 text-center">
-            <p className="text-muted-foreground">No Featured Businesses Found</p>
+            <p className="text-muted-foreground">No verified businesses found</p>
           </div>
         )}
 
@@ -55,7 +55,7 @@ export default function FeaturedBusinessesContent({ businesses = [] }) {
             href="/featured"
             className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-2.5 font-medium text-foreground transition-interactive hover:bg-muted"
           >
-            View All Featured Businesses
+            View Featured Businesses
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </motion.div>

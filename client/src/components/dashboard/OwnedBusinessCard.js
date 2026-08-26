@@ -15,6 +15,7 @@ import {
 import { unclaimOwnedBusiness } from "@/lib/api/ownedBusinesses";
 import { usePostHog } from "posthog-js/react";
 import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
+import { buttonVariants } from "@/components/ui/button";
 
 function formatLastEdited(value) {
   if (!value) return "Not edited yet";
@@ -106,7 +107,29 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
         </div>
       </Link>
 
-      <div className="mt-auto border-t border-border px-5 py-3">
+      <div className="mt-auto space-y-2 border-t border-border px-5 py-3">
+        {business.is_featured ? (
+          <Link
+            href="/settings?tab=payments"
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "w-full",
+            })}
+          >
+            Featured · Manage
+          </Link>
+        ) : (
+          <Link
+            href={`/pricing?business=${encodeURIComponent(business.id)}`}
+            className={buttonVariants({
+              size: "sm",
+              className: "w-full",
+            })}
+          >
+            Get Featured
+          </Link>
+        )}
         <Button
           type="button"
           variant="outline"
@@ -137,8 +160,10 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
               <span className="font-medium text-foreground">
                 {business.title}
               </span>
-              ? You will lose owner access to edit this listing. The business
-              page stays on RadiatorRepairHub and can be claimed again later.
+              ? You will lose owner access to edit this listing. If the listing
+              is Featured, that subscription is canceled immediately and fees
+              already paid are not refunded. The business page stays on
+              RadiatorRepairHub and can be claimed again later.
             </DialogDescription>
           </DialogHeader>
 

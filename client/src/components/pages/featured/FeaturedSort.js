@@ -8,15 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-export const FEATURED_SORT_OPTIONS = [
-  { value: "featured", label: "Featured" },
-  { value: "alpha", label: "Alphabetical" },
-  { value: "most_reviews", label: "Most Reviews" },
-  { value: "least_reviews", label: "Least Reviews" },
-  { value: "highest_rating", label: "Highest Rating" },
-  { value: "lowest_rating", label: "Lowest Rating" },
-];
+import { FEATURED_SORT_OPTIONS } from "./featuredUrl";
 
 function FeaturedSort({ sort, onSortChange }) {
   const current =

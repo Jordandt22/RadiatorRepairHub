@@ -105,8 +105,15 @@ export const flushDBCache = async () => {
 // REDIS KEYS
 
 // --- Businesses ----
-export const getFeaturedBusinessesKey = () => ({
-  key: `FEATURED_BUSINESSES`,
+export const FEATURED_BUSINESSES_CACHE_PREFIX = "FEATURED_BUSINESSES";
+
+export const getFeaturedBusinessesKey = (page, limit, sort, q = "") => ({
+  key: `${FEATURED_BUSINESSES_CACHE_PREFIX}?V:2&PAGE:${page}&LIMIT:${limit}&SORT:${sort}&Q:${q || ""}`,
+  interval: 60 * 60,
+});
+
+export const getTopVerifiedBusinessesKey = () => ({
+  key: `TOP_VERIFIED_BUSINESSES`,
   interval: 60 * 60,
 });
 
@@ -153,7 +160,7 @@ export const getCountBusinessesBySearchKey = (
   sort_option
 ) => ({
   key: createSearchBusinessKey(
-    `SEARCHED_BUSINESSES_COUNT?ORD:verified1&SORT-OPTION:${sort_option}`,
+    `SEARCHED_BUSINESSES_COUNT?ORD:featured1&SORT-OPTION:${sort_option}`,
     searchParamValues
   ),
   interval: 60 * 30,
@@ -166,7 +173,7 @@ export const getSearchedBusinessesKey = (
   sort_option
 ) => ({
   key: createSearchBusinessKey(
-    `SEARCHED_BUSINESSES?ORD:verified1&PAGE:${page}&LIMIT:${limit}&SORT-OPTION:${sort_option}`,
+    `SEARCHED_BUSINESSES?ORD:featured1&PAGE:${page}&LIMIT:${limit}&SORT-OPTION:${sort_option}`,
     searchParamValues
   ),
   interval: 60 * 30,

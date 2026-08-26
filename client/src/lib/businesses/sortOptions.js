@@ -1,7 +1,8 @@
-/** Search sort: 5 Verified (default), 1–4 quality sorts with soft claimed boost. */
-export const DEFAULT_SORT_OPTION = 5;
+/** Search sort: 6 Featured (default), 5 Verified, 1–4 quality sorts. */
+export const DEFAULT_SORT_OPTION = 6;
 
 export const SORT_OPTION_BY_KEY = {
+  featured: 6,
   verified: 5,
   most_reviews: 1,
   least_reviews: 2,
@@ -15,9 +16,11 @@ export const SORT_KEY_BY_OPTION = {
   3: "highest_rating",
   4: "lowest_rating",
   5: "verified",
+  6: "featured",
 };
 
 export const SORT_MENU_OPTIONS = [
+  { value: 6, label: "Featured" },
   { value: 5, label: "Verified" },
   { value: 1, label: "Most Reviews" },
   { value: 2, label: "Least Reviews" },

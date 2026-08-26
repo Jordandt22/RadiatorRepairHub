@@ -23,6 +23,7 @@ export function buildSitemapEntries(
     { url: "/contact", changeFrequency: "monthly", priority: 0.7 },
     { url: "/get-listed", changeFrequency: "monthly", priority: 0.8 },
     { url: "/featured", changeFrequency: "daily", priority: 0.8 },
+    { url: "/pricing", changeFrequency: "monthly", priority: 0.7 },
     { url: "/faq", changeFrequency: "monthly", priority: 0.7 },
     { url: "/privacy", changeFrequency: "yearly", priority: 0.3 },
     { url: "/terms", changeFrequency: "yearly", priority: 0.3 },

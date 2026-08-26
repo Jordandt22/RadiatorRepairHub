@@ -7,6 +7,7 @@ import {
 import {
   cacheData,
   getFeaturedBusinessesKey,
+  getTopVerifiedBusinessesKey,
   getCacheData,
   getBusinessBySlugKey,
   getBusinessSlugsForSitemapKey,
@@ -19,7 +20,9 @@ import {
   deleteCacheDataByPrefix,
 } from "../redis/redis.js";
 import {
-  getTopRatedBusinesses,
+  getPaidFeaturedBusinesses,
+  FEATURED_PAGE_SIZE,
+  getTopVerifiedBusinesses,
   searchBusinesses,
   getBusinessBySlug,
   getBusinessSlugsForSitemap,
@@ -27,6 +30,7 @@ import {
   isBusinessEmailShared,
   getBusinessLastEditedAt,
   getBusinessEmailStatus,
+  getBusinessClaimFlags,
   insertClaimRequest,
   updateClaimRequestStatus,
   getClaimRequestWithBusiness,
@@ -52,6 +56,7 @@ import {
   getBusinessById,
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
+import { sanitizeIlikeSearch } from "../lib/sanitizeSearch.js";
 import {
   daysEqual,
   normalizeDayHours,
@@ -85,6 +90,11 @@ import {
 import { verifyEmailReputation } from "../abstract/emailReputation.js";
 import { verifyPhoneNumber } from "../abstract/phoneValidation.js";
 import { verifyWebsiteReachable } from "../lib/websiteReachability.js";
+import { cancelFeaturedSubscriptionForBusiness } from "../lib/cancelFeaturedSubscriptions.js";
+import {
+  invalidateBusinessListingCache,
+  invalidateClaimStatusCaches,
+} from "../lib/invalidateListingCaches.js";
 import crypto from "crypto";
 
 const { SUPABASE_ERROR, ROUTE_NOT_FOUND, YUP_ERROR, SERVER_ERROR, ACCESS_DENIED } =
@@ -310,13 +320,7 @@ export const claimBusiness = async (req, res) => {
 };
 
 const invalidateBusinessCache = async (business) => {
-  if (!business?.id) return;
-  const { key: businessIdCacheKey } = getBusinessByIdKey(business.id);
-  await deleteCacheData(businessIdCacheKey);
-  if (business.slug) {
-    const { key: businessSlugCacheKey } = getBusinessBySlugKey(business.slug);
-    await deleteCacheData(businessSlugCacheKey);
-  }
+  await invalidateBusinessListingCache(business);
 };
 
 export const getClaimRequest = async (req, res) => {
@@ -718,7 +722,7 @@ export const completeClaim = async (req, res) => {
     // best-effort cleanup
   }
 
-  await invalidateBusinessCache(business);
+  await invalidateClaimStatusCaches(business);
 
   const { SENDER_EMAIL, RESEND_API_KEY, ADMIN_EMAIL, TEST_RECIPIENT_EMAIL } =
     process.env;
@@ -1069,6 +1073,37 @@ export const unclaimOwnedBusinessHandler = async (req, res) => {
       );
   }
 
+  let cancelResult;
+  try {
+    cancelResult = await cancelFeaturedSubscriptionForBusiness(
+      businessId,
+      ownerUid,
+      { reason: "listing_unclaimed" }
+    );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "There was an error canceling the Featured subscription for this listing. Please try again or contact support.",
+          error
+        )
+      );
+  }
+
+  if (cancelResult?.errors?.length) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "There was an error canceling the Featured subscription for this listing. Please try again or contact support.",
+          cancelResult.errors
+        )
+      );
+  }
+
   const { data: unclaimed, error: unclaimError } = await unclaimOwnedBusiness(
     businessId,
     ownerUid
@@ -1098,7 +1133,7 @@ export const unclaimOwnedBusinessHandler = async (req, res) => {
   }
 
   try {
-    await invalidateBusinessCache(unclaimed);
+    await invalidateClaimStatusCaches(unclaimed);
   } catch {
     // best-effort cache cleanup
   }
@@ -1746,15 +1781,23 @@ export const updateBusinessHours = async (req, res) => {
 };
 
 export const getFeaturedBusinesses = async (req, res) => {
-  // Get Data from Cache
-  const { key, interval } = getFeaturedBusinessesKey();
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || FEATURED_PAGE_SIZE;
+  const sort = req.query.sort || "featured";
+  const q = sanitizeIlikeSearch(req.query.q);
+
+  const { key, interval } = getFeaturedBusinessesKey(page, limit, sort, q);
   const cachedData = await getCacheData(key);
   if (cachedData) {
     return res.status(200).json(successHandler(cachedData.data));
   }
 
-  // Claimed-first fill, then top-rated businesses
-  const { data, error } = await getTopRatedBusinesses();
+  const { data, count, error } = await getPaidFeaturedBusinesses({
+    page,
+    limit,
+    sort,
+    q,
+  });
   if (error) {
     return res
       .status(500)
@@ -1767,7 +1810,39 @@ export const getFeaturedBusinesses = async (req, res) => {
       );
   }
 
-  // Cache Data
+  const total = count ?? 0;
+  const payload = {
+    businesses: data ?? [],
+    total,
+    page,
+    limit,
+    totalPages: total > 0 ? Math.ceil(total / limit) : 0,
+  };
+
+  await cacheData(key, interval, payload);
+  res.status(200).json(successHandler(payload));
+};
+
+export const getTopVerifiedBusinessesHandler = async (req, res) => {
+  const { key, interval } = getTopVerifiedBusinessesKey();
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getTopVerifiedBusinesses();
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching verified businesses.",
+          error
+        )
+      );
+  }
+
   await cacheData(key, interval, data);
   res.status(200).json(successHandler(data));
 };
@@ -1825,6 +1900,10 @@ export const getBusiness = async (req, res) => {
 
   let email = business?.email ?? null;
   let emailStatus = business?.email_status ?? null;
+  let isClaimed = Boolean(business?.is_claimed);
+  let isFeatured = Boolean(business?.is_featured);
+  let ownerUid = business?.owner_uid ?? null;
+
   if (business?.id) {
     const { data: liveEmail, error: emailStatusError } =
       await getBusinessEmailStatus(business.id);
@@ -1833,6 +1912,15 @@ export const getBusiness = async (req, res) => {
       if (liveEmail.email_status != null) {
         emailStatus = liveEmail.email_status;
       }
+    }
+
+    // Always refresh claim/Featured flags so stale Redis cannot keep Verified.
+    const { data: claimFlags, error: claimFlagsError } =
+      await getBusinessClaimFlags(business.id);
+    if (!claimFlagsError && claimFlags) {
+      isClaimed = claimFlags.is_claimed;
+      isFeatured = claimFlags.is_featured;
+      ownerUid = claimFlags.owner_uid;
     }
   }
 
@@ -1857,7 +1945,7 @@ export const getBusiness = async (req, res) => {
   // Always refresh last_edited_at for claimed listings so stale Redis payloads
   // still show the edit date under the verified badge.
   let lastEditedAt = business?.last_edited_at ?? null;
-  if (business?.is_claimed && business?.id) {
+  if (isClaimed && business?.id) {
     const { data: editedAt, error: editedAtError } =
       await getBusinessLastEditedAt(business.id);
     if (!editedAtError) {
@@ -1871,6 +1959,9 @@ export const getBusiness = async (req, res) => {
       email,
       last_edited_at: lastEditedAt,
       email_status: emailStatus,
+      is_claimed: isClaimed,
+      is_featured: isFeatured,
+      owner_uid: ownerUid,
       has_duplicate_email: isShared,
     })
   );

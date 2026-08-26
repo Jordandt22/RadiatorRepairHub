@@ -12,12 +12,43 @@ export async function fetchBusinessSlugsForSitemap(options = SITEMAP_CACHE) {
   return fetchApi("/businesses/sitemap-slugs", options);
 }
 
-export async function fetchBusinessBySlug(slug, options = BUSINESS_CACHE) {
-  return fetchApi(`/businesses/${slug}`, options);
+export async function fetchBusinessBySlug(slug, options = NO_STORE) {
+  return fetchApi(`/businesses/${slug}`, {
+    ...options,
+    next: {
+      tags: [`business:${slug}`, "business-listings"],
+      ...(options.next || {}),
+    },
+  });
 }
 
-export async function fetchFeaturedBusinesses(options = BUSINESS_CACHE) {
-  return fetchApi("/businesses/featured", options);
+export async function fetchFeaturedBusinesses(
+  { page = 1, limit = 12, sort = "featured", q = "" } = {},
+  options = BUSINESS_CACHE
+) {
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    sort,
+  });
+  if (q) params.set("q", q);
+  return fetchApi(`/businesses/featured?${params.toString()}`, {
+    ...options,
+    next: {
+      tags: ["featured-businesses"],
+      ...(options.next || {}),
+    },
+  });
+}
+
+export async function fetchTopVerifiedBusinesses(options = BUSINESS_CACHE) {
+  return fetchApi("/businesses/top-verified", {
+    ...options,
+    next: {
+      tags: ["top-verified"],
+      ...(options.next || {}),
+    },
+  });
 }
 
 export async function fetchBusinessesSearch(

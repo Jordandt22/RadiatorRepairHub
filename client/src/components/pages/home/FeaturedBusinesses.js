@@ -1,12 +1,10 @@
-import React from "react";
-
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
-import FeaturedBusinessesContent from "@/components/pages/home/FeaturedBusinessesContent";
-import { fetchFeaturedBusinesses } from "@/lib/api/businesses";
+import TopVerifiedBusinessesContent from "@/components/pages/home/TopVerifiedBusinessesContent";
+import { fetchTopVerifiedBusinesses } from "@/lib/api/businesses";
 
-async function FeaturedBusinesses() {
+async function TopVerifiedBusinesses() {
   try {
-    const { data: businesses, error, status } = await fetchFeaturedBusinesses();
+    const { data: businesses, error, status } = await fetchTopVerifiedBusinesses();
 
     if (error) {
       return (
@@ -22,10 +20,10 @@ async function FeaturedBusinesses() {
       );
     }
 
-    return <FeaturedBusinessesContent businesses={businesses || []} />;
+    return <TopVerifiedBusinessesContent businesses={businesses || []} />;
   } catch {
-    return <FeaturedBusinessesContent businesses={[]} />;
+    return <TopVerifiedBusinessesContent businesses={[]} />;
   }
 }
 
-export default FeaturedBusinesses;
+export default TopVerifiedBusinesses;

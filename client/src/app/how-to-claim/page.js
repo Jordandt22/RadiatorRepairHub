@@ -44,10 +44,17 @@ const BENEFITS = [
     icon: Clock3,
   },
   {
-    title: "Verified Badge and Priority Placement",
+    title: "Verified Badge",
     description:
-      "Claimed businesses get a verified badge and are prioritized in the featured section and search results.",
+      "Claimed businesses get a verified badge in search and on the listing page.",
     icon: Search,
+  },
+  {
+    title: "Featured Placement",
+    description:
+      "Claiming is free. Optional paid Featured listings get a Featured badge, search priority, and a place on the Featured page.",
+    icon: Flag,
+    cta: { href: "/pricing", label: "Get Featured" },
   },
 ];
 
@@ -91,7 +98,12 @@ function buildClaimFaqs(supportEmail) {
     {
       question: "Is claiming free?",
       answer:
-        "Yes. Claiming your business listing on RadiatorRepairHub is free.",
+        "Yes. Claiming your business listing on RadiatorRepairHub is free. Featured is a separate optional paid upgrade for claimed listings—see Featured listing pricing for details.",
+    },
+    {
+      question: "What is a Featured listing?",
+      answer:
+        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, and a spot on the Featured businesses page. Claiming stays free; only Featured is paid.",
     },
   ];
 }
@@ -113,7 +125,7 @@ export default function HowToClaimPage() {
         pageTitle="How to claim your business"
         pageDescription="Check eligibility, follow the email claim steps, and see what you can edit after claiming."
         headerLink={{
-          href: "/search?page=1&sort=verified",
+          href: "/search?page=1&sort=featured",
           label: "Search for your listing",
         }}
       />
@@ -224,7 +236,7 @@ export default function HowToClaimPage() {
             Benefits of Claiming
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {BENEFITS.map(({ title, description, icon: Icon }) => (
+            {BENEFITS.map(({ title, description, icon: Icon, cta }) => (
               <div
                 key={title}
                 className="rounded-lg border border-border bg-card p-6"
@@ -238,25 +250,58 @@ export default function HowToClaimPage() {
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {description}
                 </p>
+                {cta ? (
+                  <Link
+                    href={cta.href}
+                    className="mt-4 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+                  >
+                    {cta.label}
+                  </Link>
+                ) : null}
               </div>
             ))}
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="rounded-lg border border-border bg-card p-8 text-center">
-            <h3 className="mb-2 font-heading text-xl font-semibold text-foreground">
-              Already claimed?
-            </h3>
-            <p className="mb-6 text-muted-foreground">
-              Sign in to open your business listing.
+        <section className="space-y-6 border-t border-border pt-12">
+          <div className="text-center">
+            <h2 className="font-heading text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+              Next steps
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              Sign in, upgrade to Featured, or get help from our team.
             </p>
-            <Link
-              href="/signin"
-              className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
-            >
-              Sign in
-            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="rounded-lg border border-border bg-card p-8 text-center">
+              <h3 className="mb-2 font-heading text-xl font-semibold text-foreground">
+                Already claimed?
+              </h3>
+              <p className="mb-6 text-muted-foreground">
+                Sign in to open your dashboard and manage your listing.
+              </p>
+              <Link
+                href="/signin"
+                className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+              >
+                Sign in
+              </Link>
+            </div>
+            <div className="rounded-lg border border-border bg-card p-8 text-center">
+              <h3 className="mb-2 font-heading text-xl font-semibold text-foreground">
+                Want more visibility?
+              </h3>
+              <p className="mb-6 text-muted-foreground">
+                After you claim, upgrade to Featured for a badge, search priority,
+                and a spot on the Featured page.
+              </p>
+              <Link
+                href="/pricing"
+                className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+              >
+                Get Featured
+              </Link>
+            </div>
           </div>
           <div className="rounded-lg border border-border bg-card p-8 text-center">
             <h3 className="mb-2 font-heading text-xl font-semibold text-foreground">
@@ -303,7 +348,7 @@ export default function HowToClaimPage() {
       <FAQSection
         faqs={faqs}
         title="Claiming FAQ"
-        description="Answers about verification codes, contact info, mistaken claims, and cost."
+        description="Answers about verification codes, contact info, mistaken claims, cost, and Featured upgrades."
         includeSchema={true}
       />
 

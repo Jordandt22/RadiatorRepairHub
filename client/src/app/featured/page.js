@@ -3,9 +3,9 @@ import FeaturedBusinessesPage from "@/components/pages/featured/FeaturedBusiness
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 const title =
-  "Featured Radiator Repair Shops | Top-Rated Auto Repair Services - RadiatorRepairHub";
+  "Featured Radiator Repair Shops | RadiatorRepairHub";
 const description =
-  "Discover featured radiator repair shops with top ratings and reviews. Find the best auto repair services in your area with verified customer feedback and quality guarantees.";
+  "Browse Featured radiator repair shops on RadiatorRepairHub. Featured partners get extra visibility in search and on this page.";
 
 export const metadata = buildPageMetadata({
   title,
@@ -15,7 +15,9 @@ export const metadata = buildPageMetadata({
   path: "/featured",
 });
 
-async function Page() {
+async function Page({ searchParams }) {
+  const searchParamsData = await searchParams;
+
   const collectionSchema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -36,7 +38,7 @@ async function Page() {
           __html: JSON.stringify(collectionSchema),
         }}
       />
-      <FeaturedBusinessesPage />
+      <FeaturedBusinessesPage searchParams={searchParamsData} />
     </>
   );
 }
