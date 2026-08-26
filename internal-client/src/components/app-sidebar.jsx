@@ -25,6 +25,7 @@ import {
   MailXIcon,
   MailSearchIcon,
   UsersIcon,
+  FlaskConicalIcon,
   DatabaseIcon,
   HardDriveIcon,
   Table2Icon,
@@ -148,6 +149,23 @@ const data = {
         {
           title: "All",
           url: "/users",
+          icon: <UsersIcon />,
+        },
+      ],
+    },
+    {
+      title: "Testing",
+      url: "/testing?tab=businesses",
+      icon: <FlaskConicalIcon />,
+      items: [
+        {
+          title: "Businesses",
+          url: "/testing?tab=businesses",
+          icon: <Building2Icon />,
+        },
+        {
+          title: "Users",
+          url: "/testing?tab=users",
           icon: <UsersIcon />,
         },
       ],

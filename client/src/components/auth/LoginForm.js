@@ -159,8 +159,8 @@ function LoginFormContent() {
         Welcome Back!
       </h2>
       <p className="mb-6 text-muted-foreground">
-        Sign in with the email and password from your claim to open your
-        listing.
+        Sign in with your owner email and password to manage claimed listings
+        and your account.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">

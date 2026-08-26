@@ -2,11 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
 import OwnedBusinessCard from "@/components/dashboard/OwnedBusinessCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { buttonVariants } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastProvider";
 import { signOut } from "@/lib/auth/session";
+import { cn } from "@/lib/utils";
 
 function DashboardContentInner() {
   const router = useRouter();
@@ -116,8 +119,18 @@ function DashboardContentInner() {
               <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">
                 <p className="font-medium text-foreground">No businesses yet</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Claim a listing from a business page to see it here.
+                  Search for your shop and claim it from the listing page to
+                  see it here.
                 </p>
+                <Link
+                  href="/search?page=1&sort=featured"
+                  className={cn(
+                    buttonVariants({ size: "lg" }),
+                    "mt-4 inline-flex",
+                  )}
+                >
+                  Search businesses
+                </Link>
               </div>
             )}
 

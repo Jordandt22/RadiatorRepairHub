@@ -90,6 +90,16 @@ import {
   cancelFeaturedSubscriptionsForOwner,
 } from "../../lib/cancelFeaturedSubscriptions.js";
 import { invalidateClaimStatusCaches } from "../../lib/invalidateListingCaches.js";
+import {
+  getTestBusinessDefaults as fetchTestBusinessDefaults,
+  listTestBusinesses,
+  insertTestBusiness,
+  getTestBusinessById,
+  deleteTestBusinessRow,
+  listTestUsers as fetchTestUsers,
+  insertTestUser,
+  getTestUserByUid,
+} from "../../lib/testFixtures.js";
 import { buildFreeLeadEmailPayload } from "../../lib/contactMessageSend.js";
 import { isEmailUnderReview } from "../../lib/emailStatus.js";
 import {
@@ -4544,4 +4554,318 @@ export const deleteApifyScrapeJobsHandler = async (req, res) => {
         )
       );
   }
+};
+
+async function invalidateTestingListingCaches(businesses) {
+  try {
+    await invalidateClaimStatusCaches(businesses ?? []);
+  } catch {
+    // best-effort
+  }
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+  await deleteCacheDataByPrefix("ADMIN_LOCATIONS");
+}
+
+export const getTestBusinesses = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const q = rawQ ? rawQ.slice(0, 100) : null;
+
+  const { data, count, error } = await listTestBusinesses(page, limit, { q });
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching test businesses.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  return res.status(200).json(
+    successHandler({
+      businesses: data ?? [],
+      total,
+      totalPages,
+      page,
+      limit,
+      q,
+    })
+  );
+};
+
+export const getTestBusinessDefaults = async (req, res) => {
+  const { data, error } = await fetchTestBusinessDefaults();
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          error.message || "There was an error loading test business defaults.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(successHandler(data));
+};
+
+export const createTestBusiness = async (req, res) => {
+  const { data, error } = await insertTestBusiness(req.body);
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error creating the test business.",
+          error
+        )
+      );
+  }
+
+  await invalidateTestingListingCaches([data]);
+  return res.status(201).json(successHandler(data));
+};
+
+export const deleteTestBusiness = async (req, res) => {
+  const { id } = req.params;
+  const { data: existing, error: existingError } = await getTestBusinessById(id);
+
+  if (existingError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error loading the test business.",
+          existingError
+        )
+      );
+  }
+
+  if (!existing?.id || existing.is_test !== true) {
+    return res
+      .status(404)
+      .json(customErrorHandler(ACCESS_DENIED, "Test business not found."));
+  }
+
+  try {
+    const cancelResult = await cancelFeaturedSubscriptionForBusiness(
+      existing.id,
+      existing.owner_uid,
+      { reason: "admin_test_business_deleted" }
+    );
+    if (cancelResult?.errors?.length) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            cancelResult.errors[0]?.message ||
+              "There was an error canceling the Featured subscription.",
+            cancelResult.errors
+          )
+        );
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          error?.message ||
+            "There was an error canceling the Featured subscription.",
+          error
+        )
+      );
+  }
+
+  const { data, error } = await deleteTestBusinessRow(id);
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error deleting the test business.",
+          error
+        )
+      );
+  }
+
+  await invalidateTestingListingCaches([
+    { id: existing.id, slug: existing.slug },
+  ]);
+
+  return res.status(200).json(
+    successHandler({
+      deleted: Boolean(data?.id),
+      business_id: existing.id,
+    })
+  );
+};
+
+export const getTestUsers = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const q = rawQ ? rawQ.slice(0, 100) : null;
+
+  const { data, count, error } = await fetchTestUsers(page, limit, { q });
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching test users.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  return res.status(200).json(
+    successHandler({
+      users: data ?? [],
+      total,
+      totalPages,
+      page,
+      limit,
+      q,
+    })
+  );
+};
+
+export const createTestUser = async (req, res) => {
+  const { email, password } = req.body;
+  const { data, error } = await insertTestUser({ email, password });
+
+  if (error) {
+    const alreadyExists =
+      error?.message?.toLowerCase?.().includes("already") ||
+      error?.status === 422;
+    return res
+      .status(alreadyExists ? 409 : error?.code === "form-error" ? 422 : 500)
+      .json(
+        customErrorHandler(
+          alreadyExists
+            ? ACCESS_DENIED
+            : error?.code === "form-error"
+              ? YUP_ERROR
+              : SUPABASE_ERROR,
+          alreadyExists
+            ? "An account with this email already exists."
+            : error?.message || "There was an error creating the test user.",
+          error
+        )
+      );
+  }
+
+  return res.status(201).json(successHandler(data));
+};
+
+export const deleteTestUser = async (req, res) => {
+  const { uid } = req.params;
+  const { data: existing, error: existingError } = await getTestUserByUid(uid);
+
+  if (existingError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error loading the test user.",
+          existingError
+        )
+      );
+  }
+
+  if (!existing?.uid || existing.is_test !== true) {
+    return res
+      .status(404)
+      .json(customErrorHandler(ACCESS_DENIED, "Test user not found."));
+  }
+
+  try {
+    const cancelResult = await cancelFeaturedSubscriptionsForOwner(uid, {
+      reason: "admin_test_user_deleted",
+    });
+    if (cancelResult?.errors?.length) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            cancelResult.errors[0]?.message ||
+              "There was an error canceling Featured subscriptions.",
+            cancelResult.errors
+          )
+        );
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          error?.message ||
+            "There was an error canceling Featured subscriptions.",
+          error
+        )
+      );
+  }
+
+  const { deleted, unclaimedBusinesses, errors } = await removeAdminUsers([
+    uid,
+  ]);
+
+  try {
+    await invalidateClaimStatusCaches(unclaimedBusinesses ?? []);
+  } catch {
+    // best-effort
+  }
+
+  if (deleted.length || unclaimedBusinesses.length) {
+    await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+    await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+    await deleteCacheDataByPrefix("ADMIN_LOCATIONS");
+  }
+
+  if (deleted.length === 0 && errors.length > 0) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          errors[0]?.message || "There was an error deleting the test user.",
+          errors
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      deleted: deleted.length,
+      user_ids: deleted,
+      errors,
+    })
+  );
 };
