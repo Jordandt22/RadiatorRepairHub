@@ -108,6 +108,27 @@ export const UnclaimOwnedBusinessSchema = Yup.object({
   businessId: Yup.string().trim().uuid("Invalid business ID").required(),
 });
 
+export const OwnedBusinessIdParamsSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+});
+
+const OWNED_STATS_DAY_OPTIONS = [1, 7, 30, "all"];
+
+export const OwnedBusinessStatsQuerySchema = Yup.object({
+  days: Yup.mixed()
+    .transform((_value, originalValue) => {
+      if (originalValue === undefined || originalValue === "") return 7;
+      if (String(originalValue).toLowerCase() === "all") return "all";
+      return Number(originalValue);
+    })
+    .test(
+      "owned-stats-days",
+      "days must be 1, 7, 30, or all",
+      (value) => OWNED_STATS_DAY_OPTIONS.includes(value)
+    )
+    .default(7),
+});
+
 export const UpdateBusinessCategoriesSchema = Yup.object({
   businessId: Yup.string().trim().uuid("Invalid business ID").required(),
   primaryCategoryId: Yup.string()

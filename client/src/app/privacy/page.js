@@ -69,6 +69,10 @@ function PrivacyPage() {
           description:"When you claim a listing, we collect the business you selected, the listing email used for verification, verification codes and related claim-request records, and the email and password you create for your account. We send a verification email to the address on file for that listing so we can confirm access before completing the claim.",
         },
         {
+          label: "Listing Activity Stats:",
+          description:"When visitors view directory listings, we record aggregated activity such as listing impressions, listing clicks, business page views, and contact clicks (phone, directions, website, and email). Claimed owners can see those totals for their own listings in the dashboard. These stats are not live and can take a few minutes to appear. We do not use this data to identify a visitor to the shop owner.",
+        },
+        {
           label: "Listing Report (Report Info) Submissions:",
           description:"When you use Report Info on a business listing, we collect your name (optional), email address, report reason, details you provide, the business you selected, and (when reporting wrong claim contact info) any suggested phone number or email you submit so we can review and update listing contact details.",
         },
@@ -368,7 +372,7 @@ function PrivacyPage() {
         },
         {
           label: "Account Management:",
-          description:"Allow claimed business owners to sign in, manage listing information, unclaim listings, view subscription status, open the Stripe billing portal, delete their account, and maintain their accounts.",
+          description:"Allow claimed business owners to sign in, manage listing information, unclaim listings, view listing analytics, view subscription status, open the Stripe billing portal, delete their account, and maintain their accounts.",
         },
         {
           label: "Featured Listing Billing:",

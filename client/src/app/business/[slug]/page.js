@@ -27,6 +27,7 @@ import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
+import BusinessPageViewTracker from "@/components/businesses/stats/BusinessPageViewTracker";
 import {
   DEFAULT_OG_IMAGE,
   NOINDEX_ROBOTS,
@@ -277,6 +278,7 @@ async function Page({ params }) {
             __html: JSON.stringify(structuredData),
           }}
         />
+        <BusinessPageViewTracker businessId={business.id} />
 
         <div className="min-h-screen bg-background pb-24 md:pb-32">
           <BusinessHeroBanner

@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
 import OwnedBusinessCard from "@/components/dashboard/OwnedBusinessCard";
+import BusinessAnalyticsPanel from "@/components/dashboard/BusinessAnalyticsPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { buttonVariants } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastProvider";
@@ -13,10 +14,15 @@ import { cn } from "@/lib/utils";
 
 function DashboardContentInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showCustomSuccess } = useToast();
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const requestedTab = searchParams.get("tab");
+  const activeTab = requestedTab === "inbox" || requestedTab === "analytics"
+    ? requestedTab
+    : "my-businesses";
 
   const loadBusinesses = useCallback(async () => {
     setLoading(true);
@@ -83,7 +89,22 @@ function DashboardContentInner() {
         </p>
       </div>
 
-      <Tabs defaultValue="my-businesses" className="gap-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => {
+          const params = new URLSearchParams(searchParams.toString());
+          if (value === "my-businesses") {
+            params.delete("tab");
+          } else {
+            params.set("tab", value);
+          }
+          const query = params.toString();
+          router.replace(query ? `/dashboard?${query}` : "/dashboard", {
+            scroll: false,
+          });
+        }}
+        className="gap-6"
+      >
         <TabsList>
           <TabsTrigger
             value="my-businesses"
@@ -158,12 +179,10 @@ function DashboardContentInner() {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">
-            <p className="font-medium text-foreground">Coming soon</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Track listing views and how customers find your business.
-            </p>
-          </div>
+          <BusinessAnalyticsPanel
+            businesses={businesses}
+            initialBusinessId={searchParams.get("business") || ""}
+          />
         </TabsContent>
       </Tabs>
     </div>

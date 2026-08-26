@@ -714,6 +714,7 @@ export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
     <li>Receive Quick Contact inquiries from customers</li>
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
+    <li>See listing analytics in your dashboard (views, clicks, and impressions)</li>
   </ul>
 
   <p><strong>Want more visibility?</strong> Claiming stays free. You can optionally upgrade to a paid Featured listing for a Featured badge, priority in search, and a place on our Featured page:</p>
@@ -739,7 +740,7 @@ export const CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>We listed <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub so local customers can find radiator repair shops near them.</p>
 
-  <p>Claim your free listing to update your info, receive Quick Contact inquiries, and show customers you're verified:</p>
+  <p>Claim your free listing to update your info, receive Quick Contact inquiries, see listing analytics, and show customers you're verified:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Not sure how? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
@@ -766,7 +767,7 @@ export const OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Right now it isn't claimed, so customers may see outdated info and the page won't be verified, which might turn customers away.</p>
 
-  <p>Claim it for free (takes a few minutes):</p>
+  <p>Claim it for free (takes a few minutes) to update your listing, receive Quick Contact inquiries, and see listing analytics in your dashboard:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Need a walkthrough? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
@@ -796,6 +797,7 @@ export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
     <li>Keep your contact info, hours, and services accurate</li>
     <li>Show as a verified shop in search results</li>
     <li>Receive Quick Contact inquiries from customers</li>
+    <li>See listing analytics in your dashboard (views, clicks, and impressions)</li>
   </ul>
 
   <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
@@ -827,6 +829,7 @@ export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
     <li>Update your business information</li>
     <li>Keep contact details accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
+    <li>See listing analytics in your dashboard</li>
   </ul>
 
   <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
@@ -858,6 +861,7 @@ export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
     <li>Update information about your business</li>
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
+    <li>See listing analytics in your dashboard</li>
     <li>Use your RadiatorRepairHub page as a website link for Google Business Profile, ads, and social profiles</li>
   </ul>
 

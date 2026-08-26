@@ -6,7 +6,9 @@ import { motion } from "framer-motion";
 
 import DetailedBusinessCard from "@/components/businesses/cards/DetailedBusinessCard";
 import HomeSnapCarousel from "@/components/pages/home/HomeSnapCarousel";
+import BusinessListingImpression from "@/components/businesses/stats/BusinessListingImpression";
 import { fadeIn, useHomeSectionInView } from "@/components/ui/homeSectionMotion";
+import { LISTING_SOURCES } from "@/lib/businessStats/listingSurface";
 
 export default function TopVerifiedBusinessesContent({ businesses = [] }) {
   const { ref, inView, reduceMotion } = useHomeSectionInView();
@@ -33,9 +35,19 @@ export default function TopVerifiedBusinessesContent({ businesses = [] }) {
 
         {businesses.length > 0 ? (
           <HomeSnapCarousel label="Top verified businesses" fullWidthMobile>
-            {businesses.map((business) => (
+            {businesses.map((business, index) => (
               <div key={business.id} className="h-full w-full">
-                <DetailedBusinessCard business={business} />
+                <BusinessListingImpression
+                  businessId={business.id}
+                  source={LISTING_SOURCES.TOP_VERIFIED}
+                  position={index + 1}
+                >
+                  <DetailedBusinessCard
+                    business={business}
+                    listingSource={LISTING_SOURCES.TOP_VERIFIED}
+                    position={index + 1}
+                  />
+                </BusinessListingImpression>
               </div>
             ))}
           </HomeSnapCarousel>

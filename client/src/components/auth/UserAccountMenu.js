@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LayoutDashboard, LogOut, Settings, User } from "lucide-react";
+import { BarChart3, LayoutDashboard, LogOut, Settings, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -91,6 +91,15 @@ export default function UserAccountMenu({
           >
             <LayoutDashboard />
             Dashboard
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            render={
+              <Link href="/dashboard?tab=analytics" onClick={handleNavigate} />
+            }
+            className="cursor-pointer"
+          >
+            <BarChart3 />
+            Analytics
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

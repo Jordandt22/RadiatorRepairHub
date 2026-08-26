@@ -58,6 +58,10 @@ export async function fetchApi(path, options = {}) {
   try {
     const response = await fetch(`${apiUri}${path}`, fetchInit);
 
+    if (response.status === 204) {
+      return { data: null, error: null, status: 204 };
+    }
+
     const parsed = await parseJsonResponse(response);
     if (!parsed.ok) {
       return {

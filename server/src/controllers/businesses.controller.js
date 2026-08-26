@@ -44,6 +44,7 @@ import {
   incrementClaimAttempts,
   getOwnedBusinesses,
   getOwnedBusiness,
+  getBusinessStatsForOwner,
   unclaimOwnedBusiness,
   updateOwnedBusinessContact,
   updateOwnedBusinessPrimaryCategory,
@@ -1031,6 +1032,75 @@ export const getOwnedBusinessesHandler = async (req, res) => {
   }
 
   return res.status(200).json(successHandler(data ?? []));
+};
+
+export const getOwnedBusinessStatsHandler = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId } = req.params;
+  const rawDays = String(req.query.days ?? "").toLowerCase();
+  const parsedDays = Number(req.query.days);
+  const days =
+    rawDays === "all"
+      ? "all"
+      : parsedDays === 1 || parsedDays === 7 || parsedDays === 30
+        ? parsedDays
+        : 7;
+
+  const { data: profile, error: profileError } = await getOwnedBusiness(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const { data, error } = await getBusinessStatsForOwner(
+    businessId,
+    days,
+    accessToken
+  );
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching listing stats.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(successHandler(data));
 };
 
 export const unclaimOwnedBusinessHandler = async (req, res) => {

@@ -12,6 +12,12 @@ import MobileBusinessCard from "../cards/MobileBusinessCard";
 import BusinessCard from "../cards/BusinessCard";
 import BusinessHours from "../cards/BusinessHours";
 import BusinessInfo from "../cards/BusinessInfo";
+import BusinessListingImpression from "@/components/businesses/stats/BusinessListingImpression";
+import {
+  getAbsolutePosition,
+  getListingSurface,
+} from "@/lib/businessStats/listingSurface";
+import { LISTINGS_PAGE_LIMIT } from "@/lib/businesses/listingsSearch";
 
 const SEARCH_GRID_CLASS =
   "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
@@ -77,7 +83,18 @@ function Listings({ businesses, data, page, stateData, cityData, categoryData })
         key={`${pathname}-listings-${refreshKey}`}
         className={`${SEARCH_GRID_CLASS} stagger-fade-in`}
       >
-        {businesses.map((business, index) => (
+        {businesses.map((business, index) => {
+          const listingSource = getListingSurface({
+            stateData,
+            cityData,
+            categoryData,
+          });
+          const position = getAbsolutePosition(
+            page,
+            LISTINGS_PAGE_LIMIT,
+            index
+          );
+          return (
           <div key={business.id} className="group relative h-[400px]">
             <div
               className="relative h-full w-full transform-gpu transition-transform duration-700 ease-in-out"
@@ -93,17 +110,27 @@ function Listings({ businesses, data, page, stateData, cityData, categoryData })
                 className="absolute inset-0 h-full w-full backface-hidden"
                 style={{ backfaceVisibility: "hidden" }}
               >
-                <MobileBusinessCard
-                  business={business}
-                  priority={index < 2}
-                />
-                <BusinessCard
-                  business={business}
-                  activeCard={activeCard}
-                  setActiveCard={setActiveCard}
-                  setActiveBackCard={setActiveBackCard}
-                  priority={index < 2}
-                />
+                <BusinessListingImpression
+                  businessId={business.id}
+                  source={listingSource}
+                  position={position}
+                >
+                  <MobileBusinessCard
+                    business={business}
+                    priority={index < 2}
+                    listingSource={listingSource}
+                    position={position}
+                  />
+                  <BusinessCard
+                    business={business}
+                    activeCard={activeCard}
+                    setActiveCard={setActiveCard}
+                    setActiveBackCard={setActiveBackCard}
+                    priority={index < 2}
+                    listingSource={listingSource}
+                    position={position}
+                  />
+                </BusinessListingImpression>
               </div>
 
               <div
@@ -127,7 +154,8 @@ function Listings({ businesses, data, page, stateData, cityData, categoryData })
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

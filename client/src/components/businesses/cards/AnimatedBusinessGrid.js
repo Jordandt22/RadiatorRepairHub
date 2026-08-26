@@ -6,7 +6,10 @@ import { useInView, useReducedMotion } from "framer-motion";
 
 import DetailedBusinessCard from "./DetailedBusinessCard";
 import FeaturedUpgradeCard from "@/components/pages/featured/FeaturedUpgradeCard";
+import BusinessListingImpression from "@/components/businesses/stats/BusinessListingImpression";
 import { HOME_SECTION_IN_VIEW_MARGIN } from "@/components/ui/homeSectionMotion";
+import { getAbsolutePosition } from "@/lib/businessStats/listingSurface";
+import { FEATURED_PAGE_SIZE } from "@/components/pages/featured/featuredUrl";
 
 const DEFAULT_GRID_CLASS =
   "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3";
@@ -18,6 +21,9 @@ export default function AnimatedBusinessGrid({
   refreshKey = 0,
   /** "mount" = animate immediately; "inView" = wait until scrolled into view */
   trigger = "inView",
+  listingSource = "featured",
+  page = 1,
+  pageSize = FEATURED_PAGE_SIZE,
 }) {
   const pathname = usePathname();
   const ref = useRef(null);
@@ -40,15 +46,26 @@ export default function AnimatedBusinessGrid({
   }));
 
   const items = [
-    ...featuredBusinesses.map((business, index) => ({
-      key: business.id,
-      node: (
-        <DetailedBusinessCard
-          business={business}
-          priority={index < priorityCount}
-        />
-      ),
-    })),
+    ...featuredBusinesses.map((business, index) => {
+      const position = getAbsolutePosition(page, pageSize, index);
+      return {
+        key: business.id,
+        node: (
+          <BusinessListingImpression
+            businessId={business.id}
+            source={listingSource}
+            position={position}
+          >
+            <DetailedBusinessCard
+              business={business}
+              priority={index < priorityCount}
+              listingSource={listingSource}
+              position={position}
+            />
+          </BusinessListingImpression>
+        ),
+      };
+    }),
     ...Array.from({ length: placeholders }, (_, index) => ({
       key: `featured-upgrade-slot-${index}`,
       node: <FeaturedUpgradeCard />,

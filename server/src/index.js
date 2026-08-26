@@ -20,6 +20,7 @@ import affiliateProductsRouter from "./routes/affiliate-products.routes.js";
 import adminRouter from "./routes/admin/admin.routes.js";
 import authRouter from "./routes/auth.routes.js";
 import billingRouter from "./routes/billing.routes.js";
+import businessStatsRouter from "./routes/business-stats.routes.js";
 import stripeWebhookRouter from "./routes/stripeWebhook.routes.js";
 
 const app = express();
@@ -118,6 +119,9 @@ app.use(`/v${API_VERSION}/api/auth`, authRouter);
 
 // Routes for Stripe billing (Featured listings)
 app.use(`/v${API_VERSION}/api/billing`, billingRouter);
+
+// Routes for public listing stats ingest
+app.use(`/v${API_VERSION}/api/business-stats`, businessStatsRouter);
 
 // PORT and Sever
 const server = http.createServer(app);
