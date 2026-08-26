@@ -7,6 +7,7 @@ import { getWebBaseUrl } from "../lib/constants/messages.js";
 import {
   stripe,
   FEATURED_PRICE_ID,
+  LIVE_SUBSCRIPTION_STATUSES,
   getSubscriptionPeriodEnd,
   getSubscriptionPriceId,
   isSubscriptionCancelScheduled,
@@ -103,7 +104,7 @@ export const createCheckoutSession = async (req, res) => {
         )
       );
   }
-  if (liveSub || liveError?.code === "PGRST116") {
+  if (liveSub) {
     return res
       .status(409)
       .json(
@@ -167,7 +168,7 @@ export const createCheckoutSession = async (req, res) => {
     customer: stripeCustomerId,
     client_reference_id: businessId,
     line_items: [{ price: FEATURED_PRICE_ID, quantity: 1 }],
-    success_url: `${webUrl}/checkout/success`,
+    success_url: `${webUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${webUrl}/checkout/cancel`,
     billing_address_collection: "required",
     automatic_tax: { enabled: true },
@@ -313,4 +314,147 @@ export const listBillingSubscriptions = async (req, res) => {
   }));
 
   return res.status(200).json(successHandler({ subscriptions }));
+};
+
+/**
+ * Verify a Stripe Checkout session for the signed-in owner and report whether
+ * payment succeeded and Featured has been applied (webhook may still be in flight).
+ */
+export const getCheckoutSessionStatus = async (req, res) => {
+  const auth = await requireOwner(req, res);
+  if (!auth) return;
+
+  const sessionId =
+    typeof req.query.session_id === "string" ? req.query.session_id.trim() : "";
+  if (!sessionId.startsWith("cs_")) {
+    return res
+      .status(400)
+      .json(
+        customErrorHandler(ACCESS_DENIED, "A valid checkout session is required.")
+      );
+  }
+
+  const { ownerUid, accessToken } = auth;
+  const { data: userRow, error: userError } = await getUserStripeCustomerId(
+    ownerUid
+  );
+  if (userError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error loading your billing profile.",
+          userError
+        )
+      );
+  }
+
+  const ownerCustomerId = userRow?.stripe_customer_id || null;
+  if (!ownerCustomerId) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "This checkout session does not belong to your account."
+        )
+      );
+  }
+
+  let session;
+  try {
+    session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["subscription"],
+    });
+  } catch {
+    return res
+      .status(404)
+      .json(
+        customErrorHandler(ACCESS_DENIED, "Checkout session not found.")
+      );
+  }
+
+  const sessionCustomerId =
+    typeof session.customer === "string"
+      ? session.customer
+      : session.customer?.id || null;
+
+  if (!sessionCustomerId || sessionCustomerId !== ownerCustomerId) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "This checkout session does not belong to your account."
+        )
+      );
+  }
+
+  if (session.mode !== "subscription") {
+    return res
+      .status(400)
+      .json(
+        customErrorHandler(ACCESS_DENIED, "Unsupported checkout session type.")
+      );
+  }
+
+  const businessId =
+    (typeof session.metadata?.business_id === "string" &&
+      session.metadata.business_id) ||
+    (typeof session.client_reference_id === "string" &&
+      session.client_reference_id) ||
+    null;
+
+  let businessTitle = null;
+  let businessSlug = null;
+  let isFeatured = false;
+
+  if (businessId) {
+    const { data: business } = await getOwnedBusiness(
+      businessId,
+      ownerUid,
+      accessToken
+    );
+    if (business) {
+      businessTitle = business.title ?? null;
+      businessSlug = business.slug ?? null;
+      isFeatured = Boolean(business.is_featured);
+    }
+  }
+
+  let subscriptionStatus = null;
+  const subscription = session.subscription;
+  if (subscription && typeof subscription === "object") {
+    subscriptionStatus = subscription.status || null;
+  } else if (typeof subscription === "string" && subscription) {
+    try {
+      const retrieved = await stripe.subscriptions.retrieve(subscription);
+      subscriptionStatus = retrieved.status || null;
+    } catch {
+      subscriptionStatus = null;
+    }
+  }
+
+  const paymentStatus = session.payment_status || null;
+  const sessionStatus = session.status || null;
+  const paid =
+    paymentStatus === "paid" ||
+    LIVE_SUBSCRIPTION_STATUSES.includes(subscriptionStatus);
+  const featuredApplied =
+    isFeatured || LIVE_SUBSCRIPTION_STATUSES.includes(subscriptionStatus);
+
+  return res.status(200).json(
+    successHandler({
+      paid,
+      featuredApplied,
+      isFeatured,
+      sessionStatus,
+      paymentStatus,
+      subscriptionStatus,
+      businessId,
+      businessTitle,
+      businessSlug,
+    })
+  );
 };

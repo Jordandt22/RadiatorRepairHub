@@ -8,6 +8,11 @@ export async function createFeaturedCheckoutSession(businessId) {
   });
 }
 
+export async function fetchCheckoutSessionStatus(sessionId) {
+  const params = new URLSearchParams({ session_id: sessionId });
+  return fetchAuthenticatedApi(`/billing/checkout-session?${params.toString()}`);
+}
+
 export async function createBillingPortalSession() {
   return fetchAuthenticatedApi("/billing/portal-session", {
     method: "POST",

@@ -124,7 +124,7 @@ function PrivacyPage() {
       bulletPoints: [
         {
           label: "Analytics Cookies:",
-          description:"Help us understand how visitors use our site. We use Google Analytics and PostHog to collect usage data such as pages visited, session duration, navigation patterns, and product-interaction events.",
+          description:"Help us understand how visitors use our site. We use Google Analytics and PostHog to collect usage data such as pages visited, session duration, navigation patterns, and product-interaction events (including business claims, Featured listing checkout and billing actions, and affiliate product clicks).",
         },
         {
           label: "Security and Performance Cookies:",
@@ -173,11 +173,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Product analytics, page view tracking, and understanding how users interact with our site (including search, forms, claims, and affiliate product clicks).",
+          description:"Product analytics, page view tracking, and understanding how users interact with our site (including search, forms, business claims, Featured listing checkout and billing actions, and affiliate product clicks).",
         },
         {
           label: "Data Collected:",
-          description:"Page URLs, referrer, browser and device information, session identifiers, and interaction events. PostHog is configured to create user profiles only for identified users. We do not currently enable PostHog session recording on our site.",
+          description:"Page URLs, referrer, browser and device information, session identifiers, and interaction events (for example claim funnel steps, Featured checkout started/completed/canceled, billing portal opens, and Featured CTA clicks). Business identifiers such as listing ID, slug, or name may be included with those events when relevant. PostHog is configured to create user profiles only for identified users. We do not currently enable PostHog session recording on our site.",
         },
         {
           label: "Privacy Policy:",
@@ -372,7 +372,7 @@ function PrivacyPage() {
         },
         {
           label: "Featured Listing Billing:",
-          description:"Process optional paid Featured upgrades through Stripe, apply or remove Featured placement based on subscription status (including canceling Featured when a listing is unclaimed or an account is deleted), show billing status in account Settings, and send internal admin notifications when a Featured subscription is purchased.",
+          description:"Process optional paid Featured upgrades through Stripe, apply or remove Featured placement based on subscription status (including canceling Featured when a listing is unclaimed or an account is deleted), show billing status in account Settings, confirm checkout status after payment using Stripe session details, and send internal admin notifications when a Featured subscription is purchased.",
         },
         {
           label: "Affiliate Recommendations:",
