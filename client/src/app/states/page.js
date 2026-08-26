@@ -4,9 +4,8 @@ import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSectio
 import STATES from "@/lib/data/states";
 import { fetchStateBusinessCounts } from "@/lib/api/location";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
-import { SHORT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = SHORT_REVALIDATE_SECONDS;
+export const revalidate = 120;
 
 export const metadata = {
   title:

@@ -8,11 +8,10 @@ import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
 // Data
 import STATES from "@/lib/data/states";
 import { fetchCityBySlug } from "@/lib/api/cachedReads";
-import { SHORT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 // ISR for city listings. Do not pair revalidate with a non-empty
 // generateStaticParams subset — Next 16 then 404s cities outside that list.
-export const revalidate = SHORT_REVALIDATE_SECONDS;
+export const revalidate = 120;
 export const dynamicParams = true;
 
 // Generate metadata for city pages

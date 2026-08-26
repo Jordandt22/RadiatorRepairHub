@@ -5,9 +5,8 @@ import { fetchPrimaryCategoryBySlug } from "@/lib/api/cachedReads";
 import { CATEGORY_KEYWORDS } from "@/lib/seo/keywords";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS, SITE_URL } from "@/lib/seo/metadata";
 import { getListingsPage } from "@/lib/businesses/listingsSearch";
-import { SHORT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = SHORT_REVALIDATE_SECONDS;
+export const revalidate = 120;
 
 function buildCategoryUrl(slug, page) {
   const base = `${SITE_URL}/category/${slug}`;

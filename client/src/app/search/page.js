@@ -5,7 +5,6 @@ import BusinessesContainer from "@/components/businesses/BusinessesContainer";
 import { SEARCH_KEYWORDS } from "@/lib/seo/keywords";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
-import { SHORT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 const searchTitle =
   "Radiator Repair Near Me | Search Local Auto Repair Shops - RadiatorRepairHub";
@@ -19,7 +18,7 @@ export const metadata = buildPageMetadata({
   path: "/search",
 });
 
-export const revalidate = SHORT_REVALIDATE_SECONDS;
+export const revalidate = 120;
 
 async function Page({ searchParams }) {
   const searchParamsData = await searchParams;

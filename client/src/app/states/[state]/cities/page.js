@@ -8,9 +8,8 @@ import STATES from "@/lib/data/states";
 import { fetchCitiesByStateId, fetchCityBusinessCounts } from "@/lib/api/location";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
-import { SHORT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = SHORT_REVALIDATE_SECONDS;
+export const revalidate = 120;
 
 // Generate metadata for cities page
 export async function generateMetadata({ params }) {

@@ -4,9 +4,8 @@ import STATES from "@/lib/data/states";
 // Components
 import BusinessesContainer from "@/components/businesses/BusinessesContainer";
 import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
-import { SHORT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = SHORT_REVALIDATE_SECONDS;
+export const revalidate = 120;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {

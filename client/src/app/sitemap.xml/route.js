@@ -4,9 +4,9 @@ import { fetchAllCities } from "@/lib/api/location";
 import { fetchPrimaryCategories } from "@/lib/api/categories";
 import { fetchBusinessSlugsForSitemap } from "@/lib/api/businesses";
 import { getAllBlogPosts } from "@/lib/blogs";
-import { SITEMAP_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
+import { SITEMAP_CACHE } from "@/lib/cachePolicy";
 
-export const revalidate = SITEMAP_REVALIDATE_SECONDS;
+export const revalidate = 86400;
 
 export async function GET() {
   const baseUrl = "https://radiatorrepairhub.com";
@@ -15,8 +15,8 @@ export async function GET() {
   const blogPosts = getAllBlogPosts();
 
   const [citiesResult, categoriesResult, businessesResult] = await Promise.all([
-    fetchAllCities(),
-    fetchPrimaryCategories(),
+    fetchAllCities(SITEMAP_CACHE),
+    fetchPrimaryCategories(SITEMAP_CACHE),
     fetchBusinessSlugsForSitemap(),
   ]);
 
