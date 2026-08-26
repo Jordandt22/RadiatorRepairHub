@@ -843,7 +843,7 @@ export const getListingReports = async (page, limit, status = null) => {
 };
 
 const ADMIN_BUSINESS_SELECT =
-  "id, title, slug, email, phone, address, website, is_claimed, is_featured, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
+  "id, title, slug, email, phone, address, website, is_claimed, is_featured, is_test, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
 const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, created_at)`;
 
@@ -3692,8 +3692,7 @@ function buildComparison(current, previous, days) {
   };
 }
 
-export const getBusinessStatsForOwner = async (businessId, days, accessToken) => {
-  const client = createUserSupabaseClient(accessToken);
+export const fetchBusinessStats = async (client, businessId, days) => {
   const today = businessStatDateKey();
   const allTime = days === "all";
   const currentStart = allTime
@@ -3755,6 +3754,36 @@ export const getBusinessStatsForOwner = async (businessId, days, accessToken) =>
     },
     error: null,
   };
+};
+
+export const getBusinessStatsForOwner = async (businessId, days, accessToken) => {
+  return fetchBusinessStats(
+    createUserSupabaseClient(accessToken),
+    businessId,
+    days
+  );
+};
+
+export const getBusinessStatsForAdmin = async (businessId, days) => {
+  return fetchBusinessStats(supabase, businessId, days);
+};
+
+export const getAdminBusinessExists = async (id) => {
+  if (!id || typeof id !== "string") {
+    return { exists: false, error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    return { exists: false, error };
+  }
+
+  return { exists: Boolean(data), error: null };
 };
 
 export const updateOwnedBusinessContact = async (

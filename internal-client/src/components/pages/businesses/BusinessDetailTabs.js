@@ -1,4 +1,5 @@
 import {
+  BarChart3Icon,
   ChevronDownIcon,
   ImageIcon,
   ListIcon,
@@ -20,6 +21,7 @@ export const BUSINESS_DETAIL_TABS = [
   { value: "email", label: "Email", Icon: MailIcon },
   { value: "location", label: "Location", Icon: MapPinIcon },
   { value: "images", label: "Images", Icon: ImageIcon },
+  { value: "analytics", label: "Analytics", Icon: BarChart3Icon },
 ];
 
 export const VALID_BUSINESS_DETAIL_TABS = BUSINESS_DETAIL_TABS.map(
@@ -32,7 +34,7 @@ export function resolveBusinessDetailTab(tab) {
 
 export default function BusinessDetailTabs({ value, onValueChange }) {
   const triggerClassName =
-    "cursor-pointer hover:translate-y-[-2px] transition-all duration-200 px-8 rounded-full";
+    "cursor-pointer hover:translate-y-[-2px] transition-all duration-200 px-5 rounded-full";
   const activeTab =
     BUSINESS_DETAIL_TABS.find((tab) => tab.value === value) ??
     BUSINESS_DETAIL_TABS[0];

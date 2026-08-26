@@ -681,6 +681,16 @@ export const GetAdminBusinessParamsSchema = Yup.object({
   id: Yup.string().uuid("Invalid business ID").required("Business ID is required"),
 });
 
+export const GetAdminBusinessStatsQuerySchema = Yup.object({
+  days: Yup.string()
+    .transform((value) => {
+      if (value == null || String(value).trim() === "") return undefined;
+      return String(value).trim().toLowerCase();
+    })
+    .oneOf(["1", "7", "30", "all"], "Days must be 1, 7, 30, or all")
+    .notRequired(),
+});
+
 export const UnclaimBusinessesSchema = Yup.object({
   business_ids: Yup.array()
     .of(Yup.string().uuid("Invalid business ID").required())

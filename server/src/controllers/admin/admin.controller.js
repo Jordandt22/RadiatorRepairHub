@@ -35,6 +35,8 @@ import {
   getBusinessExistsBySlug,
   getAdminBusinesses as fetchAdminBusinesses,
   getAdminBusinessById as fetchAdminBusinessById,
+  getAdminBusinessExists as fetchAdminBusinessExists,
+  getBusinessStatsForAdmin as fetchBusinessStatsForAdmin,
   getAdminBusinessesWithEmails as fetchAdminBusinessesWithEmails,
   clearBusinessEmails as clearEmailsOnBusinesses,
   updateBusinessesEmailStatus as patchBusinessesEmailStatus,
@@ -2118,6 +2120,54 @@ export const getBusinessById = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "There was an error fetching the business.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(successHandler(data));
+};
+
+export const getBusinessStats = async (req, res) => {
+  const { id } = req.params;
+  const rawDays = String(req.query.days ?? "").toLowerCase();
+  const parsedDays = Number(req.query.days);
+  const days =
+    rawDays === "all"
+      ? "all"
+      : parsedDays === 1 || parsedDays === 7 || parsedDays === 30
+        ? parsedDays
+        : 7;
+
+  const { exists, error: existsError } = await fetchAdminBusinessExists(id);
+
+  if (existsError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying the business.",
+          existsError
+        )
+      );
+  }
+
+  if (!exists) {
+    return res
+      .status(404)
+      .json(customErrorHandler(SUPABASE_ERROR, "Business not found."));
+  }
+
+  const { data, error } = await fetchBusinessStatsForAdmin(id, days);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching listing stats.",
           error
         )
       );

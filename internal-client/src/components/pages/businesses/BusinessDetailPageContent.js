@@ -10,6 +10,7 @@ import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
 import BusinessFeaturedBadge from "@/components/pages/businesses/BusinessFeaturedBadge";
+import BusinessDetailAnalyticsTab from "@/components/pages/businesses/analytics/BusinessDetailAnalyticsTab";
 import BusinessDetailEmailTab from "@/components/pages/businesses/BusinessDetailEmailTab";
 import BusinessDetailImagesTab from "@/components/pages/businesses/BusinessDetailImagesTab";
 import BusinessDetailListingTab from "@/components/pages/businesses/BusinessDetailListingTab";
@@ -299,6 +300,14 @@ export default function BusinessDetailPageContent() {
 
       {activeTab === "images" ? (
         <BusinessDetailImagesTab data={data} />
+      ) : null}
+
+      {activeTab === "analytics" ? (
+        <BusinessDetailAnalyticsTab
+          business={data}
+          accessToken={accessToken}
+          logout={logout}
+        />
       ) : null}
 
       <BusinessListingEditDialog
