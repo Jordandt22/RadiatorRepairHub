@@ -838,7 +838,7 @@ export const getListingReports = async (page, limit, status = null) => {
 };
 
 const ADMIN_BUSINESS_SELECT =
-  "id, title, slug, email, phone, address, website, is_claimed, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
+  "id, title, slug, email, phone, address, website, is_claimed, is_featured, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
 const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, created_at)`;
 
@@ -923,6 +923,7 @@ export const getAdminBusinesses = async (
   limit,
   {
     claimed = null,
+    featured = null,
     q = null,
     stateCode = null,
     citySlug = null,
@@ -1019,7 +1020,11 @@ export const getAdminBusinesses = async (
     .from("businesses")
     .select(ADMIN_BUSINESS_SELECT, { count: "exact" });
 
-  if (claimed === true) {
+  if (featured === true) {
+    query = query
+      .eq("is_featured", true)
+      .order("last_edited_at", { ascending: false, nullsFirst: false });
+  } else if (claimed === true) {
     query = query
       .eq("is_claimed", true)
       .order("last_edited_at", { ascending: false, nullsFirst: false });
@@ -1095,7 +1100,9 @@ export const getAdminBusinesses = async (
 
   const withOwners = await withOwnerEmails(data);
   const businesses =
-    claimed === true ? await withClaimInviteTypes(withOwners) : withOwners;
+    claimed === true || featured === true
+      ? await withClaimInviteTypes(withOwners)
+      : withOwners;
 
   return { data: businesses, count, location, error: null };
 };
@@ -1129,12 +1136,15 @@ export const getAdminBusinessById = async (id) => {
   }
 
   const [business] = await withOwnerEmails([data]);
+  const { data: subscriptions } = await listBusinessSubscriptions(id);
+
   return {
     data: {
       ...business,
       secondary_categories: flattenAdminSecondaryCategories(
         business.secondary_categories
       ),
+      subscriptions: subscriptions ?? [],
     },
     error: null,
   };
@@ -1686,8 +1696,8 @@ const EMAIL_STATUS_STAT_LABELS = {
 
 /**
  * Overview dashboard pie-chart stats: email/website coverage, CDN storage,
- * listing quality tiers, email review status, claim eligibility, and outreach
- * emails by type.
+ * listing quality tiers, email review status, claim eligibility, Featured
+ * coverage, and outreach emails by type.
  */
 export const getAdminDashboardStats = async () => {
   const scoreTierCountPromises = SCORE_TIERS.map((tier) =>
@@ -1810,6 +1820,18 @@ export const getAdminDashboardStats = async () => {
         .select("outreach_history_id", { count: "exact", head: true })
         .eq("outreach_type", "website_offer")
     ),
+    countExact(
+      supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .eq("is_featured", true)
+    ),
+    countExact(
+      supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .eq("is_claimed", true)
+    ),
     ]),
     Promise.all(scoreTierCountPromises),
     Promise.all(reviewTierCountPromises),
@@ -1838,6 +1860,8 @@ export const getAdminDashboardStats = async () => {
     customClaimRes,
     claimFollowupRes,
     websiteOfferRes,
+    featuredRes,
+    claimedBusinessesRes,
   ] = mainResults;
 
   const firstError =
@@ -1988,6 +2012,40 @@ export const getAdminDashboardStats = async () => {
     0
   );
 
+  const featuredCount = featuredRes.count ?? 0;
+  const claimedBusinessesCount = claimedBusinessesRes.count ?? 0;
+  const notFeaturedCount = Math.max(0, (totalRes.count ?? 0) - featuredCount);
+  const claimedNotFeaturedCount = Math.max(
+    0,
+    claimedBusinessesCount - featuredCount
+  );
+
+  const featuredSlices = [
+    {
+      key: "featured",
+      label: "Featured",
+      count: featuredCount,
+    },
+    {
+      key: "not_featured",
+      label: "Not featured",
+      count: notFeaturedCount,
+    },
+  ].filter((slice) => slice.count > 0);
+
+  const featuredAmongClaimedSlices = [
+    {
+      key: "featured",
+      label: "Featured",
+      count: featuredCount,
+    },
+    {
+      key: "claimed_not_featured",
+      label: "Claimed only",
+      count: claimedNotFeaturedCount,
+    },
+  ].filter((slice) => slice.count > 0);
+
   return {
     data: {
       email: {
@@ -2021,6 +2079,14 @@ export const getAdminDashboardStats = async () => {
       emails_sent: {
         total: emailsSentTotal,
         slices: emailsSentSlices,
+      },
+      featured: {
+        total: totalRes.count,
+        slices: featuredSlices,
+      },
+      featured_among_claimed: {
+        total: claimedBusinessesCount,
+        slices: featuredAmongClaimedSlices,
       },
     },
     error: null,
@@ -3095,7 +3161,7 @@ export const getAdminUsers = async (page, limit, { q = null } = {}) => {
 };
 
 const ADMIN_USER_CLAIMED_BUSINESS_SELECT =
-  "id, title, slug, email, phone, address, website, total_score, reviews_count, last_edited_at, created_at, is_claimed";
+  "id, title, slug, email, phone, address, website, total_score, reviews_count, last_edited_at, created_at, is_claimed, is_featured";
 
 /**
  * Single app user with auth details and claimed businesses.
@@ -3148,6 +3214,7 @@ export const getAdminUserByUid = async (uid) => {
   }
 
   const claimedBusinesses = await withClaimInviteTypes(businesses ?? []);
+  const { data: subscriptions } = await listOwnerSubscriptions(uid);
 
   return {
     data: {
@@ -3159,7 +3226,10 @@ export const getAdminUserByUid = async (uid) => {
       last_sign_in_at: authUser?.last_sign_in_at ?? null,
       phone: authUser?.phone || null,
       claimed_count: claimedBusinesses.length,
+      featured_count: claimedBusinesses.filter((b) => Boolean(b.is_featured))
+        .length,
       businesses: claimedBusinesses,
+      subscriptions: subscriptions ?? [],
     },
     error: null,
   };
@@ -4373,9 +4443,10 @@ export const listBusinessSubscriptions = async (businessId) => {
   const { data, error } = await supabase
     .from("business_subscriptions")
     .select(
-      "id, business_id, owner_uid, status, stripe_subscription_id, stripe_customer_id, stripe_price_id"
+      "id, business_id, owner_uid, status, current_period_end, cancel_at_period_end, stripe_subscription_id, stripe_customer_id, stripe_price_id, created_at"
     )
-    .eq("business_id", businessId);
+    .eq("business_id", businessId)
+    .order("created_at", { ascending: false });
 
   return { data, error };
 };

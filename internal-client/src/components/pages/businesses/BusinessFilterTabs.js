@@ -2,6 +2,7 @@ import {
   BadgeCheckIcon,
   ChevronDownIcon,
   ListIcon,
+  StarIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,16 +14,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+export const TAB_FILTERS = {
+  all: { claimed: null, featured: null },
+  claimed: { claimed: true, featured: null },
+  featured: { claimed: null, featured: true },
+};
+
+/** @deprecated Prefer TAB_FILTERS */
 export const TAB_CLAIMED = {
   all: null,
   claimed: true,
+  featured: null,
 };
 
-export const VALID_TABS = Object.keys(TAB_CLAIMED);
+export const VALID_TABS = Object.keys(TAB_FILTERS);
 
 const TAB_OPTIONS = [
   { value: "all", label: "All", Icon: ListIcon },
   { value: "claimed", label: "Claimed", Icon: BadgeCheckIcon },
+  { value: "featured", label: "Featured", Icon: StarIcon },
 ];
 
 export default function BusinessFilterTabs({ value, onValueChange }) {

@@ -287,6 +287,7 @@ export const getAdminBusinessesKey = (
   page,
   limit,
   claimed = null,
+  featured = null,
   q = null,
   stateCode = null,
   citySlug = null,
@@ -296,13 +297,15 @@ export const getAdminBusinessesKey = (
   emailFilter = null,
   websiteFilter = null
 ) => ({
-  key: `ADMIN_BUSINESSES?V:9&PAGE:${page}&LIMIT:${limit}&CLAIMED:${
+  key: `ADMIN_BUSINESSES?V:10&PAGE:${page}&LIMIT:${limit}&CLAIMED:${
     claimed === true ? "true" : "all"
-  }&Q:${q ?? ""}&STATE:${stateCode ?? ""}&CITY:${citySlug ?? ""}&POSTAL:${
-    postalCode ?? ""
-  }&SCORE:${scoreTier ?? ""}&REVIEWS:${reviewsTier ?? ""}&EMAIL:${
-    emailFilter ?? ""
-  }&WEBSITE:${websiteFilter ?? ""}`,
+  }&FEATURED:${featured === true ? "true" : "all"}&Q:${q ?? ""}&STATE:${
+    stateCode ?? ""
+  }&CITY:${citySlug ?? ""}&POSTAL:${postalCode ?? ""}&SCORE:${
+    scoreTier ?? ""
+  }&REVIEWS:${reviewsTier ?? ""}&EMAIL:${emailFilter ?? ""}&WEBSITE:${
+    websiteFilter ?? ""
+  }`,
   interval: 60 * 5,
 });
 
@@ -324,7 +327,7 @@ export const getAdminLocationsKey = (
 });
 
 export const getAdminDashboardStatsKey = () => ({
-  key: "ADMIN_DASHBOARD_STATS?V:3",
+  key: "ADMIN_DASHBOARD_STATS?V:4",
   interval: 60 * 5,
 });
 

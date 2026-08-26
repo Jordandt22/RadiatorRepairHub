@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/Auth.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
+import BusinessFeaturedBadge from "@/components/pages/businesses/BusinessFeaturedBadge";
 import BusinessDetailEmailTab from "@/components/pages/businesses/BusinessDetailEmailTab";
 import BusinessDetailImagesTab from "@/components/pages/businesses/BusinessDetailImagesTab";
 import BusinessDetailListingTab from "@/components/pages/businesses/BusinessDetailListingTab";
@@ -19,6 +20,7 @@ import BusinessDetailTabs, {
 } from "@/components/pages/businesses/BusinessDetailTabs";
 import BusinessListingCategoriesEditDialog from "@/components/pages/businesses/BusinessListingCategoriesEditDialog";
 import BusinessListingEditDialog from "@/components/pages/businesses/BusinessListingEditDialog";
+import BusinessSubscriptionsSection from "@/components/pages/businesses/BusinessSubscriptionsSection";
 
 function formatListingError(error) {
   const message = error?.message;
@@ -216,6 +218,8 @@ export default function BusinessDetailPageContent() {
       ? `${process.env.NEXT_PUBLIC_WEB_URL}/business/${data.slug}`
       : null;
   const isClaimed = Boolean(data.is_claimed);
+  const isFeatured = Boolean(data.is_featured);
+  const subscriptions = data.subscriptions ?? [];
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-4 md:gap-10 md:px-8 md:py-6">
@@ -235,6 +239,7 @@ export default function BusinessDetailPageContent() {
             {data.title ?? "Business"}
           </h1>
           <BusinessClaimedBadge isClaimed={isClaimed} />
+          <BusinessFeaturedBadge isFeatured={isFeatured} />
         </div>
         {data.slug ? (
           <p className="text-sm text-muted-foreground">{data.slug}</p>
@@ -269,6 +274,10 @@ export default function BusinessDetailPageContent() {
             setCategoriesOpen(true);
           }}
         />
+      ) : null}
+
+      {activeTab === "listing" ? (
+        <BusinessSubscriptionsSection subscriptions={subscriptions} />
       ) : null}
 
       {activeTab === "email" ? (

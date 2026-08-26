@@ -1966,6 +1966,8 @@ export const getBusinesses = async (req, res) => {
   const limit = Number(req.query.limit);
   const claimed =
     req.query.claimed === true || req.query.claimed === "true" ? true : null;
+  const featured =
+    req.query.featured === true || req.query.featured === "true" ? true : null;
   const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
   const q = rawQ ? rawQ.slice(0, 100) : null;
   const stateCode =
@@ -2004,6 +2006,7 @@ export const getBusinesses = async (req, res) => {
     page,
     limit,
     claimed,
+    featured,
     q,
     stateCode,
     citySlug,
@@ -2023,6 +2026,7 @@ export const getBusinesses = async (req, res) => {
     limit,
     {
       claimed,
+      featured,
       q,
       stateCode,
       citySlug,
@@ -2070,6 +2074,7 @@ export const getBusinesses = async (req, res) => {
     page,
     limit,
     claimed,
+    featured,
     q,
     state_code: stateCode,
     city_slug: citySlug,

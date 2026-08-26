@@ -194,6 +194,26 @@ export default function OverviewDashboardCharts({ stats = null }) {
       </ChartSection>
 
       <ChartSection
+        title="Featured listings"
+        description="Paid Featured coverage across the directory and among claimed listings"
+      >
+        <OverviewStatPieCard
+          title="Featured coverage"
+          description="Share of all listings that are Featured"
+          centerLabel="Businesses"
+          valueLabel="Businesses"
+          chart={stats?.featured}
+        />
+        <OverviewStatPieCard
+          title="Featured among claimed"
+          description="Claimed listings with vs without a Featured plan"
+          centerLabel="Claimed"
+          valueLabel="Businesses"
+          chart={stats?.featured_among_claimed}
+        />
+      </ChartSection>
+
+      <ChartSection
         title="Business coverage"
         description="Contact info and image storage across all listings"
       >
