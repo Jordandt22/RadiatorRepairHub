@@ -129,6 +129,7 @@ function Navbar() {
   const signedInMobileLinks = [
     { label: "Settings", path: "/settings" },
     { label: "Dashboard", path: "/dashboard" },
+    { label: "Analytics", path: "/dashboard?tab=analytics" },
   ];
 
   const closeMobileMenu = () => {

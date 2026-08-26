@@ -18,6 +18,11 @@ import {
   buildIlikeOrFilter,
   sanitizeIlikeSearch,
 } from "../lib/sanitizeSearch.js";
+import {
+  BUSINESS_STATS_TIMEZONE,
+  businessStatDateKey,
+  dateKeyOffset,
+} from "../lib/businessStatsDate.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*), business_images(image_id, is_primary)`;
 const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_images(image_id, is_primary)`;
@@ -838,7 +843,7 @@ export const getListingReports = async (page, limit, status = null) => {
 };
 
 const ADMIN_BUSINESS_SELECT =
-  "id, title, slug, email, phone, address, website, is_claimed, is_featured, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
+  "id, title, slug, email, phone, address, website, is_claimed, is_featured, is_test, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
 const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, created_at)`;
 
@@ -3462,6 +3467,323 @@ export const getOwnedBusiness = async (businessId, ownerUid, accessToken) => {
     .maybeSingle();
 
   return { data, error };
+};
+
+export const getBusinessOwnerAndTestFlag = async (businessId) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, owner_uid, is_test")
+    .eq("id", businessId)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const incrementBusinessStatRpc = async ({
+  businessId,
+  statDate,
+  event,
+  source,
+  position,
+}) => {
+  const { data, error } = await supabase.rpc("increment_business_stat", {
+    p_business_id: businessId,
+    p_stat_date: statDate,
+    p_event: event,
+    p_source: source ?? null,
+    p_position: position ?? null,
+  });
+
+  return { data, error };
+};
+
+const STAT_SOURCES = [
+  "search",
+  "featured",
+  "top_verified",
+  "state",
+  "city",
+  "category",
+];
+
+const emptyTotals = () => ({
+  page_views: 0,
+  listing_clicks: 0,
+  listing_clicks_search: 0,
+  listing_clicks_featured: 0,
+  listing_clicks_top_verified: 0,
+  listing_clicks_state: 0,
+  listing_clicks_city: 0,
+  listing_clicks_category: 0,
+  impressions_search: 0,
+  search_position_sum: 0,
+  impressions_featured: 0,
+  featured_position_sum: 0,
+  impressions_top_verified: 0,
+  top_verified_position_sum: 0,
+  impressions_state: 0,
+  state_position_sum: 0,
+  impressions_city: 0,
+  city_position_sum: 0,
+  impressions_category: 0,
+  category_position_sum: 0,
+  phone_clicks: 0,
+  directions_clicks: 0,
+  website_clicks: 0,
+  email_clicks: 0,
+});
+
+const BUSINESS_STATS_SELECT = [
+  "stat_date",
+  "page_views",
+  "listing_clicks",
+  "listing_clicks_search",
+  "listing_clicks_featured",
+  "listing_clicks_top_verified",
+  "listing_clicks_state",
+  "listing_clicks_city",
+  "listing_clicks_category",
+  "impressions_search",
+  "search_position_sum",
+  "impressions_featured",
+  "featured_position_sum",
+  "impressions_top_verified",
+  "top_verified_position_sum",
+  "impressions_state",
+  "state_position_sum",
+  "impressions_city",
+  "city_position_sum",
+  "impressions_category",
+  "category_position_sum",
+  "phone_clicks",
+  "directions_clicks",
+  "website_clicks",
+  "email_clicks",
+].join(", ");
+
+function avgPosition(sum, count) {
+  if (!count) return null;
+  return Math.round((sum / count) * 10) / 10;
+}
+
+function clickThroughRate(clicks, impressions) {
+  if (!impressions) return null;
+  return Math.round((Number(clicks || 0) / impressions) * 1000) / 10;
+}
+
+function rowDateKey(row) {
+  return String(row?.stat_date ?? "").slice(0, 10);
+}
+
+function summarizeRows(rows) {
+  const totals = emptyTotals();
+  for (const row of rows) {
+    for (const key of Object.keys(totals)) {
+      totals[key] += Number(row[key] || 0);
+    }
+  }
+
+  const impressionsBySource = {};
+  const clicksBySource = {};
+  const ctrBySource = {};
+  const avgPositionBySource = {};
+  let totalImpressions = 0;
+  let totalPositionSum = 0;
+
+  for (const source of STAT_SOURCES) {
+    const impressions = totals[`impressions_${source}`];
+    const clicks = totals[`listing_clicks_${source}`];
+    const positionSum = totals[`${source}_position_sum`];
+    impressionsBySource[source] = impressions;
+    clicksBySource[source] = clicks;
+    ctrBySource[source] = clickThroughRate(clicks, impressions);
+    avgPositionBySource[source] = avgPosition(positionSum, impressions);
+    totalImpressions += impressions;
+    totalPositionSum += positionSum;
+  }
+
+  return {
+    totals: {
+      page_views: totals.page_views,
+      listing_clicks: totals.listing_clicks,
+      phone_clicks: totals.phone_clicks,
+      directions_clicks: totals.directions_clicks,
+      website_clicks: totals.website_clicks,
+      email_clicks: totals.email_clicks,
+      impressions: totalImpressions,
+    },
+    impressionsBySource,
+    clicksBySource,
+    ctrBySource,
+    avgPositionBySource,
+    avgPosition: avgPosition(totalPositionSum, totalImpressions),
+    ctr: clickThroughRate(totals.listing_clicks, totalImpressions),
+  };
+}
+
+function countDelta(current, previous) {
+  const curr = Number(current || 0);
+  const prev = Number(previous || 0);
+  const change = curr - prev;
+  const percent =
+    prev > 0 ? Math.round((change / prev) * 1000) / 10 : curr > 0 ? null : 0;
+  return {
+    previous: prev,
+    change,
+    percent,
+    currentOnly: prev === 0 && curr > 0,
+  };
+}
+
+function positionDelta(current, previous) {
+  if (current == null || previous == null) return null;
+  return {
+    previous,
+    change: Math.round((current - previous) * 10) / 10,
+  };
+}
+
+function rateDelta(current, previous, previousImpressions) {
+  if (current == null && (previous == null || !previousImpressions)) {
+    return null;
+  }
+  if (!previousImpressions) {
+    return {
+      previous: 0,
+      change: Number(current || 0),
+      percent: null,
+      currentOnly: true,
+    };
+  }
+  const curr = current == null ? 0 : Number(current);
+  const prev = previous == null ? 0 : Number(previous);
+  const change = Math.round((curr - prev) * 10) / 10;
+  const percent =
+    prev > 0 ? Math.round(((curr - prev) / prev) * 1000) / 10 : curr > 0 ? null : 0;
+  return {
+    previous: prev,
+    change,
+    percent,
+    currentOnly: false,
+  };
+}
+
+function comparisonLabel(days) {
+  if (days === 1) return "yesterday";
+  if (days === 7) return "previous 7 days";
+  if (days === 30) return "previous 30 days";
+  return null;
+}
+
+function buildComparison(current, previous, days) {
+  const label = comparisonLabel(days);
+  if (!label) return null;
+
+  const totals = {};
+  for (const key of Object.keys(current.totals)) {
+    totals[key] = countDelta(current.totals[key], previous.totals[key]);
+  }
+
+  return {
+    label,
+    totals,
+    avgPosition: positionDelta(current.avgPosition, previous.avgPosition),
+    ctr: rateDelta(current.ctr, previous.ctr, previous.totals.impressions),
+  };
+}
+
+export const fetchBusinessStats = async (client, businessId, days) => {
+  const today = businessStatDateKey();
+  const allTime = days === "all";
+  const currentStart = allTime
+    ? null
+    : dateKeyOffset(today, -(Number(days) - 1));
+  const previousStart =
+    allTime || !currentStart
+      ? null
+      : dateKeyOffset(currentStart, -Number(days));
+  const queryStart = previousStart || currentStart;
+
+  let query = client
+    .from("business_stats")
+    .select(BUSINESS_STATS_SELECT)
+    .eq("business_id", businessId)
+    .order("stat_date", { ascending: true });
+
+  if (queryStart) {
+    query = query.gte("stat_date", queryStart);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  const rows = data ?? [];
+  const daily = allTime
+    ? rows
+    : rows.filter((row) => rowDateKey(row) >= currentStart);
+  const previousDaily = allTime
+    ? []
+    : rows.filter((row) => {
+        const key = rowDateKey(row);
+        return key >= previousStart && key < currentStart;
+      });
+
+  const current = summarizeRows(daily);
+  const previous = summarizeRows(previousDaily);
+
+  return {
+    data: {
+      days,
+      timezone: BUSINESS_STATS_TIMEZONE,
+      startDate: allTime
+        ? String(daily[0]?.stat_date ?? today).slice(0, 10)
+        : currentStart,
+      endDate: today,
+      daily,
+      totals: current.totals,
+      ctr: current.ctr,
+      impressionsBySource: current.impressionsBySource,
+      clicksBySource: current.clicksBySource,
+      ctrBySource: current.ctrBySource,
+      avgPositionBySource: current.avgPositionBySource,
+      avgPosition: current.avgPosition,
+      comparison: allTime ? null : buildComparison(current, previous, days),
+    },
+    error: null,
+  };
+};
+
+export const getBusinessStatsForOwner = async (businessId, days, accessToken) => {
+  return fetchBusinessStats(
+    createUserSupabaseClient(accessToken),
+    businessId,
+    days
+  );
+};
+
+export const getBusinessStatsForAdmin = async (businessId, days) => {
+  return fetchBusinessStats(supabase, businessId, days);
+};
+
+export const getAdminBusinessExists = async (id) => {
+  if (!id || typeof id !== "string") {
+    return { exists: false, error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    return { exists: false, error };
+  }
+
+  return { exists: Boolean(data), error: null };
 };
 
 export const updateOwnedBusinessContact = async (

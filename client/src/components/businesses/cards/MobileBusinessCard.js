@@ -4,13 +4,30 @@ import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import ListingBadges from "@/components/businesses/ListingBadges";
 import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
+import { trackBusinessStat } from "@/lib/businessStats/trackBusinessStat";
 
-function MobileBusinessCard({ business, priority = false }) {
+function MobileBusinessCard({
+  business,
+  priority = false,
+  listingSource,
+  position,
+}) {
+  const trackListingClick = () => {
+    if (!business?.id || !listingSource) return;
+    trackBusinessStat({
+      businessId: business.id,
+      event: "listing_click",
+      source: listingSource,
+      position,
+    });
+  };
+
   return (
     <Link
       href={`/business/${business.slug}`}
       className="group md:hidden block h-full"
       prefetch={false}
+      onClick={trackListingClick}
     >
       <div className="card-lift-hover h-full overflow-hidden rounded-lg border border-border bg-card">
         <div className="relative w-full h-56 bg-muted">

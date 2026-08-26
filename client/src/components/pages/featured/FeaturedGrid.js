@@ -67,6 +67,9 @@ function FeaturedGrid({
             placeholderCount={placeholderCount}
             refreshKey={refreshKey}
             trigger="mount"
+            listingSource="featured"
+            page={currentPage}
+            pageSize={FEATURED_PAGE_SIZE}
           />
           <FeaturedPagination
             currentPage={currentPage}

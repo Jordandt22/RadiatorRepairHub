@@ -148,6 +148,16 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
             Get Featured
           </Link>
         )}
+        <Link
+          href={`/dashboard?tab=analytics&business=${encodeURIComponent(business.id)}`}
+          className={buttonVariants({
+            variant: "outline",
+            size: "sm",
+            className: "w-full",
+          })}
+        >
+          View Analytics
+        </Link>
         <Button
           type="button"
           variant="outline"

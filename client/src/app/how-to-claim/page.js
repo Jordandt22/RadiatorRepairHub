@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { BadgeCheck, Clock3, Flag, ImageIcon, MessageSquare, Search } from "lucide-react";
+import { BadgeCheck, BarChart3, Clock3, Flag, ImageIcon, MessageSquare, Search } from "lucide-react";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import FAQSection from "@/components/seo/FAQSection";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
@@ -10,7 +10,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 
 const pageTitle = "How to Claim Your Business | RadiatorRepairHub";
 const pageDescription =
-  "Claim your radiator repair listing for free: eligibility, email verification, what you can edit, and optional Featured upgrades for more visibility.";
+  "Claim your radiator repair listing for free: eligibility, email verification, what you can edit, listing analytics, and optional Featured upgrades for more visibility.";
 
 export const metadata = buildPageMetadata({
   title: pageTitle,
@@ -52,11 +52,18 @@ const BENEFITS = [
     icon: Search,
   },
   {
+    title: "Listing Analytics",
+    description:
+      "See page views, listing clicks, impressions, and how customers find your shop in your dashboard. Stats are not live and can take a few minutes to appear.",
+    icon: BarChart3,
+  },
+  {
     title: "Featured Placement",
     description:
       "Claiming is free. Optional paid Featured listings get a Featured badge, search priority, and a place on the Featured page.",
     icon: Flag,
     cta: { href: "/pricing", label: "Get Featured" },
+    fullRow: true,
   },
 ];
 
@@ -107,6 +114,11 @@ function buildClaimFaqs(supportEmail) {
       answer:
         "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, and a spot on the Featured businesses page. Claiming stays free; only Featured is paid.",
     },
+    {
+      question: "Can I see how customers find my listing?",
+      answer:
+        "Yes. After you claim, sign in to your dashboard and open Analytics. You can see page views, listing clicks, impressions by source, and contact clicks. Stats are not live and can take a few minutes to appear.",
+    },
   ];
 }
 
@@ -125,7 +137,7 @@ export default function HowToClaimPage() {
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         pageTitle="How to claim your business"
-        pageDescription="Check eligibility, follow the email claim steps, and see what you can edit after claiming."
+        pageDescription="Check eligibility, follow the email claim steps, and see what you can edit and track after claiming."
         headerLink={{
           href: "/search?page=1&sort=featured",
           label: "Search for your listing",
@@ -238,24 +250,34 @@ export default function HowToClaimPage() {
             Benefits of Claiming
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {BENEFITS.map(({ title, description, icon: Icon, cta }) => (
+            {BENEFITS.map(({ title, description, icon: Icon, cta, fullRow }) => (
               <div
                 key={title}
-                className="rounded-lg border border-border bg-card p-6"
+                className={
+                  fullRow
+                    ? "rounded-lg border border-border bg-card p-6 md:col-span-2 md:flex md:items-center md:justify-between md:gap-8"
+                    : "rounded-lg border border-border bg-card p-6"
+                }
               >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-tint">
-                  <Icon className="size-6 text-primary" aria-hidden="true" />
+                <div className={fullRow ? "md:flex md:min-w-0 md:items-start md:gap-4" : ""}>
+                  <div
+                    className={`mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint ${fullRow ? "md:mb-0" : ""}`}
+                  >
+                    <Icon className="size-6 text-primary" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <h3 className="mb-2 font-heading text-lg font-semibold text-foreground">
+                      {title}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {description}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="mb-2 font-heading text-lg font-semibold text-foreground">
-                  {title}
-                </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {description}
-                </p>
                 {cta ? (
                   <Link
                     href={cta.href}
-                    className="mt-4 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+                    className="mt-4 inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90 md:mt-0"
                   >
                     {cta.label}
                   </Link>
@@ -271,7 +293,7 @@ export default function HowToClaimPage() {
               Next steps
             </h2>
             <p className="mt-2 text-muted-foreground">
-              Sign in, upgrade to Featured, or get help from our team.
+              Sign in, view listing analytics, upgrade to Featured, or get help from our team.
             </p>
           </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -280,7 +302,7 @@ export default function HowToClaimPage() {
                 Already claimed?
               </h3>
               <p className="mb-6 text-muted-foreground">
-                Sign in to open your dashboard and manage your listing.
+                Sign in to open your dashboard, view listing analytics, and manage your listing.
               </p>
               <Link
                 href="/signin"
@@ -350,7 +372,7 @@ export default function HowToClaimPage() {
       <FAQSection
         faqs={faqs}
         title="Claiming FAQ"
-        description="Answers about verification codes, contact info, mistaken claims, cost, and Featured upgrades."
+        description="Answers about verification codes, contact info, mistaken claims, cost, analytics, and Featured upgrades."
         includeSchema={true}
       />
 

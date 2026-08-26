@@ -151,7 +151,7 @@ export const FAQ_ITEMS = [
     id: "claim-listing",
     question: "How do I claim my business listing?",
     answer:
-      "Open your business page and use Claim Business. We send a verification email to the address on file for that listing. After you verify, create your account password and sign in to manage the listing. Claiming is free. Full steps and eligibility rules are on our How to Claim page.",
+      "Open your business page and use Claim Business. We send a verification email to the address on file for that listing. After you verify, create your account password and sign in to manage the listing and view listing analytics. Claiming is free. Full steps and eligibility rules are on our How to Claim page.",
   },
   {
     id: "cant-claim",
@@ -164,6 +164,12 @@ export const FAQ_ITEMS = [
     question: "What is a Featured listing?",
     answer:
       "Featured is an optional paid upgrade for claimed listings. It adds a Featured badge, higher placement in search and browse results, and a spot on the Featured businesses page. Claiming stays free; only Featured is paid. You can cancel anytime to stop future renewals; fees for the current billing period are non-refundable. See Featured listing pricing for current rates and how to upgrade.",
+  },
+  {
+    id: "listing-analytics",
+    question: "Can I see how customers find my listing?",
+    answer:
+      "Yes. After you claim, sign in to your dashboard and open Analytics. You can see page views, listing clicks, impressions by source, and contact clicks. Stats are not live and can take a few minutes to appear.",
   },
   {
     id: "report-listing",
@@ -241,12 +247,13 @@ export const FAQ_SECTIONS = [
   {
     id: "business-listings",
     title: "Business Owners & Listings",
-    description: "Get listed, claim your shop, Featured upgrades, and report listing issues.",
+    description: "Get listed, claim your shop, listing analytics, Featured upgrades, and report listing issues.",
     faqIds: [
       "verify-businesses",
       "get-listed",
       "claim-listing",
       "cant-claim",
+      "listing-analytics",
       "featured-listing",
       "report-listing",
     ],

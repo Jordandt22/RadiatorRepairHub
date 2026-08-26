@@ -2,6 +2,7 @@
 
 import { MapPin, MessageSquare, Phone } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
+import { trackBusinessStat } from "@/lib/businessStats/trackBusinessStat";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
 
 const heroBtn =
@@ -30,6 +31,11 @@ export default function BusinessHeroActions({
     });
   };
 
+  const trackStat = (event) => {
+    if (!businessId) return;
+    trackBusinessStat({ businessId, event });
+  };
+
   const callClass = isHero
     ? `${heroBtn} bg-white text-primary hover:bg-white/90`
     : `${stickyBtn} bg-primary text-primary-foreground hover:bg-primary/90`;
@@ -40,7 +46,10 @@ export default function BusinessHeroActions({
   const callButton = phone ? (
     <a
       href={`tel:${phone}`}
-      onClick={() => capture("business_phone_clicked")}
+      onClick={() => {
+        capture("business_phone_clicked");
+        trackStat("phone_click");
+      }}
       className={callClass}
     >
       <Phone className="size-4 shrink-0" aria-hidden="true" />
@@ -72,7 +81,10 @@ export default function BusinessHeroActions({
       href={mapsHref}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={() => capture("business_directions_clicked")}
+      onClick={() => {
+        capture("business_directions_clicked");
+        trackStat("directions_click");
+      }}
       className={secondaryClass}
     >
       <MapPin className="size-4 shrink-0" aria-hidden="true" />

@@ -30,6 +30,7 @@ import {
   deleteListingRequests,
   getBusinesses,
   getBusinessById,
+  getBusinessStats,
   getBusinessesWithEmails,
   clearBusinessEmails,
   markBusinessEmailStatus,
@@ -130,6 +131,7 @@ import {
   GetAdminBusinessesQuerySchema,
   GetAdminBusinessesWithEmailsQuerySchema,
   GetAdminBusinessParamsSchema,
+  GetAdminBusinessStatsQuerySchema,
   ClearBusinessEmailsSchema,
   MarkBusinessEmailStatusSchema,
   UpdateBusinessEmailSchema,
@@ -303,6 +305,13 @@ adminRouter.get(
   "/businesses/with-emails",
   queryValidator(GetAdminBusinessesWithEmailsQuerySchema),
   serverErrorCatcherWrapper(getBusinessesWithEmails)
+);
+
+adminRouter.get(
+  "/businesses/:id/stats",
+  paramsValidator(GetAdminBusinessParamsSchema),
+  queryValidator(GetAdminBusinessStatsQuerySchema),
+  serverErrorCatcherWrapper(getBusinessStats)
 );
 
 adminRouter.get(

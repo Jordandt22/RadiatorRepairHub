@@ -12,14 +12,26 @@ import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import ListingBadges from "@/components/businesses/ListingBadges";
 import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
+import { trackBusinessStat } from "@/lib/businessStats/trackBusinessStat";
 
 function BusinessCard({
   business,
   setActiveCard,
   setActiveBackCard,
   priority = false,
+  listingSource,
+  position,
 }) {
   const router = useRouter();
+  const trackListingClick = () => {
+    if (!business?.id || !listingSource) return;
+    trackBusinessStat({
+      businessId: business.id,
+      event: "listing_click",
+      source: listingSource,
+      position,
+    });
+  };
   const buttonStyle =
     "group/hours cursor-pointer rounded-full bg-white/90 p-2 shadow-sm backdrop-blur-sm transition-interactive hover:bg-primary";
   const iconStyle = "w-5 h-5 text-muted-foreground group-hover/hours:text-white";
@@ -46,6 +58,7 @@ function BusinessCard({
         <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/50  transition-all duration-300 cursor-pointer" onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
+          trackListingClick();
           router.push(`/business/${business.slug}`);
         }}>
           <div className="hidden absolute top-3 right-3 z-20 group-hover/image:flex transition-all duration-200 flex-col gap-2">
@@ -100,6 +113,7 @@ function BusinessCard({
             className="hover:text-interactive duration-200"
             prefetch={false}
             aria-label={`View ${business.title} details`}
+            onClick={trackListingClick}
           >
             {business.title}
           </Link>
