@@ -17,7 +17,7 @@ import { getWebBaseUrl } from "../lib/constants/messages.js";
 import { cancelFeaturedSubscriptionsForOwner } from "../lib/cancelFeaturedSubscriptions.js";
 import { invalidateClaimStatusCaches } from "../lib/invalidateListingCaches.js";
 
-const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, ROUTE_NOT_FOUND, YUP_ERROR } =
+const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } =
   errorCodes;
 
 export const loginOwner = async (req, res) => {
@@ -70,20 +70,9 @@ export const loginOwner = async (req, res) => {
       );
   }
 
-  if (!business?.slug) {
-    return res
-      .status(404)
-      .json(
-        customErrorHandler(
-          ROUTE_NOT_FOUND,
-          "No claimed business was found for this account."
-        )
-      );
-  }
-
   return res.status(200).json(
     successHandler({
-      slug: business.slug,
+      slug: business?.slug || null,
       session,
     })
   );

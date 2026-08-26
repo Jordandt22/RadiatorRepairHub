@@ -40,6 +40,13 @@ import {
   getUsers,
   getUserByUid,
   deleteUsers,
+  getTestBusinesses,
+  getTestBusinessDefaults,
+  createTestBusiness,
+  deleteTestBusiness,
+  getTestUsers,
+  createTestUser,
+  deleteTestUser,
   getLocations,
   exportLocationStates,
   exportLocationCities,
@@ -169,6 +176,9 @@ import {
   CreateApifyScrapeJobSchema,
   GetApifyScrapeJobParamsSchema,
   DeleteApifyScrapeJobsSchema,
+  GetTestingListQuerySchema,
+  CreateTestBusinessSchema,
+  CreateTestUserSchema,
 } from "../../schemas/admin.schemas.js";
 import {
   bodyValidator,
@@ -711,6 +721,47 @@ adminRouter.delete(
   "/apify-scrape/jobs",
   bodyValidator(DeleteApifyScrapeJobsSchema),
   serverErrorCatcherWrapper(deleteApifyScrapeJobsHandler)
+);
+
+adminRouter.get(
+  "/testing/businesses/defaults",
+  serverErrorCatcherWrapper(getTestBusinessDefaults)
+);
+
+adminRouter.get(
+  "/testing/businesses",
+  queryValidator(GetTestingListQuerySchema),
+  serverErrorCatcherWrapper(getTestBusinesses)
+);
+
+adminRouter.post(
+  "/testing/businesses",
+  bodyValidator(CreateTestBusinessSchema),
+  serverErrorCatcherWrapper(createTestBusiness)
+);
+
+adminRouter.delete(
+  "/testing/businesses/:id",
+  paramsValidator(GetAdminBusinessParamsSchema),
+  serverErrorCatcherWrapper(deleteTestBusiness)
+);
+
+adminRouter.get(
+  "/testing/users",
+  queryValidator(GetTestingListQuerySchema),
+  serverErrorCatcherWrapper(getTestUsers)
+);
+
+adminRouter.post(
+  "/testing/users",
+  bodyValidator(CreateTestUserSchema),
+  serverErrorCatcherWrapper(createTestUser)
+);
+
+adminRouter.delete(
+  "/testing/users/:uid",
+  paramsValidator(GetAdminUserParamsSchema),
+  serverErrorCatcherWrapper(deleteTestUser)
 );
 
 export default adminRouter;

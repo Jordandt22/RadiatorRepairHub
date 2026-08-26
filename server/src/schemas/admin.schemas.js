@@ -1,6 +1,7 @@
 import * as Yup from "yup";
 import { SCORE_TIER_IDS, REVIEW_TIER_IDS, EMAIL_FILTER_IDS, WEBSITE_FILTER_IDS } from "../lib/adminBusinessTiers.js";
 import { normalizeWebsiteUrl } from "../lib/websiteReachability.js";
+import { getPasswordStrengthError } from "../lib/password.js";
 import {
   DEFAULT_MAX_PLACES,
   DEFAULT_SEARCH_KEYWORD,
@@ -1228,4 +1229,209 @@ export const DeleteApifyScrapeJobsSchema = Yup.object({
     .of(Yup.string().uuid("Invalid job id").required())
     .min(1, "At least one job id is required")
     .required("Job ids are required"),
+});
+
+export const GetTestingListQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+});
+
+export const CreateTestBusinessSchema = Yup.object({
+  title: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Title is required")
+    .max(200, "Title is too long")
+    .required("Title is required"),
+  slug: Yup.string()
+    .transform((value) => String(value ?? "").trim().toLowerCase())
+    .min(1, "Slug is required")
+    .max(220, "Slug is too long")
+    .required("Slug is required"),
+  email: Yup.string()
+    .trim()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .notRequired()
+    .test("valid-email", "Please enter a valid email address", (value) => {
+      if (value == null || value === "") return true;
+      return Yup.string().email().isValidSync(value);
+    }),
+  website: Yup.string()
+    .trim()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return normalizeWebsiteUrl(value);
+    })
+    .nullable()
+    .notRequired()
+    .test("valid-website", "Please enter a valid website URL", (value) => {
+      if (value == null || value === "") return true;
+      try {
+        const parsed = new URL(value);
+        return ["http:", "https:"].includes(parsed.protocol);
+      } catch {
+        return false;
+      }
+    }),
+  phone: Yup.string()
+    .trim()
+    .required("Phone number is required")
+    .test("valid-phone", "Please enter a valid phone number", isValidPhone),
+  address: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Address is required")
+    .max(500, "Address is too long")
+    .required("Address is required"),
+  description: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Description is required")
+    .max(750, "Description must be 750 characters or fewer")
+    .required("Description is required"),
+  title_tag: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Title tag is required")
+    .max(100, "Title tag is too long")
+    .required("Title tag is required"),
+  meta_description: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Meta description is required")
+    .max(200, "Meta description is too long")
+    .required("Meta description is required"),
+  local_note: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Local note is required")
+    .max(500, "Local note is too long")
+    .required("Local note is required"),
+  keywords: Yup.array()
+    .of(
+      Yup.string()
+        .transform((value) => String(value ?? "").trim())
+        .min(1)
+        .max(100, "Keyword is too long")
+    )
+    .max(30, "At most 30 keywords")
+    .required("Keywords are required"),
+  highlights: Yup.array().of(Yup.mixed()).default([]).notRequired(),
+  total_score: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return undefined;
+      const num = Number(originalValue);
+      if (!Number.isFinite(num)) return originalValue;
+      return Math.round(num * 10) / 10;
+    })
+    .typeError("Score must be a number")
+    .min(0, "Score must be 0 or higher")
+    .max(5, "Score cannot be more than 5")
+    .required("Score is required"),
+  reviews_count: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return undefined;
+      const num = Number(originalValue);
+      if (!Number.isFinite(num)) return originalValue;
+      return Math.trunc(num);
+    })
+    .typeError("Reviews must be a number")
+    .integer("Reviews must be a whole number")
+    .min(0, "Reviews cannot be negative")
+    .max(1000000, "Reviews count is too large")
+    .required("Reviews count is required"),
+  latitude: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return undefined;
+      const num = Number(originalValue);
+      return Number.isFinite(num) ? num : originalValue;
+    })
+    .typeError("Latitude must be a number")
+    .min(-90, "Latitude is invalid")
+    .max(90, "Latitude is invalid")
+    .required("Latitude is required"),
+  longitude: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return undefined;
+      const num = Number(originalValue);
+      return Number.isFinite(num) ? num : originalValue;
+    })
+    .typeError("Longitude must be a number")
+    .min(-180, "Longitude is invalid")
+    .max(180, "Longitude is invalid")
+    .required("Longitude is required"),
+  city_id: Yup.string().uuid("Invalid city").required("City is required"),
+  state_id: Yup.string().uuid("Invalid state").required("State is required"),
+  postal_code_id: Yup.string()
+    .transform((value) => {
+      const trimmed = String(value ?? "").trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .uuid("Invalid postal code")
+    .nullable()
+    .notRequired(),
+  primary_category_id: Yup.string()
+    .uuid("Invalid category")
+    .required("Primary category is required"),
+  timezone: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Timezone is required")
+    .max(80, "Timezone is too long")
+    .required("Timezone is required"),
+  image_url: Yup.string()
+    .transform((value) => {
+      const trimmed = String(value ?? "").trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .notRequired(),
+  place_id: Yup.string()
+    .transform((value) => String(value ?? "").trim())
+    .min(1, "Place ID is required")
+    .max(200, "Place ID is too long")
+    .required("Place ID is required"),
+  hours: Yup.array()
+    .of(
+      Yup.object({
+        day_of_week: Yup.string()
+          .oneOf(
+            [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday",
+              "Sunday",
+            ],
+            "Invalid day of week"
+          )
+          .required(),
+        hours: Yup.array().default([]),
+        is_closed: Yup.boolean().default(false),
+        hours_text: Yup.string().nullable().notRequired(),
+      })
+    )
+    .default([]),
+  secondary_category_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid secondary category ID"))
+    .max(10, "You can select up to 10 secondary categories")
+    .default([]),
+});
+
+export const CreateTestUserSchema = Yup.object({
+  email: Yup.string()
+    .trim()
+    .email("Please enter a valid email address")
+    .required("Email is required"),
+  password: Yup.string()
+    .required("Password is required")
+    .test("password-strength", function (value) {
+      const message = getPasswordStrengthError(value ?? "");
+      if (!message) return true;
+      return this.createError({ message });
+    }),
 });
