@@ -3,14 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import FeaturedBenefitsSummary from "@/components/checkout/FeaturedBenefitsSummary";
+import FeaturedCheckoutOutcomeTracker from "@/components/checkout/FeaturedCheckoutOutcomeTracker";
 import { createBillingPortalSession } from "@/lib/api/billing";
 import { useToast } from "@/contexts/ToastProvider";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 
 export default function CheckoutSuccessPage() {
+  const posthog = usePostHog();
   const { isSignedIn, isLoading } = useIsSignedIn();
   const { showCustomError } = useToast();
   const [isOpening, setIsOpening] = useState(false);
@@ -18,6 +21,10 @@ export default function CheckoutSuccessPage() {
   const handleManage = async () => {
     if (isOpening) return;
     setIsOpening(true);
+    posthog?.capture("featured_portal_opened", {
+      source: "checkout_success",
+      signed_in: Boolean(isSignedIn),
+    });
     try {
       const { data, error } = await createBillingPortalSession();
       if (error || !data?.url) {
@@ -38,6 +45,7 @@ export default function CheckoutSuccessPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      <FeaturedCheckoutOutcomeTracker outcome="completed" />
       <PageHeader
         breadcrumbItems={[
           { name: "Home", url: "/" },

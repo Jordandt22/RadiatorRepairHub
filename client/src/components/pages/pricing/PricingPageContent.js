@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { BadgeCheck } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import PricingHeader from "@/components/pages/pricing/PricingHeader";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
@@ -21,6 +22,7 @@ function eligibleBusinesses(list) {
 export default function PricingPageContent() {
   const searchParams = useSearchParams();
   const preselectedId = searchParams.get("business") || "";
+  const posthog = usePostHog();
   const { isSignedIn, isLoading: authLoading } = useIsSignedIn();
   const { showCustomError } = useToast();
   const [businesses, setBusinesses] = useState([]);
@@ -67,12 +69,35 @@ export default function PricingPageContent() {
     );
   }, [eligible, preselectedId]);
 
+  const selectedBusiness = useMemo(
+    () => eligible.find((business) => business.id === selectedId) ?? null,
+    [eligible, selectedId]
+  );
+
+  const captureCheckout = (event, props = {}) => {
+    posthog?.capture(event, {
+      business_id: selectedBusiness?.id || selectedId || undefined,
+      business_slug: selectedBusiness?.slug || undefined,
+      business_name: selectedBusiness?.title || undefined,
+      signed_in: Boolean(isSignedIn),
+      source: "pricing",
+      ...props,
+    });
+  };
+
   const handleUpgrade = async () => {
     if (!selectedId || isSubmitting) return;
     setIsSubmitting(true);
+    captureCheckout("featured_checkout_started");
     try {
       const { data, error } = await createFeaturedCheckoutSession(selectedId);
       if (error || !data?.url) {
+        captureCheckout("featured_checkout_failed", {
+          error_code:
+            typeof error?.code === "string" ? error.code : undefined,
+          error_message:
+            typeof error?.message === "string" ? error.message : undefined,
+        });
         showCustomError(
           typeof error?.message === "string"
             ? error.message
@@ -82,6 +107,7 @@ export default function PricingPageContent() {
       }
       window.location.assign(data.url);
     } catch {
+      captureCheckout("featured_checkout_failed");
       showCustomError("Unable to start checkout. Please try again.");
     } finally {
       setIsSubmitting(false);

@@ -116,6 +116,15 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
               size: "sm",
               className: "w-full",
             })}
+            onClick={() =>
+              posthog?.capture("featured_cta_clicked", {
+                source: "dashboard",
+                cta: "manage_featured",
+                business_id: business.id,
+                business_slug: business.slug || undefined,
+                business_name: business.title || undefined,
+              })
+            }
           >
             Featured · Manage
           </Link>
@@ -126,6 +135,15 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
               size: "sm",
               className: "w-full",
             })}
+            onClick={() =>
+              posthog?.capture("featured_cta_clicked", {
+                source: "dashboard",
+                cta: "get_featured",
+                business_id: business.id,
+                business_slug: business.slug || undefined,
+                business_name: business.title || undefined,
+              })
+            }
           >
             Get Featured
           </Link>

@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import FeaturedBenefitsSummary from "@/components/checkout/FeaturedBenefitsSummary";
+import FeaturedCheckoutOutcomeTracker from "@/components/checkout/FeaturedCheckoutOutcomeTracker";
 import { buildPageMetadata, NOINDEX_ROBOTS } from "@/lib/seo/metadata";
 
 export const metadata = {
@@ -17,6 +18,7 @@ export const metadata = {
 export default function CheckoutCancelPage() {
   return (
     <div className="min-h-screen bg-background pb-24">
+      <FeaturedCheckoutOutcomeTracker outcome="canceled" />
       <PageHeader
         breadcrumbItems={[
           { name: "Home", url: "/" },

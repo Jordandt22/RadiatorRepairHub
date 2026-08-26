@@ -1,9 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Star } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
 import FeaturedBadge from "@/components/businesses/FeaturedBadge";
 import { buttonVariants } from "@/components/ui/button";
 
 export default function FeaturedUpgradeCard() {
+  const posthog = usePostHog();
+
+  const captureCta = (cta) => {
+    posthog?.capture("featured_cta_clicked", {
+      source: "featured_page",
+      cta,
+    });
+  };
+
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-lg border border-dashed border-amber-400/70 bg-card">
       <div className="relative h-48 w-full shrink-0 bg-muted">
@@ -30,6 +42,7 @@ export default function FeaturedUpgradeCard() {
             href="/how-to-claim"
             className="font-medium text-interactive underline hover:text-primary"
             prefetch={false}
+            onClick={() => captureCta("how_to_claim")}
           >
             Claim your shop
           </Link>
@@ -43,6 +56,7 @@ export default function FeaturedUpgradeCard() {
               className: "w-full rounded-full",
             })}
             prefetch={false}
+            onClick={() => captureCta("get_featured")}
           >
             Get Featured
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -54,6 +68,7 @@ export default function FeaturedUpgradeCard() {
               className: "w-full rounded-full",
             })}
             prefetch={false}
+            onClick={() => captureCta("how_to_claim")}
           >
             How to claim
           </Link>

@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import OwnerEditButton from "@/components/businesses/OwnerEditButton";
 import { useToast } from "@/contexts/ToastProvider";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
+import { usePostHog } from "posthog-js/react";
 import { signOut } from "@/lib/auth/session";
 import {
   updateOwnerEmail,
@@ -634,6 +635,7 @@ function formatPeriodEnd(value) {
 }
 
 function PaymentsSettingsPanel() {
+  const posthog = usePostHog();
   const { showCustomError } = useToast();
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -665,6 +667,10 @@ function PaymentsSettingsPanel() {
   const handleManage = async () => {
     if (managing) return;
     setManaging(true);
+    posthog?.capture("featured_portal_opened", {
+      source: "settings",
+      signed_in: true,
+    });
     try {
       const { data, error: apiError } = await createBillingPortalSession();
       if (apiError || !data?.url) {
