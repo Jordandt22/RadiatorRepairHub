@@ -174,6 +174,7 @@ export const createCheckoutSession = async (req, res) => {
     automatic_tax: { enabled: true },
     customer_update: { address: "auto", name: "auto" },
     managed_payments: { enabled: false },
+    allow_promotion_codes: true,
     metadata,
     subscription_data: { metadata },
   });
