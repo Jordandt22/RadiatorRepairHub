@@ -4,8 +4,9 @@ import { fetchAllCities } from "@/lib/api/location";
 import { fetchPrimaryCategories } from "@/lib/api/categories";
 import { fetchBusinessSlugsForSitemap } from "@/lib/api/businesses";
 import { getAllBlogPosts } from "@/lib/blogs";
+import { SITEMAP_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = 86400;
+export const revalidate = SITEMAP_REVALIDATE_SECONDS;
 
 export async function GET() {
   const baseUrl = "https://radiatorrepairhub.com";

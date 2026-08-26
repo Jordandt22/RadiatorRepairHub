@@ -20,6 +20,7 @@ import {
   DIRECTORY_STATE_COUNTS_LIMIT,
   fetchStateBusinessCountsByLimit,
 } from "@/lib/api/cachedReads";
+import { SHORT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 const homeTitle =
   "Find Radiator Repair Shops Nationwide | RadiatorRepairHub Directory";
@@ -33,7 +34,7 @@ export const metadata = buildPageMetadata({
   path: "/",
 });
 
-export const revalidate = 60;
+export const revalidate = SHORT_REVALIDATE_SECONDS;
 
 export default async function Home() {
   const [affiliateRes, categoriesRes, statesRes] = await Promise.all([

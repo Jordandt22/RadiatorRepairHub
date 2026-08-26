@@ -1,6 +1,7 @@
 import React from "react";
 import FeaturedBusinessesPage from "@/components/pages/featured/FeaturedBusinessesPage";
 import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
+import { SHORT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 const title = "Featured Radiator Repair Shops | RadiatorRepairHub";
 const description =
@@ -13,6 +14,8 @@ export const metadata = buildPageMetadata({
     "featured radiator repair, featured auto repair listing, sponsored radiator shop, radiator repair directory featured",
   path: "/featured",
 });
+
+export const revalidate = SHORT_REVALIDATE_SECONDS;
 
 async function Page({ searchParams }) {
   const searchParamsData = await searchParams;

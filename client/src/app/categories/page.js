@@ -3,8 +3,9 @@ import CategoriesPage from "@/components/pages/categories/CategoriesPage";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import { fetchPrimaryCategoryBusinessCounts } from "@/lib/api/categories";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
+import { SHORT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = 60;
+export const revalidate = SHORT_REVALIDATE_SECONDS;
 
 export const metadata = {
   title:

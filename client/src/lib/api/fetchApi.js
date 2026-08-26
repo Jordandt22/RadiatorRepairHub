@@ -1,4 +1,6 @@
-const REVALIDATE_SECONDS = 60 * 60 * 24;
+import { SHORT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
+
+const REVALIDATE_SECONDS = SHORT_REVALIDATE_SECONDS;
 
 export function getApiUri() {
   return process.env.NEXT_PUBLIC_API_URI || process.env.API_URI;
