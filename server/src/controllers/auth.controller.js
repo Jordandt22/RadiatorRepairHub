@@ -14,11 +14,8 @@ import {
   deletePublicUserByUid,
 } from "../supabase/supabase.functions.js";
 import { getWebBaseUrl } from "../lib/constants/messages.js";
-import {
-  deleteCacheData,
-  getBusinessByIdKey,
-  getBusinessBySlugKey,
-} from "../redis/redis.js";
+import { cancelFeaturedSubscriptionsForOwner } from "../lib/cancelFeaturedSubscriptions.js";
+import { invalidateClaimStatusCaches } from "../lib/invalidateListingCaches.js";
 
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, ROUTE_NOT_FOUND, YUP_ERROR } =
   errorCodes;
@@ -189,22 +186,41 @@ export const updateOwnerPassword = async (req, res) => {
   );
 };
 
-const invalidateBusinessCache = async (business) => {
-  if (!business?.id) return;
-  const { key: businessIdCacheKey } = getBusinessByIdKey(business.id);
-  await deleteCacheData(businessIdCacheKey);
-  if (business.slug) {
-    const { key: businessSlugCacheKey } = getBusinessBySlugKey(business.slug);
-    await deleteCacheData(businessSlugCacheKey);
-  }
-};
-
 export const deleteOwnerAccount = async (req, res) => {
   const ownerUid = req.user?.id;
   if (!ownerUid) {
     return res
       .status(401)
       .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  let cancelResult;
+  try {
+    cancelResult = await cancelFeaturedSubscriptionsForOwner(ownerUid, {
+      reason: "account_deleted",
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "There was an error canceling your Featured subscription. Please try again or contact support.",
+          error
+        )
+      );
+  }
+
+  if (cancelResult?.errors?.length) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "There was an error canceling your Featured subscription. Please try again or contact support.",
+          cancelResult.errors
+        )
+      );
   }
 
   const { data: unclaimed, error: unclaimError } =
@@ -222,12 +238,10 @@ export const deleteOwnerAccount = async (req, res) => {
       );
   }
 
-  for (const business of unclaimed ?? []) {
-    try {
-      await invalidateBusinessCache(business);
-    } catch {
-      // best-effort cache cleanup
-    }
+  try {
+    await invalidateClaimStatusCaches(unclaimed ?? []);
+  } catch {
+    // best-effort cache cleanup
   }
 
   const { error: deleteAuthError } = await deleteAuthUser(ownerUid);

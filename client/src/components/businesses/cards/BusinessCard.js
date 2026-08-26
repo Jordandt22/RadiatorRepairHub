@@ -10,7 +10,7 @@ import { Info, Clock } from "lucide-react";
 // Components
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
-import VerifiedBadge from "@/components/businesses/VerifiedBadge";
+import ListingBadges from "@/components/businesses/ListingBadges";
 import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 
 function BusinessCard({
@@ -86,15 +86,15 @@ function BusinessCard({
           >
             {business.primary_category.name}
           </Link>
-          <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1.5">
-            <OpenStatus hours={business.hours} timezone={business.timezone} />
-            {business.is_claimed ? <VerifiedBadge /> : null}
-          </div>
+          <ListingBadges
+            business={business}
+            className="absolute top-3 left-3 z-10"
+          />
         </div>
       </div>
 
       <div className="p-5">
-        <h3 className="font-semibold text-foreground mb-1 line-clamp-2 font-heading text-lg">
+        <h3 className="font-semibold text-foreground mb-1 line-clamp-1 font-heading text-lg">
           <Link
             href={`/business/${business.slug}`}
             className="hover:text-interactive duration-200"
@@ -147,6 +147,9 @@ function BusinessCard({
         >
           {business.address}
         </Link>
+        <div className="mt-2">
+          <OpenStatus hours={business.hours} timezone={business.timezone} />
+        </div>
       </div>
     </article>
   );

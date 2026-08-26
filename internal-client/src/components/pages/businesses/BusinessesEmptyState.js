@@ -1,4 +1,4 @@
-import { BadgeCheckIcon, Building2Icon, SearchIcon } from "lucide-react";
+import { BadgeCheckIcon, Building2Icon, SearchIcon, StarIcon } from "lucide-react";
 
 const EMPTY_BY_TAB = {
   all: {
@@ -10,6 +10,12 @@ const EMPTY_BY_TAB = {
     icon: BadgeCheckIcon,
     title: "No claimed businesses",
     description: "Claimed listings will appear here once owners verify ownership.",
+  },
+  featured: {
+    icon: StarIcon,
+    title: "No featured businesses",
+    description:
+      "Featured listings will appear here once an owner purchases a Featured plan.",
   },
 };
 

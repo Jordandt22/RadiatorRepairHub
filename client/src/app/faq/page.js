@@ -15,7 +15,7 @@ import {
 const faqTitle =
   "Frequently Asked Questions | Radiator Repair Help & Support - RadiatorRepairHub";
 const faqDescription =
-  "Get answers to common questions about radiator repair services, servicing of a radiator, car radiator repair, and finding a radiator repair shop near me.";
+  "Answers about radiator repair, finding shops near you, claiming a listing, Featured upgrades, and using RadiatorRepairHub.";
 
 export const metadata = buildPageMetadata({
   title: faqTitle,
@@ -34,8 +34,13 @@ const RELATED_TOPICS = [
   },
   {
     title: "Featured Businesses",
-    description: "Top-rated radiator repair shops in your area",
+    description: "Featured partners with extra visibility in the directory",
     href: "/featured",
+  },
+  {
+    title: "Featured Pricing",
+    description: "Optional paid upgrade for claimed listings—badge, search priority, Featured page",
+    href: "/pricing",
   },
   {
     title: "How to Claim",
@@ -82,7 +87,7 @@ export default async function FAQPage() {
         pageDescription="Get answers to common questions about radiator repair services and find the help you need"
         headerLink={{
           label: "Search",
-          href: "/search?page=1&sort=verified",
+          href: "/search?page=1&sort=featured",
         }}
       />
 
@@ -123,7 +128,7 @@ export default async function FAQPage() {
                 area.
               </p>
               <Link
-                href="/search?page=1&sort=verified"
+                href="/search?page=1&sort=featured"
                 className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
               >
                 Search Now

@@ -3,6 +3,7 @@ import { PencilIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
 import BusinessDetailCard from "@/components/pages/businesses/BusinessDetailCard";
+import BusinessFeaturedBadge from "@/components/pages/businesses/BusinessFeaturedBadge";
 import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
 import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
 import { formatFullDate } from "@/components/pages/dashboard/formatDate";
@@ -13,6 +14,7 @@ export default function BusinessDetailListingTab({
   onEditCategories,
 }) {
   const isClaimed = Boolean(data.is_claimed);
+  const isFeatured = Boolean(data.is_featured);
   const hasOwner = Boolean(data.owner_uid);
 
   return (
@@ -56,6 +58,9 @@ export default function BusinessDetailListingTab({
           </BusinessDetailCard>
           <BusinessDetailCard label="Claimed">
             <BusinessClaimedBadge isClaimed={isClaimed} />
+          </BusinessDetailCard>
+          <BusinessDetailCard label="Featured">
+            <BusinessFeaturedBadge isFeatured={isFeatured} />
           </BusinessDetailCard>
           <BusinessDetailCard label="Last edited">
             {formatFullDate(data.last_edited_at)}

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table";
 import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
 import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
+import BusinessFeaturedBadge from "@/components/pages/businesses/BusinessFeaturedBadge";
 import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import ClaimInviteTypeBadge from "@/components/pages/businesses/ClaimInviteTypeBadge";
 import { formatFullDate } from "@/components/pages/dashboard/formatDate";
@@ -38,11 +39,12 @@ function ClaimedBusinessesTableView({ businesses }) {
         <TableHeader>
           <TableRow>
             <TableHead className="w-[26%]">Business</TableHead>
-            <TableHead className="w-[18%]">Email</TableHead>
-            <TableHead className="w-[16%]">Claim invite</TableHead>
+            <TableHead className="w-[16%]">Email</TableHead>
+            <TableHead className="w-[14%]">Claim invite</TableHead>
             <TableHead className="w-[12%]">Phone</TableHead>
             <TableHead className="w-[10%]">Score</TableHead>
             <TableHead className="w-[10%] text-right">Reviews</TableHead>
+            <TableHead className="w-[12%]">Featured</TableHead>
             <TableHead className="w-[12%]">Last edited</TableHead>
           </TableRow>
         </TableHeader>
@@ -78,6 +80,13 @@ function ClaimedBusinessesTableView({ businesses }) {
                   <BusinessReviewsBadge count={row.reviews_count} />
                 </div>
               </TableCell>
+              <TableCell className="whitespace-nowrap">
+                {Boolean(row.is_featured) ? (
+                  <BusinessFeaturedBadge isFeatured />
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
+              </TableCell>
               <TableCell className="whitespace-nowrap text-sm">
                 {formatFullDate(row.last_edited_at)}
               </TableCell>
@@ -106,6 +115,9 @@ function ClaimedBusinessesCardList({ businesses }) {
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <BusinessScoreBadge score={row.total_score} />
               <BusinessReviewsBadge count={row.reviews_count} />
+              {Boolean(row.is_featured) ? (
+                <BusinessFeaturedBadge isFeatured />
+              ) : null}
             </div>
           </div>
           <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm">

@@ -4,7 +4,7 @@ import { MapPin, Star, Send, MoveRight } from "lucide-react";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
-import VerifiedBadge from "@/components/businesses/VerifiedBadge";
+import ListingBadges from "@/components/businesses/ListingBadges";
 import { Button } from "@/components/ui/button";
 import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 
@@ -22,11 +22,11 @@ function DetailedBusinessCard({ business, priority = false }) {
           sizes={BUSINESS_CARD_IMAGE_SIZES}
           priority={priority}
         />
-        {business.is_claimed ? (
-          <div className="absolute top-3 left-3 z-10">
-            <VerifiedBadge size="md" />
-          </div>
-        ) : null}
+        <ListingBadges
+          business={business}
+          size="md"
+          className="absolute top-3 left-3 z-10"
+        />
       </div>
 
       <div className="flex flex-1 flex-col p-6">

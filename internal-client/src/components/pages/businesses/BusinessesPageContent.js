@@ -21,7 +21,7 @@ import {
   EMAIL_FILTERS,
 } from "@/lib/businessTiers";
 import BusinessFilterTabs, {
-  TAB_CLAIMED,
+  TAB_FILTERS,
   VALID_TABS,
 } from "@/components/pages/businesses/BusinessFilterTabs";
 import BusinessActions from "@/components/pages/businesses/BusinessActions";
@@ -71,13 +71,15 @@ export default function BusinessesPageContent() {
   const [actionError, setActionError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
 
-  const claimedFilter = TAB_CLAIMED[activeTab] ?? null;
+  const claimedFilter = TAB_FILTERS[activeTab]?.claimed ?? null;
+  const featuredFilter = TAB_FILTERS[activeTab]?.featured ?? null;
   const searchQuery = (q || "").trim();
   const scoreTierId = scoreTier?.id ?? null;
   const reviewsTierId = reviewsTier?.id ?? null;
   const emailFilterId = emailFilter?.id ?? null;
   const showTierFilters = activeTab === "all";
-  const showReverseClaim = activeTab === "claimed";
+  const showReverseClaim =
+    activeTab === "claimed" || activeTab === "featured";
   const setFieldRef = useRef(setField);
   setFieldRef.current = setField;
 
@@ -179,6 +181,9 @@ export default function BusinessesPageContent() {
       });
       if (claimedFilter === true) {
         params.set("claimed", "true");
+      }
+      if (featuredFilter === true) {
+        params.set("featured", "true");
       }
       if (searchQuery) {
         params.set("q", searchQuery);

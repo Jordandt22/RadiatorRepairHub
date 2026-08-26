@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getFeaturedBusinesses,
+  getTopVerifiedBusinessesHandler,
   getBusiness,
   getSearchedBusinesses,
   getBusinessSlugsForSitemapHandler,
@@ -33,7 +34,7 @@ import {
   UpdateBusinessAboutSchema,
   UpdateBusinessHoursSchema,
 } from "../schemas/businesses.schemas.js";
-import { paginationSchema } from "../schemas/query.schemas.js";
+import { paginationSchema, featuredBusinessesQuerySchema } from "../schemas/query.schemas.js";
 import {
   paramsValidator,
   queryValidator,
@@ -48,7 +49,14 @@ const businessesRouter = Router();
 // Get Featured Businesses
 businessesRouter.get(
   "/featured",
+  queryValidator(featuredBusinessesQuerySchema),
   serverErrorCatcherWrapper(getFeaturedBusinesses)
+);
+
+// Get Top Verified Businesses (home)
+businessesRouter.get(
+  "/top-verified",
+  serverErrorCatcherWrapper(getTopVerifiedBusinessesHandler)
 );
 
 // Owner-owned businesses (must be before /:business_slug)

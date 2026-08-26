@@ -185,8 +185,14 @@ const Page = () => {
               What Happens Next?
             </h2>
             <p className="mb-6 text-sm text-muted-foreground">
-              Listings are currently free. Paid premium options may be available
-              in the future.
+              Listings are free to add and claim. Optional{" "}
+              <Link
+                href="/pricing"
+                className="font-medium text-interactive underline hover:text-primary"
+              >
+                Featured upgrades
+              </Link>{" "}
+              are available for claimed shops.
             </p>
             <ol className="space-y-4">
               {NEXT_STEPS.map((step, index) => (

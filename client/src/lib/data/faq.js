@@ -145,19 +145,25 @@ export const FAQ_ITEMS = [
     id: "get-listed",
     question: "How can I get my business listed on RadiatorRepairHub?",
     answer:
-      "If your shop is not listed yet, submit your information through our Get Listed page. If you are already in the directory, claim your listing from the business page instead of submitting a duplicate. Listings are currently free.",
+      "If your shop is not listed yet, submit your information through our Get Listed page. If you are already in the directory, claim your listing from the business page instead of submitting a duplicate. Listings are free to add and claim. Featured is an optional paid upgrade after you claim.",
   },
   {
     id: "claim-listing",
     question: "How do I claim my business listing?",
     answer:
-      "Open your business page and use Claim Business. We send a verification email to the address on file for that listing. After you verify, create your account password and sign in to manage the listing. Full steps and eligibility rules are on our How to Claim page.",
+      "Open your business page and use Claim Business. We send a verification email to the address on file for that listing. After you verify, create your account password and sign in to manage the listing. Claiming is free. Full steps and eligibility rules are on our How to Claim page.",
   },
   {
     id: "cant-claim",
     question: "Why can't I claim my business?",
     answer:
       "Self-serve claiming needs a unique email on the listing. If there is no email, or the same email is shared by multiple businesses, the listing may show as unclaimable. Use Report Info on the business page to send the correct contact details, or contact us for help. More detail is on How to Claim.",
+  },
+  {
+    id: "featured-listing",
+    question: "What is a Featured listing?",
+    answer:
+      "Featured is an optional paid upgrade for claimed listings. It adds a Featured badge, higher placement in search and browse results, and a spot on the Featured businesses page. Claiming stays free; only Featured is paid. You can cancel anytime to stop future renewals; fees for the current billing period are non-refundable. See Featured listing pricing for current rates and how to upgrade.",
   },
   {
     id: "report-listing",
@@ -235,12 +241,13 @@ export const FAQ_SECTIONS = [
   {
     id: "business-listings",
     title: "Business Owners & Listings",
-    description: "Get listed, claim your shop, and report listing issues.",
+    description: "Get listed, claim your shop, Featured upgrades, and report listing issues.",
     faqIds: [
       "verify-businesses",
       "get-listed",
       "claim-listing",
       "cant-claim",
+      "featured-listing",
       "report-listing",
     ],
   },

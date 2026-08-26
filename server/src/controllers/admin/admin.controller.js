@@ -85,6 +85,11 @@ import {
   flushDBCache,
 } from "../../redis/redis.js";
 import { clearClaimCodeCache } from "../../lib/claimHelpers.js";
+import {
+  cancelFeaturedSubscriptionForBusiness,
+  cancelFeaturedSubscriptionsForOwner,
+} from "../../lib/cancelFeaturedSubscriptions.js";
+import { invalidateClaimStatusCaches } from "../../lib/invalidateListingCaches.js";
 import { buildFreeLeadEmailPayload } from "../../lib/contactMessageSend.js";
 import { isEmailUnderReview } from "../../lib/emailStatus.js";
 import {
@@ -1961,6 +1966,8 @@ export const getBusinesses = async (req, res) => {
   const limit = Number(req.query.limit);
   const claimed =
     req.query.claimed === true || req.query.claimed === "true" ? true : null;
+  const featured =
+    req.query.featured === true || req.query.featured === "true" ? true : null;
   const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
   const q = rawQ ? rawQ.slice(0, 100) : null;
   const stateCode =
@@ -1999,6 +2006,7 @@ export const getBusinesses = async (req, res) => {
     page,
     limit,
     claimed,
+    featured,
     q,
     stateCode,
     citySlug,
@@ -2018,6 +2026,7 @@ export const getBusinesses = async (req, res) => {
     limit,
     {
       claimed,
+      featured,
       q,
       stateCode,
       citySlug,
@@ -2065,6 +2074,7 @@ export const getBusinesses = async (req, res) => {
     page,
     limit,
     claimed,
+    featured,
     q,
     state_code: stateCode,
     city_slug: citySlug,
@@ -2465,6 +2475,43 @@ export const updateBusinessCategories = async (req, res) => {
 export const unclaimBusinesses = async (req, res) => {
   const { business_ids } = req.body;
 
+  const billingErrors = [];
+  for (const businessId of business_ids ?? []) {
+    try {
+      const cancelResult = await cancelFeaturedSubscriptionForBusiness(
+        businessId,
+        null,
+        { reason: "admin_listing_unclaimed" }
+      );
+      if (cancelResult?.errors?.length) {
+        billingErrors.push(
+          ...cancelResult.errors.map((err) => ({
+            businessId,
+            message: err.message || "Failed to cancel Featured subscription",
+          }))
+        );
+      }
+    } catch (error) {
+      billingErrors.push({
+        businessId,
+        message: error?.message || "Failed to cancel Featured subscription",
+      });
+    }
+  }
+
+  if (billingErrors.length) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          billingErrors[0]?.message ||
+            "There was an error canceling Featured subscriptions.",
+          billingErrors
+        )
+      );
+  }
+
   const { data, error } = await unclaimBusinessesByIds(business_ids);
 
   if (error) {
@@ -2479,19 +2526,10 @@ export const unclaimBusinesses = async (req, res) => {
       );
   }
 
-  for (const business of data ?? []) {
-    try {
-      const { key: businessIdCacheKey } = getBusinessByIdKey(business.id);
-      await deleteCacheData(businessIdCacheKey);
-      if (business.slug) {
-        const { key: businessSlugCacheKey } = getBusinessBySlugKey(
-          business.slug
-        );
-        await deleteCacheData(businessSlugCacheKey);
-      }
-    } catch {
-      // best-effort cache cleanup
-    }
+  try {
+    await invalidateClaimStatusCaches(data ?? []);
+  } catch {
+    // best-effort cache cleanup
   }
 
   await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
@@ -2576,22 +2614,48 @@ export const getUserByUid = async (req, res) => {
 export const deleteUsers = async (req, res) => {
   const { user_ids } = req.body;
 
+  const billingErrors = [];
+  for (const uid of user_ids ?? []) {
+    try {
+      const cancelResult = await cancelFeaturedSubscriptionsForOwner(uid, {
+        reason: "admin_account_deleted",
+      });
+      if (cancelResult?.errors?.length) {
+        billingErrors.push(
+          ...cancelResult.errors.map((err) => ({
+            uid,
+            message: err.message || "Failed to cancel Featured subscription",
+          }))
+        );
+      }
+    } catch (error) {
+      billingErrors.push({
+        uid,
+        message: error?.message || "Failed to cancel Featured subscription",
+      });
+    }
+  }
+
+  if (billingErrors.length) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          billingErrors[0]?.message ||
+            "There was an error canceling Featured subscriptions.",
+          billingErrors
+        )
+      );
+  }
+
   const { deleted, unclaimedBusinesses, errors } =
     await removeAdminUsers(user_ids);
 
-  for (const business of unclaimedBusinesses ?? []) {
-    try {
-      const { key: businessIdCacheKey } = getBusinessByIdKey(business.id);
-      await deleteCacheData(businessIdCacheKey);
-      if (business.slug) {
-        const { key: businessSlugCacheKey } = getBusinessBySlugKey(
-          business.slug
-        );
-        await deleteCacheData(businessSlugCacheKey);
-      }
-    } catch {
-      // best-effort cache cleanup
-    }
+  try {
+    await invalidateClaimStatusCaches(unclaimedBusinesses ?? []);
+  } catch {
+    // best-effort cache cleanup
   }
 
   if (deleted.length || unclaimedBusinesses.length) {

@@ -610,8 +610,10 @@ export const LISTING_REQUEST_LIVE_MESSAGE = Object.freeze({
   <ul>
     <li>Update information about your business</li>
     <li>Keep contact info accurate so customers can reach you</li>
-    <li>Show as a verified shop with higher priority in search results</li>
+    <li>Show as a verified shop in search results</li>
   </ul>
+
+  <p>After you claim, you can optionally upgrade to a paid Featured listing for a badge, search priority, and a spot on our Featured page: <a href="${escapeEmailHtml(`${getWebBaseUrl()}/pricing`)}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>If you have any questions or need assistance, don't hesitate to reach out! You can also reply to this email.</p>
 
@@ -644,11 +646,58 @@ export const ADMIN_BUSINESS_CLAIMED_MESSAGE = Object.freeze({
   `,
 });
 
+// Admin notification when a Featured listing subscription is purchased
+export const ADMIN_FEATURED_PURCHASED_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Featured listing purchased${businessName ? `: ${businessName}` : ""}`,
+  html: (
+    businessName,
+    {
+      email,
+      businessPageUrl,
+      stripeSubscriptionId,
+      stripeCustomerId,
+      status,
+    } = {}
+  ) => `
+  <p>A Featured listing subscription was purchased on RadiatorRepairHub.</p>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 160px;">Business:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(businessName ?? "N/A")}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Owner email:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(email ?? "N/A")}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Listing:</td>
+      <td style="padding: 8px 0;"><a href="${escapeEmailHtml(businessPageUrl ?? "#")}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl ?? "N/A")}</a></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Subscription status:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(status ?? "N/A")}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Stripe subscription:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(stripeSubscriptionId ?? "N/A")}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Stripe customer:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(stripeCustomerId ?? "N/A")}</td>
+    </tr>
+  </table>
+  `,
+});
+
 // Thank-you email sent to the business owner after a successful claim
 export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
   subject: (businessName) =>
     `Thanks for claiming ${businessName ?? "your business"} on RadiatorRepairHub`,
-  html: (businessName, { businessPageUrl, dashboardUrl }) => `
+  html: (businessName, { businessPageUrl, dashboardUrl }) => {
+    const pricingUrl = `${getWebBaseUrl()}/pricing`;
+    return `
   <p>Hi there,</p>
 
   <p>Thank you for claiming <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub. Your account is ready, and you can now manage your listing.</p>
@@ -664,13 +713,17 @@ export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
     <li>Update information about your business</li>
     <li>Receive Quick Contact inquiries from customers</li>
     <li>Keep contact info accurate so customers can reach you</li>
-    <li>Show as a verified shop and have higher priority in search results</li>
+    <li>Show as a verified shop in search results</li>
   </ul>
+
+  <p><strong>Want more visibility?</strong> Claiming stays free. You can optionally upgrade to a paid Featured listing for a Featured badge, priority in search, and a place on our Featured page:</p>
+  <p><a href="${pricingUrl}" style="color: #1a73e8;">${pricingUrl}</a></p>
 
   <p>If you have any questions, just reply to this email, we're happy to help anytime!</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
-  `,
+  `;
+  },
 });
 
 // Outreach: invite unclaimed businesses to claim their listing (A — control)
@@ -679,7 +732,9 @@ export const CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
     `Claim your free listing on RadiatorRepairHub${
       businessName ? `: ${businessName}` : ""
     }`,
-  html: (businessName, { businessPageUrl, howToClaimUrl }) => `
+  html: (businessName, { businessPageUrl, howToClaimUrl }) => {
+    const pricingUrl = `${getWebBaseUrl()}/pricing`;
+    return `
   <p>Hi there,</p>
 
   <p>We listed <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub so local customers can find radiator repair shops near them.</p>
@@ -691,15 +746,20 @@ export const CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Your RadiatorRepairHub page can also work as a simple website link for Google Business Profile, ads, and social profiles.</p>
 
+  <p>After you claim, you can optionally upgrade to Featured for extra search placement: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+
   <p>Thanks,<br>RadiatorRepairHub Team</p>
-  `,
+  `;
+  },
 });
 
 // Outreach A/B: ownership / control framing
 export const OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   subject: (businessName) =>
     `${businessName ?? "Your business"} is listed on RadiatorRepairHub - Claim it for Free!`,
-  html: (businessName, { businessPageUrl, howToClaimUrl }) => `
+  html: (businessName, { businessPageUrl, howToClaimUrl }) => {
+    const pricingUrl = `${getWebBaseUrl()}/pricing`;
+    return `
   <p>Hi there,</p>
 
   <p><strong>${businessName ?? "Your business"}</strong> already has a listing on RadiatorRepairHub, the directory customers use to find radiator repair shops near them.</p>
@@ -711,15 +771,20 @@ export const OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Need a walkthrough? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
+  <p>After you claim, you can optionally upgrade to Featured for extra search placement: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+
   <p>Thanks,<br>RadiatorRepairHub Team</p>
-  `,
+  `;
+  },
 });
 
 // Outreach A/B: lead / outcome framing
 export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   subject: (businessName) =>
     `Get leads for ${businessName ?? "your business"} on RadiatorRepairHub`,
-  html: (businessName, { businessPageUrl, howToClaimUrl }) => `
+  html: (businessName, { businessPageUrl, howToClaimUrl }) => {
+    const pricingUrl = `${getWebBaseUrl()}/pricing`;
+    return `
   <p>Hi there,</p>
 
   <p>We've been getting an increase in traffic to our site, RadiatorRepairHub, which customers use to find radiator repair shops near them.</p>
@@ -729,16 +794,19 @@ export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   <p>Claim your free listing so you can:</p>
   <ul>
     <li>Keep your contact info, hours, and services accurate</li>
-    <li>Show as a verified shop and have higher priority in search results</li>
-    <li>Increase your visibility and reach more customers</li>
+    <li>Show as a verified shop in search results</li>
+    <li>Receive Quick Contact inquiries from customers</li>
   </ul>
 
   <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
+  <p>After you claim, you can optionally upgrade to a paid Featured listing for a badge, search priority, and a spot on our Featured page: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+
   <p>Thanks,<br>RadiatorRepairHub Team</p>
-  `,
+  `;
+  },
 });
 
 // Outreach: claim-focused invite for manual/custom claim outreach
@@ -747,7 +815,9 @@ export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
     `Claim your listing on RadiatorRepairHub${
       businessName ? `: ${businessName}` : ""
     }`,
-  html: (businessName, { businessPageUrl, howToClaimUrl }) => `
+  html: (businessName, { businessPageUrl, howToClaimUrl }) => {
+    const pricingUrl = `${getWebBaseUrl()}/pricing`;
+    return `
   <p>Hi there,</p>
 
   <p><strong>${businessName ?? "Your business"}</strong> has a free listing on RadiatorRepairHub, where customers look for radiator repair shops near them.</p>
@@ -756,15 +826,18 @@ export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   <ul>
     <li>Update your business information</li>
     <li>Keep contact details accurate so customers can reach you</li>
-    <li>Show as a verified shop with higher priority in search results</li>
+    <li>Show as a verified shop in search results</li>
   </ul>
 
   <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Need help? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
+  <p>After you claim, you can optionally upgrade to Featured for extra search placement: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+
   <p>Thanks,<br>RadiatorRepairHub Team</p>
-  `,
+  `;
+  },
 });
 
 // Outreach: final follow-up after any claim-invite variant
@@ -773,7 +846,9 @@ export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
     `Follow-up: Claim your listing on RadiatorRepairHub${
       businessName ? `: ${businessName}` : ""
     }`,
-  html: (businessName, { businessPageUrl, howToClaimUrl }) => `
+  html: (businessName, { businessPageUrl, howToClaimUrl }) => {
+    const pricingUrl = `${getWebBaseUrl()}/pricing`;
+    return `
   <p>Hi there,</p>
 
   <p>We previously reached out about claiming your free listing for <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub.</p>
@@ -782,7 +857,7 @@ export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
   <ul>
     <li>Update information about your business</li>
     <li>Keep contact info accurate so customers can reach you</li>
-    <li>Show as a verified shop with higher priority in search results</li>
+    <li>Show as a verified shop in search results</li>
     <li>Use your RadiatorRepairHub page as a website link for Google Business Profile, ads, and social profiles</li>
   </ul>
 
@@ -790,10 +865,13 @@ export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
+  <p>After you claim, you can optionally upgrade to Featured for extra search placement: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+
   <p>If you're not interested, no worries! We won't bother you again.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
-  `,
+  `;
+  },
 });
 
 // Outreach: offer website help / RRH page as web presence

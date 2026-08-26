@@ -26,6 +26,7 @@ const RESOURCE_LINKS = [
   { label: "Blogs", path: "/blogs" },
   { label: "Get Listed", path: "/get-listed" },
   { label: "How to Claim", path: "/how-to-claim" },
+  { label: "Pricing", path: "/pricing" },
   { label: "FAQ", path: "/faq" },
 ];
 
@@ -51,6 +52,8 @@ function isResourcesActive(pathname) {
     pathname.startsWith("/get-listed/") ||
     pathname === "/how-to-claim" ||
     pathname.startsWith("/how-to-claim/") ||
+    pathname === "/pricing" ||
+    pathname.startsWith("/pricing/") ||
     pathname === "/faq"
   );
 }
@@ -64,6 +67,7 @@ function isItemActive(pathname, path) {
   }
   if (path === "/blogs") return pathname.startsWith("/blogs/");
   if (path === "/how-to-claim") return pathname.startsWith("/how-to-claim/");
+  if (path === "/pricing") return pathname.startsWith("/pricing/");
   return false;
 }
 
@@ -233,7 +237,7 @@ function Navbar() {
                 Contact
               </Link>
               <Link
-                href="/search?page=1&sort=verified"
+                href="/search?page=1&sort=featured"
                 className="ml-2 flex items-center space-x-2 rounded-full bg-primary px-4 py-1.5 font-medium text-primary-foreground transition-interactive hover:bg-primary/90"
                 aria-label="Search for radiator repair services"
               >
@@ -313,7 +317,7 @@ function Navbar() {
 
           <div className="space-y-3 border-b border-border p-6">
             <Link
-              href="/search?page=1&sort=verified"
+              href="/search?page=1&sort=featured"
               onClick={closeMobileMenu}
               className="flex w-full items-center justify-center space-x-2 rounded-full bg-primary px-4 py-3 font-medium text-primary-foreground transition-interactive hover:bg-primary/90"
               aria-label="Search for radiator repair businesses"

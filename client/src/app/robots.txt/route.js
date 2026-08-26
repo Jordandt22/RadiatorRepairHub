@@ -11,6 +11,12 @@ Disallow: /api/
 Disallow: /admin/
 Disallow: /_next/
 Disallow: /private/
+Disallow: /checkout/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /signin/
+Disallow: /claim/
+Disallow: /email-confirmed
 
 # Sitemap location
 Sitemap: https://radiatorrepairhub.com/sitemap.xml

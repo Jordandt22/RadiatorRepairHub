@@ -33,6 +33,7 @@ import {
   ActivityIcon,
   ServerIcon,
   MessageSquareIcon,
+  StarIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -91,6 +92,11 @@ const data = {
           title: "Claimed",
           url: "/businesses?tab=claimed",
           icon: <BadgeCheckIcon />,
+        },
+        {
+          title: "Featured",
+          url: "/businesses?tab=featured",
+          icon: <StarIcon />,
         },
         {
           title: "Outreach",

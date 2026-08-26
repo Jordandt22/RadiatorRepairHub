@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, LayoutDashboard } from "lucide-react";
+import { ArrowRight, BadgeCheck, LayoutDashboard, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -134,7 +134,11 @@ function ClaimBusinessButtonContent({
   );
 }
 
-function ClaimedBusinessStatus({ businessId, lastEditedAt = null }) {
+function ClaimedBusinessStatus({
+  businessId,
+  lastEditedAt = null,
+  isFeatured = false,
+}) {
   const { isOwner } = useIsBusinessOwner(businessId);
 
   let editedDate = null;
@@ -156,16 +160,37 @@ function ClaimedBusinessStatus({ businessId, lastEditedAt = null }) {
         <BadgeCheck className="size-4 shrink-0" aria-hidden="true" />
         <p className="text-sm font-medium">Verified business</p>
       </div>
-      {isOwner ? (
-        <Link
-          href="/dashboard"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-interactive hover:bg-muted"
-        >
-          <LayoutDashboard className="size-4 shrink-0" aria-hidden="true" />
-          My dashboard
-          <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-        </Link>
-      ) : null}
+      <div className="flex w-full flex-col gap-2">
+        {isOwner ? (
+          <Link
+            href="/dashboard"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-interactive hover:bg-muted"
+          >
+            <LayoutDashboard className="size-4 shrink-0" aria-hidden="true" />
+            My dashboard
+            <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </Link>
+        ) : null}
+        {isOwner && isFeatured ? (
+          <Link
+            href="/settings?tab=payments"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-500/40 bg-amber-50 px-5 py-2.5 text-sm font-medium text-amber-900 transition-colors hover:bg-amber-100"
+          >
+            <Star className="size-4 shrink-0 fill-current" aria-hidden="true" />
+            Featured Listing
+          </Link>
+        ) : null}
+        {isOwner && !isFeatured ? (
+          <Link
+            href={`/pricing?business=${encodeURIComponent(businessId)}`}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-interactive hover:bg-muted"
+          >
+            <Star className="size-4 shrink-0" aria-hidden="true" />
+            Get Featured
+            <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </Link>
+        ) : null}
+      </div>
       {editedDate ? (
         <p className="mt-2 text-center text-xs text-muted-foreground">
           Last updated {editedDate}
@@ -182,6 +207,7 @@ export default function ClaimBusinessButton({
   email,
   emailStatus = null,
   isClaimed = false,
+  isFeatured = false,
   hasDuplicateEmail = false,
   lastEditedAt = null,
 }) {
@@ -190,6 +216,7 @@ export default function ClaimBusinessButton({
       <ClaimedBusinessStatus
         businessId={businessId}
         lastEditedAt={lastEditedAt}
+        isFeatured={isFeatured}
       />
     );
   }

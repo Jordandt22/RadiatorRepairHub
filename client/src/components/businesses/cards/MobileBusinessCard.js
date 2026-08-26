@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
-import VerifiedBadge from "@/components/businesses/VerifiedBadge";
+import ListingBadges from "@/components/businesses/ListingBadges";
 import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
 
 function MobileBusinessCard({ business, priority = false }) {
@@ -24,15 +24,17 @@ function MobileBusinessCard({ business, priority = false }) {
             showIcon={false}
             priority={priority}
           />
-          {business.is_claimed ? (
-            <div className="absolute top-3 left-3 z-10">
-              <VerifiedBadge />
-            </div>
-          ) : null}
+          <ListingBadges
+            business={business}
+            className="absolute top-3 left-3 z-10"
+          />
+          <span className="absolute bottom-3 left-3 z-10 text-sm font-medium text-primary bg-tint px-2 py-1 rounded-md capitalize">
+            {business.primary_category.name}
+          </span>
         </div>
 
         <div className="p-5">
-          <h3 className="font-semibold text-foreground mb-1 line-clamp-2 font-heading text-lg">
+          <h3 className="font-semibold text-foreground mb-1 line-clamp-1 font-heading text-lg">
             {business.title}
           </h3>
 
@@ -58,13 +60,11 @@ function MobileBusinessCard({ business, priority = false }) {
             <span className="text-sm text-muted-foreground">
               ({business.reviews_count.toLocaleString()})
             </span>
+          </div>
+          <p className="text-sm text-muted-foreground">{business.address}</p>
+          <div className="mt-2">
             <OpenStatus hours={business.hours} timezone={business.timezone} />
           </div>
-          <p className="text-sm text-muted-foreground mb-4">{business.address}</p>
-
-          <p className="w-fit text-sm font-medium text-primary bg-tint px-2 py-1 rounded-md capitalize">
-            {business.primary_category.name}
-          </p>
         </div>
       </div>
     </Link>

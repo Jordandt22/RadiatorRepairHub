@@ -12,6 +12,7 @@ import { formatFullDate } from "@/components/pages/dashboard/formatDate";
 import UserClaimedBusinessesTable from "@/components/pages/users/UserClaimedBusinessesTable";
 import UserDetailSkeleton from "@/components/pages/users/UserDetailSkeleton";
 import UserRoleBadge from "@/components/pages/users/UserRoleBadge";
+import UserSubscriptionsSection from "@/components/pages/users/UserSubscriptionsSection";
 
 function DetailCard({ label, children }) {
   return (
@@ -87,6 +88,7 @@ export default function UserDetailPageContent() {
   }
 
   const businesses = data.businesses ?? [];
+  const subscriptions = data.subscriptions ?? [];
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-4 md:gap-10 md:px-8 md:py-6">
@@ -146,6 +148,9 @@ export default function UserDetailPageContent() {
           <DetailCard label="Claimed businesses">
             <span className="tabular-nums">{data.claimed_count ?? 0}</span>
           </DetailCard>
+          <DetailCard label="Featured businesses">
+            <span className="tabular-nums">{data.featured_count ?? 0}</span>
+          </DetailCard>
         </dl>
       </section>
 
@@ -158,6 +163,8 @@ export default function UserDetailPageContent() {
         </h2>
         <UserClaimedBusinessesTable businesses={businesses} />
       </section>
+
+      <UserSubscriptionsSection subscriptions={subscriptions} />
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
+import BusinessFeaturedBadge from "@/components/pages/businesses/BusinessFeaturedBadge";
 import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
 import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
 import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
@@ -100,7 +101,7 @@ function BusinessesTableView({
               <TableHead className="w-[14%]">Claim invite</TableHead>
             ) : null}
             <TableHead className="w-[12%]">Phone</TableHead>
-            <TableHead className="w-[10%]">Claimed</TableHead>
+            <TableHead className="w-[14%]">Status</TableHead>
             {showLastEdited ? (
               <TableHead className="w-[12%]">Last edited</TableHead>
             ) : null}
@@ -173,7 +174,12 @@ function BusinessesTableView({
                   <span className="block truncate">{row.phone ?? "—"}</span>
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
-                  <BusinessClaimedBadge isClaimed={Boolean(row.is_claimed)} />
+                  <div className="flex flex-col items-start gap-1">
+                    <BusinessClaimedBadge isClaimed={Boolean(row.is_claimed)} />
+                    {Boolean(row.is_featured) ? (
+                      <BusinessFeaturedBadge isFeatured />
+                    ) : null}
+                  </div>
                 </TableCell>
                 {showLastEdited ? (
                   <TableCell className="whitespace-nowrap">
@@ -269,6 +275,9 @@ function BusinessesCardList({
                 />
                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
                   <BusinessClaimedBadge isClaimed={Boolean(row.is_claimed)} />
+                  {Boolean(row.is_featured) ? (
+                    <BusinessFeaturedBadge isFeatured />
+                  ) : null}
                   {showScore ? (
                     <BusinessScoreBadge score={row.total_score} />
                   ) : null}
@@ -349,12 +358,13 @@ export default function BusinessesTable({
   onToggleId,
   onToggleAll,
 }) {
-  const showOwnerEmail = activeTab === "claimed";
-  const showClaimInvite = activeTab === "claimed";
+  const isManagedTab = activeTab === "claimed" || activeTab === "featured";
+  const showOwnerEmail = isManagedTab;
+  const showClaimInvite = isManagedTab;
   const showScore = activeTab === "all";
-  const showLastEdited = activeTab === "claimed";
+  const showLastEdited = isManagedTab;
   const showSelection =
-    activeTab === "claimed" &&
+    isManagedTab &&
     typeof onToggleId === "function" &&
     typeof onToggleAll === "function" &&
     selectedIds instanceof Set;

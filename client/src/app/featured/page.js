@@ -1,30 +1,31 @@
 import React from "react";
 import FeaturedBusinessesPage from "@/components/pages/featured/FeaturedBusinessesPage";
-import { buildPageMetadata } from "@/lib/seo/metadata";
+import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
 
-const title =
-  "Featured Radiator Repair Shops | Top-Rated Auto Repair Services - RadiatorRepairHub";
+const title = "Featured Radiator Repair Shops | RadiatorRepairHub";
 const description =
-  "Discover featured radiator repair shops with top ratings and reviews. Find the best auto repair services in your area with verified customer feedback and quality guarantees.";
+  "Browse Featured radiator repair shops on RadiatorRepairHub. Featured is a paid upgrade for claimed listings with a badge, search priority, and a spot on this page.";
 
 export const metadata = buildPageMetadata({
   title,
   description,
   keywords:
-    "featured radiator repair, top rated auto repair, best radiator shops, highly rated mechanics, quality radiator service",
+    "featured radiator repair, featured auto repair listing, sponsored radiator shop, radiator repair directory featured",
   path: "/featured",
 });
 
-async function Page() {
+async function Page({ searchParams }) {
+  const searchParamsData = await searchParams;
+
   const collectionSchema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: "Featured Radiator Repair Shops",
     description:
-      "Top-rated radiator repair businesses and auto repair services",
-    url: "https://radiatorrepairhub.com/featured",
+      "Paid Featured radiator repair listings with extra visibility in the RadiatorRepairHub directory",
+    url: `${SITE_URL}/featured`,
     isPartOf: {
-      "@id": "https://radiatorrepairhub.com/#website",
+      "@id": `${SITE_URL}/#website`,
     },
   };
 
@@ -36,7 +37,7 @@ async function Page() {
           __html: JSON.stringify(collectionSchema),
         }}
       />
-      <FeaturedBusinessesPage />
+      <FeaturedBusinessesPage searchParams={searchParamsData} />
     </>
   );
 }

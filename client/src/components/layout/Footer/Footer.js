@@ -22,13 +22,14 @@ function Footer({
     { label: "Featured", path: "/featured" },
     { label: "Categories", path: "/categories" },
     { label: "States", path: "/states" },
-    { label: "Find a Shop", path: "/search?page=1&sort=verified" },
+    { label: "Find a Shop", path: "/search?page=1&sort=featured" },
   ];
 
   const resourceLinks = [
     { label: "Blogs", path: "/blogs" },
     { label: "Tools & Supplies", path: "/shop" },
     { label: "How to Claim", path: "/how-to-claim" },
+    { label: "Pricing", path: "/pricing" },
     { label: "FAQ", path: "/faq" },
   ];
 

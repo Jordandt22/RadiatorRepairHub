@@ -22,7 +22,7 @@ import ServiceCategoriesSection from "@/components/businesses/ServiceCategoriesS
 import AmenitiesSection from "@/components/businesses/AmenitiesSection";
 import AboutSection from "@/components/businesses/AboutSection";
 import BusinessHoursSection from "@/components/businesses/BusinessHoursSection";
-import VerifiedBadge from "@/components/businesses/VerifiedBadge";
+import ListingBadges from "@/components/businesses/ListingBadges";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
@@ -321,7 +321,7 @@ async function Page({ params }) {
                   hours={business.hours}
                   timezone={business.timezone}
                 />
-                {business.is_claimed ? <VerifiedBadge size="md" /> : null}
+                <ListingBadges business={business} size="md" />
               </div>
 
               <div className="hidden md:block">
@@ -496,6 +496,7 @@ async function Page({ params }) {
                       email={business.email}
                       emailStatus={business.email_status}
                       isClaimed={Boolean(business.is_claimed)}
+                      isFeatured={Boolean(business.is_featured)}
                       hasDuplicateEmail={Boolean(business.has_duplicate_email)}
                       lastEditedAt={business.last_edited_at}
                     />
@@ -608,7 +609,7 @@ async function Page({ params }) {
                   </Link>
                 ) : (
                   <Link
-                    href="/search?page=1&sort=verified"
+                    href="/search?page=1&sort=featured"
                     className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
                   >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">

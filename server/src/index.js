@@ -19,6 +19,8 @@ import feedbackSurveysRouter from "./routes/feedback-surveys.routes.js";
 import affiliateProductsRouter from "./routes/affiliate-products.routes.js";
 import adminRouter from "./routes/admin/admin.routes.js";
 import authRouter from "./routes/auth.routes.js";
+import billingRouter from "./routes/billing.routes.js";
+import stripeWebhookRouter from "./routes/stripeWebhook.routes.js";
 
 const app = express();
 
@@ -32,6 +34,12 @@ app.use(
       ? ["http://localhost:3000", "http://localhost:3001"]
       : [WEB_URL, INTERNAL_CLIENT_URL],
   })
+);
+// Stripe webhooks need the raw body — mount before JSON parsing and Arcjet.
+app.use(
+  "/webhooks",
+  express.raw({ type: "application/json" }),
+  stripeWebhookRouter
 );
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -107,6 +115,9 @@ app.use(`/v${API_VERSION}/api/admin`, adminRouter);
 
 // Routes for Owner Auth
 app.use(`/v${API_VERSION}/api/auth`, authRouter);
+
+// Routes for Stripe billing (Featured listings)
+app.use(`/v${API_VERSION}/api/billing`, billingRouter);
 
 // PORT and Sever
 const server = http.createServer(app);

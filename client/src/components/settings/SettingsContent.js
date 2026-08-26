@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,10 +13,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import OwnerEditButton from "@/components/businesses/OwnerEditButton";
 import { useToast } from "@/contexts/ToastProvider";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
+import { usePostHog } from "posthog-js/react";
 import { signOut } from "@/lib/auth/session";
 import {
   updateOwnerEmail,
@@ -28,6 +30,10 @@ import {
   PASSWORD_REQUIREMENTS_HINT,
 } from "@/lib/validation/password";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  fetchBillingSubscriptions,
+  createBillingPortalSession,
+} from "@/lib/api/billing";
 
 function isValidEmail(value) {
   return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/.test(
@@ -139,7 +145,7 @@ function AccountEmailSection({
       }
 
       showCustomSuccess(
-        data?.message ||"Confirmation emails sent. Check your current and new inbox to finish the change."
+        data?.message || "Confirmation emails sent. Check your current and new inbox to finish the change."
       );
       setOpen(false);
       if (typeof onEmailChangeRequested === "function") {
@@ -290,7 +296,7 @@ function AccountPasswordSection() {
       if (strengthError) {
         next.password = strengthError;
       } else if (password === currentPassword) {
-        next.password ="New password must be different from your current password.";
+        next.password = "New password must be different from your current password.";
       }
     }
     if (!confirmPassword) {
@@ -493,7 +499,9 @@ function AccountDeleteSection() {
       </Button>
       <p className="mt-2 text-xs text-muted-foreground">
         Deletes your login account only. Your business listing information stays
-        on RadiatorRepairHub, but listings you own become unclaimed.
+        on RadiatorRepairHub, but listings you own become unclaimed and any
+        Featured subscription is canceled immediately. Featured fees already
+        paid are not refunded.
       </p>
 
       <Dialog
@@ -510,7 +518,9 @@ function AccountDeleteSection() {
             <DialogDescription>
               This deletes your RadiatorRepairHub account only, not your
               business listing information. Listings you own will become
-              unclaimed. This can NOT be reverted.
+              unclaimed, Featured status will be removed, and any active
+              Featured subscription will be canceled immediately with no refund
+              for the current billing period. This can NOT be reverted.
             </DialogDescription>
           </DialogHeader>
 
@@ -558,6 +568,209 @@ function AccountSettingsPanel({
   );
 }
 
+const SUBSCRIPTION_STATUS_STYLES = {
+  active: {
+    label: "Active",
+    pill: "bg-green-100 text-green-800",
+    dot: "bg-green-500",
+  },
+  trialing: {
+    label: "Trialing",
+    pill: "bg-sky-100 text-sky-800",
+    dot: "bg-sky-500",
+  },
+  past_due: {
+    label: "Past due",
+    pill: "bg-amber-100 text-amber-800",
+    dot: "bg-amber-500",
+  },
+  unpaid: {
+    label: "Unpaid",
+    pill: "bg-red-100 text-red-800",
+    dot: "bg-red-500",
+  },
+  canceled: {
+    label: "Canceled",
+    pill: "bg-zinc-100 text-zinc-700",
+    dot: "bg-zinc-400",
+  },
+  incomplete: {
+    label: "Incomplete",
+    pill: "bg-orange-100 text-orange-800",
+    dot: "bg-orange-500",
+  },
+  incomplete_expired: {
+    label: "Expired",
+    pill: "bg-zinc-100 text-zinc-700",
+    dot: "bg-zinc-400",
+  },
+};
+
+function SubscriptionStatusBadge({ status }) {
+  const style = SUBSCRIPTION_STATUS_STYLES[status] || {
+    label: status || "Unknown",
+    pill: "bg-muted text-muted-foreground",
+    dot: "bg-border",
+  };
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${style.pill}`}
+    >
+      <span className={`size-1.5 shrink-0 rounded-full ${style.dot}`} aria-hidden="true" />
+      {style.label}
+    </span>
+  );
+}
+
+function formatPeriodEnd(value) {
+  if (!value) return null;
+  try {
+    return new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(
+      new Date(value)
+    );
+  } catch {
+    return null;
+  }
+}
+
+function PaymentsSettingsPanel() {
+  const posthog = usePostHog();
+  const { showCustomError } = useToast();
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [managing, setManaging] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchBillingSubscriptions().then(({ data, error: apiError }) => {
+      if (!mounted) return;
+      if (apiError) {
+        setError(
+          typeof apiError.message === "string"
+            ? apiError.message
+            : "Unable to load subscriptions."
+        );
+        setSubscriptions([]);
+      } else {
+        setSubscriptions(data?.subscriptions ?? []);
+        setError("");
+      }
+      setLoading(false);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleManage = async () => {
+    if (managing) return;
+    setManaging(true);
+    posthog?.capture("featured_portal_opened", {
+      source: "settings",
+      signed_in: true,
+    });
+    try {
+      const { data, error: apiError } = await createBillingPortalSession();
+      if (apiError || !data?.url) {
+        showCustomError(
+          typeof apiError?.message === "string"
+            ? apiError.message
+            : "Unable to open billing portal."
+        );
+        return;
+      }
+      window.open(data.url, "_blank", "noopener,noreferrer");
+    } catch {
+      showCustomError("Unable to open billing portal.");
+    } finally {
+      setManaging(false);
+    }
+  };
+
+  return (
+    <div className="flex max-w-xl flex-col gap-4">
+      <section className="rounded-lg border border-border bg-card p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="font-heading text-base font-semibold text-foreground">
+              Subscriptions
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Featured listing plans billed through Stripe. Fees are
+              non-refundable for the current billing period.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleManage}
+            disabled={managing || loading || subscriptions.length === 0}
+          >
+            {managing ? "Opening…" : "Manage"}
+          </Button>
+        </div>
+
+        {loading ? (
+          <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
+        ) : error ? (
+          <p className="mt-4 text-sm text-red-600">{error}</p>
+        ) : subscriptions.length === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">
+            No subscriptions yet.{" "}
+            <Link href="/pricing" className="text-interactive underline">
+              View Featured Pricing
+            </Link>
+          </p>
+        ) : (
+          <ul className="mt-4 divide-y divide-border">
+            {subscriptions.map((sub) => {
+              const periodEnd = formatPeriodEnd(sub.currentPeriodEnd);
+              return (
+                <li
+                  key={sub.id}
+                  className="flex flex-col gap-3 rounded-sm border border-muted-foreground/10 bg-muted-foreground/5 p-4 sm:flex-row sm:items-start sm:justify-between"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground">
+                      {sub.businessTitle}
+                    </p>
+                    {periodEnd ? (
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        Through {periodEnd}
+                      </p>
+                    ) : null}
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <SubscriptionStatusBadge status={sub.status} />
+                      {sub.cancelAtPeriodEnd ? (
+                        <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                          Cancels at period end
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleManage}
+                    disabled={managing}
+                    className="w-full shrink-0 sm:w-auto"
+                  >
+                    Manage
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}
+
 function SettingsAccountSkeleton() {
   return (
     <div
@@ -594,8 +807,15 @@ function SettingsAccountSkeleton() {
 }
 
 function SettingsContentInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isLoading, refreshUser } = useIsSignedIn();
   const [pendingOverride, setPendingOverride] = useState("");
+  const requestedTab = searchParams.get("tab");
+  const activeTab =
+    requestedTab === "payments" || requestedTab === "notifications"
+      ? requestedTab
+      : "account";
 
   useEffect(() => {
     // Always re-fetch from Auth on Settings mount (covers email-confirm redirects).
@@ -635,7 +855,7 @@ function SettingsContentInner() {
     }
   }, [pendingFromUser, currentEmail, pendingOverride]);
 
-  const tabsTriggerClassNames ="px-6 cursor-pointer transition-colors duration-200";
+  const tabsTriggerClassNames = "px-6 cursor-pointer transition-colors duration-200";
 
   const showAccountSkeleton = isLoading || !user;
 
@@ -646,14 +866,32 @@ function SettingsContentInner() {
           Settings
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Manage your account and notification preferences.
+          Manage your account, billing, and notification preferences.
         </p>
       </div>
 
-      <Tabs defaultValue="account" className="gap-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => {
+          const params = new URLSearchParams(searchParams.toString());
+          if (value === "account") {
+            params.delete("tab");
+          } else {
+            params.set("tab", value);
+          }
+          const query = params.toString();
+          router.replace(query ? `/settings?${query}` : "/settings", {
+            scroll: false,
+          });
+        }}
+        className="gap-6"
+      >
         <TabsList>
           <TabsTrigger value="account" className={tabsTriggerClassNames}>
             Account
+          </TabsTrigger>
+          <TabsTrigger value="payments" className={tabsTriggerClassNames}>
+            Payments
           </TabsTrigger>
           <TabsTrigger value="notifications" className={tabsTriggerClassNames}>
             Notifications
@@ -673,6 +911,19 @@ function SettingsContentInner() {
                 pendingEmail={pendingEmail}
                 onEmailChangeRequested={handleEmailChangeRequested}
               />
+            )}
+          </section>
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <section aria-labelledby="payments-settings-heading">
+            <h2 id="payments-settings-heading" className="sr-only">
+              Payments
+            </h2>
+            {showAccountSkeleton ? (
+              <SettingsAccountSkeleton />
+            ) : (
+              <PaymentsSettingsPanel />
             )}
           </section>
         </TabsContent>

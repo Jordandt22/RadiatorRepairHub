@@ -9,7 +9,7 @@ function Header() {
 
   const pageTitle = "Featured Businesses";
   const pageDescription =
-    "Discover our top-rated radiator repair specialists. These featured businesses have earned exceptional reviews and provide outstanding service to their communities.";
+    "Paid Featured partners on RadiatorRepairHub. These shops are sponsored for extra visibility in search and on this page.";
 
   return (
     <PageHeader
@@ -18,7 +18,7 @@ function Header() {
       pageDescription={pageDescription}
       headerLink={{
         label: "Search",
-        href: "/search?page=1&sort=verified",
+        href: "/search?page=1&sort=featured",
       }}
     />
   );

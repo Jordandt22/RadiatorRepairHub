@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { NOINDEX_ROBOTS } from "@/lib/seo/metadata";
 import SettingsContent from "@/components/settings/SettingsContent";
 
@@ -8,5 +9,9 @@ export const metadata = {
 };
 
 export default function SettingsPage() {
-  return <SettingsContent />;
+  return (
+    <Suspense fallback={null}>
+      <SettingsContent />
+    </Suspense>
+  );
 }

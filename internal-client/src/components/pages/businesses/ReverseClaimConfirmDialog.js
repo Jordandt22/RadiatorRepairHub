@@ -34,8 +34,9 @@ export default function ReverseClaimConfirmDialog({
         <DialogHeader>
           <DialogTitle>Reverse claim?</DialogTitle>
           <DialogDescription>
-            This will set {countLabel} to unclaimed and clear the owner. This
-            cannot be undone from here.
+            This will set {countLabel} to unclaimed and clear the owner. Any
+            active Featured Stripe subscription will be canceled immediately.
+            Featured fees are non-refundable. This cannot be undone from here.
           </DialogDescription>
         </DialogHeader>
 

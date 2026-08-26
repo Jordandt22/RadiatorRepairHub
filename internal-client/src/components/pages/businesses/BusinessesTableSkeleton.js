@@ -51,11 +51,12 @@ export default function BusinessesTableSkeleton({
   rows = 8,
   activeTab = "all",
 }) {
-  const showOwnerEmail = activeTab === "claimed";
-  const showClaimInvite = activeTab === "claimed";
+  const isManagedTab = activeTab === "claimed" || activeTab === "featured";
+  const showOwnerEmail = isManagedTab;
+  const showClaimInvite = isManagedTab;
   const showScore = activeTab === "all";
-  const showLastEdited = activeTab === "claimed";
-  const showSelection = activeTab === "claimed";
+  const showLastEdited = isManagedTab;
+  const showSelection = isManagedTab;
 
   return (
     <>
@@ -87,7 +88,7 @@ export default function BusinessesTableSkeleton({
               {showOwnerEmail ? <TableHead>Owner email</TableHead> : null}
               {showClaimInvite ? <TableHead>Claim invite</TableHead> : null}
               <TableHead>Phone</TableHead>
-              <TableHead>Claimed</TableHead>
+              <TableHead>Status</TableHead>
               {showLastEdited ? <TableHead>Last edited</TableHead> : null}
               <TableHead className="w-24 text-right">
                 <span className="sr-only">Actions</span>

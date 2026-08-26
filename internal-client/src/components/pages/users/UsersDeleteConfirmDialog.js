@@ -35,7 +35,9 @@ export default function UsersDeleteConfirmDialog({
           <DialogTitle>Delete users?</DialogTitle>
           <DialogDescription>
             This will permanently delete {countLabel}, release any claimed
-            businesses, and remove their accounts. This cannot be undone.
+            businesses, cancel any Featured Stripe subscriptions immediately,
+            and remove their accounts. Featured fees are non-refundable. This
+            cannot be undone.
           </DialogDescription>
         </DialogHeader>
 

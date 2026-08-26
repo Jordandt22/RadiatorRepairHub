@@ -9,11 +9,11 @@ import {
 
 export const metadata = {
   title: "Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
-  description:"RadiatorRepairHub terms of service: directory use, Quick Contact, business claims, listing reports, accounts, Shop affiliate links, and user responsibilities.",
+  description:"RadiatorRepairHub terms of service: directory use, Quick Contact, business claims, Featured listings, listing reports, accounts, Shop affiliate links, and user responsibilities.",
   keywords:"terms of service, user agreement, legal terms, terms and conditions, service agreement, user rights",
   openGraph: {
     title:"Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
-    description:"RadiatorRepairHub terms of service: directory use, Quick Contact, business claims, listing reports, accounts, Shop affiliate links, and user responsibilities.",
+    description:"RadiatorRepairHub terms of service: directory use, Quick Contact, business claims, Featured listings, listing reports, accounts, Shop affiliate links, and user responsibilities.",
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
@@ -32,19 +32,22 @@ function TermsPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date("2026-08-13").toLocaleDateString("en-US", {
+  const lastUpdated = new Date("2026-08-25").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
   });
 
-  const serviceDescriptionPoints = ["A searchable database of radiator repair shops and service providers","Business contact information, locations, hours, services, photos, and third-party review summaries","Search and filtering capabilities","Educational blog and FAQ content about radiator repair and using the directory","General contact forms for directory questions, listing help, and feedback","Quick Contact, a tool to submit service inquiries to claimed business listings","Business claiming, so eligible owners can verify listing email access and create an account to manage their listing through a dashboard and account settings","Report Info, a tool to report incorrect claim contact details, incorrect or outdated listing info, or inappropriate listing content","An optional short site feedback survey that may appear after you submit certain forms","A Tools & Supplies Shop and related product recommendations, including Amazon Associate affiliate links",
+  const serviceDescriptionPoints = ["A searchable database of radiator repair shops and service providers","Business contact information, locations, hours, services, photos, and third-party review summaries","Search and filtering capabilities","Educational blog and FAQ content about radiator repair and using the directory","General contact forms for directory questions, listing help, and feedback","Quick Contact, a tool to submit service inquiries to claimed business listings","Business claiming, so eligible owners can verify listing email access and create an account to manage their listing through a dashboard and account settings","Optional paid Featured listing upgrades for claimed businesses, billed through Stripe","Report Info, a tool to report incorrect claim contact details, incorrect or outdated listing info, or inappropriate listing content","An optional short site feedback survey that may appear after you submit certain forms","A Tools & Supplies Shop and related product recommendations, including Amazon Associate affiliate links",
   ];
 
   const quickContactTermsPoints = ["You agree to provide accurate and complete information when submitting a contact form or Quick Contact message.","Submitting a form constitutes your consent to our Privacy Policy and the processing of the information you provide.","After a successful Contact, Get Listed, or Quick Contact submission, we may show an optional short site feedback survey. Responses are voluntary and described in our Privacy Policy.","Quick Contact is available only on claimed business listings. For unclaimed listings, use the phone number, email, or website shown on the listing.","Quick Contact messages are reviewed before they may be forwarded to a listed business; delivery is not guaranteed and may take additional time.","We may decline, flag, archive, or not forward messages that appear fraudulent, abusive, incomplete, undeliverable, or otherwise inappropriate.","We may verify the email address you provide before accepting Contact, Get Listed, Quick Contact, or listing report submissions.","We facilitate communication between you and listed businesses but do not guarantee a response, appointment, quote, or repair outcome.","Your repair or service relationship, if any, is solely between you and the listed business.",
   ];
 
-  const claimTermsPoints = ["Claiming is available only for eligible listings, typically those with a unique email address on file that can receive a verification message.","By starting or completing a claim, you represent that you are an authorized owner or representative of the business and that the information you provide is accurate.","We may send a verification code or link to the email address associated with the listing. Access to that inbox is part of how we confirm eligibility.","We may deny, pause, expire, cancel, or reverse a claim if we cannot verify authorization, if eligibility requirements are not met, or if we suspect fraud or abuse.","Self-serve claiming may be unavailable when a listing has no email on file or when the same email is shared across multiple listings. In those cases, use Report Info or contact us for help.","After a successful claim, you may create or use an account to manage the claimed listing through the dashboard and account settings, subject to these Terms and our Privacy Policy.","When you update listing contact details through your account, we may verify changed phone numbers or email addresses before saving them.","Claiming does not transfer ownership of our directory data or grant you rights beyond managing your listing through the Service.",
+  const claimTermsPoints = ["Claiming is available only for eligible listings, typically those with a unique email address on file that can receive a verification message.","Claiming a listing is free. Featured listing upgrades are optional and paid separately.","By starting or completing a claim, you represent that you are an authorized owner or representative of the business and that the information you provide is accurate.","We may send a verification code or link to the email address associated with the listing. Access to that inbox is part of how we confirm eligibility.","We may deny, pause, expire, cancel, or reverse a claim if we cannot verify authorization, if eligibility requirements are not met, or if we suspect fraud or abuse.","Self-serve claiming may be unavailable when a listing has no email on file or when the same email is shared across multiple listings. In those cases, use Report Info or contact us for help.","After a successful claim, you may create or use an account to manage the claimed listing through the dashboard and account settings, subject to these Terms and our Privacy Policy.","You may unclaim a listing you own through your account. Unclaiming removes your owner access; the public listing remains on RadiatorRepairHub and may be claimed again later. If the listing is Featured, unclaiming cancels the Featured subscription immediately as described in Featured Listings and Billing.","When you update listing contact details through your account, we may verify changed phone numbers or email addresses before saving them.","Claiming does not transfer ownership of our directory data or grant you rights beyond managing your listing through the Service.",
+  ];
+
+  const featuredListingTermsPoints = ["Featured is an optional paid upgrade available only for claimed listings you own.","Featured benefits may include a Featured badge, higher placement in search and browse results, and inclusion on the Featured businesses page. Featured does not guarantee placement in any particular homepage module. Benefits and pricing may change; current details are shown on our Featured listing pricing page.","Featured subscriptions are billed monthly through Stripe in advance for each billing period. Applicable taxes may be added at checkout.","Featured placement is applied after Stripe confirms payment (typically via webhook). Reaching a checkout success page does not by itself guarantee that Featured is already live if confirmation is still in progress.","You can manage or cancel a Featured subscription through the Stripe customer billing portal linked from your account Settings. Canceling through the portal stops future renewals; Featured access for the current paid period generally continues until the period ends, subject to Stripe and the plan terms in effect when you cancel.","Featured fees are non-refundable. We do not provide refunds or credits for partial billing periods, unused time, early cancellation, unclaiming a listing, or deleting your account.","If you delete your account or unclaim a Featured listing, we cancel the related Featured subscription immediately and remove Featured placement. That immediate cancel does not create a right to a refund for the current period.","We may keep Featured active during limited payment-recovery states (such as past due) and remove Featured when a subscription is canceled, unpaid, incomplete and expired, or otherwise ended under Stripe.","Purchasing Featured does not guarantee a specific number of leads, calls, or sales. Placement and visibility depend on directory usage and other listings.","We may suspend or remove Featured status if payment fails, the subscription ends, the listing is unclaimed, or we detect abuse or Terms violations.","Featured is advertising/placement within our directory. It is not an endorsement of service quality and does not change that your customer relationships remain between you and your customers.",
   ];
 
   const listingReportTermsPoints = ["You agree to provide accurate information when submitting a Report Info form or reporting a listing problem through our contact form.","We may verify the email address you provide and review reports before making any listing changes.","Submitting a report does not guarantee that we will change the listing, approve a claim, or respond within a specific timeframe.","We may decline, archive, or take no action on reports that appear incomplete, abusive, fraudulent, or unsupported.","Suggested phone numbers or emails you provide may be used to update listing contact details after review, when appropriate.","After a successful Report Info submission, we may show an optional short site feedback survey. Responses are voluntary and described in our Privacy Policy.",
@@ -56,7 +59,7 @@ function TermsPage() {
   const capacityRequirements = ["You have the legal capacity to enter into this Agreement","You are not prohibited from using the Service under applicable law","Your use of the Service will not violate any applicable law or regulation",
   ];
 
-  const permittedUses = ["Search for radiator repair businesses in your area","View business contact information and details","Contact businesses through provided information","Read blog, FAQ, and other educational content on the Service","Browse Tools & Supplies recommendations and follow affiliate product links","Submit general inquiries through our site contact forms","Submit service inquiries to claimed listings through Quick Contact, subject to review","Claim an eligible business listing you are authorized to represent, and manage that listing through your account","Report incorrect claim contact information, incorrect or outdated listing info, or inappropriate listing content through Report Info","Optionally respond to a short site feedback survey after submitting certain forms","Access publicly available information about listed businesses",
+  const permittedUses = ["Search for radiator repair businesses in your area","View business contact information and details","Contact businesses through provided information","Read blog, FAQ, and other educational content on the Service","Browse Tools & Supplies recommendations and follow affiliate product links","Submit general inquiries through our site contact forms","Submit service inquiries to claimed listings through Quick Contact, subject to review","Claim an eligible business listing you are authorized to represent, and manage that listing through your account","Unclaim a listing you own, which may cancel an active Featured subscription as described in these Terms","Purchase or manage an optional Featured listing upgrade for a claimed business you own","Report incorrect claim contact information, incorrect or outdated listing info, or inappropriate listing content through Report Info","Optionally respond to a short site feedback survey after submitting certain forms","Access publicly available information about listed businesses",
   ];
 
   const dataMisusePoints = ["Scraping, harvesting, or systematically collecting data from the Website","Using automated tools, bots, or scripts to access or extract information","Copying, reproducing, or distributing substantial portions of our directory data","Creating derivative databases or competing services using our data",
@@ -83,25 +86,25 @@ function TermsPage() {
   const disclaimersPoints = ["Implied warranties of merchantability and fitness for a particular purpose","Warranties of non-infringement","Warranties that the Service will be uninterrupted or error-free",
   ];
 
-  const noWarrantyPoints = ["The accuracy, completeness, or timeliness of business listings","The quality, reliability, or availability of listed businesses","The results you may obtain from using listed services","The safety or legality of interactions with listed businesses","That a business claim will succeed, remain approved, or resolve ownership disputes","That a listing report will result in a specific correction or outcome","The accuracy of third-party review scores or review counts displayed on listings","Affiliate product availability, pricing, compatibility, or purchase outcomes on Amazon or other retailers",
+  const noWarrantyPoints = ["The accuracy, completeness, or timeliness of business listings","The quality, reliability, or availability of listed businesses","The results you may obtain from using listed services","The safety or legality of interactions with listed businesses","That a business claim will succeed, remain approved, or resolve ownership disputes","That a listing report will result in a specific correction or outcome","That a Featured listing will produce a specific number of leads, calls, views, or sales","The accuracy of third-party review scores or review counts displayed on listings","Affiliate product availability, pricing, compatibility, or purchase outcomes on Amazon or other retailers",
   ];
 
   const technicalLimitationsPoints = ["The Service will meet your specific requirements","The Service will be available at all times","All technical issues will be corrected promptly","The Service will be compatible with all devices or browsers",
   ];
 
-  const liabilityDamagesPoints = ["Direct, indirect, incidental, special, consequential, or punitive damages","Lost profits, revenue, data, or use damages","Damages arising from your use or inability to use the Service","Damages resulting from your interactions with listed businesses","Damages caused by errors, omissions, or inaccuracies in business listings","Damages arising from claim decisions, listing report reviews, or account actions",
+  const liabilityDamagesPoints = ["Direct, indirect, incidental, special, consequential, or punitive damages","Lost profits, revenue, data, or use damages","Damages arising from your use or inability to use the Service","Damages resulting from your interactions with listed businesses","Damages caused by errors, omissions, or inaccuracies in business listings","Damages arising from claim decisions, listing report reviews, Featured placement or billing status, or account actions",
   ];
 
-  const businessInteractionPoints = ["Quality of services provided","Billing disputes or payment issues","Property damage or personal injury","Breach of contract by service providers","Fraudulent or deceptive business practices","Failure of a business to respond to a Quick Contact or other inquiry","Disputes over business ownership or who may claim a listing","Purchases, shipping, returns, or product issues arising from affiliate or third-party retailer links",
+  const businessInteractionPoints = ["Quality of services provided","Billing disputes or payment issues between you and a listed business","Property damage or personal injury","Breach of contract by service providers","Fraudulent or deceptive business practices","Failure of a business to respond to a Quick Contact or other inquiry","Disputes over business ownership or who may claim a listing","Purchases, shipping, returns, or product issues arising from affiliate or third-party retailer links",
   ];
 
-  const indemnificationPoints = ["Your use of the Service","Your violation of these Terms","Your violation of any third-party rights, including intellectual property rights","Any content you submit to the Service","Your interactions with businesses listed in our directory","Your business claim submissions, listing reports, or account activity",
+  const indemnificationPoints = ["Your use of the Service","Your violation of these Terms","Your violation of any third-party rights, including intellectual property rights","Any content you submit to the Service","Your interactions with businesses listed in our directory","Your business claim submissions, listing reports, Featured subscription purchases, or account activity",
   ];
 
-  const terminationReasonsPoints = ["Breach of these Terms","Fraudulent or illegal activities","Unauthorized or fraudulent business claims","Abuse of Report Info or other reporting tools","Violation of intellectual property rights","Abuse of the Service or other users","Extended period of inactivity",
+  const terminationReasonsPoints = ["Breach of these Terms","Fraudulent or illegal activities","Unauthorized or fraudulent business claims","Abuse of Report Info or other reporting tools","Nonpayment or abuse related to Featured listing subscriptions","Violation of intellectual property rights","Abuse of the Service or other users","Extended period of inactivity",
   ];
 
-  const terminationEffectsPoints = ["Your right to use the Service will cease immediately","We may delete your account and associated data","Claimed listings associated with a deleted or terminated account may become unclaimed","Provisions that should survive termination will remain in effect","You remain liable for any obligations incurred prior to termination",
+  const terminationEffectsPoints = ["Your right to use the Service will cease immediately","We may delete your account and associated data","Claimed listings associated with a deleted or terminated account may become unclaimed","Featured placement is removed and any active Featured subscription is canceled when you delete your account, unclaim a listing, or when we terminate your account","Featured fees already paid are non-refundable, including when Featured ends early because of unclaim, account deletion, or termination","Provisions that should survive termination will remain in effect","You remain liable for any obligations incurred prior to termination",
   ];
 
   const modificationProcessPoints = [
@@ -424,6 +427,36 @@ function TermsPage() {
 
         <section className="mb-12">
           <h2 className="text-3xl font-heading font-bold mt-6">
+            Featured Listings and Billing
+          </h2>
+          <p className="mt-4 text-foreground leading-relaxed">
+            Claimed business owners may purchase an optional Featured listing
+            upgrade. By starting checkout or managing a Featured subscription,
+            you agree to the following:
+          </p>
+          <ul className="mt-4 text-foreground space-y-2">
+            {featuredListingTermsPoints.map((point, index) => (
+              <li key={index} className="mb-2 ml-6">
+                • {point}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-foreground leading-relaxed">
+            Current pricing and upgrade steps are on our{" "}
+            <a
+              href="/pricing"
+              className="text-interactive underline transition-colors hover:text-interactive/80"
+            >
+              Featured listing pricing
+            </a>{" "}
+            page. Payment processing is handled by Stripe under Stripe&apos;s
+            terms; we do not store your full payment card details on our
+            servers.
+          </p>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="text-3xl font-heading font-bold mt-6">
             Listing Reports (Report Info)
           </h2>
           <p className="mt-4 text-foreground leading-relaxed">
@@ -550,7 +583,8 @@ function TermsPage() {
             </li>
             <li className="mb-2 ml-6">
               • <strong>PostHog</strong> - product analytics and page
-              interaction tracking
+              interaction tracking (including claims and Featured checkout /
+              billing events)
             </li>
             <li className="mb-2 ml-6">
               • <strong>Cloudflare</strong> - content delivery, DNS, images,
@@ -563,13 +597,20 @@ function TermsPage() {
             <li className="mb-2 ml-6">
               • <strong>Resend</strong> - transactional email for Contact, Get
               Listed, Quick Contact, claim verification, listing report
-              notifications, and related communications
+              notifications, Featured purchase admin notices, and related
+              communications
             </li>
             <li className="mb-2 ml-6">
               • <strong>Supabase</strong> - database storage and authentication
               for directory data, contact inquiries, listing requests, contact
-              messages, accounts, claim requests, listing reports, and feedback
-              surveys
+              messages, accounts, claim requests, Featured subscription records,
+              listing reports, and feedback surveys
+            </li>
+            <li className="mb-2 ml-6">
+              • <strong>Stripe</strong> - payment and subscription processing
+              for optional Featured listing upgrades, including Checkout, tax
+              calculation where enabled, webhooks, and the customer billing
+              portal
             </li>
             <li className="mb-2 ml-6">
               • <strong>Abstract API</strong> - email address verification for
@@ -719,7 +760,11 @@ function TermsPage() {
             You may stop using the Service at any time. If you have an account
             with us, you may delete your account through account settings or by
             contacting us. Deleting your account may cause listings you own to
-            become unclaimed.
+            become unclaimed. If you have an active Featured subscription, we
+            cancel it when your account is deleted (or when the related listing
+            is unclaimed) so billing does not continue. Featured fees already
+            paid are non-refundable. You can also cancel Featured earlier through
+            the Stripe billing portal in Settings to stop future renewals.
           </p>
 
           <h3 className="text-xl font-heading font-semibold mt-6 mb-4">

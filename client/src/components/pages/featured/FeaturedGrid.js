@@ -6,6 +6,8 @@ import AnimatedBusinessGrid from "@/components/businesses/cards/AnimatedBusiness
 import BusinessCount from "@/components/content/BusinessCount";
 import FeaturedSearch from "./FeaturedSearch";
 import FeaturedSort from "./FeaturedSort";
+import FeaturedPagination from "./FeaturedPagination";
+import { FEATURED_PAGE_SIZE } from "./featuredUrl";
 
 function FeaturedGrid({
   businesses,
@@ -14,11 +16,17 @@ function FeaturedGrid({
   sort,
   onSortChange,
   totalBusinesses,
-  filteredCount,
+  currentPage,
+  totalPages,
+  showPlaceholders,
 }) {
-  const hasCatalog = totalBusinesses > 0;
   const isFirstRender = useRef(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const placeholderCount =
+    showPlaceholders && businesses.length < FEATURED_PAGE_SIZE
+      ? FEATURED_PAGE_SIZE - businesses.length
+      : 0;
+  const hasResults = businesses.length > 0 || placeholderCount > 0;
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -26,30 +34,14 @@ function FeaturedGrid({
       return;
     }
     setRefreshKey((key) => key + 1);
-  }, [searchTerm, sort]);
-
-  if (!hasCatalog) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="mb-4 font-heading text-2xl font-bold text-foreground">
-            No Featured Businesses Found
-          </h2>
-          <p className="text-muted-foreground">
-            We&apos;re currently updating our featured businesses list. Please
-            check back soon.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  }, [searchTerm, sort, currentPage]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <p className="mb-6 text-sm text-muted-foreground">
-        <BusinessCount count={filteredCount ?? businesses.length} />
+        <BusinessCount count={totalBusinesses} />
         {searchTerm?.trim() && totalBusinesses
-          ? ` of ${totalBusinesses.toLocaleString()}`
+          ? " matching your search"
           : null}
       </p>
 
@@ -58,7 +50,7 @@ function FeaturedGrid({
         <FeaturedSort sort={sort} onSortChange={onSortChange} />
       </div>
 
-      {!businesses || businesses.length === 0 ? (
+      {!hasResults ? (
         <div className="mt-16 text-center">
           <h2 className="mb-4 font-heading text-2xl font-bold text-foreground">
             No Businesses Found
@@ -69,11 +61,22 @@ function FeaturedGrid({
           </p>
         </div>
       ) : (
-        <AnimatedBusinessGrid
-          businesses={businesses}
-          refreshKey={refreshKey}
-          trigger="mount"
-        />
+        <>
+          <AnimatedBusinessGrid
+            businesses={businesses}
+            placeholderCount={placeholderCount}
+            refreshKey={refreshKey}
+            trigger="mount"
+          />
+          <FeaturedPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalBusinesses={totalBusinesses}
+            pageSize={FEATURED_PAGE_SIZE}
+            sort={sort}
+            q={searchTerm}
+          />
+        </>
       )}
     </div>
   );
