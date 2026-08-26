@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BadgeCheck,
   Map as MapIcon,
   MapPin,
+  RefreshCw,
   Search,
   Star,
   Tag,
@@ -15,8 +16,10 @@ import {
 import { fetchAdminBusinessStats } from "@/lib/api/businessStats";
 import BusinessAnalyticsTrendChart from "@/components/pages/businesses/analytics/BusinessAnalyticsTrendChart";
 import StatInfo from "@/components/pages/businesses/analytics/StatInfo";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 const SOURCE_META = {
   search: {
@@ -61,6 +64,8 @@ const PERIOD_OPTIONS = [
   { days: 30, label: "Last 30 days" },
   { days: "all", label: "All" },
 ];
+
+const STATS_REFRESH_DEBOUNCE_MS = 1000;
 
 function SourcePill({ source }) {
   const meta = SOURCE_META[source];
@@ -262,9 +267,21 @@ export default function BusinessDetailAnalyticsTab({
   logout,
 }) {
   const [days, setDays] = useState(7);
+  const [refreshLocked, setRefreshLocked] = useState(false);
   const businessId = business?.id;
+  const queryClient = useQueryClient();
+  const refreshUnlockTimeoutRef = useRef(null);
+  const refreshLockedRef = useRef(false);
 
-  const { data: stats, error, isLoading } = useQuery({
+  useEffect(() => {
+    return () => {
+      if (refreshUnlockTimeoutRef.current) {
+        clearTimeout(refreshUnlockTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const { data: stats, error, isLoading, isFetching } = useQuery({
     queryKey: ["admin-business-stats", businessId, days],
     enabled: Boolean(accessToken && businessId),
     staleTime: 5 * 60_000,
@@ -306,6 +323,21 @@ export default function BusinessDetailAnalyticsTab({
     0;
   const showSkeleton = isLoading && !stats;
   const errorMessage = error?.message || null;
+  const refreshPending = isFetching || refreshLocked;
+
+  const handleRefresh = () => {
+    if (!businessId || refreshPending || refreshLockedRef.current) return;
+    refreshLockedRef.current = true;
+    setRefreshLocked(true);
+    queryClient.invalidateQueries({
+      queryKey: ["admin-business-stats", businessId],
+    });
+    refreshUnlockTimeoutRef.current = setTimeout(() => {
+      refreshLockedRef.current = false;
+      setRefreshLocked(false);
+      refreshUnlockTimeoutRef.current = null;
+    }, STATS_REFRESH_DEBOUNCE_MS);
+  };
 
   return (
     <TooltipProvider delay={200}>
@@ -317,21 +349,38 @@ export default function BusinessDetailAnalyticsTab({
               Listing views, clicks, and impressions for this business.
             </p>
           </div>
-          <div className="inline-flex max-w-full flex-wrap rounded-full border border-border bg-muted p-1">
-            {PERIOD_OPTIONS.map((option) => (
-              <button
-                key={option.days}
-                type="button"
-                onClick={() => setDays(option.days)}
-                className={`cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                  days === option.days
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex max-w-full flex-wrap rounded-full border border-border bg-muted p-1">
+              {PERIOD_OPTIONS.map((option) => (
+                <button
+                  key={option.days}
+                  type="button"
+                  onClick={() => setDays(option.days)}
+                  className={`cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                    days === option.days
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={!businessId || refreshPending}
+              aria-label="Refresh listing stats"
+              className="shrink-0 cursor-pointer rounded-full"
+            >
+              <RefreshCw
+                className={cn(isFetching && "animate-spin")}
+                aria-hidden="true"
+              />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
           </div>
         </div>
 
