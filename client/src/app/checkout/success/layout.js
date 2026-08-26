@@ -1,8 +1,12 @@
-import { NOINDEX_ROBOTS } from "@/lib/seo/metadata";
+import { buildPageMetadata, NOINDEX_ROBOTS } from "@/lib/seo/metadata";
 
 export const metadata = {
-  title: "Checkout complete | RadiatorRepairHub",
-  description: "Your Featured listing upgrade is being applied.",
+  ...buildPageMetadata({
+    title: "Featured checkout complete | RadiatorRepairHub",
+    description:
+      "Your Featured listing checkout is complete. Manage billing from Settings.",
+    path: "/checkout/success",
+  }),
   robots: NOINDEX_ROBOTS,
 };
 

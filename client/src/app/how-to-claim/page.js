@@ -10,11 +10,13 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 
 const pageTitle = "How to Claim Your Business | RadiatorRepairHub";
 const pageDescription =
-  "Claim eligibility, email verification steps, what claiming lets you edit, and answers to common claiming questions.";
+  "Claim your radiator repair listing for free: eligibility, email verification, what you can edit, and optional Featured upgrades for more visibility.";
 
 export const metadata = buildPageMetadata({
   title: pageTitle,
   description: pageDescription,
+  keywords:
+    "claim business listing, claim radiator shop, verified business listing, featured listing upgrade",
   path: "/how-to-claim",
 });
 
