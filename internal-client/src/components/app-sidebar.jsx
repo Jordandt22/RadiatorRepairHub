@@ -35,6 +35,7 @@ import {
   ServerIcon,
   MessageSquareIcon,
   StarIcon,
+  BarChart3Icon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -98,6 +99,11 @@ const data = {
           title: "Featured",
           url: "/businesses?tab=featured",
           icon: <StarIcon />,
+        },
+        {
+          title: "Analytics",
+          url: "/businesses/analytics",
+          icon: <BarChart3Icon />,
         },
         {
           title: "Outreach",

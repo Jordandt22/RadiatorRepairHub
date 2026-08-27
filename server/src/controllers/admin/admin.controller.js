@@ -37,6 +37,8 @@ import {
   getAdminBusinessById as fetchAdminBusinessById,
   getAdminBusinessExists as fetchAdminBusinessExists,
   getBusinessStatsForAdmin as fetchBusinessStatsForAdmin,
+  getAdminBusinessStatsList as fetchAdminBusinessStatsList,
+  getAdminBusinessStatsSummary as fetchAdminBusinessStatsSummary,
   getAdminBusinessesWithEmails as fetchAdminBusinessesWithEmails,
   clearBusinessEmails as clearEmailsOnBusinesses,
   updateBusinessesEmailStatus as patchBusinessesEmailStatus,
@@ -122,6 +124,11 @@ import {
   locationSortLabel,
 } from "../../lib/locationExport.js";
 import { resendClient } from "../../resend/resend.js";
+import {
+  BUSINESS_STATS_TIMEZONE,
+  businessStatDateKey,
+  dateKeyOffset,
+} from "../../lib/businessStatsDate.js";
 import {
   MESSAGE_ON_ITS_WAY,
   MESSAGE_DECLINED,
@@ -2174,6 +2181,115 @@ export const getBusinessStats = async (req, res) => {
   }
 
   return res.status(200).json(successHandler(data));
+};
+
+function parseAdminStatsDays(queryDays) {
+  const rawDays = String(queryDays ?? "").toLowerCase();
+  const parsedDays = Number(queryDays);
+  if (rawDays === "all") return "all";
+  if (parsedDays === 1 || parsedDays === 7 || parsedDays === 30) return parsedDays;
+  return 7;
+}
+
+function adminStatsDateWindow(days) {
+  const today = businessStatDateKey();
+  if (days === "all") {
+    return { startDate: null, endDate: today };
+  }
+  return {
+    startDate: dateKeyOffset(today, -(Number(days) - 1)),
+    endDate: today,
+  };
+}
+
+function parseAdminStatsFilterBool(value) {
+  if (value === true || value === "true") return true;
+  if (value === false || value === "false") return false;
+  return null;
+}
+
+export const getBusinessStatsList = async (req, res) => {
+  const days = parseAdminStatsDays(req.query.days);
+  const { startDate, endDate } = adminStatsDateWindow(days);
+  const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+  const activity =
+    String(req.query.activity ?? "").toLowerCase() === "has_stats" ||
+    String(req.query.activity ?? "").toLowerCase() === "no_stats"
+      ? String(req.query.activity).toLowerCase()
+      : "all";
+  const sort =
+    typeof req.query.sort === "string" && req.query.sort.trim()
+      ? req.query.sort.trim().toLowerCase()
+      : "impressions_desc";
+
+  const { data, error } = await fetchAdminBusinessStatsList({
+    startDate,
+    endDate,
+    q: rawQ ? rawQ.slice(0, 100) : null,
+    claimed: parseAdminStatsFilterBool(req.query.claimed),
+    featured: parseAdminStatsFilterBool(req.query.featured),
+    activity,
+    sort,
+    page,
+    limit,
+  });
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching listing stats.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      ...data,
+      days,
+      timezone: BUSINESS_STATS_TIMEZONE,
+      startDate,
+      endDate,
+    })
+  );
+};
+
+export const getBusinessStatsSummary = async (req, res) => {
+  const days = parseAdminStatsDays(req.query.days);
+  const { startDate, endDate } = adminStatsDateWindow(days);
+
+  const { data, error } = await fetchAdminBusinessStatsSummary({
+    startDate,
+    endDate,
+    claimed: parseAdminStatsFilterBool(req.query.claimed),
+    featured: parseAdminStatsFilterBool(req.query.featured),
+  });
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching listing stats.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      ...data,
+      days,
+      startDate: data.startDate || startDate || endDate,
+      endDate: data.endDate || endDate,
+    })
+  );
 };
 
 export const getBusinessesWithEmails = async (req, res) => {

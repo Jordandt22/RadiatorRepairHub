@@ -681,14 +681,88 @@ export const GetAdminBusinessParamsSchema = Yup.object({
   id: Yup.string().uuid("Invalid business ID").required("Business ID is required"),
 });
 
+const adminBusinessStatsDaysField = Yup.string()
+  .transform((value) => {
+    if (value == null || String(value).trim() === "") return undefined;
+    return String(value).trim().toLowerCase();
+  })
+  .oneOf(["1", "7", "30", "all"], "Days must be 1, 7, 30, or all")
+  .notRequired();
+
+const adminBusinessStatsBoolField = Yup.boolean()
+  .transform((value, originalValue) => {
+    if (originalValue === "" || originalValue == null) return null;
+    if (originalValue === "true" || originalValue === true) return true;
+    if (originalValue === "false" || originalValue === false) return false;
+    return value;
+  })
+  .nullable()
+  .optional();
+
+export const ADMIN_BUSINESS_STATS_SORTS = [
+  "impressions_desc",
+  "impressions_asc",
+  "listing_clicks_desc",
+  "listing_clicks_asc",
+  "ctr_desc",
+  "ctr_asc",
+  "page_views_desc",
+  "page_views_asc",
+  "title_asc",
+  "title_desc",
+];
+
 export const GetAdminBusinessStatsQuerySchema = Yup.object({
-  days: Yup.string()
+  days: adminBusinessStatsDaysField,
+});
+
+export const GetAdminBusinessStatsListQuerySchema = Yup.object({
+  days: adminBusinessStatsDaysField,
+  page: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return 1;
+      return value;
+    })
+    .min(1)
+    .notRequired(),
+  limit: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return 20;
+      return value;
+    })
+    .min(1)
+    .max(50)
+    .notRequired(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  claimed: adminBusinessStatsBoolField,
+  featured: adminBusinessStatsBoolField,
+  activity: Yup.string()
     .transform((value) => {
       if (value == null || String(value).trim() === "") return undefined;
       return String(value).trim().toLowerCase();
     })
-    .oneOf(["1", "7", "30", "all"], "Days must be 1, 7, 30, or all")
+    .oneOf(["all", "has_stats", "no_stats"], "Activity must be all, has_stats, or no_stats")
     .notRequired(),
+  sort: Yup.string()
+    .transform((value) => {
+      if (value == null || String(value).trim() === "") return undefined;
+      return String(value).trim().toLowerCase();
+    })
+    .oneOf(ADMIN_BUSINESS_STATS_SORTS, "Invalid sort")
+    .notRequired(),
+});
+
+export const GetAdminBusinessStatsSummaryQuerySchema = Yup.object({
+  days: adminBusinessStatsDaysField,
+  claimed: adminBusinessStatsBoolField,
+  featured: adminBusinessStatsBoolField,
 });
 
 export const UnclaimBusinessesSchema = Yup.object({

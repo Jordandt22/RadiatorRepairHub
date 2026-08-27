@@ -21,6 +21,7 @@ const SEGMENT_LABELS = {
   "get-listed-requests": "Get Listed",
   "feedback-surveys": "Surveys",
   businesses: "Businesses",
+  analytics: "Analytics",
   locations: "Locations",
   states: "States",
   cities: "Cities",

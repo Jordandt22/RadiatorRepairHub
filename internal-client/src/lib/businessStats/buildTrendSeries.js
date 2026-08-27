@@ -19,10 +19,12 @@ function startOfUtcDay(isoDate) {
 
 function rowImpressions(row) {
   if (!row) return 0;
-  return IMPRESSION_KEYS.reduce(
+  const sourceSum = IMPRESSION_KEYS.reduce(
     (sum, key) => sum + Number(row[key] || 0),
     0
   );
+  if (sourceSum > 0) return sourceSum;
+  return Number(row.impressions || 0);
 }
 
 function inclusiveUtcDays(start, end) {
