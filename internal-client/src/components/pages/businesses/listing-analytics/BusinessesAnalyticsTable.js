@@ -89,7 +89,7 @@ export function BusinessesAnalyticsTableSkeleton({ rows = 8 }) {
           </div>
         ))}
       </div>
-      <div className="hidden md:block">
+      <div className="hidden overflow-x-auto md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -99,7 +99,10 @@ export function BusinessesAnalyticsTableSkeleton({ rows = 8 }) {
               <TableHead className="text-right">Listing clicks</TableHead>
               <TableHead className="text-right">CTR</TableHead>
               <TableHead className="text-right">Page views</TableHead>
-              <TableHead className="text-right">Phone clicks</TableHead>
+              <TableHead className="text-right">Phone</TableHead>
+              <TableHead className="text-right">Directions</TableHead>
+              <TableHead className="text-right">Website</TableHead>
+              <TableHead className="text-right">Email</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -111,7 +114,7 @@ export function BusinessesAnalyticsTableSkeleton({ rows = 8 }) {
                 <TableCell>
                   <Skeleton className="h-5 w-20 rounded-full" />
                 </TableCell>
-                {Array.from({ length: 5 }).map((__, cell) => (
+                {Array.from({ length: 8 }).map((__, cell) => (
                   <TableCell key={cell} className="text-right">
                     <Skeleton className="ml-auto h-4 w-10" />
                   </TableCell>
@@ -173,12 +176,18 @@ export default function BusinessesAnalyticsTable({
               <dd className="tabular-nums">{formatNumber(row.page_views)}</dd>
               <dt className="text-muted-foreground">Phone clicks</dt>
               <dd className="tabular-nums">{formatNumber(row.phone_clicks)}</dd>
+              <dt className="text-muted-foreground">Directions clicks</dt>
+              <dd className="tabular-nums">{formatNumber(row.directions_clicks)}</dd>
+              <dt className="text-muted-foreground">Website clicks</dt>
+              <dd className="tabular-nums">{formatNumber(row.website_clicks)}</dd>
+              <dt className="text-muted-foreground">Email clicks</dt>
+              <dd className="tabular-nums">{formatNumber(row.email_clicks)}</dd>
             </dl>
           </div>
         ))}
       </div>
 
-      <div className="hidden min-w-0 md:block">
+      <div className="hidden min-w-0 overflow-x-auto md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -217,7 +226,10 @@ export default function BusinessesAnalyticsTable({
                 onSortChange={onSortChange}
                 align="right"
               />
-              <TableHead className="text-right">Phone clicks</TableHead>
+              <TableHead className="text-right">Phone</TableHead>
+              <TableHead className="text-right">Directions</TableHead>
+              <TableHead className="text-right">Website</TableHead>
+              <TableHead className="text-right">Email</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -258,6 +270,15 @@ export default function BusinessesAnalyticsTable({
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {formatNumber(row.phone_clicks)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {formatNumber(row.directions_clicks)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {formatNumber(row.website_clicks)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {formatNumber(row.email_clicks)}
                 </TableCell>
               </TableRow>
             ))}
