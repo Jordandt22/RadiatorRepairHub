@@ -26,10 +26,10 @@ function HeroSearchBar({ heroInView }) {
         "business_search_submitted",
         getBusinessSearchAnalyticsProps(
           { title: "" },
-          { source: "hero", page: 1, sort_option: "featured" }
+          { source: "hero", page: 1, sort_option: "verified" }
         )
       );
-      router.push(`/search?page=1&sort=featured`);
+      router.push(`/search?page=1&sort=verified`);
       return;
     }
 
@@ -56,11 +56,11 @@ function HeroSearchBar({ heroInView }) {
       "business_search_submitted",
       getBusinessSearchAnalyticsProps(
         { title },
-        { source: "hero", page: 1, sort_option: "featured" }
+        { source: "hero", page: 1, sort_option: "verified" }
       )
     );
     router.push(
-      `/search?title=${encodeURIComponent(title)}&page=1&sort=featured`
+      `/search?title=${encodeURIComponent(title)}&page=1&sort=verified`
     );
   };
 

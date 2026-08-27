@@ -87,7 +87,7 @@ export default async function FAQPage() {
         pageDescription="Get answers to common questions about radiator repair services and find the help you need"
         headerLink={{
           label: "Search",
-          href: "/search?page=1&sort=featured",
+          href: "/search?page=1&sort=verified",
         }}
       />
 
@@ -128,7 +128,7 @@ export default async function FAQPage() {
                 area.
               </p>
               <Link
-                href="/search?page=1&sort=featured"
+                href="/search?page=1&sort=verified"
                 className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
               >
                 Search Now

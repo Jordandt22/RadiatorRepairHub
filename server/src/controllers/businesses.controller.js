@@ -2235,7 +2235,8 @@ export const getBusiness = async (req, res) => {
 
 export const getSearchedBusinesses = async (req, res) => {
   const { page, limit } = req.query;
-  const { sort_option } = req.body;
+  const sort_option =
+    Number(req.body.sort_option) === 6 ? 5 : req.body.sort_option;
   let formattedPage = Number(page);
   const formattedLimit = Number(limit);
   let count = 0;

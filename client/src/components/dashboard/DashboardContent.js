@@ -134,7 +134,7 @@ function DashboardContentInner() {
                   see it here.
                 </p>
                 <Link
-                  href="/search?page=1&sort=featured"
+                  href="/search?page=1&sort=verified"
                   className={cn(
                     buttonVariants({ size: "lg" }),
                     "mt-4 inline-flex",
