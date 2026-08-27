@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,7 @@ import { useToast } from "@/contexts/ToastProvider";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { usePostHog } from "posthog-js/react";
 import { signOut } from "@/lib/auth/session";
+import { useQueryTab } from "@/lib/navigation/useQueryTab";
 import {
   updateOwnerEmail,
   updateOwnerPassword,
@@ -808,14 +809,12 @@ function SettingsAccountSkeleton() {
 
 function SettingsContentInner() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, isLoading, refreshUser } = useIsSignedIn();
   const [pendingOverride, setPendingOverride] = useState("");
-  const requestedTab = searchParams.get("tab");
-  const activeTab =
-    requestedTab === "payments" || requestedTab === "notifications"
-      ? requestedTab
-      : "account";
+  const [activeTab, onTabChange] = useQueryTab(
+    ["payments", "notifications"],
+    "account"
+  );
 
   useEffect(() => {
     // Always re-fetch from Auth on Settings mount (covers email-confirm redirects).
@@ -872,18 +871,7 @@ function SettingsContentInner() {
 
       <Tabs
         value={activeTab}
-        onValueChange={(value) => {
-          const params = new URLSearchParams(searchParams.toString());
-          if (value === "account") {
-            params.delete("tab");
-          } else {
-            params.set("tab", value);
-          }
-          const query = params.toString();
-          router.replace(query ? `/settings?${query}` : "/settings", {
-            scroll: false,
-          });
-        }}
+        onValueChange={onTabChange}
         className="gap-6"
       >
         <TabsList>
