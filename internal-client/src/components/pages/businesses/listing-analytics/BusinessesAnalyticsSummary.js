@@ -120,3 +120,32 @@ export default function BusinessesAnalyticsSummary({ summary }) {
     </div>
   );
 }
+
+export function BusinessesAnalyticsContactClicks({ summary }) {
+  const totals = summary?.totals || {};
+
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <StatCard
+        label="Phone clicks"
+        value={formatNumber(totals.phone_clicks)}
+        description="Sum of phone-number taps on tracked business pages."
+      />
+      <StatCard
+        label="Directions clicks"
+        value={formatNumber(totals.directions_clicks)}
+        description="Sum of directions taps on tracked business pages."
+      />
+      <StatCard
+        label="Website clicks"
+        value={formatNumber(totals.website_clicks)}
+        description="Sum of website taps on tracked business pages."
+      />
+      <StatCard
+        label="Email clicks"
+        value={formatNumber(totals.email_clicks)}
+        description="Sum of email taps on tracked business pages."
+      />
+    </div>
+  );
+}

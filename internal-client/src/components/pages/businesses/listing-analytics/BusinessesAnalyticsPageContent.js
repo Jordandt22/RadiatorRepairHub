@@ -23,6 +23,7 @@ import BusinessesAnalyticsActions, {
   ACTIVITY_OPTIONS,
 } from "@/components/pages/businesses/listing-analytics/BusinessesAnalyticsActions";
 import BusinessesAnalyticsSummary, {
+  BusinessesAnalyticsContactClicks,
   BusinessesAnalyticsSummarySkeleton,
 } from "@/components/pages/businesses/listing-analytics/BusinessesAnalyticsSummary";
 import BusinessesAnalyticsTable, {
@@ -339,14 +340,16 @@ export default function BusinessesAnalyticsPageContent() {
             {hasTracked && days !== 1 ? (
               <BusinessesAnalyticsTrendChart stats={summary} days={days} />
             ) : null}
-            {!hasTracked ? (
+            {hasTracked ? (
+              <BusinessesAnalyticsContactClicks summary={summary} />
+            ) : (
               <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">
                 <p className="font-medium text-foreground">No tracked stats</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Charts exclude listings with no stats in this period.
                 </p>
               </div>
-            ) : null}
+            )}
           </>
         ) : null}
 
