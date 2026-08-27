@@ -1,4 +1,4 @@
-/** Search sort: 6 Featured (default), 5 Verified, 1–4 quality sorts. */
+/** Search sort: 6 Featured (default, paid + verified boost), 5 Verified, 1–4 quality sorts. */
 export const DEFAULT_SORT_OPTION = 6;
 
 export const SORT_OPTION_BY_KEY = {
