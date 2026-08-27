@@ -3768,6 +3768,124 @@ export const getBusinessStatsForAdmin = async (businessId, days) => {
   return fetchBusinessStats(supabase, businessId, days);
 };
 
+const ADMIN_STATS_SORTS = new Set([
+  "impressions_desc",
+  "impressions_asc",
+  "listing_clicks_desc",
+  "listing_clicks_asc",
+  "ctr_desc",
+  "ctr_asc",
+  "page_views_desc",
+  "page_views_asc",
+  "title_asc",
+  "title_desc",
+]);
+
+function parseAdminStatsBool(value) {
+  if (value === true || value === "true") return true;
+  if (value === false || value === "false") return false;
+  return null;
+}
+
+export const getAdminBusinessStatsList = async ({
+  startDate,
+  endDate,
+  q = null,
+  claimed = null,
+  featured = null,
+  activity = "all",
+  sort = "impressions_desc",
+  page = 1,
+  limit = 20,
+}) => {
+  const sanitizedQ = sanitizeIlikeSearch(q);
+  const resolvedActivity =
+    activity === "has_stats" || activity === "no_stats" ? activity : "all";
+  const resolvedSort = ADMIN_STATS_SORTS.has(sort) ? sort : "impressions_desc";
+  const resolvedPage = Math.max(1, Number(page) || 1);
+  const resolvedLimit = Math.min(50, Math.max(1, Number(limit) || 20));
+
+  const { data, error } = await supabase.rpc("admin_list_business_stats", {
+    p_start_date: startDate || null,
+    p_end_date: endDate || null,
+    p_q: sanitizedQ,
+    p_claimed: parseAdminStatsBool(claimed),
+    p_featured: parseAdminStatsBool(featured),
+    p_activity: resolvedActivity,
+    p_sort: resolvedSort,
+    p_page: resolvedPage,
+    p_limit: resolvedLimit,
+  });
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  const payload = data && typeof data === "object" ? data : {};
+  const rows = Array.isArray(payload.rows) ? payload.rows : [];
+  const count = Number(payload.count || 0);
+  const currentPage = Number(payload.page || resolvedPage);
+  const currentLimit = Number(payload.limit || resolvedLimit);
+
+  return {
+    data: {
+      rows,
+      count,
+      page: currentPage,
+      limit: currentLimit,
+      totalPages: currentLimit > 0 ? Math.ceil(count / currentLimit) : 0,
+    },
+    error: null,
+  };
+};
+
+export const getAdminBusinessStatsSummary = async ({
+  startDate,
+  endDate,
+  claimed = null,
+  featured = null,
+}) => {
+  const { data, error } = await supabase.rpc("admin_summary_business_stats", {
+    p_start_date: startDate || null,
+    p_end_date: endDate || null,
+    p_claimed: parseAdminStatsBool(claimed),
+    p_featured: parseAdminStatsBool(featured),
+  });
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  const payload = data && typeof data === "object" ? data : {};
+  const totals = payload.totals || {};
+  const averages = payload.averages || {};
+
+  return {
+    data: {
+      timezone: BUSINESS_STATS_TIMEZONE,
+      startDate: payload.startDate || endDate || businessStatDateKey(),
+      endDate: payload.endDate || endDate || businessStatDateKey(),
+      eligibleCount: Number(payload.eligibleCount || 0),
+      trackedCount: Number(payload.trackedCount || 0),
+      totals: {
+        impressions: Number(totals.impressions || 0),
+        listing_clicks: Number(totals.listing_clicks || 0),
+        page_views: Number(totals.page_views || 0),
+        phone_clicks: Number(totals.phone_clicks || 0),
+      },
+      averages: {
+        impressions: Number(averages.impressions || 0),
+        listing_clicks: Number(averages.listing_clicks || 0),
+        page_views: Number(averages.page_views || 0),
+        phone_clicks: Number(averages.phone_clicks || 0),
+      },
+      ctr: payload.ctr == null ? null : Number(payload.ctr),
+      daily: Array.isArray(payload.daily) ? payload.daily : [],
+    },
+    error: null,
+  };
+};
+
 export const getAdminBusinessExists = async (id) => {
   if (!id || typeof id !== "string") {
     return { exists: false, error: null };

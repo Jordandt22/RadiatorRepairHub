@@ -8,6 +8,7 @@ export default function BusinessTitleLink({
   id,
   title,
   slug,
+  href,
   className,
   titleClassName,
   slugClassName,
@@ -32,13 +33,15 @@ export default function BusinessTitleLink({
     </div>
   );
 
-  if (!id) {
+  const targetHref = href ?? (id ? `/businesses/${id}` : null);
+
+  if (!targetHref) {
     return <div className={cn("min-w-0", className)}>{content}</div>;
   }
 
   return (
     <Link
-      href={`/businesses/${id}`}
+      href={targetHref}
       target="_blank"
       rel="noopener noreferrer"
       className={cn(

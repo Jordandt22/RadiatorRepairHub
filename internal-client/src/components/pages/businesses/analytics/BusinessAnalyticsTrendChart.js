@@ -46,7 +46,12 @@ function periodCaption(days) {
   return "Each day for the last 7 days";
 }
 
-export default function BusinessAnalyticsTrendChart({ stats, days }) {
+export default function BusinessAnalyticsTrendChart({
+  stats,
+  days,
+  title = "Listing activity",
+  description,
+}) {
   const rawId = useId().replace(/:/g, "");
   const fillImpressions = `fill-impressions-${rawId}`;
   const fillClicks = `fill-listing-clicks-${rawId}`;
@@ -59,12 +64,15 @@ export default function BusinessAnalyticsTrendChart({ stats, days }) {
     stats?.endDate
   );
   const showDots = series.length <= 1;
+  const caption =
+    description ||
+    `Page views, listing clicks, and impressions. ${periodCaption(days)}.`;
 
   return (
     <div className="rounded-lg border border-border bg-card px-4 py-4">
-      <p className="text-sm font-medium text-foreground">Listing activity</p>
+      <p className="text-sm font-medium text-foreground">{title}</p>
       <p className="mt-1 text-sm text-muted-foreground">
-        Page views, listing clicks, and impressions. {periodCaption(days)}.
+        {caption}
       </p>
       <ChartContainer
         config={chartConfig}
