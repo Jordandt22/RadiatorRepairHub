@@ -431,7 +431,7 @@ export const searchBusinesses = async (
     }
   });
 
-  // All sorts: paid Featured first. 6 / default: Featured + verified boost. 5: Verified. 1–4: metric + claimed boost.
+  // All sorts: paid Featured first. 6 / default: Featured (reviews + claimed tiebreaker). 5: Verified. 1–4: metric + claimed boost.
   businessesQuery = businessesQuery.order("is_featured", {
     ascending: false,
   });
@@ -502,13 +502,13 @@ export const searchBusinesses = async (
       });
       break;
 
-    // Featured (paid first, then verified, then reviews)
+    // Featured (paid first, then reviews, then verified as a tiebreaker)
     case 6:
     default:
-      businessesQuery = businessesQuery.order("is_claimed", {
+      businessesQuery = businessesQuery.order("reviews_count", {
         ascending: false,
       });
-      businessesQuery = businessesQuery.order("reviews_count", {
+      businessesQuery = businessesQuery.order("is_claimed", {
         ascending: false,
       });
       businessesQuery = businessesQuery.order("total_score", {
