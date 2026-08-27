@@ -160,7 +160,7 @@ export const getCountBusinessesBySearchKey = (
   sort_option
 ) => ({
   key: createSearchBusinessKey(
-    `SEARCHED_BUSINESSES_COUNT?ORD:featured1&SORT-OPTION:${sort_option}`,
+    `SEARCHED_BUSINESSES_COUNT?ORD:featured2&SORT-OPTION:${sort_option}`,
     searchParamValues
   ),
   interval: 60 * 30,
@@ -173,7 +173,7 @@ export const getSearchedBusinessesKey = (
   sort_option
 ) => ({
   key: createSearchBusinessKey(
-    `SEARCHED_BUSINESSES?ORD:featured1&PAGE:${page}&LIMIT:${limit}&SORT-OPTION:${sort_option}`,
+    `SEARCHED_BUSINESSES?ORD:featured2&PAGE:${page}&LIMIT:${limit}&SORT-OPTION:${sort_option}`,
     searchParamValues
   ),
   interval: 60 * 30,
