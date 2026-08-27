@@ -268,7 +268,7 @@ export const SearchBusinessesSchema = Yup.object({
     restroom: Yup.boolean(),
     wheelchair_accessible: Yup.boolean(),
   }),
-  sort_option: Yup.number().min(1).max(6).required(), // 1–4 quality, 5 Verified, 6 Featured (default)
+  sort_option: Yup.number().min(1).max(6).required(), // 1–4 quality, 5 Verified (default). 6 legacy Featured alias
   open: Yup.object({
     weekdays: Yup.boolean(),
     weekends: Yup.boolean(),

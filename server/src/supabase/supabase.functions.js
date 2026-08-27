@@ -431,7 +431,7 @@ export const searchBusinesses = async (
     }
   });
 
-  // All sorts: paid Featured first. 6 / default: Featured (reviews + claimed tiebreaker). 5: Verified. 1–4: metric + claimed boost.
+  // All sorts: paid Featured first. 5 / default: Verified. 1–4: metric only. Legacy 6 aliases to Verified.
   businessesQuery = businessesQuery.order("is_featured", {
     ascending: false,
   });
@@ -440,9 +440,6 @@ export const searchBusinesses = async (
     // Most Reviews
     case 1:
       businessesQuery = businessesQuery.order("reviews_count", {
-        ascending: false,
-      });
-      businessesQuery = businessesQuery.order("is_claimed", {
         ascending: false,
       });
       businessesQuery = businessesQuery.order("total_score", {
@@ -455,9 +452,6 @@ export const searchBusinesses = async (
       businessesQuery = businessesQuery.order("reviews_count", {
         ascending: true,
       });
-      businessesQuery = businessesQuery.order("is_claimed", {
-        ascending: false,
-      });
       businessesQuery = businessesQuery.order("total_score", {
         ascending: false,
       });
@@ -466,9 +460,6 @@ export const searchBusinesses = async (
     // Highest Score
     case 3:
       businessesQuery = businessesQuery.order("total_score", {
-        ascending: false,
-      });
-      businessesQuery = businessesQuery.order("is_claimed", {
         ascending: false,
       });
       businessesQuery = businessesQuery.order("reviews_count", {
@@ -481,34 +472,19 @@ export const searchBusinesses = async (
       businessesQuery = businessesQuery.order("total_score", {
         ascending: true,
       });
-      businessesQuery = businessesQuery.order("is_claimed", {
-        ascending: false,
-      });
       businessesQuery = businessesQuery.order("reviews_count", {
         ascending: false,
       });
       break;
 
-    // Verified (claimed-first + most reviews)
+    // Verified (default): claimed-first + most reviews. Legacy Featured (6) aliases here.
     case 5:
-      businessesQuery = businessesQuery.order("is_claimed", {
-        ascending: false,
-      });
-      businessesQuery = businessesQuery.order("reviews_count", {
-        ascending: false,
-      });
-      businessesQuery = businessesQuery.order("total_score", {
-        ascending: false,
-      });
-      break;
-
-    // Featured (paid first, then reviews, then verified as a tiebreaker)
     case 6:
     default:
-      businessesQuery = businessesQuery.order("reviews_count", {
+      businessesQuery = businessesQuery.order("is_claimed", {
         ascending: false,
       });
-      businessesQuery = businessesQuery.order("is_claimed", {
+      businessesQuery = businessesQuery.order("reviews_count", {
         ascending: false,
       });
       businessesQuery = businessesQuery.order("total_score", {

@@ -611,7 +611,7 @@ async function Page({ params }) {
                   </Link>
                 ) : (
                   <Link
-                    href="/search?page=1&sort=featured"
+                    href="/search?page=1&sort=verified"
                     className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
                   >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
