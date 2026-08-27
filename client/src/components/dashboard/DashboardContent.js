@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { buttonVariants } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastProvider";
 import { signOut } from "@/lib/auth/session";
+import { useQueryTab } from "@/lib/navigation/useQueryTab";
 import { cn } from "@/lib/utils";
 
 function DashboardContentInner() {
@@ -19,10 +20,10 @@ function DashboardContentInner() {
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const requestedTab = searchParams.get("tab");
-  const activeTab = requestedTab === "inbox" || requestedTab === "analytics"
-    ? requestedTab
-    : "my-businesses";
+  const [activeTab, onTabChange] = useQueryTab(
+    ["inbox", "analytics"],
+    "my-businesses"
+  );
 
   const loadBusinesses = useCallback(async () => {
     setLoading(true);
@@ -91,18 +92,7 @@ function DashboardContentInner() {
 
       <Tabs
         value={activeTab}
-        onValueChange={(value) => {
-          const params = new URLSearchParams(searchParams.toString());
-          if (value === "my-businesses") {
-            params.delete("tab");
-          } else {
-            params.set("tab", value);
-          }
-          const query = params.toString();
-          router.replace(query ? `/dashboard?${query}` : "/dashboard", {
-            scroll: false,
-          });
-        }}
+        onValueChange={onTabChange}
         className="gap-6"
       >
         <TabsList>

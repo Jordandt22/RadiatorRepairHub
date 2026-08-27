@@ -7,6 +7,7 @@ import {
   BadgeCheck,
   Map as MapIcon,
   MapPin,
+  RefreshCw,
   Search,
   Star,
   Tag,
@@ -18,9 +19,10 @@ import { usePostHog } from "posthog-js/react";
 import { fetchOwnedBusinessStats } from "@/lib/api/businessStats";
 import BusinessAnalyticsTrendChart from "@/components/dashboard/BusinessAnalyticsTrendChart";
 import StatInfo from "@/components/dashboard/StatInfo";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 const SOURCE_META = {
   search: {
@@ -84,6 +86,7 @@ const PERIOD_OPTIONS = [
 ];
 
 const STATS_CACHE_TTL_MS = 5 * 60 * 1000;
+const STATS_REFRESH_DEBOUNCE_MS = 1000;
 const statsCache = Object.create(null);
 
 function getCachedStats(key) {
@@ -98,6 +101,16 @@ function getCachedStats(key) {
 
 function setCachedStats(key, data) {
   statsCache[key] = { data, cachedAt: Date.now() };
+}
+
+function clearCachedStatsForBusiness(businessId) {
+  if (!businessId) return;
+  const prefix = `${businessId}:`;
+  for (const key of Object.keys(statsCache)) {
+    if (key.startsWith(prefix)) {
+      delete statsCache[key];
+    }
+  }
 }
 
 function periodEmptyCopy(days) {
@@ -391,8 +404,29 @@ export default function BusinessAnalyticsPanel({
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshLocked, setRefreshLocked] = useState(false);
   const lastInitialIdRef = useRef("");
   const statsBusinessIdRef = useRef("");
+  const refreshUnlockTimeoutRef = useRef(null);
+  const refreshLockedRef = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      if (refreshUnlockTimeoutRef.current) {
+        clearTimeout(refreshUnlockTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    refreshLockedRef.current = false;
+    setRefreshLocked(false);
+    if (refreshUnlockTimeoutRef.current) {
+      clearTimeout(refreshUnlockTimeoutRef.current);
+      refreshUnlockTimeoutRef.current = null;
+    }
+  }, [selectedId]);
 
   useEffect(() => {
     if (!businesses.length) {
@@ -463,7 +497,20 @@ export default function BusinessAnalyticsPanel({
     return () => {
       mounted = false;
     };
-  }, [selectedId, days]);
+  }, [selectedId, days, refreshKey]);
+
+  const handleRefresh = () => {
+    if (!selectedId || loading || refreshLockedRef.current) return;
+    refreshLockedRef.current = true;
+    setRefreshLocked(true);
+    clearCachedStatsForBusiness(selectedId);
+    setRefreshKey((key) => key + 1);
+    refreshUnlockTimeoutRef.current = setTimeout(() => {
+      refreshLockedRef.current = false;
+      setRefreshLocked(false);
+      refreshUnlockTimeoutRef.current = null;
+    }, STATS_REFRESH_DEBOUNCE_MS);
+  };
 
   const selectedBusiness = useMemo(
     () => businesses.find((business) => business.id === selectedId) || null,
@@ -500,6 +547,7 @@ export default function BusinessAnalyticsPanel({
     Number(totals.email_clicks || 0) >
     0;
   const showSkeleton = loading && !stats;
+  const refreshPending = loading || refreshLocked;
 
   return (
     <TooltipProvider delay={200}>
@@ -525,20 +573,37 @@ export default function BusinessAnalyticsPanel({
             ))}
           </select>
         </div>
-        <div className="inline-flex max-w-full flex-wrap rounded-full border border-border bg-muted p-1">
-          {PERIOD_OPTIONS.map((option) => (
-            <button
-              key={option.days}
-              type="button"
-              onClick={() => setDays(option.days)}
-              className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${days === option.days
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-                } hover:bg-white/50 cursor-pointer hover:scale-100! transition-all duration-300`}
-            >
-              {option.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex max-w-full flex-wrap rounded-full border border-border bg-muted p-1">
+            {PERIOD_OPTIONS.map((option) => (
+              <button
+                key={option.days}
+                type="button"
+                onClick={() => setDays(option.days)}
+                className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${days === option.days
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+                  } hover:bg-white/50 cursor-pointer hover:scale-100! transition-all duration-300`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={!selectedId || refreshPending}
+            aria-label="Refresh listing stats"
+            className="shrink-0"
+          >
+            <RefreshCw
+              className={cn(loading && "animate-spin")}
+              aria-hidden="true"
+            />
+            <span className="hidden sm:inline">Refresh</span>
+          </Button>
         </div>
       </div>
 
