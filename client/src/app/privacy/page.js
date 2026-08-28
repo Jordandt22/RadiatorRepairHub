@@ -34,7 +34,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date("2026-08-25").toLocaleDateString("en-US", {
+  const lastUpdated = new Date(2026, 7, 28).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -94,7 +94,7 @@ function PrivacyPage() {
         },
         {
           label: "Featured Listing Billing Information:",
-          description:"When you purchase or manage a Featured listing upgrade, payment card and billing details are collected and processed by Stripe on Stripe-hosted Checkout and Customer Portal pages. We do not store your full payment card number on our servers. We may store subscription-related records such as Stripe customer ID, subscription ID, price ID, subscription status, current period end, cancel-at-period-end or cancel-at scheduling flags, and the business listing associated with the subscription so we can apply or remove Featured status and show billing status in your account Settings. Stripe may also calculate applicable taxes at checkout. We may receive Stripe webhook events about checkout and subscription status changes to keep Featured placement in sync.",
+          description:"When you purchase or manage a Featured listing upgrade, payment card and billing details are collected and processed by Stripe on Stripe-hosted Checkout and Customer Portal pages. We do not store your full payment card number on our servers. We may store subscription-related records such as Stripe customer ID, subscription ID, price ID, subscription status, current period end, cancel-at-period-end or cancel-at scheduling flags, and the business listing associated with the subscription so we can apply or remove Featured status and show billing status in your account Settings. Stripe may also calculate applicable taxes at checkout. We may receive Stripe webhook events about checkout and subscription status changes to keep Featured placement in sync. Starting Featured checkout or managing a subscription is also subject to our Terms of Service.",
         },
       ],
     },
