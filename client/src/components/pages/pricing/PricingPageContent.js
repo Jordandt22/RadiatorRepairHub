@@ -13,6 +13,28 @@ import { createFeaturedCheckoutSession } from "@/lib/api/billing";
 import { useToast } from "@/contexts/ToastProvider";
 import { FEATURED_BENEFITS } from "@/lib/featuredBenefits";
 
+function FeaturedCheckoutLegalNote() {
+  return (
+    <p className="text-xs leading-relaxed text-muted-foreground">
+      By starting Featured checkout, you agree to our{" "}
+      <Link
+        href="/terms"
+        className="font-medium text-interactive underline hover:text-primary"
+      >
+        Terms of Service
+      </Link>{" "}
+      and{" "}
+      <Link
+        href="/privacy"
+        className="font-medium text-interactive underline hover:text-primary"
+      >
+        Privacy Policy
+      </Link>
+      . Payment is processed by Stripe.
+    </p>
+  );
+}
+
 function eligibleBusinesses(list) {
   return (Array.isArray(list) ? list : []).filter(
     (business) => business?.id && !business.is_featured
@@ -258,7 +280,10 @@ export default function PricingPageContent() {
             </div>
           )}
 
-          <p className="mt-6 text-xs font-medium text-[#635BFF]">Powered by Stripe</p>
+          <div className="mt-6 space-y-2">
+            <FeaturedCheckoutLegalNote />
+            <p className="text-xs font-medium text-[#635BFF]">Powered by Stripe</p>
+          </div>
         </section>
 
         <section className="flex items-start gap-3 rounded-lg border border-border bg-card p-5">

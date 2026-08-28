@@ -14,15 +14,25 @@ export const metadata = buildPageMetadata({
   path: "/pricing",
 });
 
-const pricingOfferSchema = {
+const featuredListingServiceSchema = {
   "@context": "https://schema.org",
-  "@type": "Product",
+  "@type": "Service",
   name: "RadiatorRepairHub Featured Listing",
   description:
     "Optional paid Featured upgrade for claimed radiator repair listings: Featured badge, search priority, and inclusion on the Featured businesses page.",
+  url: `${SITE_URL}/pricing`,
+  image: `${SITE_URL}/assets/logos/logo.png`,
+  serviceType: "Featured Business Listing",
+  provider: {
+    "@id": `${SITE_URL}/#organization`,
+  },
   brand: {
-    "@type": "Organization",
+    "@type": "Brand",
     name: "RadiatorRepairHub",
+  },
+  areaServed: {
+    "@type": "Country",
+    name: "United States",
   },
   offers: {
     "@type": "Offer",
@@ -41,7 +51,7 @@ export default function PricingPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(pricingOfferSchema),
+          __html: JSON.stringify(featuredListingServiceSchema),
         }}
       />
       <Suspense fallback={null}>
