@@ -1,3 +1,4 @@
+import { trackGtagBusinessStat } from "@/lib/analytics/gtag";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -18,6 +19,8 @@ export async function trackBusinessStat({
   position,
 } = {}) {
   if (!businessId || !event) return;
+
+  trackGtagBusinessStat({ businessId, event, source, position });
 
   try {
     const accessToken = await getAccessToken();

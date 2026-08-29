@@ -30,6 +30,7 @@ import {
 import { useToast } from "@/contexts/ToastProvider";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { usePostHog } from "posthog-js/react";
+import { trackGtagEvent } from "@/lib/analytics/gtag";
 import {
   ISSUE_LABEL_TO_ENUM,
   submitQuickContact,
@@ -238,6 +239,11 @@ function QuickContactDialogContent({
         contact_type: form.contactType,
         issue,
         urgency: isQuestions ? undefined : form.urgency,
+      });
+      trackGtagEvent("generate_lead", {
+        lead_source: "quick_contact",
+        business_id: businessId || undefined,
+        contact_type: form.contactType,
       });
 
       suppressCancelRef.current = true;
