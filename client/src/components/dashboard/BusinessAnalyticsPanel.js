@@ -303,8 +303,8 @@ function AnalyticsFeaturedCta({ business }) {
             Get more visibility with Featured
           </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Priority in search, a Featured badge, and a card on the Featured
-            page. $49/month, cancel anytime.
+            Priority in search, a Featured badge, extra shop photos, and a card
+            on the Featured page. $49/month, cancel anytime.
           </p>
         </div>
       </div>

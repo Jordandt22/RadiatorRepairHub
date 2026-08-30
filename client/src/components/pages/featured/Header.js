@@ -9,7 +9,7 @@ function Header() {
 
   const pageTitle = "Featured Businesses";
   const pageDescription =
-    "Paid Featured partners on RadiatorRepairHub. These shops are sponsored for extra visibility in search and on this page.";
+    "Paid Featured partners on RadiatorRepairHub. These shops are sponsored for extra visibility in search and on this page, and can show more shop photos on their listings.";
 
   return (
     <PageHeader

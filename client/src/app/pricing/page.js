@@ -4,7 +4,7 @@ import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
 
 const pageTitle = "Featured Listing Pricing | RadiatorRepairHub";
 const pageDescription =
-  "Upgrade a claimed radiator repair listing to Featured for $49/month. Get a Featured badge, search priority, and a place on the Featured page. Cancel anytime; current period fees are non-refundable.";
+  "Upgrade a claimed radiator repair listing to Featured for $49/month. Get a Featured badge, search priority, up to 10 shop photos, and a place on the Featured page. Cancel anytime; current period fees are non-refundable.";
 
 export const metadata = buildPageMetadata({
   title: pageTitle,
@@ -19,7 +19,7 @@ const featuredListingServiceSchema = {
   "@type": "Service",
   name: "RadiatorRepairHub Featured Listing",
   description:
-    "Optional paid Featured upgrade for claimed radiator repair listings: Featured badge, search priority, and inclusion on the Featured businesses page.",
+    "Optional paid Featured upgrade for claimed radiator repair listings: Featured badge, search priority, up to 10 shop photos, and inclusion on the Featured businesses page.",
   url: `${SITE_URL}/pricing`,
   image: `${SITE_URL}/assets/logos/logo.png`,
   serviceType: "Featured Business Listing",

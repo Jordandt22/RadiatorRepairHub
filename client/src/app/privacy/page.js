@@ -10,11 +10,11 @@ import {
 
 export const metadata = {
   title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
-  description:"How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, Featured listing billing, listing reports, accounts, analytics, and affiliate product links.",
+  description:"How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing photos, Featured listing billing, listing reports, accounts, analytics, and affiliate product links.",
   keywords:"privacy policy, data protection, personal information, GDPR, CCPA, privacy rights, data security",
   openGraph: {
     title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
-    description:"How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, Featured listing billing, listing reports, accounts, analytics, and affiliate product links.",
+    description:"How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing photos, Featured listing billing, listing reports, accounts, analytics, and affiliate product links.",
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
@@ -34,7 +34,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date(2026, 7, 28).toLocaleDateString("en-US", {
+  const lastUpdated = new Date(2026, 7, 29).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -63,6 +63,10 @@ function PrivacyPage() {
         {
           label: "Business Information:",
           description:"If you're a business owner requesting to be listed or updating a claimed listing, we may collect business name, Google listing link, phone number, email address, website, hours, services, photos, and related information needed to create or update a directory listing. When you change a listing phone number or email through your account, we may verify those values before saving them.",
+        },
+        {
+          label: "Listing Photos:",
+          description:"When you upload shop photos to a claimed listing, we collect the image files you submit and related records such as which listing they belong to, primary-photo status, and whether a photo is hidden or visible. Image files are stored and delivered through Cloudflare Images. Photo records (identifiers and visibility flags) are stored in our database. Extra photos beyond the claimed allotment may stay stored but hidden from public view if a Featured subscription ends.",
         },
         {
           label: "Business Claim Information:",
@@ -128,7 +132,7 @@ function PrivacyPage() {
       bulletPoints: [
         {
           label: "Analytics Cookies:",
-          description:"Help us understand how visitors use our site. We use Google Analytics and PostHog to collect usage data such as pages visited, session duration, navigation patterns, and product-interaction events (including business claims, Featured listing checkout and billing actions, and affiliate product clicks).",
+          description:"Help us understand how visitors use our site. We use Google Analytics and PostHog to collect usage data such as pages visited, session duration, navigation patterns, and product-interaction events (including business claims, listing updates such as shop photos, Featured listing checkout and billing actions, and affiliate product clicks).",
         },
         {
           label: "Security and Performance Cookies:",
@@ -177,11 +181,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Product analytics, page view tracking, and understanding how users interact with our site (including search, forms, business claims, Featured listing checkout and billing actions, and affiliate product clicks).",
+          description:"Product analytics, page view tracking, and understanding how users interact with our site (including search, forms, business claims, listing updates such as shop photos, Featured listing checkout and billing actions, and affiliate product clicks).",
         },
         {
           label: "Data Collected:",
-          description:"Page URLs, referrer, browser and device information, session identifiers, and interaction events (for example claim funnel steps, Featured checkout started/completed/canceled, billing portal opens, and Featured CTA clicks). Business identifiers such as listing ID, slug, or name may be included with those events when relevant. PostHog is configured to create user profiles only for identified users. We do not currently enable PostHog session recording on our site.",
+          description:"Page URLs, referrer, browser and device information, session identifiers, and interaction events (for example claim funnel steps, owner listing updates including photos, Featured checkout started/completed/canceled, billing portal opens, and Featured CTA clicks). Business identifiers such as listing ID, slug, or name may be included with those events when relevant. PostHog is configured to create user profiles only for identified users. We do not currently enable PostHog session recording on our site.",
         },
         {
           label: "Privacy Policy:",
@@ -198,11 +202,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Content delivery (CDN), image delivery, DNS resolution, DDoS protection, bot mitigation, and web application security.",
+          description:"Content delivery (CDN), storage and delivery of directory and owner-uploaded listing photos, DNS resolution, DDoS protection, bot mitigation, and web application security.",
         },
         {
           label: "Data Collected:",
-          description:"IP address, request headers, browser type, pages requested, and security-related logs. Cloudflare may process this data to filter malicious traffic and deliver content efficiently.",
+          description:"IP address, request headers, browser type, pages requested, security-related logs, and listing photo files uploaded by claimed business owners. Cloudflare may process this data to filter malicious traffic and deliver content efficiently.",
         },
         {
           label: "Privacy Policy:",
@@ -261,11 +265,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Database hosting, authentication, and backend data storage for our directory, Contact and Get Listed submissions, Quick Contact messages, user accounts, business claim requests, Featured listing subscription records, listing reports, optional site feedback survey responses, and related operational records.",
+          description:"Database hosting, authentication, and backend data storage for our directory, Contact and Get Listed submissions, Quick Contact messages, user accounts, business claim requests, listing photo records, Featured listing subscription records, listing reports, optional site feedback survey responses, and related operational records.",
         },
         {
           label: "Data Collected:",
-          description:"Contact and Get Listed submission data; Quick Contact submission data; account credentials and ownership links; claim-request records; Featured subscription records (including Stripe identifiers, status, period end, cancel scheduling flags, and linked business/owner IDs); listing report data (including reporter contact details and suggested corrections); site feedback survey answers (how you found us, whether you found what you were looking for, optional comments, form type, and related business identifiers when applicable); associated business identifiers; and operational metadata such as timestamps and processing status.",
+          description:"Contact and Get Listed submission data; Quick Contact submission data; account credentials and ownership links; claim-request records; listing photo records (image identifiers, primary/hidden/visibility flags, and linked business IDs; image files themselves are stored with Cloudflare Images); Featured subscription records (including Stripe identifiers, status, period end, cancel scheduling flags, and linked business/owner IDs); listing report data (including reporter contact details and suggested corrections); site feedback survey answers (how you found us, whether you found what you were looking for, optional comments, form type, and related business identifiers when applicable); associated business identifiers; and operational metadata such as timestamps and processing status.",
         },
         {
           label: "Privacy Policy:",
@@ -372,7 +376,7 @@ function PrivacyPage() {
         },
         {
           label: "Account Management:",
-          description:"Allow claimed business owners to sign in, manage listing information, unclaim listings, view listing analytics, view subscription status, open the Stripe billing portal, delete their account, and maintain their accounts.",
+          description:"Allow claimed business owners to sign in, manage listing information (including shop photos), unclaim listings, view listing analytics, view subscription status, open the Stripe billing portal, delete their account, and maintain their accounts.",
         },
         {
           label: "Featured Listing Billing:",
@@ -517,6 +521,10 @@ function PrivacyPage() {
     {
       label: "Featured Listing Billing Records:",
       description:"Subscription records linked to Featured upgrades (including Stripe identifiers and status history we store) are retained while the subscription is active and for up to 7 years after it ends, or longer if required for tax, accounting, chargeback, or legal obligations. This may include records that remain after you unclaim a listing or delete your account. Payment card details are retained by Stripe under Stripe's policies, not in our card vault.",
+    },
+    {
+      label: "Listing Photos:",
+      description:"Owner-uploaded listing photos and related image records are retained while the listing remains published, including after Featured ends (extras beyond the claimed allotment may be hidden from public view). If you delete a photo, we remove it from our image host and related records, subject to short-term backups. Remaining photos follow Business Listings retention after a listing is removed.",
     },
     {
       label: "Business Listings:",
