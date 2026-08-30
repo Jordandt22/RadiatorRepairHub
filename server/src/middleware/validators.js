@@ -54,10 +54,24 @@ export const paramsValidator = (schema) =>
     res.status(422).json(customErrorHandler(YUP_ERROR, errors));
   });
 
+const flattenQuery = (query = {}) => {
+  const next = {};
+  for (const [key, value] of Object.entries(query)) {
+    next[key] = Array.isArray(value) ? value[0] : value;
+  }
+  return next;
+};
+
 export const queryValidator = (schema) =>
   serverErrorCatcherWrapper(async (req, res, next) => {
-    const { valid, errors } = await validator(schema, req.query);
+    const query = flattenQuery(req.query);
+    const { valid, errors } = await validator(schema, query);
     if (valid && !errors) {
+      try {
+        Object.assign(req.query, query);
+      } catch {
+        // Express 5 query objects can be read-only
+      }
       return next();
     }
 

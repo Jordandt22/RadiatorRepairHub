@@ -39,7 +39,7 @@ const RELATED_TOPICS = [
   },
   {
     title: "Featured Pricing",
-    description: "Optional paid upgrade for claimed listings—badge, search priority, Featured page",
+    description: "Optional paid upgrade for claimed listings—badge, search priority, extra photos, Featured page",
     href: "/pricing",
   },
   {

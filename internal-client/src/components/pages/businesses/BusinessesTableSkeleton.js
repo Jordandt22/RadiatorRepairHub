@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { isManagedListingTab } from "@/components/pages/businesses/BusinessFilterTabs";
 import {
   Table,
   TableBody,
@@ -51,7 +52,7 @@ export default function BusinessesTableSkeleton({
   rows = 8,
   activeTab = "all",
 }) {
-  const isManagedTab = activeTab === "claimed" || activeTab === "featured";
+  const isManagedTab = isManagedListingTab(activeTab);
   const showOwnerEmail = isManagedTab;
   const showClaimInvite = isManagedTab;
   const showScore = activeTab === "all";

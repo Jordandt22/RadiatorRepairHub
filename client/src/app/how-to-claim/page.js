@@ -10,7 +10,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 
 const pageTitle = "How to Claim Your Business | RadiatorRepairHub";
 const pageDescription =
-  "Claim your radiator repair listing for free: eligibility, email verification, what you can edit, listing analytics, and optional Featured upgrades for more visibility.";
+  "Claim your radiator repair listing for free: eligibility, email verification, what you can edit, shop photos, listing analytics, and optional Featured upgrades for more visibility.";
 
 export const metadata = buildPageMetadata({
   title: pageTitle,
@@ -24,7 +24,7 @@ const BENEFITS = [
   {
     title: "Update How Your Listing Looks",
     description:
-      "Add or edit your About section, service categories, and photos so customers see current information.",
+      "Add or edit your About section, service categories, and up to 3 shop photos so customers see current information.",
     icon: ImageIcon,
   },
   {
@@ -60,7 +60,7 @@ const BENEFITS = [
   {
     title: "Featured Placement",
     description:
-      "Claiming is free. Optional paid Featured listings get a Featured badge, search priority, and a place on the Featured page.",
+      "Claiming is free. Optional paid Featured listings get a Featured badge, search priority, a place on the Featured page, and up to 10 shop photos.",
     icon: Flag,
     cta: { href: "/pricing", label: "Get Featured" },
     fullRow: true,
@@ -112,7 +112,7 @@ function buildClaimFaqs(supportEmail) {
     {
       question: "What is a Featured listing?",
       answer:
-        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, and a spot on the Featured businesses page. Claiming stays free; only Featured is paid.",
+        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, a spot on the Featured businesses page, and up to 10 shop photos (claimed listings include 3). Claiming stays free; only Featured is paid.",
     },
     {
       question: "Can I see how customers find my listing?",
@@ -317,7 +317,7 @@ export default function HowToClaimPage() {
               </h3>
               <p className="mb-6 text-muted-foreground">
                 After you claim, upgrade to Featured for a badge, search priority,
-                and a spot on the Featured page.
+                extra shop photos, and a spot on the Featured page.
               </p>
               <Link
                 href="/pricing"
@@ -372,7 +372,7 @@ export default function HowToClaimPage() {
       <FAQSection
         faqs={faqs}
         title="Claiming FAQ"
-        description="Answers about verification codes, contact info, mistaken claims, cost, analytics, and Featured upgrades."
+        description="Answers about verification codes, contact info, mistaken claims, cost, shop photos, analytics, and Featured upgrades."
         includeSchema={true}
       />
 

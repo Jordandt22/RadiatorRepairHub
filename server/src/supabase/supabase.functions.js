@@ -23,9 +23,10 @@ import {
   businessStatDateKey,
   dateKeyOffset,
 } from "../lib/businessStatsDate.js";
+import { selectPublicGalleryImages, applyPublicCoverImage } from "../lib/businessImages.js";
 
-const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*), business_images(image_id, is_primary)`;
-const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_images(image_id, is_primary)`;
+const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*), business_images(image_id, is_primary, is_hidden)`;
+const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_images(image_id, is_primary, is_hidden, created_at)`;
 
 function attachPrimaryImageId(business) {
   if (!business) return business;
@@ -33,10 +34,7 @@ function attachPrimaryImageId(business) {
   const images = Array.isArray(business.business_images)
     ? business.business_images
     : [];
-  const primary =
-    images.find((image) => image?.is_primary) || images[0] || null;
-
-  business.primary_image_id = primary?.image_id ?? null;
+  applyPublicCoverImage(business, images);
   delete business.business_images;
   return business;
 }
@@ -66,7 +64,7 @@ const formatBusinessListings = (data) => {
   return data;
 };
 
-const formatFullBusiness = (business) => {
+const formatFullBusiness = (business, { includeGallery = false } = {}) => {
   if (!business) return business;
 
   if (business?.secondary_categories) {
@@ -96,7 +94,18 @@ const formatFullBusiness = (business) => {
   business.is_claimed = Boolean(business?.is_claimed);
   business.is_featured = Boolean(business?.is_featured);
   business.last_edited_at = business.last_edited_at ?? null;
+  const rawImages = Array.isArray(business.business_images)
+    ? business.business_images
+    : [];
   attachPrimaryImageId(business);
+  if (includeGallery) {
+    business.images = selectPublicGalleryImages(rawImages, {
+      isClaimed: business.is_claimed,
+      isFeatured: business.is_featured,
+      imageUrl: business.image_url,
+      hideDefaultImage: Boolean(business.hide_default_image),
+    });
+  }
 
   return business;
 };
@@ -205,7 +214,7 @@ export const getBusinessById = async (business_id) => {
     .eq("id", business_id)
     .single();
 
-  return { data: formatFullBusiness(data), error };
+  return { data: formatFullBusiness(data, { includeGallery: true }), error };
 };
 
 export const getBusinessBySlug = async (business_slug) => {
@@ -215,7 +224,7 @@ export const getBusinessBySlug = async (business_slug) => {
     .eq("slug", business_slug)
     .single();
 
-  return { data: formatFullBusiness(data), error };
+  return { data: formatFullBusiness(data, { includeGallery: true }), error };
 };
 
 /** Lightweight slug existence check (id + slug + title only). */
@@ -824,7 +833,7 @@ export const getListingReports = async (page, limit, status = null) => {
 const ADMIN_BUSINESS_SELECT =
   "id, title, slug, email, phone, address, website, is_claimed, is_featured, is_test, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
-const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, created_at)`;
+const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, hide_default_image, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at)`;
 
 const flattenAdminSecondaryCategories = (rows) =>
   (rows ?? [])
@@ -902,12 +911,19 @@ const withClaimInviteTypes = async (businesses) => {
   }));
 };
 
+export const ADMIN_RECENTLY_EDITED_DAYS = 7;
+
+function recentlyEditedSinceIso(days = ADMIN_RECENTLY_EDITED_DAYS) {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+}
+
 export const getAdminBusinesses = async (
   page,
   limit,
   {
     claimed = null,
     featured = null,
+    recent = null,
     q = null,
     stateCode = null,
     citySlug = null,
@@ -1004,7 +1020,12 @@ export const getAdminBusinesses = async (
     .from("businesses")
     .select(ADMIN_BUSINESS_SELECT, { count: "exact" });
 
-  if (featured === true) {
+  if (recent === true) {
+    query = query
+      .eq("is_claimed", true)
+      .gte("last_edited_at", recentlyEditedSinceIso())
+      .order("last_edited_at", { ascending: false, nullsFirst: false });
+  } else if (featured === true) {
     query = query
       .eq("is_featured", true)
       .order("last_edited_at", { ascending: false, nullsFirst: false });
@@ -1084,7 +1105,7 @@ export const getAdminBusinesses = async (
 
   const withOwners = await withOwnerEmails(data);
   const businesses =
-    claimed === true || featured === true
+    claimed === true || featured === true || recent === true
       ? await withClaimInviteTypes(withOwners)
       : withOwners;
 
@@ -3273,6 +3294,10 @@ export const signInWithPassword = async ({ email, password }) => {
   return { data, error };
 };
 
+export const sendPasswordResetEmail = async (email, redirectTo) => {
+  return supabaseAnon.auth.resetPasswordForEmail(email, { redirectTo });
+};
+
 export const getAuthUserByAccessToken = async (accessToken) => {
   const { data, error } = await supabaseAnon.auth.getUser(accessToken);
   return { data, error };
@@ -3412,7 +3437,7 @@ export const getOwnedBusinesses = async (ownerUid, accessToken) => {
   const { data, error } = await client
     .from("businesses")
     .select(
-      "id, title, slug, address, image_url, place_id, cdn_stored, last_edited_at, is_featured, is_claimed, business_images(image_id, is_primary)"
+      "id, title, slug, address, image_url, hide_default_image, place_id, cdn_stored, last_edited_at, is_featured, is_claimed, business_images(image_id, is_primary, is_hidden)"
     )
     .eq("owner_uid", ownerUid)
     .eq("is_claimed", true)
@@ -3439,7 +3464,7 @@ export const getOwnedBusiness = async (businessId, ownerUid, accessToken) => {
   const { data, error } = await client
     .from("businesses")
     .select(
-      "id, owner_uid, title, slug, phone, email, website, description, last_edited_at, is_claimed, is_featured"
+      "id, owner_uid, title, slug, phone, email, website, description, image_url, hide_default_image, last_edited_at, is_claimed, is_featured"
     )
     .eq("id", businessId)
     .eq("owner_uid", ownerUid)
@@ -4143,6 +4168,153 @@ export const touchOwnedBusinessEditedAt = async (
     .eq("id", businessId)
     .eq("owner_uid", ownerUid)
     .select("id, last_edited_at")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const listBusinessImagesByBusinessId = async (businessId) => {
+  const { data, error } = await supabase
+    .from("business_images")
+    .select("image_id, is_primary, is_hidden, created_at")
+    .eq("business_id", businessId)
+    .order("created_at", { ascending: true });
+
+  return { data: data ?? [], error };
+};
+
+export const insertOwnedBusinessImage = async ({
+  imageId,
+  businessId,
+  isPrimary,
+}) => {
+  const { data, error } = await supabase
+    .from("business_images")
+    .insert({
+      image_id: imageId,
+      business_id: businessId,
+      is_primary: Boolean(isPrimary),
+    })
+    .select("image_id, is_primary, is_hidden, created_at")
+    .single();
+
+  return { data, error };
+};
+
+export const clearOwnedBusinessImagePrimary = async (businessId) => {
+  const { error } = await supabase
+    .from("business_images")
+    .update({ is_primary: false })
+    .eq("business_id", businessId)
+    .eq("is_primary", true);
+
+  return { error };
+};
+
+export const setOwnedBusinessImagePrimary = async ({ businessId, imageId }) => {
+  const { error: unsetError } = await supabase
+    .from("business_images")
+    .update({ is_primary: false })
+    .eq("business_id", businessId)
+    .eq("is_primary", true);
+
+  if (unsetError) return { data: null, error: unsetError };
+
+  const { data, error } = await supabase
+    .from("business_images")
+    .update({ is_primary: true, is_hidden: false })
+    .eq("business_id", businessId)
+    .eq("image_id", imageId)
+    .select("image_id, is_primary, is_hidden, created_at")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const setOwnedBusinessImageHidden = async ({
+  businessId,
+  imageId,
+  isHidden,
+}) => {
+  const { data, error } = await supabase
+    .from("business_images")
+    .update({ is_hidden: Boolean(isHidden) })
+    .eq("business_id", businessId)
+    .eq("image_id", imageId)
+    .select("image_id, is_primary, is_hidden, created_at")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const setOwnedBusinessHideDefaultImage = async (
+  businessId,
+  hideDefaultImage
+) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({ hide_default_image: Boolean(hideDefaultImage) })
+    .eq("id", businessId)
+    .select("id, hide_default_image")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const deleteOwnedBusinessImageRow = async ({ businessId, imageId }) => {
+  const { data, error } = await supabase
+    .from("business_images")
+    .delete()
+    .eq("business_id", businessId)
+    .eq("image_id", imageId)
+    .select("image_id")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const markOwnedBusinessCdnStored = async (businessId) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({ cdn_stored: true })
+    .eq("id", businessId)
+    .select("id, cdn_stored")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const updateBusinessDerivedSeo = async (businessId, fields = {}) => {
+  if (!businessId || typeof businessId !== "string") {
+    return { data: null, error: { message: "Missing business id." } };
+  }
+
+  const payload = {};
+  if (Array.isArray(fields.highlights)) {
+    payload.highlights = fields.highlights;
+  }
+  if (typeof fields.title_tag === "string") {
+    payload.title_tag = fields.title_tag;
+  }
+  if (typeof fields.meta_description === "string") {
+    payload.meta_description = fields.meta_description;
+  }
+  if (typeof fields.local_note === "string") {
+    payload.local_note = fields.local_note;
+  }
+  if (Array.isArray(fields.keywords)) {
+    payload.keywords = fields.keywords;
+  }
+
+  if (Object.keys(payload).length === 0) {
+    return { data: null, error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .update(payload)
+    .eq("id", businessId)
+    .select("id, highlights, title_tag, meta_description, local_note, keywords")
     .maybeSingle();
 
   return { data, error };

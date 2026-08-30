@@ -295,11 +295,14 @@ export const getAdminBusinessesKey = (
   scoreTier = null,
   reviewsTier = null,
   emailFilter = null,
-  websiteFilter = null
+  websiteFilter = null,
+  recent = null
 ) => ({
-  key: `ADMIN_BUSINESSES?V:10&PAGE:${page}&LIMIT:${limit}&CLAIMED:${
+  key: `ADMIN_BUSINESSES?V:11&PAGE:${page}&LIMIT:${limit}&CLAIMED:${
     claimed === true ? "true" : "all"
-  }&FEATURED:${featured === true ? "true" : "all"}&Q:${q ?? ""}&STATE:${
+  }&FEATURED:${featured === true ? "true" : "all"}&RECENT:${
+    recent === true ? "7d" : "all"
+  }&Q:${q ?? ""}&STATE:${
     stateCode ?? ""
   }&CITY:${citySlug ?? ""}&POSTAL:${postalCode ?? ""}&SCORE:${
     scoreTier ?? ""

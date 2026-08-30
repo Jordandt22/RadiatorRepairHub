@@ -3,43 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-
-function cleanAuthParamsFromUrl() {
-  if (typeof window === "undefined") return;
-  window.history.replaceState({}, "", window.location.pathname);
-}
-
-async function hydrateSessionFromRedirect() {
-  try {
-    const supabase = getSupabaseBrowserClient();
-
-    const hash = window.location.hash?.replace(/^#/, "") ?? "";
-    if (hash) {
-      const params = new URLSearchParams(hash);
-      const accessToken = params.get("access_token");
-      const refreshToken = params.get("refresh_token");
-      if (accessToken && refreshToken) {
-        await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
-        cleanAuthParamsFromUrl();
-        await supabase.auth.getUser();
-        return;
-      }
-    }
-
-    const code = new URLSearchParams(window.location.search).get("code");
-    if (code) {
-      await supabase.auth.exchangeCodeForSession(code);
-      cleanAuthParamsFromUrl();
-      await supabase.auth.getUser();
-    }
-  } catch {
-    // Confirmation may already be applied server-side; page can still show success.
-  }
-}
+import { hydrateSessionFromRedirect } from "@/lib/auth/redirectSession";
 
 export default function EmailConfirmedContent() {
   const [ready, setReady] = useState(false);

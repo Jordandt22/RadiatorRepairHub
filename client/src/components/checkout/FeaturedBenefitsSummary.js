@@ -1,7 +1,7 @@
 import { FEATURED_BENEFITS } from "@/lib/featuredBenefits";
 
 export default function FeaturedBenefitsSummary({
-  heading = "What Featured includes",
+  heading = "What Featured Includes",
 }) {
   return (
     <section aria-labelledby="featured-benefits-heading">

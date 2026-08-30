@@ -609,11 +609,12 @@ export const LISTING_REQUEST_LIVE_MESSAGE = Object.freeze({
   <p>By claiming your listing, you can:</p>
   <ul>
     <li>Update information about your business</li>
+    <li>Add up to 3 shop photos to your listing</li>
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
   </ul>
 
-  <p>After you claim, you can optionally upgrade to a paid Featured listing for a badge, search priority, and a spot on our Featured page: <a href="${escapeEmailHtml(`${getWebBaseUrl()}/pricing`)}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to a paid Featured listing for a badge, search priority, extra shop photos, and a spot on our Featured page: <a href="${escapeEmailHtml(`${getWebBaseUrl()}/pricing`)}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>If you have any questions or need assistance, don't hesitate to reach out! You can also reply to this email.</p>
 
@@ -711,13 +712,14 @@ export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
   <p><strong>With your Claimed Listing, you can:</strong></p>
   <ul>
     <li>Update information about your business</li>
+    <li>Add up to 3 shop photos to your listing</li>
     <li>Receive Quick Contact inquiries from customers</li>
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
     <li>See listing analytics in your dashboard (views, clicks, and impressions)</li>
   </ul>
 
-  <p><strong>Want more visibility?</strong> Claiming stays free. You can optionally upgrade to a paid Featured listing for a Featured badge, priority in search, and a place on our Featured page:</p>
+  <p><strong>Want more visibility?</strong> Claiming stays free. You can optionally upgrade to a paid Featured listing for a Featured badge, priority in search, extra shop photos, and a place on our Featured page:</p>
   <p><a href="${pricingUrl}" style="color: #1a73e8;">${pricingUrl}</a></p>
 
   <p>If you have any questions, just reply to this email, we're happy to help anytime!</p>
@@ -740,14 +742,14 @@ export const CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>We listed <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub so local customers can find radiator repair shops near them.</p>
 
-  <p>Claim your free listing to update your info, receive Quick Contact inquiries, see listing analytics, and show customers you're verified:</p>
+  <p>Claim your free listing to update your info, add shop photos, receive Quick Contact inquiries, see listing analytics, and show customers you're verified:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Not sure how? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
   <p>Your RadiatorRepairHub page can also work as a simple website link for Google Business Profile, ads, and social profiles.</p>
 
-  <p>After you claim, you can optionally upgrade to Featured for extra search placement: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to Featured for extra search placement and up to 10 shop photos: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `;
@@ -767,12 +769,12 @@ export const OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Right now it isn't claimed, so customers may see outdated info and the page won't be verified, which might turn customers away.</p>
 
-  <p>Claim it for free (takes a few minutes) to update your listing, receive Quick Contact inquiries, and see listing analytics in your dashboard:</p>
+  <p>Claim it for free (takes a few minutes) to update your listing, add shop photos, receive Quick Contact inquiries, and see listing analytics in your dashboard:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Need a walkthrough? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
-  <p>After you claim, you can optionally upgrade to Featured for extra search placement: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to Featured for extra search placement and up to 10 shop photos: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `;
@@ -795,6 +797,7 @@ export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   <p>Claim your free listing so you can:</p>
   <ul>
     <li>Keep your contact info, hours, and services accurate</li>
+    <li>Add up to 3 shop photos to your listing</li>
     <li>Show as a verified shop in search results</li>
     <li>Receive Quick Contact inquiries from customers</li>
     <li>See listing analytics in your dashboard (views, clicks, and impressions)</li>
@@ -804,7 +807,7 @@ export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
-  <p>After you claim, you can optionally upgrade to a paid Featured listing for a badge, search priority, and a spot on our Featured page: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to a paid Featured listing for a badge, search priority, extra shop photos, and a spot on our Featured page: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `;
@@ -827,6 +830,7 @@ export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   <p>Claiming your listing only takes a few minutes and lets you:</p>
   <ul>
     <li>Update your business information</li>
+    <li>Add up to 3 shop photos to your listing</li>
     <li>Keep contact details accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
     <li>See listing analytics in your dashboard</li>
@@ -836,7 +840,7 @@ export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Need help? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
-  <p>After you claim, you can optionally upgrade to Featured for extra search placement: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to Featured for extra search placement and up to 10 shop photos: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `;
@@ -859,6 +863,7 @@ export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
   <p><strong>By claiming your listing, you can:</strong></p>
   <ul>
     <li>Update information about your business</li>
+    <li>Add up to 3 shop photos to your listing</li>
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
     <li>See listing analytics in your dashboard</li>
@@ -869,7 +874,7 @@ export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
-  <p>After you claim, you can optionally upgrade to Featured for extra search placement: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to Featured for extra search placement and up to 10 shop photos: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>If you're not interested, no worries! We won't bother you again.</p>
 

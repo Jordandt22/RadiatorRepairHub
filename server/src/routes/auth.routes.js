@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   loginOwner,
+  requestPasswordReset,
   updateOwnerEmail,
   updateOwnerPassword,
   deleteOwnerAccount,
@@ -8,6 +9,7 @@ import {
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
   OwnerLoginSchema,
+  ForgotPasswordSchema,
   UpdateOwnerEmailSchema,
   UpdateOwnerPasswordSchema,
 } from "../schemas/auth.schemas.js";
@@ -20,6 +22,12 @@ authRouter.post(
   "/login",
   bodyValidator(OwnerLoginSchema),
   serverErrorCatcherWrapper(loginOwner)
+);
+
+authRouter.post(
+  "/forgot-password",
+  bodyValidator(ForgotPasswordSchema),
+  serverErrorCatcherWrapper(requestPasswordReset)
 );
 
 authRouter.patch(

@@ -1,4 +1,10 @@
 import { Router } from "express";
+import multer from "multer";
+import {
+  customErrorHandler,
+  errorCodes,
+} from "../helpers/customErrorHandler.js";
+import { MAX_OWNER_IMAGE_BYTES } from "../lib/businessImages.js";
 import {
   getFeaturedBusinesses,
   getTopVerifiedBusinessesHandler,
@@ -18,6 +24,11 @@ import {
   updateBusinessAmenities,
   updateBusinessAbout,
   updateBusinessHours,
+  getOwnedBusinessImages,
+  uploadOwnedBusinessImage,
+  setOwnedBusinessImagePrimaryHandler,
+  setOwnedBusinessImageHiddenHandler,
+  deleteOwnedBusinessImageHandler,
 } from "../controllers/businesses.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
@@ -36,6 +47,11 @@ import {
   UpdateBusinessAmenitiesSchema,
   UpdateBusinessAboutSchema,
   UpdateBusinessHoursSchema,
+  OwnedBusinessImagesQuerySchema,
+  UploadBusinessImageSchema,
+  UpdateBusinessImagePrimarySchema,
+  UpdateBusinessImageHiddenSchema,
+  DeleteBusinessImageSchema,
 } from "../schemas/businesses.schemas.js";
 import { paginationSchema, featuredBusinessesQuerySchema } from "../schemas/query.schemas.js";
 import {
@@ -46,6 +62,36 @@ import {
 } from "../middleware/validators.js";
 import { expireStaleClaimsOnBusinessFetch } from "../middleware/claim.mw.js";
 import { authUser, optionalAuthUser } from "../middleware/auth.mw.js";
+
+const { YUP_ERROR } = errorCodes;
+
+const ownerImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_OWNER_IMAGE_BYTES },
+  fileFilter: (_req, file, cb) => {
+    const ok = ["image/jpeg", "image/png", "image/webp"].includes(
+      file.mimetype
+    );
+    if (!ok) {
+      cb(new Error("Use a JPEG, PNG, or WebP image."));
+      return;
+    }
+    cb(null, true);
+  },
+});
+
+const handleOwnerImageUpload = (req, res, next) => {
+  ownerImageUpload.single("image")(req, res, (err) => {
+    if (!err) return next();
+    const message =
+      err.code === "LIMIT_FILE_SIZE"
+        ? "Image must be 5 MB or smaller."
+        : err.message || "Unable to upload this image.";
+    return res
+      .status(422)
+      .json(customErrorHandler(YUP_ERROR, { image: message }));
+  });
+};
 
 const businessesRouter = Router();
 
@@ -123,6 +169,43 @@ businessesRouter.patch(
   authUser,
   bodyValidator(UpdateBusinessHoursSchema),
   serverErrorCatcherWrapper(updateBusinessHours)
+);
+
+// Owner images (must be before /:business_slug)
+businessesRouter.get(
+  "/images",
+  authUser,
+  queryValidator(OwnedBusinessImagesQuerySchema),
+  serverErrorCatcherWrapper(getOwnedBusinessImages)
+);
+
+businessesRouter.post(
+  "/images",
+  authUser,
+  handleOwnerImageUpload,
+  bodyValidator(UploadBusinessImageSchema),
+  serverErrorCatcherWrapper(uploadOwnedBusinessImage)
+);
+
+businessesRouter.patch(
+  "/images/primary",
+  authUser,
+  bodyValidator(UpdateBusinessImagePrimarySchema),
+  serverErrorCatcherWrapper(setOwnedBusinessImagePrimaryHandler)
+);
+
+businessesRouter.patch(
+  "/images/hidden",
+  authUser,
+  bodyValidator(UpdateBusinessImageHiddenSchema),
+  serverErrorCatcherWrapper(setOwnedBusinessImageHiddenHandler)
+);
+
+businessesRouter.delete(
+  "/images",
+  authUser,
+  bodyValidator(DeleteBusinessImageSchema),
+  serverErrorCatcherWrapper(deleteOwnedBusinessImageHandler)
 );
 
 // Get all business slugs for sitemap generation

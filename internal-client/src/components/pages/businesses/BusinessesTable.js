@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/components/pages/dashboard/formatDate";
+import { isManagedListingTab } from "@/components/pages/businesses/BusinessFilterTabs";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
 import BusinessFeaturedBadge from "@/components/pages/businesses/BusinessFeaturedBadge";
 import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
@@ -358,7 +359,7 @@ export default function BusinessesTable({
   onToggleId,
   onToggleAll,
 }) {
-  const isManagedTab = activeTab === "claimed" || activeTab === "featured";
+  const isManagedTab = isManagedListingTab(activeTab);
   const showOwnerEmail = isManagedTab;
   const showClaimInvite = isManagedTab;
   const showScore = activeTab === "all";

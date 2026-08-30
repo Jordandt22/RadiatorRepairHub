@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/contexts/ToastProvider";
 import { claimBusiness } from "@/lib/api/businesses";
-import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
+import { useOwnerListingView } from "@/contexts/OwnerListingViewProvider";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { isEmailUnderReview, EMAIL_UNDER_REVIEW_MESSAGE } from "@/lib/emailStatus";
 import { usePostHog } from "posthog-js/react";
@@ -139,7 +139,7 @@ function ClaimedBusinessStatus({
   lastEditedAt = null,
   isFeatured = false,
 }) {
-  const { isOwner } = useIsBusinessOwner(businessId);
+  const { showOwnerChrome } = useOwnerListingView();
 
   let editedDate = null;
   if (lastEditedAt) {
@@ -161,7 +161,7 @@ function ClaimedBusinessStatus({
         <p className="text-sm font-medium">Verified business</p>
       </div>
       <div className="flex w-full flex-col gap-2">
-        {isOwner ? (
+        {showOwnerChrome ? (
           <Link
             href="/dashboard"
             className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-interactive hover:bg-muted"
@@ -171,7 +171,7 @@ function ClaimedBusinessStatus({
             <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           </Link>
         ) : null}
-        {isOwner && isFeatured ? (
+        {showOwnerChrome && isFeatured ? (
           <Link
             href="/settings?tab=payments"
             className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-500/40 bg-amber-50 px-5 py-2.5 text-sm font-medium text-amber-900 transition-colors hover:bg-amber-100"
@@ -180,7 +180,7 @@ function ClaimedBusinessStatus({
             Featured Listing
           </Link>
         ) : null}
-        {isOwner && !isFeatured ? (
+        {showOwnerChrome && !isFeatured ? (
           <Link
             href={`/pricing?business=${encodeURIComponent(businessId)}`}
             className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-interactive hover:bg-muted"

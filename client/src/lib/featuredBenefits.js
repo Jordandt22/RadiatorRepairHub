@@ -1,28 +1,34 @@
-import { MapPin, Search, Sparkles, Star } from "lucide-react";
+import { Images, MapPin, Search, Sparkles, Star } from "lucide-react";
 
 export const FEATURED_BENEFITS = [
   {
     icon: Star,
-    title: "Featured badge",
+    title: "Featured Badge",
     description:
       "A Featured badge appears on your listing and business cards next to Verified.",
   },
   {
     icon: Search,
-    title: "Priority in search",
+    title: "Priority in Search",
     description:
       "Priority placement in search, state, city, category, and postal code listings.",
   },
   {
     icon: MapPin,
-    title: "Featured page",
+    title: "Featured Page",
     description:
       "Appear on the Featured businesses page drivers use to find recommended shops.",
   },
   {
     icon: Sparkles,
-    title: "More visibility",
+    title: "More Visibility",
     description:
       "Featured shops are prioritized wherever people browse the directory.",
+  },
+  {
+    icon: Images,
+    title: "More Shop Photos",
+    description:
+      "Up to 10 shop photos on your listing. Claimed listings include 3.",
   },
 ];

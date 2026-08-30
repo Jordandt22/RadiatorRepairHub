@@ -12,7 +12,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { usePostHog } from "posthog-js/react";
 import { useToast } from "@/contexts/ToastProvider";
+import { captureOwnerListingUpdate } from "@/lib/analytics/ownerListing";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import BusinessImage from "@/components/businesses/BusinessImage";
 import { updateBusinessAbout } from "@/lib/api/businessAbout";
@@ -44,6 +46,8 @@ function mapApiErrorsToFields(error) {
 
 function AboutSectionContent({
   businessId,
+  businessSlug,
+  businessName,
   description: initialDescription = "",
   imageUrl,
   imageId,
@@ -52,6 +56,7 @@ function AboutSectionContent({
   showImage = true,
 }) {
   const router = useRouter();
+  const posthog = usePostHog();
   const { showCustomSuccess } = useToast();
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState(initialDescription || "");
@@ -121,6 +126,12 @@ function AboutSectionContent({
       }
 
       showCustomSuccess("About section updated.");
+      captureOwnerListingUpdate(posthog, {
+        businessId,
+        businessSlug,
+        businessName,
+        section: "about",
+      });
       setOpen(false);
       router.refresh();
     } catch {
@@ -137,7 +148,7 @@ function AboutSectionContent({
     description.length > ABOUT_MAX_LENGTH;
 
   return (
-    <div className="order-1 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
+    <div className="order-5 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
       <BusinessSectionHeader
         title="About"
         businessId={businessId}

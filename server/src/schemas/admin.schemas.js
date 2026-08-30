@@ -9,6 +9,7 @@ import {
   MAX_SCRAPE_CITIES,
   MIN_MAX_PLACES,
 } from "../apify-scrape/constants.js";
+import { DEFAULT_LISTING_IMAGE_ID } from "../lib/businessImages.js";
 
 const isValidPhone = (value) => {
   if (!value?.trim()) return false;
@@ -313,6 +314,15 @@ export const GetAdminBusinessesQuerySchema = Yup.object({
   page: Yup.number().min(1).max(100).required(),
   limit: Yup.number().min(1).max(30).required(),
   claimed: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return null;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .nullable()
+    .optional(),
+  recent: Yup.boolean()
     .transform((value, originalValue) => {
       if (originalValue === "" || originalValue == null) return null;
       if (originalValue === "true" || originalValue === true) return true;
@@ -679,6 +689,26 @@ export const UpdateBusinessCategoriesSchema = Yup.object({
 
 export const GetAdminBusinessParamsSchema = Yup.object({
   id: Yup.string().uuid("Invalid business ID").required("Business ID is required"),
+});
+
+export const HideAdminBusinessImageSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  imageId: Yup.string()
+    .trim()
+    .required()
+    .test(
+      "image-id",
+      "Invalid image ID",
+      (value) =>
+        value === DEFAULT_LISTING_IMAGE_ID ||
+        Yup.string().uuid().isValidSync(value)
+    ),
+  isHidden: Yup.boolean().required(),
+});
+
+export const DeleteAdminBusinessImageSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  imageId: Yup.string().trim().uuid("Invalid image ID").required(),
 });
 
 const adminBusinessStatsDaysField = Yup.string()

@@ -1,6 +1,7 @@
 import {
   BadgeCheckIcon,
   ChevronDownIcon,
+  ClockIcon,
   ListIcon,
   StarIcon,
 } from "lucide-react";
@@ -15,9 +16,14 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const TAB_FILTERS = {
-  all: { claimed: null, featured: null },
-  claimed: { claimed: true, featured: null },
-  featured: { claimed: null, featured: true },
+  all: { claimed: null, featured: null, recent: null },
+  claimed: { claimed: true, featured: null, recent: null },
+  featured: { claimed: null, featured: true, recent: null },
+};
+
+export const LISTING_TAB_FILTERS = {
+  ...TAB_FILTERS,
+  edited: { claimed: true, featured: null, recent: true },
 };
 
 /** @deprecated Prefer TAB_FILTERS */
@@ -28,18 +34,31 @@ export const TAB_CLAIMED = {
 };
 
 export const VALID_TABS = Object.keys(TAB_FILTERS);
+export const VALID_LISTING_TABS = Object.keys(LISTING_TAB_FILTERS);
+
+export function isManagedListingTab(tab) {
+  return tab === "claimed" || tab === "featured" || tab === "edited";
+}
 
 const TAB_OPTIONS = [
   { value: "all", label: "All", Icon: ListIcon },
   { value: "claimed", label: "Claimed", Icon: BadgeCheckIcon },
   { value: "featured", label: "Featured", Icon: StarIcon },
+  { value: "edited", label: "Recently edited", Icon: ClockIcon },
 ];
 
-export default function BusinessFilterTabs({ value, onValueChange }) {
+export default function BusinessFilterTabs({
+  value,
+  onValueChange,
+  includeEdited = false,
+}) {
+  const options = includeEdited
+    ? TAB_OPTIONS
+    : TAB_OPTIONS.filter((tab) => tab.value !== "edited");
   const triggerClassName =
-    "cursor-pointer hover:translate-y-[-2px] transition-all duration-200 px-8 rounded-full";
+    "cursor-pointer hover:translate-y-[-2px] transition-all duration-200 px-6 rounded-full md:px-8";
   const activeTab =
-    TAB_OPTIONS.find((tab) => tab.value === value) ?? TAB_OPTIONS[0];
+    options.find((tab) => tab.value === value) ?? options[0];
   const ActiveIcon = activeTab.Icon;
 
   return (
@@ -65,7 +84,7 @@ export default function BusinessFilterTabs({ value, onValueChange }) {
             className="w-(--anchor-width) text-sm"
           >
             <DropdownMenuRadioGroup value={value} onValueChange={onValueChange}>
-              {TAB_OPTIONS.map(({ value: tabValue, label, Icon }) => (
+              {options.map(({ value: tabValue, label, Icon }) => (
                 <DropdownMenuRadioItem
                   key={tabValue}
                   value={tabValue}
@@ -86,7 +105,7 @@ export default function BusinessFilterTabs({ value, onValueChange }) {
         className="hidden md:block"
       >
         <TabsList className="rounded-full">
-          {TAB_OPTIONS.map(({ value: tabValue, label, Icon }) => (
+          {options.map(({ value: tabValue, label, Icon }) => (
             <TabsTrigger
               key={tabValue}
               value={tabValue}

@@ -1,6 +1,7 @@
 import * as Yup from "yup";
 import { normalizeWebsiteUrl } from "../lib/websiteReachability.js";
 import { getPasswordStrengthError } from "../lib/password.js";
+import { DEFAULT_LISTING_IMAGE_ID } from "../lib/businessImages.js";
 
 // ---- Params Request ----
 
@@ -246,6 +247,48 @@ export const UpdateBusinessHoursSchema = Yup.object({
         );
       }
     ),
+});
+
+export const OwnedBusinessImagesQuerySchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+});
+
+export const UploadBusinessImageSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+});
+
+export const UpdateBusinessImagePrimarySchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  imageId: Yup.string()
+    .trim()
+    .required()
+    .test(
+      "image-id",
+      "Invalid image ID",
+      (value) =>
+        value === DEFAULT_LISTING_IMAGE_ID ||
+        Yup.string().uuid().isValidSync(value)
+    ),
+});
+
+export const DeleteBusinessImageSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  imageId: Yup.string().trim().uuid("Invalid image ID").required(),
+});
+
+export const UpdateBusinessImageHiddenSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  imageId: Yup.string()
+    .trim()
+    .required()
+    .test(
+      "image-id",
+      "Invalid image ID",
+      (value) =>
+        value === DEFAULT_LISTING_IMAGE_ID ||
+        Yup.string().uuid().isValidSync(value)
+    ),
+  isHidden: Yup.boolean().required(),
 });
 
 export const SearchBusinessesSchema = Yup.object({

@@ -95,6 +95,11 @@ import {
 } from "../../lib/cancelFeaturedSubscriptions.js";
 import { invalidateClaimStatusCaches } from "../../lib/invalidateListingCaches.js";
 import {
+  deleteAdminBusinessImage,
+  formatAdminGalleryImages,
+  hideAdminBusinessImage,
+} from "../../lib/adminBusinessImages.js";
+import {
   getTestBusinessDefaults as fetchTestBusinessDefaults,
   listTestBusinesses,
   insertTestBusiness,
@@ -205,7 +210,8 @@ import {
   getOutreachSchedulerState,
   reconcileOutreachScheduler,
 } from "../../outreach-scheduler/scheduler.js";
-const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR } = errorCodes;
+const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR, ROUTE_NOT_FOUND } =
+  errorCodes;
 
 export const loginAdmin = async (req, res) => {
   const { password } = req.body;
@@ -1983,8 +1989,14 @@ export const deleteListingRequests = async (req, res) => {
 export const getBusinesses = async (req, res) => {
   let page = Number(req.query.page);
   const limit = Number(req.query.limit);
+  const recent =
+    req.query.recent === true || req.query.recent === "true" ? true : null;
   const claimed =
-    req.query.claimed === true || req.query.claimed === "true" ? true : null;
+    recent === true ||
+    req.query.claimed === true ||
+    req.query.claimed === "true"
+      ? true
+      : null;
   const featured =
     req.query.featured === true || req.query.featured === "true" ? true : null;
   const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
@@ -2033,7 +2045,8 @@ export const getBusinesses = async (req, res) => {
     scoreTier,
     reviewsTier,
     emailFilter,
-    websiteFilter
+    websiteFilter,
+    recent
   );
   const cachedData = await getCacheData(key);
   if (cachedData) {
@@ -2046,6 +2059,7 @@ export const getBusinesses = async (req, res) => {
     {
       claimed,
       featured,
+      recent,
       q,
       stateCode,
       citySlug,
@@ -2132,7 +2146,105 @@ export const getBusinessById = async (req, res) => {
       );
   }
 
-  return res.status(200).json(successHandler(data));
+  return res.status(200).json(
+    successHandler({
+      ...data,
+      gallery_images: formatAdminGalleryImages(data),
+    })
+  );
+};
+
+const adminImageStatusCode = (status) => {
+  if (status === 404) return ROUTE_NOT_FOUND;
+  if (status === 422) return YUP_ERROR;
+  return SUPABASE_ERROR;
+};
+
+const respondAdminImageResult = (res, result) => {
+  if (result.status !== 200) {
+    return res
+      .status(result.status)
+      .json(
+        customErrorHandler(
+          adminImageStatusCode(result.status),
+          result.message,
+          result.error
+        )
+      );
+  }
+  return null;
+};
+
+export const hideBusinessImage = async (req, res) => {
+  const { businessId, imageId, isHidden } = req.body;
+  const { data: business, error } = await fetchAdminBusinessById(businessId);
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res
+        .status(404)
+        .json(customErrorHandler(SUPABASE_ERROR, "Business not found.", error));
+    }
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error fetching the business.",
+        error
+      )
+    );
+  }
+
+  const result = await hideAdminBusinessImage({
+    businessId,
+    imageId,
+    isHidden,
+    imageUrl: business?.image_url,
+    hideDefaultImage: Boolean(business?.hide_default_image),
+  });
+  const early = respondAdminImageResult(res, result);
+  if (early) return early;
+
+  try {
+    await invalidatePublicBusinessListingCaches([business]);
+  } catch {
+    // best-effort cache cleanup
+  }
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+
+  return res.status(200).json(successHandler({ ok: true }));
+};
+
+export const deleteBusinessImage = async (req, res) => {
+  const { businessId, imageId } = req.body;
+  const { data: business, error } = await fetchAdminBusinessById(businessId);
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res
+        .status(404)
+        .json(customErrorHandler(SUPABASE_ERROR, "Business not found.", error));
+    }
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error fetching the business.",
+        error
+      )
+    );
+  }
+
+  const result = await deleteAdminBusinessImage({ businessId, imageId });
+  const early = respondAdminImageResult(res, result);
+  if (early) return early;
+
+  try {
+    await invalidatePublicBusinessListingCaches([business]);
+  } catch {
+    // best-effort cache cleanup
+  }
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+
+  return res.status(200).json(successHandler({ ok: true }));
 };
 
 export const getBusinessStats = async (req, res) => {

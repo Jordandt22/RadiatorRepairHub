@@ -12,7 +12,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { usePostHog } from "posthog-js/react";
 import { useToast } from "@/contexts/ToastProvider";
+import { captureOwnerListingUpdate } from "@/lib/analytics/ownerListing";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import { updateBusinessHours } from "@/lib/api/businessHoursUpdate";
@@ -146,10 +148,13 @@ function DayHoursDisplay({ hours }) {
 
 function BusinessHoursSectionContent({
   businessId,
+  businessSlug,
+  businessName,
   hours: initialHours = [],
   timezone,
 }) {
   const router = useRouter();
+  const posthog = usePostHog();
   const { showCustomSuccess } = useToast();
   const initialDays = useMemo(
     () => normalizeIncomingHours(initialHours),
@@ -305,6 +310,12 @@ function BusinessHoursSectionContent({
       }
 
       showCustomSuccess("Business hours updated.");
+      captureOwnerListingUpdate(posthog, {
+        businessId,
+        businessSlug,
+        businessName,
+        section: "hours",
+      });
       setOpen(false);
       router.refresh();
     } catch {
@@ -315,7 +326,7 @@ function BusinessHoursSectionContent({
   };
 
   return (
-    <div className="order-4 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
+    <div className="order-3 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
       <BusinessSectionHeader
         title="Business Hours"
         businessId={businessId}

@@ -299,7 +299,11 @@ export default function BusinessDetailPageContent() {
       ) : null}
 
       {activeTab === "images" ? (
-        <BusinessDetailImagesTab data={data} />
+        <BusinessDetailImagesTab
+          data={data}
+          accessToken={accessToken}
+          logout={logout}
+        />
       ) : null}
 
       {activeTab === "analytics" ? (

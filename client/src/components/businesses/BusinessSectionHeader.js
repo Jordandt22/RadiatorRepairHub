@@ -1,7 +1,7 @@
 "use client";
 
 import OwnerEditButton from "@/components/businesses/OwnerEditButton";
-import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
+import { useOwnerListingView } from "@/contexts/OwnerListingViewProvider";
 
 export default function BusinessSectionHeader({
   title,
@@ -12,8 +12,10 @@ export default function BusinessSectionHeader({
   titleBadge = null,
   trailing = null,
   onEdit,
+  editAriaLabel,
+  editIcon,
 }) {
-  const { isOwner } = useIsBusinessOwner(businessId);
+  const { showOwnerChrome } = useOwnerListingView();
 
   return (
     <div className={`flex items-center justify-between gap-2 ${className}`}>
@@ -23,8 +25,12 @@ export default function BusinessSectionHeader({
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {trailing}
-        {isOwner ? (
-          <OwnerEditButton aria-label={`Edit ${title}`} onClick={onEdit} />
+        {showOwnerChrome && onEdit ? (
+          <OwnerEditButton
+            aria-label={editAriaLabel || `Edit ${title}`}
+            onClick={onEdit}
+            icon={editIcon}
+          />
         ) : null}
       </div>
     </div>

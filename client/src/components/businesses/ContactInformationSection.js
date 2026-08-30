@@ -12,13 +12,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { usePostHog } from "posthog-js/react";
 import { useToast } from "@/contexts/ToastProvider";
+import { captureOwnerListingUpdate } from "@/lib/analytics/ownerListing";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import BusinessContactLinks from "@/components/businesses/BusinessContactLinks";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
 import ReportInfoDialog from "@/components/businesses/ReportInfoDialog";
 import { updateBusinessContact } from "@/lib/api/businessContact";
-import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
+import { useOwnerListingView } from "@/contexts/OwnerListingViewProvider";
 import { isEmailUnderReview, isEmailUnverified } from "@/lib/emailStatus";
 
 function isValidPhone(value) {
@@ -73,6 +75,7 @@ function mapApiErrorsToFields(error) {
 
 function ContactInformationSectionContent({
   businessId,
+  businessSlug,
   businessName,
   phone: initialPhone,
   email: initialEmail,
@@ -81,11 +84,12 @@ function ContactInformationSectionContent({
   isClaimed = false,
 }) {
   const router = useRouter();
+  const posthog = usePostHog();
   const { showCustomSuccess } = useToast();
-  const { isOwner } = useIsBusinessOwner(businessId);
-  const emailUnderReview = isEmailUnderReview(emailStatus) && !isOwner;
+  const { showOwnerChrome } = useOwnerListingView();
+  const emailUnderReview = isEmailUnderReview(emailStatus) && !showOwnerChrome;
   const emailUnverified =
-    isEmailUnverified(emailStatus, { isClaimed }) && !isOwner;
+    isEmailUnverified(emailStatus, { isClaimed }) && !showOwnerChrome;
   const [open, setOpen] = useState(false);
   const [phone, setPhone] = useState(initialPhone || "");
   const [email, setEmail] = useState(initialEmail || "");
@@ -155,6 +159,12 @@ function ContactInformationSectionContent({
       }
 
       showCustomSuccess("Contact information updated.");
+      captureOwnerListingUpdate(posthog, {
+        businessId,
+        businessSlug,
+        businessName,
+        section: "contact",
+      });
       setOpen(false);
       if (data?.phone != null) setPhone(data.phone || "");
       if (data?.email !== undefined) setEmail(data.email || "");
@@ -168,7 +178,7 @@ function ContactInformationSectionContent({
   };
 
   return (
-    <div className="order-3 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-2">
+    <div className="order-2 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-2">
       <BusinessSectionHeader
         title="Contact Information"
         businessId={businessId}

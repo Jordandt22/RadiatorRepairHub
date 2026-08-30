@@ -5,6 +5,7 @@ import {
 } from "../helpers/customErrorHandler.js";
 import {
   signInWithPassword,
+  sendPasswordResetEmail,
   formatAuthSession,
   getClaimedBusinessByOwnerUid,
   updateAuthUserEmail,
@@ -74,6 +75,28 @@ export const loginOwner = async (req, res) => {
     successHandler({
       slug: business?.slug || null,
       session,
+    })
+  );
+};
+
+const PASSWORD_RESET_SUCCESS_MESSAGE =
+  "If an account exists for that email, we sent a reset link.";
+
+export const requestPasswordReset = async (req, res) => {
+  const email =
+    typeof req.body.email === "string"
+      ? req.body.email.trim().toLowerCase()
+      : "";
+  const redirectTo = `${getWebBaseUrl()}/reset-password`;
+
+  const { error } = await sendPasswordResetEmail(email, redirectTo);
+  if (error) {
+    console.error("Password reset email failed:", error);
+  }
+
+  return res.status(200).json(
+    successHandler({
+      message: PASSWORD_RESET_SUCCESS_MESSAGE,
     })
   );
 };

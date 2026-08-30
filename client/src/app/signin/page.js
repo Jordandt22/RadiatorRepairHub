@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import LoginForm from "@/components/auth/LoginForm";
-import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 import { NOINDEX_ROBOTS } from "@/lib/seo/metadata";
 
 export const metadata = {
@@ -23,14 +22,14 @@ export default function SignInPage() {
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         pageTitle="Business owner sign in"
-        pageDescription="Sign in with the email and password from your claim to open your business page."
+        pageDescription="Sign in with the email and password from your claim to open your dashboard."
         headerLink={{
           href: "/how-to-claim",
           label: "How to claim a business",
         }}
       />
 
-      <div className="mx-auto mt-4 max-w-xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto mt-4 max-w-xl px-4 py-8 pb-12 sm:px-6 lg:px-8">
         <LoginForm />
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
@@ -42,10 +41,6 @@ export default function SignInPage() {
             Contact support
           </Link>
         </p>
-      </div>
-
-      <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-        <DirectoryDisclaimer />
       </div>
     </div>
   );

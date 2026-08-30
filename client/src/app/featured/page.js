@@ -4,7 +4,7 @@ import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
 
 const title = "Featured Radiator Repair Shops | RadiatorRepairHub";
 const description =
-  "Browse Featured radiator repair shops on RadiatorRepairHub. Featured is a paid upgrade for claimed listings with a badge, search priority, and a spot on this page.";
+  "Browse Featured radiator repair shops on RadiatorRepairHub. Featured is a paid upgrade for claimed listings with a badge, search priority, extra shop photos, and a spot on this page.";
 
 export const metadata = buildPageMetadata({
   title,

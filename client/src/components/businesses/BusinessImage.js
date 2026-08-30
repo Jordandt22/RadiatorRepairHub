@@ -8,6 +8,7 @@ import {
   buildCfImageUrl,
   CF_IMAGE_VARIANT,
   getBusinessImageId,
+  usableImageSrc,
 } from "@/lib/images";
 
 export const BUSINESS_COVER_PLACEHOLDER =
@@ -35,16 +36,24 @@ function BusinessImage({
     imageId,
     cdnStored,
   });
-  const cdnSrc = buildCfImageUrl(cfImageId, variant);
+  const cdnSrc = usableImageSrc(buildCfImageUrl(cfImageId, variant));
+  const remoteSrc = usableImageSrc(src);
   const canUseCdn = Boolean(cdnSrc);
-  const hasRemote = Boolean(src);
+  const hasRemote = Boolean(remoteSrc);
 
   // Prefer Cloudflare when available; otherwise start on remote image_url
   const [source, setSource] = useState(() =>
     canUseCdn ? "cdn" : hasRemote ? "remote" : "none"
   );
 
-  if (source === "none") {
+  React.useEffect(() => {
+    setSource(canUseCdn ? "cdn" : hasRemote ? "remote" : "none");
+  }, [canUseCdn, hasRemote, cdnSrc, remoteSrc]);
+
+  const resolvedSrc =
+    source === "cdn" ? cdnSrc : source === "remote" ? remoteSrc : null;
+
+  if (!resolvedSrc) {
     if (fallback === "solid") {
       return (
         <div
@@ -100,32 +109,23 @@ function BusinessImage({
     );
   }
 
-  if (source === "cdn") {
-    return (
-      <Image
-        src={cdnSrc}
-        alt={alt}
-        fill={fill}
-        sizes={sizes}
-        className={className}
-        priority={priority}
-        unoptimized
-        onError={() => setSource(hasRemote ? "remote" : "none")}
-      />
-    );
-  }
-
   return (
     <Image
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       fill={fill}
       sizes={sizes}
       className={className}
       priority={priority}
-      unoptimized={bypassImageOptimizer}
-      referrerPolicy="no-referrer"
-      onError={() => setSource("none")}
+      unoptimized={source === "cdn" || bypassImageOptimizer}
+      referrerPolicy={source === "remote" ? "no-referrer" : undefined}
+      onError={() =>
+        setSource(
+          source === "cdn" && hasRemote
+            ? "remote"
+            : "none"
+        )
+      }
     />
   );
 }

@@ -50,11 +50,13 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  overlayClassName,
+  closeButtonClassName,
   ...props
 }) {
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay className={overlayClassName} />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
@@ -69,7 +71,10 @@ function DialogContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-4 right-4 bg-secondary cursor-pointer p-2 hover:opacity-70 transition-opacity duration-200"
+                className={cn(
+                  "absolute top-4 right-4 bg-secondary cursor-pointer p-2 hover:opacity-70 transition-opacity duration-200",
+                  closeButtonClassName
+                )}
                 size="icon-md" />
             }>
             <XIcon />

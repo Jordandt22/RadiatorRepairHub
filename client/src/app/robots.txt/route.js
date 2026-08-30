@@ -15,6 +15,8 @@ Disallow: /checkout/
 Disallow: /dashboard/
 Disallow: /settings/
 Disallow: /signin/
+Disallow: /forgot-password
+Disallow: /reset-password
 Disallow: /claim/
 Disallow: /email-confirmed
 

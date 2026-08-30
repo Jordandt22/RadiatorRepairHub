@@ -21,7 +21,9 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox";
+import { usePostHog } from "posthog-js/react";
 import { useToast } from "@/contexts/ToastProvider";
+import { captureOwnerListingUpdate } from "@/lib/analytics/ownerListing";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import {
   fetchPrimaryCategories,
@@ -80,10 +82,13 @@ function sameIdSet(a, b) {
 
 function ServiceCategoriesSectionContent({
   businessId,
+  businessSlug,
+  businessName,
   primaryCategory: initialPrimary,
   secondaryCategories: initialSecondary = [],
 }) {
   const router = useRouter();
+  const posthog = usePostHog();
   const { showCustomSuccess } = useToast();
   const [open, setOpen] = useState(false);
   const [primary, setPrimary] = useState(initialPrimary ?? null);
@@ -240,6 +245,12 @@ function ServiceCategoriesSectionContent({
       }
 
       showCustomSuccess("Service categories updated.");
+      captureOwnerListingUpdate(posthog, {
+        businessId,
+        businessSlug,
+        businessName,
+        section: "categories",
+      });
       setOpen(false);
       router.refresh();
     } catch {
@@ -253,7 +264,7 @@ function ServiceCategoriesSectionContent({
     isSubmitting || !hasChanges || loadingCategories || !primary?.id;
 
   return (
-    <div className="order-5 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-2">
+    <div className="order-7 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-2">
       <BusinessSectionHeader
         title="Service Categories"
         businessId={businessId}

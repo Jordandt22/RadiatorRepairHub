@@ -46,8 +46,8 @@ export default function FeaturedUpgradeCard() {
           >
             Claim your shop
           </Link>
-          , then upgrade for the Featured badge, priority placement in search, and a
-          featured card on this page.
+          , then upgrade for the Featured badge, priority placement in search, extra
+          shop photos, and a featured card on this page.
         </p>
         <div className="mt-auto space-y-2">
           <Link

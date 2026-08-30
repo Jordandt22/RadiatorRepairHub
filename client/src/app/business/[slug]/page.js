@@ -21,6 +21,9 @@ import ContactInformationSection from "@/components/businesses/ContactInformatio
 import ServiceCategoriesSection from "@/components/businesses/ServiceCategoriesSection";
 import AmenitiesSection from "@/components/businesses/AmenitiesSection";
 import AboutSection from "@/components/businesses/AboutSection";
+import PhotosSection from "@/components/businesses/PhotosSection";
+import OwnerListingViewBar from "@/components/businesses/OwnerListingViewBar";
+import { OwnerListingViewProvider } from "@/contexts/OwnerListingViewProvider";
 import BusinessHoursSection from "@/components/businesses/BusinessHoursSection";
 import ListingBadges from "@/components/businesses/ListingBadges";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
@@ -280,6 +283,7 @@ async function Page({ params }) {
         />
         <BusinessPageViewTracker businessId={business.id} />
 
+        <OwnerListingViewProvider businessId={business.id}>
         <div className="min-h-screen bg-background pb-24 md:pb-32">
           <BusinessHeroBanner
             src={business.image_url}
@@ -326,7 +330,7 @@ async function Page({ params }) {
                 <ListingBadges business={business} size="md" />
               </div>
 
-              <div className="hidden md:block">
+              <div className="mt-4 flex flex-wrap items-center gap-3 md:mt-5">
                 <BusinessHeroActions
                   businessId={business.id}
                   businessName={business.title}
@@ -353,10 +357,13 @@ async function Page({ params }) {
           />
 
           <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 md:px-6 md:py-8 lg:px-8">
+            <OwnerListingViewBar />
             <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
               <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-8">
                 <AboutSection
                   businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
                   description={business.description || ""}
                   imageUrl={business.image_url}
                   imageId={business.primary_image_id}
@@ -369,13 +376,26 @@ async function Page({ params }) {
                   } in ${business.city.name}, ${business.state.name}`}
                 />
 
+                <PhotosSection
+                  businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
+                  images={business.images || []}
+                  primaryImageId={business.primary_image_id}
+                  imageUrl={business.image_url}
+                  hideDefaultImage={Boolean(business.hide_default_image)}
+                  cdnStored={Boolean(business.cdn_stored)}
+                />
+
                 <ServiceCategoriesSection
                   businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
                   primaryCategory={business.primary_category}
                   secondaryCategories={business.secondary_categories || []}
                 />
 
-                <div className="order-6 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
+                <div className="order-4 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
                   <BusinessSectionHeader
                     title="Location"
                     titleClassName="text-xl font-semibold tracking-tight text-foreground font-heading md:text-2xl"
@@ -451,7 +471,7 @@ async function Page({ params }) {
               </div>
 
               <div className="contents lg:flex lg:flex-col lg:gap-6">
-                <div className="order-2 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
+                <div className="order-1 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
                   <h2 className="mb-3 font-heading text-xl font-semibold tracking-tight text-foreground md:mb-4 md:text-2xl">
                     Customer Reviews
                   </h2>
@@ -507,6 +527,7 @@ async function Page({ params }) {
 
                 <ContactInformationSection
                   businessId={business.id}
+                  businessSlug={business.slug}
                   businessName={business.title}
                   phone={business.phone}
                   email={business.email}
@@ -517,12 +538,16 @@ async function Page({ params }) {
 
                 <BusinessHoursSection
                   businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
                   hours={business.hours || []}
                   timezone={business.timezone}
                 />
 
                 <AmenitiesSection
                   businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
                   features={business.features || {}}
                 />
               </div>
@@ -654,6 +679,7 @@ async function Page({ params }) {
             <DirectoryDisclaimer className="mt-10" />
           </div>
         </div>
+        </OwnerListingViewProvider>
       </>
     );
   } catch {
