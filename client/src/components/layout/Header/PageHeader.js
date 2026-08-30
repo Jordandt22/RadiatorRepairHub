@@ -3,7 +3,13 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 
-function PageHeader({ breadcrumbItems, pageTitle, pageDescription, headerLink }) {
+function PageHeader({
+  breadcrumbItems,
+  pageTitle,
+  pageDescription,
+  headerLink,
+  children,
+}) {
   return (
     <div className="section-signature">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -26,6 +32,7 @@ function PageHeader({ breadcrumbItems, pageTitle, pageDescription, headerLink })
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         )}
+        {children}
       </div>
     </div>
   );

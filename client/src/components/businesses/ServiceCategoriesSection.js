@@ -253,7 +253,7 @@ function ServiceCategoriesSectionContent({
     isSubmitting || !hasChanges || loadingCategories || !primary?.id;
 
   return (
-    <div className="order-5 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-2">
+    <div className="order-6 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-2">
       <BusinessSectionHeader
         title="Service Categories"
         businessId={businessId}

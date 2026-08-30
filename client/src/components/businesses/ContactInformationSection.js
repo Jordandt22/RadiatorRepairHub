@@ -168,7 +168,7 @@ function ContactInformationSectionContent({
   };
 
   return (
-    <div className="order-3 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-2">
+    <div className="order-2 bg-card rounded-lg border border-border p-4 md:p-6 lg:order-2">
       <BusinessSectionHeader
         title="Contact Information"
         businessId={businessId}

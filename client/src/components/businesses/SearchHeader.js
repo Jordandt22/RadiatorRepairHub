@@ -1,5 +1,6 @@
 import React from "react";
 import PageHeader from "@/components/layout/Header/PageHeader";
+import SearchBrowseLinks from "@/components/businesses/SearchBrowseLinks";
 
 function SearchHeader({ title }) {
   const breadcrumbItems = [
@@ -20,7 +21,9 @@ function SearchHeader({ title }) {
       breadcrumbItems={breadcrumbItems}
       pageTitle={pageTitle}
       pageDescription={pageDescription}
-    />
+    >
+      <SearchBrowseLinks />
+    </PageHeader>
   );
 }
 

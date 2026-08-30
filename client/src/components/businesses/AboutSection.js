@@ -137,7 +137,7 @@ function AboutSectionContent({
     description.length > ABOUT_MAX_LENGTH;
 
   return (
-    <div className="order-1 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
+    <div className="order-5 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
       <BusinessSectionHeader
         title="About"
         businessId={businessId}

@@ -326,7 +326,7 @@ async function Page({ params }) {
                 <ListingBadges business={business} size="md" />
               </div>
 
-              <div className="hidden md:block">
+              <div className="mt-4 flex flex-wrap items-center gap-3 md:mt-5">
                 <BusinessHeroActions
                   businessId={business.id}
                   businessName={business.title}
@@ -375,7 +375,7 @@ async function Page({ params }) {
                   secondaryCategories={business.secondary_categories || []}
                 />
 
-                <div className="order-6 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
+                <div className="order-4 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
                   <BusinessSectionHeader
                     title="Location"
                     titleClassName="text-xl font-semibold tracking-tight text-foreground font-heading md:text-2xl"
@@ -451,7 +451,7 @@ async function Page({ params }) {
               </div>
 
               <div className="contents lg:flex lg:flex-col lg:gap-6">
-                <div className="order-2 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
+                <div className="order-1 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
                   <h2 className="mb-3 font-heading text-xl font-semibold tracking-tight text-foreground md:mb-4 md:text-2xl">
                     Customer Reviews
                   </h2>

@@ -315,7 +315,7 @@ function BusinessHoursSectionContent({
   };
 
   return (
-    <div className="order-4 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
+    <div className="order-3 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
       <BusinessSectionHeader
         title="Business Hours"
         businessId={businessId}
