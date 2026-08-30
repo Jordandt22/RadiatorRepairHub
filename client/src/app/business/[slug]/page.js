@@ -22,6 +22,8 @@ import ServiceCategoriesSection from "@/components/businesses/ServiceCategoriesS
 import AmenitiesSection from "@/components/businesses/AmenitiesSection";
 import AboutSection from "@/components/businesses/AboutSection";
 import PhotosSection from "@/components/businesses/PhotosSection";
+import OwnerListingViewBar from "@/components/businesses/OwnerListingViewBar";
+import { OwnerListingViewProvider } from "@/contexts/OwnerListingViewProvider";
 import BusinessHoursSection from "@/components/businesses/BusinessHoursSection";
 import ListingBadges from "@/components/businesses/ListingBadges";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
@@ -281,6 +283,7 @@ async function Page({ params }) {
         />
         <BusinessPageViewTracker businessId={business.id} />
 
+        <OwnerListingViewProvider businessId={business.id}>
         <div className="min-h-screen bg-background pb-24 md:pb-32">
           <BusinessHeroBanner
             src={business.image_url}
@@ -354,6 +357,7 @@ async function Page({ params }) {
           />
 
           <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 md:px-6 md:py-8 lg:px-8">
+            <OwnerListingViewBar />
             <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
               <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-8">
                 <AboutSection
@@ -675,6 +679,7 @@ async function Page({ params }) {
             <DirectoryDisclaimer className="mt-10" />
           </div>
         </div>
+        </OwnerListingViewProvider>
       </>
     );
   } catch {

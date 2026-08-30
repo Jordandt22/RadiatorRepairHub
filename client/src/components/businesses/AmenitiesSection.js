@@ -25,7 +25,7 @@ import { usePostHog } from "posthog-js/react";
 import { useToast } from "@/contexts/ToastProvider";
 import { captureOwnerListingUpdate } from "@/lib/analytics/ownerListing";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
-import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
+import { useOwnerListingView } from "@/contexts/OwnerListingViewProvider";
 import {
   AMENITY_GROUPS,
   amenityFlagsEqual,
@@ -65,7 +65,7 @@ function AmenitiesSectionContent({
   const router = useRouter();
   const posthog = usePostHog();
   const { showCustomSuccess } = useToast();
-  const { isOwner } = useIsBusinessOwner(businessId);
+  const { showOwnerChrome } = useOwnerListingView();
   const initialFlags = useMemo(
     () => normalizeAmenityFlags(features),
     [features]
@@ -86,7 +86,7 @@ function AmenitiesSectionContent({
     group.options.some((option) => initialFlags[option.key])
   );
 
-  if (!isOwner && !hasAnyAmenity) {
+  if (!showOwnerChrome && !hasAnyAmenity) {
     return null;
   }
 
@@ -142,7 +142,7 @@ function AmenitiesSectionContent({
   };
 
   return (
-    <div className="order-7 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-4">
+    <div className="order-8 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-4">
       <BusinessSectionHeader
         title="Amenities"
         businessId={businessId}

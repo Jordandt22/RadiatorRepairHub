@@ -44,7 +44,7 @@ import { useToast } from "@/contexts/ToastProvider";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import OwnerEditButton from "@/components/businesses/OwnerEditButton";
 import BusinessImage from "@/components/businesses/BusinessImage";
-import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
+import { useOwnerListingView } from "@/contexts/OwnerListingViewProvider";
 import { captureOwnerListingUpdate } from "@/lib/analytics/ownerListing";
 import {
   deleteOwnedBusinessImage,
@@ -107,6 +107,14 @@ function withDefaultListingImage(images, { imageUrl, hideDefaultImage = false } 
     : stored;
 
   return orderGalleryImages(combined);
+}
+
+function publicOwnerGallerySlice(images) {
+  return orderGalleryImages(
+    (Array.isArray(images) ? images : []).filter(
+      (image) => !image.is_hidden && image.visible !== false
+    )
+  );
 }
 
 function PhotoBadges({ image, showHidden = false }) {
@@ -1015,7 +1023,7 @@ export default function PhotosSection({
   hideDefaultImage = false,
   cdnStored = false,
 }) {
-  const { isOwner } = useIsBusinessOwner(businessId);
+  const { isOwner, showOwnerChrome } = useOwnerListingView();
   const [addOpen, setAddOpen] = useState(false);
   const [editImage, setEditImage] = useState(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -1045,14 +1053,28 @@ export default function PhotosSection({
     setGalleryRevision((current) => current + 1);
   };
 
-  const images =
-    isOwner && ownerImages
-      ? orderGalleryImages(ownerImages)
-      : withDefaultListingImage(publicImages, {
-          imageUrl,
-          hideDefaultImage,
-        });
-  if (!isOwner && images.length === 0) return null;
+  const publicImagesWithDefault = withDefaultListingImage(publicImages, {
+    imageUrl,
+    hideDefaultImage,
+  });
+  const images = showOwnerChrome && ownerImages
+    ? orderGalleryImages(ownerImages)
+    : isOwner && ownerImages
+      ? publicOwnerGallerySlice(ownerImages)
+      : publicImagesWithDefault;
+  const imageCount = images.length;
+  const galleryKey = images.map((image) => image.image_id).join(",");
+
+  useEffect(() => {
+    if (imageCount === 0) {
+      setLightboxOpen(false);
+      setLightboxIndex(0);
+      return;
+    }
+    setLightboxIndex((current) => Math.min(current, imageCount - 1));
+  }, [galleryKey, imageCount]);
+
+  if (!showOwnerChrome && images.length === 0) return null;
 
   const openLightbox = (index) => {
     setLightboxIndex(index);
@@ -1060,7 +1082,7 @@ export default function PhotosSection({
   };
 
   return (
-    <div className="order-5 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
+    <div className="order-6 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
       <BusinessSectionHeader
         title="Photos"
         businessId={businessId}
@@ -1077,7 +1099,7 @@ export default function PhotosSection({
             pageSize={1}
             mobileOnly
             onSelect={openLightbox}
-            onEditImage={isOwner ? setEditImage : undefined}
+            onEditImage={showOwnerChrome ? setEditImage : undefined}
             businessId={businessId}
             businessName={businessName}
             cdnStored={cdnStored}
@@ -1090,7 +1112,7 @@ export default function PhotosSection({
             pageSize={DESKTOP_PAGE_SIZE}
             desktopOnly
             onSelect={openLightbox}
-            onEditImage={isOwner ? setEditImage : undefined}
+            onEditImage={showOwnerChrome ? setEditImage : undefined}
             businessId={businessId}
             businessName={businessName}
             cdnStored={cdnStored}

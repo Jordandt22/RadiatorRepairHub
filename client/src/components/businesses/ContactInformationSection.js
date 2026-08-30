@@ -20,7 +20,7 @@ import BusinessContactLinks from "@/components/businesses/BusinessContactLinks";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
 import ReportInfoDialog from "@/components/businesses/ReportInfoDialog";
 import { updateBusinessContact } from "@/lib/api/businessContact";
-import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
+import { useOwnerListingView } from "@/contexts/OwnerListingViewProvider";
 import { isEmailUnderReview, isEmailUnverified } from "@/lib/emailStatus";
 
 function isValidPhone(value) {
@@ -86,10 +86,10 @@ function ContactInformationSectionContent({
   const router = useRouter();
   const posthog = usePostHog();
   const { showCustomSuccess } = useToast();
-  const { isOwner } = useIsBusinessOwner(businessId);
-  const emailUnderReview = isEmailUnderReview(emailStatus) && !isOwner;
+  const { showOwnerChrome } = useOwnerListingView();
+  const emailUnderReview = isEmailUnderReview(emailStatus) && !showOwnerChrome;
   const emailUnverified =
-    isEmailUnverified(emailStatus, { isClaimed }) && !isOwner;
+    isEmailUnverified(emailStatus, { isClaimed }) && !showOwnerChrome;
   const [open, setOpen] = useState(false);
   const [phone, setPhone] = useState(initialPhone || "");
   const [email, setEmail] = useState(initialEmail || "");
