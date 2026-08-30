@@ -150,7 +150,7 @@ export default function PricingPageContent() {
         <section>
           <div className="mb-8 text-center">
             <h2 className="mb-3 font-heading text-3xl font-semibold tracking-tight text-foreground">
-              What Featured includes
+              What Featured Includes
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
               One monthly plan for a claimed listing you own.
@@ -289,8 +289,14 @@ export default function PricingPageContent() {
         <section className="flex items-start gap-3 rounded-lg border border-border bg-card p-5">
           <BadgeCheck className="mt-0.5 size-5 shrink-0 text-primary" />
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Claiming your listing is free. A featured listing is an optional paid upgrade
-            for shops that want extra placement in the directory.
+            <Link
+              href="/how-to-claim"
+              className="font-medium text-interactive underline hover:text-primary"
+            >
+              Claiming your listing
+            </Link>{" "}
+            is free. A featured listing is an optional paid upgrade for shops
+            that want extra placement in the directory.
           </p>
         </section>
       </div>
