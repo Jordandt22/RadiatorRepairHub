@@ -8,6 +8,7 @@ import {
   applyPublicCoverImage,
   detectImageMime,
   withDefaultListingImage,
+  formatAdminGalleryImages,
 } from "./businessImages.js";
 
 const rows = [
@@ -266,5 +267,42 @@ describe("detectImageMime", () => {
   it("returns null for unknown or short buffers", () => {
     assert.equal(detectImageMime(Buffer.from([0x00])), null);
     assert.equal(detectImageMime(Buffer.alloc(12)), null);
+  });
+});
+
+describe("formatAdminGalleryImages", () => {
+  it("includes hidden extras and the default listing photo", () => {
+    const gallery = formatAdminGalleryImages({
+      id: "11111111-1111-1111-1111-111111111111",
+      image_url: "https://example.com/default.jpg",
+      hide_default_image: false,
+      is_claimed: true,
+      is_featured: false,
+      business_images: [
+        {
+          image_id: "22222222-2222-2222-2222-222222222222",
+          is_primary: true,
+          is_hidden: false,
+          created_at: "2026-01-02T00:00:00Z",
+        },
+        {
+          image_id: "33333333-3333-3333-3333-333333333333",
+          is_primary: false,
+          is_hidden: true,
+          created_at: "2026-01-03T00:00:00Z",
+        },
+      ],
+    });
+
+    assert.equal(gallery[0].is_primary, true);
+    assert.equal(gallery.some((image) => image.is_default), true);
+    assert.equal(
+      gallery.find((image) => image.is_hidden)?.image_id,
+      "33333333-3333-3333-3333-333333333333"
+    );
+    assert.equal(
+      gallery.find((image) => image.is_default)?.image_url,
+      "https://example.com/default.jpg"
+    );
   });
 });

@@ -30,6 +30,8 @@ import {
   deleteListingRequests,
   getBusinesses,
   getBusinessById,
+  hideBusinessImage,
+  deleteBusinessImage,
   getBusinessStats,
   getBusinessStatsList,
   getBusinessStatsSummary,
@@ -133,6 +135,8 @@ import {
   GetAdminBusinessesQuerySchema,
   GetAdminBusinessesWithEmailsQuerySchema,
   GetAdminBusinessParamsSchema,
+  HideAdminBusinessImageSchema,
+  DeleteAdminBusinessImageSchema,
   GetAdminBusinessStatsQuerySchema,
   GetAdminBusinessStatsListQuerySchema,
   GetAdminBusinessStatsSummaryQuerySchema,
@@ -334,6 +338,18 @@ adminRouter.get(
   "/businesses/:id",
   paramsValidator(GetAdminBusinessParamsSchema),
   serverErrorCatcherWrapper(getBusinessById)
+);
+
+adminRouter.patch(
+  "/businesses/images/hidden",
+  bodyValidator(HideAdminBusinessImageSchema),
+  serverErrorCatcherWrapper(hideBusinessImage)
+);
+
+adminRouter.delete(
+  "/businesses/images",
+  bodyValidator(DeleteAdminBusinessImageSchema),
+  serverErrorCatcherWrapper(deleteBusinessImage)
 );
 
 adminRouter.patch(

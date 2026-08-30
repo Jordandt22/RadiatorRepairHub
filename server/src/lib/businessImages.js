@@ -180,3 +180,34 @@ export function detectImageMime(buffer) {
 
   return null;
 }
+
+export function formatAdminGalleryImages(business) {
+  const rows = Array.isArray(business?.business_images)
+    ? business.business_images
+    : [];
+  const imageUrl = business?.image_url || null;
+  const hideDefaultImage = Boolean(business?.hide_default_image);
+  const publicImages = selectPublicGalleryImages(rows, {
+    isClaimed: Boolean(business?.is_claimed),
+    isFeatured: Boolean(business?.is_featured),
+    imageUrl,
+    hideDefaultImage,
+  });
+  const visibleIds = new Set(publicImages.map((image) => image.image_id));
+
+  return withDefaultListingImage(rows, {
+    imageUrl,
+    hideDefaultImage,
+    includeHiddenDefault: true,
+  })
+    .filter((image) => image?.image_id)
+    .map((image) => ({
+      image_id: image.image_id,
+      is_primary: Boolean(image.is_primary),
+      is_hidden: Boolean(image.is_hidden),
+      is_default: Boolean(image.is_default),
+      visible: visibleIds.has(image.image_id),
+      created_at: image.created_at ?? null,
+      image_url: image.is_default ? imageUrl : null,
+    }));
+}

@@ -833,7 +833,7 @@ export const getListingReports = async (page, limit, status = null) => {
 const ADMIN_BUSINESS_SELECT =
   "id, title, slug, email, phone, address, website, is_claimed, is_featured, is_test, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
-const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, created_at)`;
+const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, hide_default_image, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at)`;
 
 const flattenAdminSecondaryCategories = (rows) =>
   (rows ?? [])
@@ -911,12 +911,19 @@ const withClaimInviteTypes = async (businesses) => {
   }));
 };
 
+export const ADMIN_RECENTLY_EDITED_DAYS = 7;
+
+function recentlyEditedSinceIso(days = ADMIN_RECENTLY_EDITED_DAYS) {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+}
+
 export const getAdminBusinesses = async (
   page,
   limit,
   {
     claimed = null,
     featured = null,
+    recent = null,
     q = null,
     stateCode = null,
     citySlug = null,
@@ -1013,7 +1020,12 @@ export const getAdminBusinesses = async (
     .from("businesses")
     .select(ADMIN_BUSINESS_SELECT, { count: "exact" });
 
-  if (featured === true) {
+  if (recent === true) {
+    query = query
+      .eq("is_claimed", true)
+      .gte("last_edited_at", recentlyEditedSinceIso())
+      .order("last_edited_at", { ascending: false, nullsFirst: false });
+  } else if (featured === true) {
     query = query
       .eq("is_featured", true)
       .order("last_edited_at", { ascending: false, nullsFirst: false });
@@ -1093,7 +1105,7 @@ export const getAdminBusinesses = async (
 
   const withOwners = await withOwnerEmails(data);
   const businesses =
-    claimed === true || featured === true
+    claimed === true || featured === true || recent === true
       ? await withClaimInviteTypes(withOwners)
       : withOwners;
 

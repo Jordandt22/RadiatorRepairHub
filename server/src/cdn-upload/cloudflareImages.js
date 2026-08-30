@@ -14,6 +14,40 @@ export function buildBusinessImagePublicId(businessId, imageId) {
   return `${getCdnEnvFolder()}/business/${businessId}/${imageId}`;
 }
 
+const ADMIN_GALLERY_VARIANT = "w=800,fit=cover,f=auto,q=80";
+
+const PUBLIC_CF_IMAGES_BASE = "https://radiatorrepairhub.com/images";
+
+function isLocalHostname(url) {
+  try {
+    const { hostname } = new URL(url);
+    return hostname === "localhost" || hostname === "127.0.0.1";
+  } catch {
+    return true;
+  }
+}
+
+function getCfImagesDeliveryBase() {
+  const explicit = process.env.CF_IMAGES_BASE_URL?.trim();
+  if (explicit) return explicit.replace(/\/+$/, "");
+  const webUrl = process.env.WEB_URL?.trim();
+  if (webUrl && !isLocalHostname(webUrl)) {
+    return `${webUrl.replace(/\/+$/, "")}/images`;
+  }
+  return PUBLIC_CF_IMAGES_BASE;
+}
+
+/** Public delivery URL for a stored business image. */
+export function buildBusinessImageDeliveryUrl(
+  businessId,
+  imageId,
+  variant = ADMIN_GALLERY_VARIANT
+) {
+  const base = getCfImagesDeliveryBase();
+  if (!base || !businessId || !imageId) return null;
+  return `${base}/${buildBusinessImagePublicId(businessId, imageId)}/${variant}`;
+}
+
 function getCloudflareImagesCredentials() {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
   const apiToken =

@@ -21,8 +21,9 @@ import {
   EMAIL_FILTERS,
 } from "@/lib/businessTiers";
 import BusinessFilterTabs, {
-  TAB_FILTERS,
-  VALID_TABS,
+  LISTING_TAB_FILTERS,
+  VALID_LISTING_TABS,
+  isManagedListingTab,
 } from "@/components/pages/businesses/BusinessFilterTabs";
 import BusinessActions from "@/components/pages/businesses/BusinessActions";
 import BusinessesTable from "@/components/pages/businesses/BusinessesTable";
@@ -34,7 +35,7 @@ const PAGE_LIMIT = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
 function resolveTab(tab) {
-  return VALID_TABS.includes(tab) ? tab : "all";
+  return VALID_LISTING_TABS.includes(tab) ? tab : "all";
 }
 
 export default function BusinessesPageContent() {
@@ -71,15 +72,15 @@ export default function BusinessesPageContent() {
   const [actionError, setActionError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
 
-  const claimedFilter = TAB_FILTERS[activeTab]?.claimed ?? null;
-  const featuredFilter = TAB_FILTERS[activeTab]?.featured ?? null;
+  const claimedFilter = LISTING_TAB_FILTERS[activeTab]?.claimed ?? null;
+  const featuredFilter = LISTING_TAB_FILTERS[activeTab]?.featured ?? null;
+  const recentFilter = LISTING_TAB_FILTERS[activeTab]?.recent ?? null;
   const searchQuery = (q || "").trim();
   const scoreTierId = scoreTier?.id ?? null;
   const reviewsTierId = reviewsTier?.id ?? null;
   const emailFilterId = emailFilter?.id ?? null;
   const showTierFilters = activeTab === "all";
-  const showReverseClaim =
-    activeTab === "claimed" || activeTab === "featured";
+  const showReverseClaim = isManagedListingTab(activeTab);
   const setFieldRef = useRef(setField);
   setFieldRef.current = setField;
 
@@ -179,6 +180,9 @@ export default function BusinessesPageContent() {
         page: String(page),
         limit: String(PAGE_LIMIT),
       });
+      if (recentFilter === true) {
+        params.set("recent", "true");
+      }
       if (claimedFilter === true) {
         params.set("claimed", "true");
       }
@@ -345,7 +349,11 @@ export default function BusinessesPageContent() {
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-4 py-4 md:gap-4 md:px-8 md:py-6">
-      <BusinessFilterTabs value={activeTab} onValueChange={handleTabChange} />
+      <BusinessFilterTabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        includeEdited
+      />
 
       <div className="mt-2 flex flex-col gap-3 md:mt-4 md:gap-4">
         <BusinessActions

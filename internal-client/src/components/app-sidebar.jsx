@@ -34,7 +34,6 @@ import {
   ActivityIcon,
   ServerIcon,
   MessageSquareIcon,
-  StarIcon,
   BarChart3Icon,
 } from "lucide-react";
 
@@ -91,34 +90,9 @@ const data = {
           icon: <Building2Icon />,
         },
         {
-          title: "Claimed",
-          url: "/businesses?tab=claimed",
-          icon: <BadgeCheckIcon />,
-        },
-        {
-          title: "Featured",
-          url: "/businesses?tab=featured",
-          icon: <StarIcon />,
-        },
-        {
           title: "Analytics",
           url: "/businesses/analytics",
           icon: <BarChart3Icon />,
-        },
-        {
-          title: "Outreach",
-          url: "/outreach?tab=all",
-          icon: <MegaphoneIcon />,
-        },
-        {
-          title: "Email Cleaner",
-          url: "/email-cleaner?tab=cleaner",
-          icon: <MailXIcon />,
-        },
-        {
-          title: "Email Scrape",
-          url: "/email-scrape?tab=jobs",
-          icon: <MailSearchIcon />,
         },
         {
           title: "Websites",
@@ -134,16 +108,6 @@ const data = {
           title: "Data Issues",
           url: "/locations?tab=data-issues",
           icon: <AlertTriangleIcon />,
-        },
-        {
-          title: "Add Businesses",
-          url: "/add-businesses?tab=groups",
-          icon: <UploadIcon />,
-        },
-        {
-          title: "Upload Photos",
-          url: "/upload-photos?tab=jobs",
-          icon: <ImageIcon />,
         },
       ],
     },
@@ -175,6 +139,33 @@ const data = {
           icon: <UsersIcon />,
         },
       ],
+    },
+  ],
+  navOperations: [
+    {
+      title: "Outreach",
+      url: "/outreach?tab=all",
+      icon: <MegaphoneIcon />,
+    },
+    {
+      title: "Email Cleaner",
+      url: "/email-cleaner?tab=cleaner",
+      icon: <MailXIcon />,
+    },
+    {
+      title: "Email Scrape",
+      url: "/email-scrape?tab=jobs",
+      icon: <MailSearchIcon />,
+    },
+    {
+      title: "Add Businesses",
+      url: "/add-businesses?tab=groups",
+      icon: <UploadIcon />,
+    },
+    {
+      title: "Upload Photos",
+      url: "/upload-photos?tab=jobs",
+      icon: <ImageIcon />,
     },
   ],
   navInbox: [
@@ -409,6 +400,7 @@ export function AppSidebar({ ...props }) {
       <SidebarContent>
         <Suspense fallback={null}>
           <NavMain items={data.navMain} label="Platform" />
+          <NavMain items={data.navOperations} label="Operations" />
           <NavMain items={data.navInbox} label="Inbox" />
           <NavMain items={data.navSystems} label="Systems" />
           <NavMain items={data.navExternal} label="External" />
