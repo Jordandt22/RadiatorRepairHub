@@ -127,15 +127,11 @@ function LoginFormContent() {
 
       posthog?.capture("owner_login_succeeded", {
         has_claimed_business: Boolean(data.slug),
-        redirect_to: data.slug ? `/business/${data.slug}` : redirectTo,
+        redirect_to: redirectTo,
       });
 
       showCustomSuccess("Signed in successfully.");
-      if (data.slug) {
-        router.push(`/business/${data.slug}`);
-      } else {
-        router.push(redirectTo);
-      }
+      router.push(redirectTo);
     } catch {
       showCustomError("Unable to sign in. Please try again.");
     } finally {
@@ -196,12 +192,20 @@ function LoginFormContent() {
         </div>
 
         <div className="grid gap-1.5">
-          <label
-            htmlFor="login-password"
-            className="text-sm font-medium text-foreground"
-          >
-            Password <span className="text-destructive">*</span>
-          </label>
+          <div className="flex items-center justify-between gap-3">
+            <label
+              htmlFor="login-password"
+              className="text-sm font-medium text-foreground"
+            >
+              Password <span className="text-destructive">*</span>
+            </label>
+            <Link
+              href="/forgot-password"
+              className="text-sm text-interactive transition-colors hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <div className="relative">
             <Input
               id="login-password"

@@ -10,6 +10,15 @@ export async function loginOwner({ email, password }) {
   });
 }
 
+export async function requestPasswordReset({ email }) {
+  return fetchApi("/auth/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+    cache: "no-store",
+  });
+}
+
 export async function updateOwnerEmail({ email }) {
   return fetchAuthenticatedApi("/auth/email", {
     method: "PATCH",

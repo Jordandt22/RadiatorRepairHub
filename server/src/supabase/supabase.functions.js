@@ -3273,6 +3273,10 @@ export const signInWithPassword = async ({ email, password }) => {
   return { data, error };
 };
 
+export const sendPasswordResetEmail = async (email, redirectTo) => {
+  return supabaseAnon.auth.resetPasswordForEmail(email, { redirectTo });
+};
+
 export const getAuthUserByAccessToken = async (accessToken) => {
   const { data, error } = await supabaseAnon.auth.getUser(accessToken);
   return { data, error };

@@ -28,6 +28,13 @@ export const UpdateOwnerEmailSchema = Yup.object({
     .required("Email is required"),
 });
 
+export const ForgotPasswordSchema = Yup.object({
+  email: Yup.string()
+    .trim()
+    .email("Enter a valid email address")
+    .required("Email is required"),
+});
+
 export const UpdateOwnerPasswordSchema = Yup.object({
   currentPassword: Yup.string().required("Current password is required"),
   password: Yup.string()
