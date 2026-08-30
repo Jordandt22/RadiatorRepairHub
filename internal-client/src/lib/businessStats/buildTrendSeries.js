@@ -31,12 +31,7 @@ function inclusiveUtcDays(start, end) {
   return Math.max(1, Math.round((end - start) / MS_PER_DAY) + 1);
 }
 
-export function buildTrendSeries(
-  daily = [],
-  days = 7,
-  startDate,
-  endDate
-) {
+function fillDailySeries(daily = [], days = 7, startDate, endDate, mapRow) {
   const today = startOfUtcDay(dateKey(endDate) || dateKey(new Date().toISOString()));
   const rows = Array.isArray(daily) ? daily : [];
   const byDate = new Map(
@@ -70,16 +65,35 @@ export function buildTrendSeries(
     const day = new Date(start);
     day.setUTCDate(start.getUTCDate() + index);
     const date = dateKey(day.toISOString());
-    const row = byDate.get(date);
-    series.push({
-      date,
-      impressions: rowImpressions(row),
-      listing_clicks: Number(row?.listing_clicks || 0),
-      page_views: Number(row?.page_views || 0),
-    });
+    series.push({ date, ...mapRow(byDate.get(date)) });
   }
 
   return series;
+}
+
+export function buildTrendSeries(
+  daily = [],
+  days = 7,
+  startDate,
+  endDate
+) {
+  return fillDailySeries(daily, days, startDate, endDate, (row) => ({
+    impressions: rowImpressions(row),
+    listing_clicks: Number(row?.listing_clicks || 0),
+    page_views: Number(row?.page_views || 0),
+  }));
+}
+
+export function buildSearchTrendSeries(
+  daily = [],
+  days = 7,
+  startDate,
+  endDate
+) {
+  return fillDailySeries(daily, days, startDate, endDate, (row) => ({
+    searches: Number(row?.searches || 0),
+    zero_result_searches: Number(row?.zero_result_searches || 0),
+  }));
 }
 
 export function formatTrendTick(date, days) {

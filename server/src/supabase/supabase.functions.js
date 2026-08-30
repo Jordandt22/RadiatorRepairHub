@@ -3501,6 +3501,32 @@ export const incrementBusinessStatRpc = async ({
   return { data, error };
 };
 
+export const getCityStateId = async (cityId) => {
+  const { data, error } = await supabase
+    .from("cities")
+    .select("state_id")
+    .eq("id", cityId)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const incrementSearchStatRpc = async ({
+  dimension,
+  dimensionId,
+  statDate,
+  zeroResults,
+}) => {
+  const { data, error } = await supabase.rpc("increment_search_stat", {
+    p_dimension: dimension,
+    p_dimension_id: dimensionId,
+    p_stat_date: statDate,
+    p_zero_results: Boolean(zeroResults),
+  });
+
+  return { data, error };
+};
+
 const STAT_SOURCES = [
   "search",
   "featured",
@@ -3801,6 +3827,8 @@ export const getAdminBusinessStatsList = async ({
   sort = "impressions_desc",
   page = 1,
   limit = 20,
+  stateId = null,
+  cityId = null,
 }) => {
   const sanitizedQ = sanitizeIlikeSearch(q);
   const resolvedActivity =
@@ -3819,6 +3847,8 @@ export const getAdminBusinessStatsList = async ({
     p_sort: resolvedSort,
     p_page: resolvedPage,
     p_limit: resolvedLimit,
+    p_state_id: stateId || null,
+    p_city_id: cityId || null,
   });
 
   if (error) {
@@ -3848,12 +3878,16 @@ export const getAdminBusinessStatsSummary = async ({
   endDate,
   claimed = null,
   featured = null,
+  stateId = null,
+  cityId = null,
 }) => {
   const { data, error } = await supabase.rpc("admin_summary_business_stats", {
     p_start_date: startDate || null,
     p_end_date: endDate || null,
     p_claimed: parseAdminStatsBool(claimed),
     p_featured: parseAdminStatsBool(featured),
+    p_state_id: stateId || null,
+    p_city_id: cityId || null,
   });
 
   if (error) {
@@ -3890,6 +3924,120 @@ export const getAdminBusinessStatsSummary = async ({
         email_clicks: Number(averages.email_clicks || 0),
       },
       ctr: payload.ctr == null ? null : Number(payload.ctr),
+      daily: Array.isArray(payload.daily) ? payload.daily : [],
+    },
+    error: null,
+  };
+};
+
+const ADMIN_SEARCH_STATS_DIMENSIONS = new Set(["state", "city", "category"]);
+const ADMIN_SEARCH_STATS_SORTS = new Set([
+  "searches_desc",
+  "searches_asc",
+  "zero_results_desc",
+  "zero_results_asc",
+  "businesses_desc",
+  "businesses_asc",
+  "claimed_desc",
+  "claimed_asc",
+  "featured_desc",
+  "featured_asc",
+  "name_asc",
+  "name_desc",
+]);
+
+export const getAdminSearchStatsList = async ({
+  dimension = "state",
+  startDate,
+  endDate,
+  q = null,
+  sort = "searches_desc",
+  page = 1,
+  limit = 20,
+  dimensionId = null,
+  stateId = null,
+}) => {
+  const resolvedDimension = ADMIN_SEARCH_STATS_DIMENSIONS.has(dimension)
+    ? dimension
+    : "state";
+  const sanitizedQ = sanitizeIlikeSearch(q);
+  const resolvedSort = ADMIN_SEARCH_STATS_SORTS.has(sort)
+    ? sort
+    : "searches_desc";
+  const resolvedPage = Math.max(1, Number(page) || 1);
+  const resolvedLimit = Math.min(50, Math.max(1, Number(limit) || 20));
+
+  const { data, error } = await supabase.rpc("admin_list_search_stats", {
+    p_dimension: resolvedDimension,
+    p_start_date: startDate || null,
+    p_end_date: endDate || null,
+    p_q: sanitizedQ,
+    p_sort: resolvedSort,
+    p_page: resolvedPage,
+    p_limit: resolvedLimit,
+    p_dimension_id: dimensionId || null,
+    p_state_id: stateId || null,
+  });
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  const payload = data && typeof data === "object" ? data : {};
+  const rows = Array.isArray(payload.rows) ? payload.rows : [];
+  const count = Number(payload.count || 0);
+  const currentPage = Number(payload.page || resolvedPage);
+  const currentLimit = Number(payload.limit || resolvedLimit);
+
+  return {
+    data: {
+      rows,
+      count,
+      page: currentPage,
+      limit: currentLimit,
+      totalPages: currentLimit > 0 ? Math.ceil(count / currentLimit) : 0,
+    },
+    error: null,
+  };
+};
+
+export const getAdminSearchStatsSummary = async ({
+  dimension = "state",
+  startDate,
+  endDate,
+  dimensionId = null,
+  stateId = null,
+}) => {
+  const resolvedDimension = ADMIN_SEARCH_STATS_DIMENSIONS.has(dimension)
+    ? dimension
+    : "state";
+
+  const { data, error } = await supabase.rpc("admin_summary_search_stats", {
+    p_dimension: resolvedDimension,
+    p_start_date: startDate || null,
+    p_end_date: endDate || null,
+    p_dimension_id: dimensionId || null,
+    p_state_id: stateId || null,
+  });
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  const payload = data && typeof data === "object" ? data : {};
+  const totals = payload.totals || {};
+
+  return {
+    data: {
+      timezone: BUSINESS_STATS_TIMEZONE,
+      startDate:
+        payload.startDate || startDate || endDate || businessStatDateKey(),
+      endDate: payload.endDate || endDate || businessStatDateKey(),
+      trackedCount: Number(payload.trackedCount || 0),
+      totals: {
+        searches: Number(totals.searches || 0),
+        zero_result_searches: Number(totals.zero_result_searches || 0),
+      },
       daily: Array.isArray(payload.daily) ? payload.daily : [],
     },
     error: null,

@@ -1,12 +1,16 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import useSWR from "swr";
 
 // Utils
 import { postFetcher } from "@/lib/utils/utils";
-import { LISTINGS_PAGE_LIMIT } from "@/lib/businesses/listingsSearch";
+import {
+  LISTINGS_PAGE_LIMIT,
+  listingSearchCacheKey,
+} from "@/lib/businesses/listingsSearch";
 import { DEFAULT_SORT_OPTION } from "@/lib/businesses/sortOptions";
+import { trackSearchStat } from "@/lib/searchStats/trackSearchStat";
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
@@ -45,6 +49,7 @@ export default function ListingsWrapper({
   initialSearchBody = null,
 }) {
   const { appliedFilters, setShowFilters } = useFilters();
+  const lastTrackedKeyRef = useRef(null);
   const limit = LISTINGS_PAGE_LIMIT;
 
   const requestBody = useMemo(() => {
@@ -65,20 +70,47 @@ export default function ListingsWrapper({
     requestBody,
   ];
 
-  const fallbackData =
-    initialListings && page === initialListingsPage
-      ? { data: initialListings, error: null }
-      : undefined;
+  const canUseFallback =
+    Boolean(initialListings) &&
+    page === initialListingsPage &&
+    listingSearchCacheKey(requestBody) ===
+      listingSearchCacheKey(initialSearchBody || {});
+
+  const fallbackData = canUseFallback
+    ? { data: initialListings, error: null }
+    : undefined;
 
   const { data, error } = useSWR(swrKey, postFetcher, {
     fallbackData,
     revalidateOnFocus: false,
-    revalidateIfStale: false,
+    revalidateIfStale: canUseFallback,
   });
 
   useEffect(() => {
     setShowFilters(false);
   }, [page, setShowFilters]);
+
+  useEffect(() => {
+    const pageNum = Number(page) || 1;
+    if (pageNum !== 1) return;
+    if (error || data?.error || !data?.data) return;
+
+    const stateId = requestBody.state_id || "";
+    const cityId = requestBody.city_id || "";
+    const categoryId = requestBody.primary_category_id || "";
+    if (!stateId && !cityId && !categoryId) return;
+
+    const key = `${stateId}|${cityId}|${categoryId}`;
+    if (lastTrackedKeyRef.current === key) return;
+    lastTrackedKeyRef.current = key;
+
+    trackSearchStat({
+      stateId,
+      cityId,
+      categoryId,
+      zeroResults: Number(data.data.totalBusinesses) === 0,
+    });
+  }, [page, data, error, requestBody]);
 
   if (error || data?.error)
     return (

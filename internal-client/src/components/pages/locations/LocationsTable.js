@@ -57,10 +57,21 @@ export function locationHref(activeTab, row) {
   return `/states/${encodeURIComponent(slug)}`;
 }
 
+export function searchDemandLocationHref(dimension, row) {
+  const href =
+    dimension === "city"
+      ? locationHref("cities", row)
+      : dimension === "state"
+        ? locationHref("states", row)
+        : null;
+  if (!href) return null;
+  return `${href}?tab=search-demand`;
+}
+
 const clickableRowClass =
   "cursor-pointer transition-colors hover:bg-muted/50";
 
-function useRowNavigate(href) {
+export function useRowNavigate(href) {
   const router = useRouter();
   if (!href) return {};
   return {

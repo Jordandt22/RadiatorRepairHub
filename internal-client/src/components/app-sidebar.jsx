@@ -35,6 +35,7 @@ import {
   ServerIcon,
   MessageSquareIcon,
   BarChart3Icon,
+  SearchIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -93,6 +94,11 @@ const data = {
           title: "Analytics",
           url: "/businesses/analytics",
           icon: <BarChart3Icon />,
+        },
+        {
+          title: "Search Demand",
+          url: "/businesses/search-stats",
+          icon: <SearchIcon />,
         },
         {
           title: "Websites",

@@ -6,33 +6,56 @@ import {
   customErrorHandler,
 } from "../helpers/customErrorHandler.js";
 
-const aj = arcjet({
-  key: process.env.ARCJET_KEY,
-  characteristics: ["ip.src"],
-  rules: [
-    shield({ mode: "LIVE" }),
-    detectBot({
-      mode: "LIVE",
-      allow:
-        process.env.NODE_ENV === "development"
-          ? ["CATEGORY:SEARCH_ENGINE", "POSTMAN"]
-          : ["CATEGORY:SEARCH_ENGINE"],
-    }),
-    tokenBucket({
-      mode: "LIVE",
-      refillRate: 15, // Refill tokens per interval
-      interval: 30, // Seconds Interval
-      capacity: 150, // Bucket tokens capacity
-    }),
-  ],
+const isDev = process.env.NODE_ENV === "development";
+const shieldMode = isDev ? "DRY_RUN" : "LIVE";
+
+const botRule = detectBot({
+  mode: "LIVE",
+  allow: isDev
+    ? ["CATEGORY:SEARCH_ENGINE", "POSTMAN"]
+    : ["CATEGORY:SEARCH_ENGINE"],
 });
 
+const rateLimitRule = tokenBucket({
+  mode: "LIVE",
+  refillRate: 15,
+  interval: 30,
+  capacity: 150,
+});
+
+const characteristics = ["ip.src"];
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY,
+  characteristics,
+  rules: [shield({ mode: shieldMode }), botRule, rateLimitRule],
+});
+
+// File bodies make Shield false-positive. Bot + rate limit still apply.
+const ajWithoutShield = arcjet({
+  key: process.env.ARCJET_KEY,
+  characteristics,
+  rules: [botRule, rateLimitRule],
+});
+
+function isFileUploadRoute(req) {
+  if (req.method !== "POST") return false;
+  const path = String(req.originalUrl || req.url || "").split("?")[0];
+  return (
+    path.endsWith("/businesses/images") ||
+    path.endsWith("/admin/ingest/groups")
+  );
+}
+
 export const arcjetMiddleware = async (req, res, next) => {
-  const decision = await aj.protect(req, { requested: 1 });
-  if (process.env.NODE_ENV === "development")
+  const client = isFileUploadRoute(req) ? ajWithoutShield : aj;
+  const decision = await client.protect(req, { requested: 1 });
+
+  if (isDev) {
     console.log(
       `Arcjet Decision: ${decision.conclusion} - [${decision.reason.type}]`
     );
+  }
 
   if (decision.isDenied()) {
     if (decision.reason.isRateLimit()) {

@@ -8,7 +8,8 @@
     "supabase-prod": "node scripts/supabase-link.mjs prod",
     "supabase-dump": "supabase db dump > branchbound_schema.sql",
     "supabase-push": "supabase db push",
-    "supabase-pull": "supabase db pull"
+    "supabase-pull": "supabase db pull",
+    "stripe": "stripe listen --forward-to http://127.0.0.1:8000/webhooks/stripe"
   },
   "repository": {
     "type": "git",

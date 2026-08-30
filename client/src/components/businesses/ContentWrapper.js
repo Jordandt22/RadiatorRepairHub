@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import React, { Suspense, useEffect, useMemo } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 
 // Data
 import FEATURES from "@/lib/data/features";
@@ -16,6 +16,10 @@ import {
   formatFeatures,
   parseIdListParam,
 } from "@/lib/utils/utils";
+import {
+  DEFAULT_LISTING_FILTERS,
+  mergeListingSearchParams,
+} from "@/lib/businesses/listingsSearch";
 
 // Contexts
 import { useFilters } from "@/contexts/FilterProvider";
@@ -29,7 +33,7 @@ import FiltersWrapper from "./FiltersWrapper";
 import ListingsWrapper from "./listings/ListingsWrapper";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 
-function ContentWrapper({
+function ContentInner({
   stateData,
   cityData,
   categoryData,
@@ -41,16 +45,38 @@ function ContentWrapper({
 }) {
   const pathname = usePathname();
   const { page: pageParam, sort: sortParam } = searchParams;
-  const {
-    filters,
-    appliedFilters,
-    setAppliedFilters,
-    setFilters,
-    clearAllFiltersHelper,
-  } = useFilters();
+  const { setAppliedFilters, setFilters, clearAllFiltersHelper } = useFilters();
   const parsedPage = Number(pageParam);
   const page =
     !Number.isNaN(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
+
+  const filterSyncKey = useMemo(() => {
+    const liveParams =
+      typeof window === "undefined"
+        ? {}
+        : Object.fromEntries(
+            new URLSearchParams(window.location.search).entries()
+          );
+    const merged = { ...searchParams, ...liveParams };
+    return JSON.stringify({
+      pathname,
+      title: merged.title || "",
+      city_id: merged.city_id || "",
+      postal_code_id: merged.postal_code_id || "",
+      state_id: merged.state_id || "",
+      total_score: merged.total_score || "",
+      reviews_count: merged.reviews_count || "",
+      primary_category_id: merged.primary_category_id || "",
+      secondary_categories: merged.secondary_categories || "",
+      features: merged.features || "",
+      weekdays: merged.weekdays || "",
+      weekends: merged.weekends || "",
+      sort: merged.sort || sortParam || "",
+      state: stateData?.id || "",
+      city: cityData?.id || "",
+      category: categoryData?.id || "",
+    });
+  }, [searchParams, pathname, sortParam, stateData, cityData, categoryData]);
 
   useEffect(() => {
     const whitelist = {
@@ -63,109 +89,74 @@ function ContentWrapper({
       return;
     }
 
-    const filterParams = { ...searchParams };
+    const liveParams =
+      typeof window === "undefined"
+        ? {}
+        : Object.fromEntries(new URLSearchParams(window.location.search).entries());
+    const filterParams = { ...searchParams, ...liveParams };
     delete filterParams.page;
     delete filterParams.sort;
-    let sort = DEFAULT_SORT_OPTION;
-    let formattedFilters = { ...filters };
+    const formattedFilters = {
+      ...DEFAULT_LISTING_FILTERS,
+      open: { ...DEFAULT_LISTING_FILTERS.open },
+    };
 
-    if (stateData) delete formattedFilters.state_id;
-    if (cityData) delete formattedFilters.city_id;
-    if (categoryData) delete formattedFilters.primary_category_id;
+    if (stateData) formattedFilters.state_id = "";
+    if (cityData) formattedFilters.city_id = cityData.id;
+    if (categoryData) formattedFilters.primary_category_id = categoryData.id;
 
-    // Preserve active filters when only the page param changes (city/state pages)
-    if (appliedFilters) {
-      formattedFilters = {
-        ...formattedFilters,
-        total_score: appliedFilters.total_score,
-        reviews_count: appliedFilters.reviews_count,
-        title: appliedFilters.title ?? formattedFilters.title,
-        primary_category_id:
-          appliedFilters.primary_category_id ??
-          formattedFilters.primary_category_id,
-        secondary_categories:
-          appliedFilters.secondary_categories ??
-          formattedFilters.secondary_categories,
-        features: appliedFilters.features
-          ? Object.keys(appliedFilters.features)
-          : formattedFilters.features,
-        open: appliedFilters.open ?? formattedFilters.open,
-      };
-    }
+    const sort = getSortOptionFromKey(sortParam);
 
-    // Validate Sort Param
-    sort = getSortOptionFromKey(sortParam);
-
-    // Validate Filter Params
-    Object.keys(filterParams).map((key) => {
+    Object.keys(filterParams).forEach((key) => {
       const value = filterParams[key];
 
-      // Validate Title
       if (key === "title") {
-        let title = value.trim();
-        if (title.length > 150) {
-          formattedFilters.title = "";
-        }
-
-        const specialCharacters = new RegExp(
-          /[!@#$%^*()+\=\[\]{};:"\\|,.<>\/?]/,
-          "gi"
-        );
-        if (specialCharacters.test(title)) {
-          title = "";
-        }
-
+        let title = String(value || "").trim();
+        if (title.length > 150) title = "";
+        const specialCharacters = /[!@#$%^*()+\=\[\]{};:"\\|,.<>\/?]/gi;
+        if (specialCharacters.test(title)) title = "";
         formattedFilters.title = title;
       }
 
-      // Validate Total Score
       if (key === "total_score") {
         formattedFilters.total_score = validateNumber(value, 1, 5);
       }
 
-      // Validate Reviews Count
       if (key === "reviews_count") {
         formattedFilters.reviews_count = validateNumber(value, 1, 500);
       }
 
-      // Validate Primary Category
       if (key === "primary_category_id" && !categoryData) {
         formattedFilters.primary_category_id =
           typeof value === "string" ? value.trim() : "";
       }
 
-      // Validate Secondary Categories
       if (key === "secondary_categories") {
-        const fromUrl = parseIdListParam(value, 5);
-        const merged = [...(formattedFilters.secondary_categories || [])];
-        fromUrl.forEach((id) => {
-          if (!merged.includes(id)) merged.push(id);
-        });
-        formattedFilters.secondary_categories = merged.slice(0, 5);
+        formattedFilters.secondary_categories = parseIdListParam(value, 5);
       }
 
-      // Validate City ID
       if (key === "city_id" && !cityData) {
         formattedFilters.city_id =
           typeof value === "string" ? value.trim() : "";
       }
 
-      // Validate State ID
+      if (key === "postal_code_id") {
+        formattedFilters.postal_code_id =
+          typeof value === "string" ? value.trim() : "";
+      }
+
       if (key === "state_id" && !stateData) {
         formattedFilters.state_id = validateID(value, STATES, "id");
       }
 
-      // Validate Weekdays
       if (key === "weekdays") {
         formattedFilters.open.weekdays = validateBoolean(value);
       }
 
-      // Validate Weekends
       if (key === "weekends") {
         formattedFilters.open.weekends = validateBoolean(value);
       }
 
-      // Validate Features
       if (key === "features") {
         formattedFilters.features = validateArray(
           FEATURES,
@@ -177,23 +168,23 @@ function ContentWrapper({
       }
     });
 
-    // Update Filters
     setFilters((prev) => ({
       ...prev,
       ...formattedFilters,
     }));
 
-    setAppliedFilters((prev) => ({
-      ...prev,
+    setAppliedFilters({
       ...formattedFilters,
       features: formatFeatures(formattedFilters.features),
       sort_option: sort || DEFAULT_SORT_OPTION,
-    }));
-  }, [searchParams, stateData, cityData, categoryData, sortParam, pathname]);
+    });
+    // Sync only when the actual query values change, not when searchParams
+    // is a new object with the same contents (that wipe would drop a city
+    // the user just picked before clicking Apply).
+  }, [filterSyncKey]);
 
   return (
     <>
-      {/* Filters */}
       <FiltersWrapper
         stateData={stateData}
         cityData={cityData}
@@ -201,7 +192,6 @@ function ContentWrapper({
         page={page}
       />
 
-      {/* Business Listings */}
       <ListingsWrapper
         stateData={stateData}
         cityData={cityData}
@@ -225,6 +215,24 @@ function ContentWrapper({
         </section>
       ) : null}
     </>
+  );
+}
+
+function ContentWithClientSearchParams(props) {
+  const urlSearchParams = useSearchParams();
+  const searchParams = useMemo(
+    () => mergeListingSearchParams(urlSearchParams, props.searchParams),
+    [urlSearchParams, props.searchParams]
+  );
+
+  return <ContentInner {...props} searchParams={searchParams} />;
+}
+
+function ContentWrapper(props) {
+  return (
+    <Suspense fallback={<ContentInner {...props} />}>
+      <ContentWithClientSearchParams {...props} />
+    </Suspense>
   );
 }
 

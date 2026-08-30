@@ -49,6 +49,13 @@ function Listings({ businesses, data, page, stateData, cityData, categoryData })
         data.page,
         {
           ...filters,
+          city_id: appliedFilters?.city_id ?? filters.city_id,
+          postal_code_id:
+            appliedFilters?.postal_code_id ?? filters.postal_code_id,
+          state_id: appliedFilters?.state_id ?? filters.state_id,
+          title: appliedFilters?.title ?? filters.title,
+          primary_category_id:
+            appliedFilters?.primary_category_id ?? filters.primary_category_id,
           sort_option: appliedFilters?.sort_option || DEFAULT_SORT_OPTION,
         },
         categoryData
