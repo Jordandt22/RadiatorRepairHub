@@ -12,6 +12,8 @@ export default function BusinessSectionHeader({
   titleBadge = null,
   trailing = null,
   onEdit,
+  editAriaLabel,
+  editIcon,
 }) {
   const { isOwner } = useIsBusinessOwner(businessId);
 
@@ -23,8 +25,12 @@ export default function BusinessSectionHeader({
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {trailing}
-        {isOwner ? (
-          <OwnerEditButton aria-label={`Edit ${title}`} onClick={onEdit} />
+        {isOwner && onEdit ? (
+          <OwnerEditButton
+            aria-label={editAriaLabel || `Edit ${title}`}
+            onClick={onEdit}
+            icon={editIcon}
+          />
         ) : null}
       </div>
     </div>

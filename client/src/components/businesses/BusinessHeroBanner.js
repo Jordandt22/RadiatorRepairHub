@@ -7,6 +7,7 @@ import {
   BUSINESS_HERO_IMAGE_SIZES,
   CF_IMAGE_VARIANT,
   getBusinessImageId,
+  usableImageSrc,
 } from "@/lib/images";
 
 export default function BusinessHeroBanner({
@@ -24,15 +25,24 @@ export default function BusinessHeroBanner({
     imageId,
     cdnStored,
   });
-  const cdnSrc = buildCfImageUrl(cfImageId, CF_IMAGE_VARIANT.hero);
+  const cdnSrc = usableImageSrc(
+    buildCfImageUrl(cfImageId, CF_IMAGE_VARIANT.hero)
+  );
+  const remoteSrc = usableImageSrc(src);
   const canUseCdn = Boolean(cdnSrc);
-  const hasRemote = Boolean(src);
+  const hasRemote = Boolean(remoteSrc);
 
   const [source, setSource] = useState(() =>
     canUseCdn ? "cdn" : hasRemote ? "remote" : "none"
   );
 
-  const hasImage = source !== "none";
+  React.useEffect(() => {
+    setSource(canUseCdn ? "cdn" : hasRemote ? "remote" : "none");
+  }, [canUseCdn, hasRemote, cdnSrc, remoteSrc]);
+
+  const resolvedSrc =
+    source === "cdn" ? cdnSrc : source === "remote" ? remoteSrc : null;
+  const hasImage = Boolean(resolvedSrc);
 
   return (
     <div
@@ -42,30 +52,19 @@ export default function BusinessHeroBanner({
     >
       {hasImage ? (
         <>
-          {source === "cdn" ? (
-            <Image
-              src={cdnSrc}
-              alt={alt}
-              fill
-              sizes={sizes}
-              className="object-cover object-center"
-              priority
-              unoptimized
-              onError={() => setSource(hasRemote ? "remote" : "none")}
-            />
-          ) : (
-            <Image
-              src={src}
-              alt={alt}
-              fill
-              sizes={sizes}
-              className="object-cover object-center"
-              priority
-              unoptimized
-              referrerPolicy="no-referrer"
-              onError={() => setSource("none")}
-            />
-          )}
+          <Image
+            src={resolvedSrc}
+            alt={alt}
+            fill
+            sizes={sizes}
+            className="object-cover object-center"
+            priority
+            unoptimized
+            referrerPolicy={source === "remote" ? "no-referrer" : undefined}
+            onError={() =>
+              setSource(source === "cdn" && hasRemote ? "remote" : "none")
+            }
+          />
           <div
             className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/25"
             aria-hidden="true"

@@ -1,4 +1,4 @@
-import { MapPin, Search, Sparkles, Star } from "lucide-react";
+import { Images, MapPin, Search, Sparkles, Star } from "lucide-react";
 
 export const FEATURED_BENEFITS = [
   {
@@ -24,5 +24,11 @@ export const FEATURED_BENEFITS = [
     title: "More Visibility",
     description:
       "Featured shops are prioritized wherever people browse the directory.",
+  },
+  {
+    icon: Images,
+    title: "More Shop Photos",
+    description:
+      "Up to 10 shop photos on your listing. Claimed listings include 3.",
   },
 ];

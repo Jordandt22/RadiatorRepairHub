@@ -12,7 +12,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { usePostHog } from "posthog-js/react";
 import { useToast } from "@/contexts/ToastProvider";
+import { captureOwnerListingUpdate } from "@/lib/analytics/ownerListing";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import BusinessContactLinks from "@/components/businesses/BusinessContactLinks";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
@@ -73,6 +75,7 @@ function mapApiErrorsToFields(error) {
 
 function ContactInformationSectionContent({
   businessId,
+  businessSlug,
   businessName,
   phone: initialPhone,
   email: initialEmail,
@@ -81,6 +84,7 @@ function ContactInformationSectionContent({
   isClaimed = false,
 }) {
   const router = useRouter();
+  const posthog = usePostHog();
   const { showCustomSuccess } = useToast();
   const { isOwner } = useIsBusinessOwner(businessId);
   const emailUnderReview = isEmailUnderReview(emailStatus) && !isOwner;
@@ -155,6 +159,12 @@ function ContactInformationSectionContent({
       }
 
       showCustomSuccess("Contact information updated.");
+      captureOwnerListingUpdate(posthog, {
+        businessId,
+        businessSlug,
+        businessName,
+        section: "contact",
+      });
       setOpen(false);
       if (data?.phone != null) setPhone(data.phone || "");
       if (data?.email !== undefined) setEmail(data.email || "");

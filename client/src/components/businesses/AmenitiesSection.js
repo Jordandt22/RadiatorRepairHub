@@ -21,7 +21,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { usePostHog } from "posthog-js/react";
 import { useToast } from "@/contexts/ToastProvider";
+import { captureOwnerListingUpdate } from "@/lib/analytics/ownerListing";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import { useIsBusinessOwner } from "@/hooks/useIsBusinessOwner";
 import {
@@ -54,8 +56,14 @@ function AmenityRow({ icon: Icon, label }) {
   );
 }
 
-function AmenitiesSectionContent({ businessId, features = {} }) {
+function AmenitiesSectionContent({
+  businessId,
+  businessSlug,
+  businessName,
+  features = {},
+}) {
   const router = useRouter();
+  const posthog = usePostHog();
   const { showCustomSuccess } = useToast();
   const { isOwner } = useIsBusinessOwner(businessId);
   const initialFlags = useMemo(
@@ -118,6 +126,12 @@ function AmenitiesSectionContent({ businessId, features = {} }) {
       }
 
       showCustomSuccess("Amenities updated.");
+      captureOwnerListingUpdate(posthog, {
+        businessId,
+        businessSlug,
+        businessName,
+        section: "amenities",
+      });
       setOpen(false);
       router.refresh();
     } catch {

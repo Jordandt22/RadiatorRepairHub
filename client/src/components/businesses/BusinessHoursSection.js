@@ -12,7 +12,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { usePostHog } from "posthog-js/react";
 import { useToast } from "@/contexts/ToastProvider";
+import { captureOwnerListingUpdate } from "@/lib/analytics/ownerListing";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import { updateBusinessHours } from "@/lib/api/businessHoursUpdate";
@@ -146,10 +148,13 @@ function DayHoursDisplay({ hours }) {
 
 function BusinessHoursSectionContent({
   businessId,
+  businessSlug,
+  businessName,
   hours: initialHours = [],
   timezone,
 }) {
   const router = useRouter();
+  const posthog = usePostHog();
   const { showCustomSuccess } = useToast();
   const initialDays = useMemo(
     () => normalizeIncomingHours(initialHours),
@@ -305,6 +310,12 @@ function BusinessHoursSectionContent({
       }
 
       showCustomSuccess("Business hours updated.");
+      captureOwnerListingUpdate(posthog, {
+        businessId,
+        businessSlug,
+        businessName,
+        section: "hours",
+      });
       setOpen(false);
       router.refresh();
     } catch {

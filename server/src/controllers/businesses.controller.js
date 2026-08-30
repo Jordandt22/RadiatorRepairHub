@@ -56,7 +56,30 @@ import {
   touchOwnedBusinessEditedAt,
   getBusinessById,
   updateBusinessDerivedSeo,
+  listBusinessImagesByBusinessId,
+  insertOwnedBusinessImage,
+  setOwnedBusinessImagePrimary,
+  clearOwnedBusinessImagePrimary,
+  setOwnedBusinessImageHidden,
+  setOwnedBusinessHideDefaultImage,
+  deleteOwnedBusinessImageRow,
+  markOwnedBusinessCdnStored,
 } from "../supabase/supabase.functions.js";
+import {
+  getBusinessImageLimit,
+  selectPublicGalleryImages,
+  withDefaultListingImage,
+  detectImageMime,
+  FEATURED_IMAGE_LIMIT,
+  DEFAULT_LISTING_IMAGE_ID,
+  MAX_OWNER_IMAGE_BYTES,
+  OWNER_IMAGE_MIME_TYPES,
+} from "../lib/businessImages.js";
+import {
+  buildBusinessImagePublicId,
+  uploadBufferToCloudflareImages,
+  deleteCloudflareImage,
+} from "../cdn-upload/cloudflareImages.js";
 import { getNestedValue } from "../lib/util.js";
 import { sanitizeIlikeSearch } from "../lib/sanitizeSearch.js";
 import { buildDerivedListingSeo } from "../lib/listingSeo.js";
@@ -2448,4 +2471,617 @@ export const getSearchedBusinesses = async (req, res) => {
   // Cache Data
   await cacheData(key, interval, compiledData);
   res.status(200).json(successHandler(compiledData));
+};
+
+const requireOwnedListing = async (req, res, businessId) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+    return null;
+  }
+
+  const { data: profile, error: profileError } = await getOwnedBusiness(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error verifying business ownership.",
+        profileError
+      )
+    );
+    return null;
+  }
+
+  if (!profile) {
+    res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+    return null;
+  }
+
+  return { ownerUid, accessToken, profile };
+};
+
+const invalidateOwnedImageCaches = async (businessId, { primaryChanged }) => {
+  const { data: business } = await getBusinessById(businessId);
+  if (business) {
+    await invalidateBusinessCache(business);
+  }
+  if (primaryChanged) {
+    await deleteCacheDataByPrefix("FEATURED_BUSINESSES");
+    await deleteCacheDataByPrefix("SEARCHED_BUSINESSES");
+  }
+};
+
+const formatOwnerImageRows = (
+  rows,
+  { isFeatured, imageUrl, hideDefaultImage }
+) => {
+  const publicImages = selectPublicGalleryImages(rows, {
+    isClaimed: true,
+    isFeatured,
+    imageUrl,
+    hideDefaultImage,
+  });
+  const visibleIds = new Set(publicImages.map((image) => image.image_id));
+  const stored = rows.map((row) => ({
+    image_id: row.image_id,
+    is_primary: Boolean(row.is_primary),
+    is_hidden: Boolean(row.is_hidden),
+    created_at: row.created_at,
+    visible: visibleIds.has(row.image_id),
+  }));
+
+  return {
+    images: withDefaultListingImage(stored, {
+      imageUrl,
+      hideDefaultImage,
+      includeHiddenDefault: true,
+    }),
+    limit: getBusinessImageLimit({ isFeatured }),
+    visible_count: publicImages.length,
+  };
+};
+
+const ownerGalleryOptions = (profile, overrides = {}) => ({
+  isFeatured: Boolean(profile.is_featured),
+  imageUrl: profile.image_url,
+  hideDefaultImage: Boolean(profile.hide_default_image),
+  ...overrides,
+});
+
+const firstQueryValue = (value) =>
+  Array.isArray(value) ? value[0] : value;
+
+export const getOwnedBusinessImages = async (req, res) => {
+  const businessId = firstQueryValue(req.query.businessId);
+  const owned = await requireOwnedListing(req, res, businessId);
+  if (!owned) return;
+
+  const { data: rows, error } = await listBusinessImagesByBusinessId(businessId);
+  if (error) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error loading listing photos.",
+        error
+      )
+    );
+  }
+
+  return res.status(200).json(
+    successHandler(
+      formatOwnerImageRows(rows, ownerGalleryOptions(owned.profile))
+    )
+  );
+};
+
+export const uploadOwnedBusinessImage = async (req, res) => {
+  const businessId = req.body.businessId;
+  const owned = await requireOwnedListing(req, res, businessId);
+  if (!owned) return;
+
+  const file = req.file;
+  if (!file?.buffer) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        image: "Choose a JPEG, PNG, or WebP image.",
+      })
+    );
+  }
+
+  if (file.size > MAX_OWNER_IMAGE_BYTES) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        image: "Image must be 5 MB or smaller.",
+      })
+    );
+  }
+
+  const detectedMime = detectImageMime(file.buffer);
+  if (
+    !detectedMime ||
+    !OWNER_IMAGE_MIME_TYPES.includes(detectedMime) ||
+    !OWNER_IMAGE_MIME_TYPES.includes(file.mimetype)
+  ) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        image: "Use a JPEG, PNG, or WebP image.",
+      })
+    );
+  }
+
+  const { data: existing, error: listError } =
+    await listBusinessImagesByBusinessId(businessId);
+  if (listError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error loading listing photos.",
+        listError
+      )
+    );
+  }
+
+  const limit = getBusinessImageLimit({
+    isFeatured: Boolean(owned.profile.is_featured),
+  });
+  if (existing.length >= limit) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        image:
+          limit === FEATURED_IMAGE_LIMIT
+            ? "Featured listings can have up to 10 photos."
+            : "Claimed listings can have up to 3 photos. Upgrade to Featured for up to 10.",
+      })
+    );
+  }
+
+  const imageId = crypto.randomUUID();
+  const publicId = buildBusinessImagePublicId(businessId, imageId);
+  const hasPrimaryRow = existing.some((row) => row.is_primary);
+  const hasDefaultSource = Boolean(owned.profile.image_url);
+  const isPrimary =
+    !hasPrimaryRow && !hasDefaultSource && existing.length === 0;
+
+  try {
+    await uploadBufferToCloudflareImages(file.buffer, { publicId });
+  } catch (uploadError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SERVER_ERROR,
+        "There was an error uploading this photo.",
+        uploadError
+      )
+    );
+  }
+
+  const { data: inserted, error: insertError } = await insertOwnedBusinessImage({
+    imageId,
+    businessId,
+    isPrimary,
+  });
+
+  if (insertError || !inserted) {
+    try {
+      await deleteCloudflareImage(publicId);
+    } catch {
+      // best-effort cleanup
+    }
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error saving this photo.",
+        insertError
+      )
+    );
+  }
+
+  if (isPrimary) {
+    await markOwnedBusinessCdnStored(businessId);
+  }
+
+  await touchOwnedBusinessEditedAt(
+    businessId,
+    owned.ownerUid,
+    owned.accessToken
+  );
+  await invalidateOwnedImageCaches(businessId, { primaryChanged: isPrimary });
+
+  const { data: rows } = await listBusinessImagesByBusinessId(businessId);
+  return res.status(201).json(
+    successHandler({
+      image: inserted,
+      ...formatOwnerImageRows(rows ?? [], ownerGalleryOptions(owned.profile)),
+    })
+  );
+};
+
+export const setOwnedBusinessImagePrimaryHandler = async (req, res) => {
+  const { businessId, imageId } = req.body;
+  const owned = await requireOwnedListing(req, res, businessId);
+  if (!owned) return;
+
+  const { data: rows, error: listError } =
+    await listBusinessImagesByBusinessId(businessId);
+  if (listError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error loading listing photos.",
+        listError
+      )
+    );
+  }
+
+  const ownerImagePayload = () =>
+    formatOwnerImageRows(rows, ownerGalleryOptions(owned.profile));
+
+  if (imageId === DEFAULT_LISTING_IMAGE_ID) {
+    if (!owned.profile.image_url) {
+      return res
+        .status(404)
+        .json(customErrorHandler(ROUTE_NOT_FOUND, "That photo could not be found."));
+    }
+
+    const hasStoredPrimary = rows.some((row) => row.is_primary);
+    if (!hasStoredPrimary && !owned.profile.hide_default_image) {
+      return res.status(200).json(successHandler(ownerImagePayload()));
+    }
+
+    if (owned.profile.hide_default_image) {
+      const { error: unhideError } = await setOwnedBusinessHideDefaultImage(
+        businessId,
+        false
+      );
+      if (unhideError) {
+        return res.status(500).json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            "There was an error updating the primary photo.",
+            unhideError
+          )
+        );
+      }
+    }
+
+    if (!hasStoredPrimary) {
+      await touchOwnedBusinessEditedAt(
+        businessId,
+        owned.ownerUid,
+        owned.accessToken
+      );
+      await invalidateOwnedImageCaches(businessId, { primaryChanged: true });
+
+      const { data: nextRows } = await listBusinessImagesByBusinessId(businessId);
+      return res.status(200).json(
+        successHandler(
+          formatOwnerImageRows(
+            nextRows ?? [],
+            ownerGalleryOptions(owned.profile, {
+              hideDefaultImage: false,
+            })
+          )
+        )
+      );
+    }
+
+    const { error: clearError } = await clearOwnedBusinessImagePrimary(businessId);
+    if (clearError) {
+      return res.status(500).json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating the primary photo.",
+          clearError
+        )
+      );
+    }
+
+    await touchOwnedBusinessEditedAt(
+      businessId,
+      owned.ownerUid,
+      owned.accessToken
+    );
+    await invalidateOwnedImageCaches(businessId, { primaryChanged: true });
+
+    const { data: nextRows } = await listBusinessImagesByBusinessId(businessId);
+    return res.status(200).json(
+      successHandler(
+        formatOwnerImageRows(
+          nextRows ?? [],
+          ownerGalleryOptions(owned.profile, {
+            hideDefaultImage: false,
+          })
+        )
+      )
+    );
+  }
+
+  const current = rows.find((row) => row.image_id === imageId);
+  if (!current) {
+    return res
+      .status(404)
+      .json(customErrorHandler(ROUTE_NOT_FOUND, "That photo could not be found."));
+  }
+
+  if (current.is_primary && !current.is_hidden) {
+    return res.status(200).json(successHandler(ownerImagePayload()));
+  }
+
+  const { data: updated, error: updateError } =
+    await setOwnedBusinessImagePrimary({ businessId, imageId });
+
+  if (updateError || !updated) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error updating the primary photo.",
+        updateError
+      )
+    );
+  }
+
+  await markOwnedBusinessCdnStored(businessId);
+
+  await touchOwnedBusinessEditedAt(
+    businessId,
+    owned.ownerUid,
+    owned.accessToken
+  );
+  await invalidateOwnedImageCaches(businessId, { primaryChanged: true });
+
+  const { data: nextRows } = await listBusinessImagesByBusinessId(businessId);
+  return res.status(200).json(
+    successHandler(
+      formatOwnerImageRows(
+        nextRows ?? [],
+        ownerGalleryOptions(owned.profile)
+      )
+    )
+  );
+};
+
+export const deleteOwnedBusinessImageHandler = async (req, res) => {
+  const { businessId, imageId } = req.body;
+  const owned = await requireOwnedListing(req, res, businessId);
+  if (!owned) return;
+
+  const { data: rows, error: listError } =
+    await listBusinessImagesByBusinessId(businessId);
+  if (listError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error loading listing photos.",
+        listError
+      )
+    );
+  }
+
+  const current = rows.find((row) => row.image_id === imageId);
+  if (!current) {
+    return res
+      .status(404)
+      .json(customErrorHandler(ROUTE_NOT_FOUND, "That photo could not be found."));
+  }
+
+  const hasDefaultSource = Boolean(owned.profile.image_url);
+  if (rows.length <= 1 && !hasDefaultSource) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        image: "Upload a replacement photo before removing the last image.",
+      })
+    );
+  }
+
+  let promoted = null;
+  if (current.is_primary) {
+    promoted =
+      rows
+        .filter((row) => row.image_id !== imageId)
+        .slice()
+        .sort((a, b) => {
+          const aTime = Date.parse(a.created_at || "") || 0;
+          const bTime = Date.parse(b.created_at || "") || 0;
+          return aTime - bTime;
+        })[0] || null;
+
+    if (promoted) {
+      const { error: promoteError } = await setOwnedBusinessImagePrimary({
+        businessId,
+        imageId: promoted.image_id,
+      });
+      if (promoteError) {
+        return res.status(500).json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            "There was an error updating the primary photo.",
+            promoteError
+          )
+        );
+      }
+    }
+  }
+
+  const { data: removed, error: deleteError } =
+    await deleteOwnedBusinessImageRow({ businessId, imageId });
+
+  if (deleteError || !removed) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error removing this photo.",
+        deleteError
+      )
+    );
+  }
+
+  try {
+    await deleteCloudflareImage(
+      buildBusinessImagePublicId(businessId, imageId)
+    );
+  } catch {
+    // listing row is gone; CF cleanup is best-effort
+  }
+
+  await touchOwnedBusinessEditedAt(
+    businessId,
+    owned.ownerUid,
+    owned.accessToken
+  );
+  await invalidateOwnedImageCaches(businessId, {
+    primaryChanged: Boolean(current.is_primary),
+  });
+
+  const { data: nextRows } = await listBusinessImagesByBusinessId(businessId);
+  return res.status(200).json(
+    successHandler(
+      formatOwnerImageRows(
+        nextRows ?? [],
+        ownerGalleryOptions(owned.profile)
+      )
+    )
+  );
+};
+
+export const setOwnedBusinessImageHiddenHandler = async (req, res) => {
+  const { businessId, imageId, isHidden } = req.body;
+  const owned = await requireOwnedListing(req, res, businessId);
+  if (!owned) return;
+
+  const { data: rows, error: listError } =
+    await listBusinessImagesByBusinessId(businessId);
+  if (listError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error loading listing photos.",
+        listError
+      )
+    );
+  }
+
+  const ownerImagePayload = (overrides) =>
+    formatOwnerImageRows(rows, ownerGalleryOptions(owned.profile, overrides));
+
+  if (imageId === DEFAULT_LISTING_IMAGE_ID) {
+    if (!owned.profile.image_url) {
+      return res
+        .status(404)
+        .json(customErrorHandler(ROUTE_NOT_FOUND, "That photo could not be found."));
+    }
+
+    if (Boolean(owned.profile.hide_default_image) === Boolean(isHidden)) {
+      return res.status(200).json(successHandler(ownerImagePayload()));
+    }
+
+    const defaultIsPrimary = !rows.some((row) => row.is_primary);
+    if (isHidden && defaultIsPrimary) {
+      return res.status(422).json(
+        customErrorHandler(YUP_ERROR, {
+          image:
+            "The primary photo cannot be hidden. Set another photo as primary first.",
+        })
+      );
+    }
+
+    const { error: hideError } = await setOwnedBusinessHideDefaultImage(
+      businessId,
+      isHidden
+    );
+    if (hideError) {
+      return res.status(500).json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating this photo.",
+          hideError
+        )
+      );
+    }
+
+    await touchOwnedBusinessEditedAt(
+      businessId,
+      owned.ownerUid,
+      owned.accessToken
+    );
+    await invalidateOwnedImageCaches(businessId, { primaryChanged: true });
+
+    const { data: nextRows } = await listBusinessImagesByBusinessId(businessId);
+    return res.status(200).json(
+      successHandler(
+        formatOwnerImageRows(
+          nextRows ?? [],
+          ownerGalleryOptions(owned.profile, {
+            hideDefaultImage: Boolean(isHidden),
+          })
+        )
+      )
+    );
+  }
+
+  const current = rows.find((row) => row.image_id === imageId);
+  if (!current) {
+    return res
+      .status(404)
+      .json(customErrorHandler(ROUTE_NOT_FOUND, "That photo could not be found."));
+  }
+
+  if (Boolean(current.is_hidden) === Boolean(isHidden)) {
+    return res.status(200).json(successHandler(ownerImagePayload()));
+  }
+
+  if (isHidden && current.is_primary) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        image:
+          "The primary photo cannot be hidden. Set another photo as primary first.",
+      })
+    );
+  }
+
+  const { error: updateError } = await setOwnedBusinessImageHidden({
+    businessId,
+    imageId,
+    isHidden,
+  });
+
+  if (updateError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error updating this photo.",
+        updateError
+      )
+    );
+  }
+
+  await touchOwnedBusinessEditedAt(
+    businessId,
+    owned.ownerUid,
+    owned.accessToken
+  );
+  await invalidateOwnedImageCaches(businessId, { primaryChanged: false });
+
+  const { data: nextRows } = await listBusinessImagesByBusinessId(businessId);
+  return res.status(200).json(
+    successHandler(
+      formatOwnerImageRows(
+        nextRows ?? [],
+        ownerGalleryOptions(owned.profile)
+      )
+    )
+  );
 };

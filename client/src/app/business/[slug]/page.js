@@ -21,6 +21,7 @@ import ContactInformationSection from "@/components/businesses/ContactInformatio
 import ServiceCategoriesSection from "@/components/businesses/ServiceCategoriesSection";
 import AmenitiesSection from "@/components/businesses/AmenitiesSection";
 import AboutSection from "@/components/businesses/AboutSection";
+import PhotosSection from "@/components/businesses/PhotosSection";
 import BusinessHoursSection from "@/components/businesses/BusinessHoursSection";
 import ListingBadges from "@/components/businesses/ListingBadges";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
@@ -357,6 +358,8 @@ async function Page({ params }) {
               <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-8">
                 <AboutSection
                   businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
                   description={business.description || ""}
                   imageUrl={business.image_url}
                   imageId={business.primary_image_id}
@@ -369,8 +372,21 @@ async function Page({ params }) {
                   } in ${business.city.name}, ${business.state.name}`}
                 />
 
+                <PhotosSection
+                  businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
+                  images={business.images || []}
+                  primaryImageId={business.primary_image_id}
+                  imageUrl={business.image_url}
+                  hideDefaultImage={Boolean(business.hide_default_image)}
+                  cdnStored={Boolean(business.cdn_stored)}
+                />
+
                 <ServiceCategoriesSection
                   businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
                   primaryCategory={business.primary_category}
                   secondaryCategories={business.secondary_categories || []}
                 />
@@ -507,6 +523,7 @@ async function Page({ params }) {
 
                 <ContactInformationSection
                   businessId={business.id}
+                  businessSlug={business.slug}
                   businessName={business.title}
                   phone={business.phone}
                   email={business.email}
@@ -517,12 +534,16 @@ async function Page({ params }) {
 
                 <BusinessHoursSection
                   businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
                   hours={business.hours || []}
                   timezone={business.timezone}
                 />
 
                 <AmenitiesSection
                   businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
                   features={business.features || {}}
                 />
               </div>

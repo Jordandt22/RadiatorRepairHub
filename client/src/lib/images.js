@@ -10,6 +10,13 @@ export const BUSINESS_CARD_IMAGE_SIZES =
 export const BUSINESS_ABOUT_IMAGE_SIZES =
   "(max-width: 768px) 100vw, 480px";
 
+/** Listing photo carousel thumbs. */
+export const BUSINESS_GALLERY_IMAGE_SIZES =
+  "(max-width: 768px) 100vw, 50vw";
+
+/** Listing photo lightbox. */
+export const BUSINESS_LIGHTBOX_IMAGE_SIZES = "100vw";
+
 /** Business detail hero. */
 export const BUSINESS_HERO_IMAGE_SIZES =
   "(max-width: 768px) 100vw, 1200px";
@@ -18,6 +25,7 @@ export const BUSINESS_HERO_IMAGE_SIZES =
 export const CF_IMAGE_VARIANT = {
   card: "w=400,fit=cover,f=auto,q=75",
   about: "w=480,fit=cover,f=auto,q=75",
+  gallery: "w=800,fit=cover,f=auto,q=80",
   hero: "w=1200,fit=cover,f=auto,q=80",
   og: "w=1200,fit=scale-down,f=auto,q=80",
 };
@@ -32,6 +40,13 @@ function getCfImagesBaseUrl() {
   const base = process.env.NEXT_PUBLIC_CF_IMAGES_BASE_URL?.trim();
   if (!base) return null;
   return base.replace(/\/+$/, "");
+}
+
+/** next/image treats null/undefined src as "", which triggers preload warnings. */
+export function usableImageSrc(value) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed || null;
 }
 
 /**
@@ -75,6 +90,7 @@ export function getBusinessDisplayImage({
   image_url,
   id,
   primary_image_id,
+  hide_default_image,
 } = {}) {
   const imageId = getBusinessImageId({
     businessId: id,
@@ -84,6 +100,8 @@ export function getBusinessDisplayImage({
   const cdnUrl = buildCfImageUrl(imageId, CF_IMAGE_VARIANT.og);
 
   if (cdnUrl) return cdnUrl;
+
+  if (hide_default_image) return null;
 
   if (typeof image_url === "string" && image_url.trim()) {
     return image_url.trim();

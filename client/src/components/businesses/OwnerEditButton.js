@@ -8,6 +8,7 @@ export default function OwnerEditButton({
   "aria-label": ariaLabel = "Edit section",
   onClick,
   disabled = false,
+  icon: Icon = Pencil,
 }) {
   return (
     <Button
@@ -17,7 +18,7 @@ export default function OwnerEditButton({
       disabled={disabled}
       className={`inline-flex shrink-0 items-center justify-center rounded-lg border border-border bg-card p-2 text-muted-foreground transition-colors hover:bg-tint hover:text-primary disabled:pointer-events-none disabled:opacity-50 ${className}`}
     >
-      <Pencil className="size-4" />
+      <Icon className="size-4" />
     </Button>
   );
 }

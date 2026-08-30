@@ -37,7 +37,7 @@ function formatCloudflareError(payload, status) {
   );
 }
 
-async function deleteCloudflareImage(publicId) {
+export async function deleteCloudflareImage(publicId) {
   const { accountId, apiToken } = getCloudflareImagesCredentials();
   const encodedId = encodeURIComponent(publicId);
 
