@@ -787,12 +787,141 @@ export const GetAdminBusinessStatsListQuerySchema = Yup.object({
     })
     .oneOf(ADMIN_BUSINESS_STATS_SORTS, "Invalid sort")
     .notRequired(),
+  state_id: Yup.string()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return value;
+    })
+    .nullable()
+    .uuid("Invalid state ID")
+    .optional(),
+  city_id: Yup.string()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return value;
+    })
+    .nullable()
+    .uuid("Invalid city ID")
+    .optional(),
 });
 
 export const GetAdminBusinessStatsSummaryQuerySchema = Yup.object({
   days: adminBusinessStatsDaysField,
   claimed: adminBusinessStatsBoolField,
   featured: adminBusinessStatsBoolField,
+  state_id: Yup.string()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return value;
+    })
+    .nullable()
+    .uuid("Invalid state ID")
+    .optional(),
+  city_id: Yup.string()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return value;
+    })
+    .nullable()
+    .uuid("Invalid city ID")
+    .optional(),
+});
+
+export const ADMIN_SEARCH_STATS_DIMENSIONS = ["state", "city", "category"];
+
+export const ADMIN_SEARCH_STATS_SORTS = [
+  "searches_desc",
+  "searches_asc",
+  "zero_results_desc",
+  "zero_results_asc",
+  "businesses_desc",
+  "businesses_asc",
+  "claimed_desc",
+  "claimed_asc",
+  "featured_desc",
+  "featured_asc",
+  "name_asc",
+  "name_desc",
+];
+
+const adminSearchStatsDimensionField = Yup.string()
+  .transform((value) => {
+    if (value == null || String(value).trim() === "") return undefined;
+    return String(value).trim().toLowerCase();
+  })
+  .oneOf(ADMIN_SEARCH_STATS_DIMENSIONS, "Dimension must be state, city, or category")
+  .notRequired();
+
+export const GetAdminSearchStatsListQuerySchema = Yup.object({
+  days: adminBusinessStatsDaysField,
+  dimension: adminSearchStatsDimensionField,
+  page: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return 1;
+      return value;
+    })
+    .min(1)
+    .notRequired(),
+  limit: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return 20;
+      return value;
+    })
+    .min(1)
+    .max(50)
+    .notRequired(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  sort: Yup.string()
+    .transform((value) => {
+      if (value == null || String(value).trim() === "") return undefined;
+      return String(value).trim().toLowerCase();
+    })
+    .oneOf(ADMIN_SEARCH_STATS_SORTS, "Invalid sort")
+    .notRequired(),
+  dimension_id: Yup.string()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return value;
+    })
+    .nullable()
+    .uuid("Invalid dimension ID")
+    .optional(),
+  state_id: Yup.string()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return value;
+    })
+    .nullable()
+    .uuid("Invalid state ID")
+    .optional(),
+});
+
+export const GetAdminSearchStatsSummaryQuerySchema = Yup.object({
+  days: adminBusinessStatsDaysField,
+  dimension: adminSearchStatsDimensionField,
+  dimension_id: Yup.string()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return value;
+    })
+    .nullable()
+    .uuid("Invalid dimension ID")
+    .optional(),
+  state_id: Yup.string()
+    .transform((value) => {
+      if (value === "" || value == null) return null;
+      return value;
+    })
+    .nullable()
+    .uuid("Invalid state ID")
+    .optional(),
 });
 
 export const UnclaimBusinessesSchema = Yup.object({

@@ -21,6 +21,7 @@ import adminRouter from "./routes/admin/admin.routes.js";
 import authRouter from "./routes/auth.routes.js";
 import billingRouter from "./routes/billing.routes.js";
 import businessStatsRouter from "./routes/business-stats.routes.js";
+import searchStatsRouter from "./routes/search-stats.routes.js";
 import stripeWebhookRouter from "./routes/stripeWebhook.routes.js";
 
 const app = express();
@@ -122,6 +123,9 @@ app.use(`/v${API_VERSION}/api/billing`, billingRouter);
 
 // Routes for public listing stats ingest
 app.use(`/v${API_VERSION}/api/business-stats`, businessStatsRouter);
+
+// Routes for public search demand stats ingest
+app.use(`/v${API_VERSION}/api/search-stats`, searchStatsRouter);
 
 // PORT and Sever
 const server = http.createServer(app);

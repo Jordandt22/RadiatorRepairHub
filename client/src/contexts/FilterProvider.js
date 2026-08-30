@@ -78,35 +78,37 @@ export function FilterProvider({ children }) {
 
   // Update Applied Filters
   const updateAppliedFilters = (filters, sortNum) => {
-    setAppliedFilters((prev) => ({
-      ...prev,
+    setAppliedFilters({
+      ...defaultFilters,
       ...filters,
+      open: filters.open || defaultFilters.open,
       features: formatFeatures(filters.features),
       sort_option: sortNum || DEFAULT_SORT_OPTION,
-    }));
+    });
   };
 
   // Filter URL
   const getFilterURL = (stateData, cityData, page, filters, categoryData) => {
+    const nextFilters = { ...filters };
     const paginationAndSortQueryParams = `page=${page}&sort=${getSortOption(
-      filters.sort_option || DEFAULT_SORT_OPTION
+      nextFilters.sort_option || DEFAULT_SORT_OPTION
     )}`;
-    delete filters.sort_option;
-    if (stateData) delete filters.state_id;
-    if (cityData) delete filters.city_id;
-    if (categoryData) delete filters.primary_category_id;
+    delete nextFilters.sort_option;
+    if (stateData) delete nextFilters.state_id;
+    if (cityData) delete nextFilters.city_id;
+    if (categoryData) delete nextFilters.primary_category_id;
 
     let filterQueryParams = "";
-    Object.keys(filters).map((key) => {
-      let val = filters[key];
+    Object.keys(nextFilters).map((key) => {
+      let val = nextFilters[key];
       const defaultVal = defaultFilters[key];
 
       if (typeof val === "string" && val !== defaultVal) {
-        filterQueryParams += `&${key}=${val}`;
+        filterQueryParams += `&${key}=${encodeURIComponent(val)}`;
       }
 
       if (Array.isArray(val) && val.length > 0) {
-        filterQueryParams += `&${key}=${val.join(",")}`;
+        filterQueryParams += `&${key}=${encodeURIComponent(val.join(","))}`;
       }
 
       if (typeof val === "number" && val !== defaultVal) {
@@ -292,7 +294,7 @@ export function FilterProvider({ children }) {
         { ...formattedFilters, sort_option },
         {
           source,
-          page,
+          page: 1,
           sort_option: getSortOption(sort_option),
           stateData,
           cityData,
@@ -305,7 +307,7 @@ export function FilterProvider({ children }) {
     updateURL(
       stateData,
       cityData,
-      page,
+      1,
       {
         ...formattedFilters,
         sort_option,

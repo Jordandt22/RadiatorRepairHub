@@ -35,6 +35,8 @@ import {
   getBusinessStats,
   getBusinessStatsList,
   getBusinessStatsSummary,
+  getSearchStatsList,
+  getSearchStatsSummary,
   getBusinessesWithEmails,
   clearBusinessEmails,
   markBusinessEmailStatus,
@@ -140,6 +142,8 @@ import {
   GetAdminBusinessStatsQuerySchema,
   GetAdminBusinessStatsListQuerySchema,
   GetAdminBusinessStatsSummaryQuerySchema,
+  GetAdminSearchStatsListQuerySchema,
+  GetAdminSearchStatsSummaryQuerySchema,
   ClearBusinessEmailsSchema,
   MarkBusinessEmailStatusSchema,
   UpdateBusinessEmailSchema,
@@ -325,6 +329,18 @@ adminRouter.get(
   "/businesses/stats",
   queryValidator(GetAdminBusinessStatsListQuerySchema),
   serverErrorCatcherWrapper(getBusinessStatsList)
+);
+
+adminRouter.get(
+  "/search-stats/summary",
+  queryValidator(GetAdminSearchStatsSummaryQuerySchema),
+  serverErrorCatcherWrapper(getSearchStatsSummary)
+);
+
+adminRouter.get(
+  "/search-stats",
+  queryValidator(GetAdminSearchStatsListQuerySchema),
+  serverErrorCatcherWrapper(getSearchStatsList)
 );
 
 adminRouter.get(

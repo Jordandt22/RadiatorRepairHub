@@ -67,6 +67,9 @@ function Pagination({
           appliedFilters?.primary_category_id ?? filters.primary_category_id,
         secondary_categories:
           appliedFilters?.secondary_categories ?? filters.secondary_categories,
+        city_id: appliedFilters?.city_id ?? filters.city_id,
+        postal_code_id: appliedFilters?.postal_code_id ?? filters.postal_code_id,
+        state_id: appliedFilters?.state_id ?? filters.state_id,
         sort_option: appliedFilters?.sort_option || DEFAULT_SORT_OPTION,
       },
       categoryData

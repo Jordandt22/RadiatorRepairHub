@@ -39,6 +39,8 @@ import {
   getBusinessStatsForAdmin as fetchBusinessStatsForAdmin,
   getAdminBusinessStatsList as fetchAdminBusinessStatsList,
   getAdminBusinessStatsSummary as fetchAdminBusinessStatsSummary,
+  getAdminSearchStatsList as fetchAdminSearchStatsList,
+  getAdminSearchStatsSummary as fetchAdminSearchStatsSummary,
   getAdminBusinessesWithEmails as fetchAdminBusinessesWithEmails,
   clearBusinessEmails as clearEmailsOnBusinesses,
   updateBusinessesEmailStatus as patchBusinessesEmailStatus,
@@ -2346,6 +2348,8 @@ export const getBusinessStatsList = async (req, res) => {
     sort,
     page,
     limit,
+    stateId: req.query.state_id || null,
+    cityId: req.query.city_id || null,
   });
 
   if (error) {
@@ -2380,6 +2384,8 @@ export const getBusinessStatsSummary = async (req, res) => {
     endDate,
     claimed: parseAdminStatsFilterBool(req.query.claimed),
     featured: parseAdminStatsFilterBool(req.query.featured),
+    stateId: req.query.state_id || null,
+    cityId: req.query.city_id || null,
   });
 
   if (error) {
@@ -2397,6 +2403,96 @@ export const getBusinessStatsSummary = async (req, res) => {
   return res.status(200).json(
     successHandler({
       ...data,
+      days,
+      startDate: data.startDate || startDate || endDate,
+      endDate: data.endDate || endDate,
+    })
+  );
+};
+
+function parseAdminSearchDimension(value) {
+  const dimension = String(value ?? "").toLowerCase();
+  if (dimension === "city" || dimension === "category") return dimension;
+  return "state";
+}
+
+export const getSearchStatsList = async (req, res) => {
+  const days = parseAdminStatsDays(req.query.days);
+  const { startDate, endDate } = adminStatsDateWindow(days);
+  const dimension = parseAdminSearchDimension(req.query.dimension);
+  const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+  const sort =
+    typeof req.query.sort === "string" && req.query.sort.trim()
+      ? req.query.sort.trim().toLowerCase()
+      : "searches_desc";
+
+  const { data, error } = await fetchAdminSearchStatsList({
+    dimension,
+    startDate,
+    endDate,
+    q: rawQ ? rawQ.slice(0, 100) : null,
+    sort,
+    page,
+    limit,
+    dimensionId: req.query.dimension_id || null,
+    stateId: req.query.state_id || null,
+  });
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching search stats.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      ...data,
+      dimension,
+      days,
+      timezone: BUSINESS_STATS_TIMEZONE,
+      startDate,
+      endDate,
+    })
+  );
+};
+
+export const getSearchStatsSummary = async (req, res) => {
+  const days = parseAdminStatsDays(req.query.days);
+  const { startDate, endDate } = adminStatsDateWindow(days);
+  const dimension = parseAdminSearchDimension(req.query.dimension);
+
+  const { data, error } = await fetchAdminSearchStatsSummary({
+    dimension,
+    startDate,
+    endDate,
+    dimensionId: req.query.dimension_id || null,
+    stateId: req.query.state_id || null,
+  });
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching search stats.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      ...data,
+      dimension,
       days,
       startDate: data.startDate || startDate || endDate,
       endDate: data.endDate || endDate,
