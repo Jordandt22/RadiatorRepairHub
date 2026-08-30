@@ -1,3 +1,5 @@
+import { buildHighlights } from "../lib/listingSeo.js";
+
 const hasTrue = (arr, label) =>
   Array.isArray(arr) && arr.some((item) => item[label]);
 
@@ -14,32 +16,6 @@ function normalizeKeywords(keywords) {
     return keywords.split(",").map((k) => k.trim()).filter(Boolean);
   }
   return [];
-}
-
-function buildHighlights(biz) {
-  const highlights = [];
-
-  if (biz.wheelchair_accessible) highlights.push("Wheelchair Accessible");
-  if (biz.credit_cards) highlights.push("Credit Cards Accepted");
-  if (biz.debit_cards) highlights.push("Debit Cards Accepted");
-  if (biz.nfc_mobile_payments) highlights.push("NFC Mobile Payments");
-  if (biz.onsite_services) highlights.push("Onsite Services");
-  if (biz.oil_change) highlights.push("Oil Change");
-  if (biz.mechanic) highlights.push("On-site Mechanic");
-  if (biz.restroom) highlights.push("Restroom Available");
-  if (biz.appointments_recommended) highlights.push("Appointments Recommended");
-
-  if (biz.total_score === 5) {
-    highlights.push("Perfect 5-Star Rating");
-  } else if (biz.total_score >= 4.5) {
-    highlights.push(`${biz.total_score}-Star Rating`);
-  }
-
-  if (biz.reviews_count >= 100) {
-    highlights.push(`${biz.reviews_count}+ Customer Reviews`);
-  }
-
-  return highlights;
 }
 
 function toSnakeCase(str) {
@@ -162,7 +138,11 @@ export function formatBusiness(biz) {
 
   formattedBiz.highlights = Array.isArray(bizData.highlights)
     ? bizData.highlights
-    : buildHighlights(formattedBiz);
+    : buildHighlights({
+        features: formattedBiz,
+        total_score: formattedBiz.total_score,
+        reviews_count: formattedBiz.reviews_count,
+      });
 
   return formattedBiz;
 }

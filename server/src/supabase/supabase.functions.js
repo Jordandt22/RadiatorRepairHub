@@ -4152,6 +4152,42 @@ export const touchOwnedBusinessEditedAt = async (
   return { data, error };
 };
 
+export const updateBusinessDerivedSeo = async (businessId, fields = {}) => {
+  if (!businessId || typeof businessId !== "string") {
+    return { data: null, error: { message: "Missing business id." } };
+  }
+
+  const payload = {};
+  if (Array.isArray(fields.highlights)) {
+    payload.highlights = fields.highlights;
+  }
+  if (typeof fields.title_tag === "string") {
+    payload.title_tag = fields.title_tag;
+  }
+  if (typeof fields.meta_description === "string") {
+    payload.meta_description = fields.meta_description;
+  }
+  if (typeof fields.local_note === "string") {
+    payload.local_note = fields.local_note;
+  }
+  if (Array.isArray(fields.keywords)) {
+    payload.keywords = fields.keywords;
+  }
+
+  if (Object.keys(payload).length === 0) {
+    return { data: null, error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .update(payload)
+    .eq("id", businessId)
+    .select("id, highlights, title_tag, meta_description, local_note, keywords")
+    .maybeSingle();
+
+  return { data, error };
+};
+
 export const formatAuthSession = (session) => {
   if (!session?.access_token || !session?.refresh_token) {
     return null;

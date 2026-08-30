@@ -55,9 +55,11 @@ import {
   syncOwnedBusinessSecondaryCategories,
   touchOwnedBusinessEditedAt,
   getBusinessById,
+  updateBusinessDerivedSeo,
 } from "../supabase/supabase.functions.js";
 import { getNestedValue } from "../lib/util.js";
 import { sanitizeIlikeSearch } from "../lib/sanitizeSearch.js";
+import { buildDerivedListingSeo } from "../lib/listingSeo.js";
 import {
   daysEqual,
   normalizeDayHours,
@@ -322,6 +324,20 @@ export const claimBusiness = async (req, res) => {
 
 const invalidateBusinessCache = async (business) => {
   await invalidateBusinessListingCache(business);
+};
+
+const refreshOwnedListingDerivedSeo = async (businessId, listing, fields) => {
+  try {
+    const payload = buildDerivedListingSeo(listing, { fields });
+    if (!payload || Object.keys(payload).length === 0) return;
+
+    const { error } = await updateBusinessDerivedSeo(businessId, payload);
+    if (error) {
+      console.error("Derived listing SEO update failed:", error);
+    }
+  } catch (error) {
+    console.error("Derived listing SEO update failed:", error);
+  }
 };
 
 export const getClaimRequest = async (req, res) => {
@@ -1521,6 +1537,18 @@ export const updateBusinessCategories = async (req, res) => {
   }
 
   await touchOwnedBusinessEditedAt(businessId, ownerUid, accessToken);
+
+  const { data: refreshed, error: refreshError } =
+    await getBusinessById(businessId);
+  if (refreshError) {
+    console.error("Derived listing SEO reload failed:", refreshError);
+  } else {
+    await refreshOwnedListingDerivedSeo(businessId, refreshed, [
+      "title_tag",
+      "keywords",
+    ]);
+  }
+
   await invalidateBusinessCache(business);
 
   return res.status(200).json(
@@ -1628,6 +1656,17 @@ export const updateBusinessAmenities = async (req, res) => {
   }
 
   await touchOwnedBusinessEditedAt(businessId, ownerUid, accessToken);
+  await refreshOwnedListingDerivedSeo(
+    businessId,
+    {
+      ...business,
+      features: {
+        ...(business.features || {}),
+        ...updated,
+      },
+    },
+    ["highlights"]
+  );
   await invalidateBusinessCache(business);
 
   return res.status(200).json(
@@ -1735,6 +1774,14 @@ export const updateBusinessAbout = async (req, res) => {
       );
   }
 
+  await refreshOwnedListingDerivedSeo(
+    businessId,
+    {
+      ...business,
+      description: updated.description,
+    },
+    ["meta_description", "local_note"]
+  );
   await invalidateBusinessCache(business);
 
   return res.status(200).json(
