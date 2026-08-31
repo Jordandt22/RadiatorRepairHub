@@ -30,6 +30,7 @@ function findOwnedBusiness(businesses, businessId) {
 }
 
 export default function ClaimListingBanner({
+  placement = "desktop",
   className = "",
   businessId,
   businessSlug,
@@ -108,7 +109,16 @@ export default function ClaimListingBanner({
     isSignedIn,
   ]);
 
-  const eligible = metaReady &&
+  const initiallyEligible = isClaimListingEligible({
+    isClaimed: initialIsClaimed,
+    email: initialEmail,
+    emailStatus: initialEmailStatus,
+    hasDuplicateEmail: initialHasDuplicateEmail,
+  });
+
+  const eligible =
+    initiallyEligible &&
+    metaReady &&
     isClaimListingEligible({
       isClaimed,
       email,
@@ -163,16 +173,20 @@ export default function ClaimListingBanner({
     }
   };
 
+  const wrapperClassName =
+    placement === "mobile" ? "order-4 lg:hidden" : "hidden lg:block";
+
   return (
     <>
-      <div
-        role="region"
-        aria-label="Claim this listing"
-        className={cn(
-          "flex flex-col gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-4 sm:flex-row sm:items-center sm:justify-between",
-          className
-        )}
-      >
+      <div className={wrapperClassName}>
+        <div
+          role="region"
+          aria-label="Claim this listing"
+          className={cn(
+            "flex flex-col gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-4 sm:flex-row sm:items-center sm:justify-between",
+            className
+          )}
+        >
         <div className="flex items-start gap-3">
           <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <BadgeCheck className="size-5" aria-hidden="true" />
@@ -209,6 +223,7 @@ export default function ClaimListingBanner({
             How to claim
           </Link>
         </div>
+      </div>
       </div>
 
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
