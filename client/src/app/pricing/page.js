@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import PricingPageContent from "@/components/pages/pricing/PricingPageContent";
+import PricingHeader from "@/components/pages/pricing/PricingHeader";
 import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
 
 const pageTitle = "Featured Listing Pricing | RadiatorRepairHub";
@@ -45,6 +46,14 @@ const featuredListingServiceSchema = {
   },
 };
 
+function PricingPageFallback() {
+  return (
+    <div className="min-h-screen bg-background pb-24">
+      <PricingHeader />
+    </div>
+  );
+}
+
 export default function PricingPage() {
   return (
     <>
@@ -54,7 +63,7 @@ export default function PricingPage() {
           __html: JSON.stringify(featuredListingServiceSchema),
         }}
       />
-      <Suspense fallback={null}>
+      <Suspense fallback={<PricingPageFallback />}>
         <PricingPageContent />
       </Suspense>
     </>

@@ -16,7 +16,7 @@ export default function OwnerListingViewBar() {
   if (!isOwner) return null;
 
   return (
-    <div className="sticky top-3 z-30 mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card/95 p-2 shadow-sm backdrop-blur-sm md:mb-8">
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-2 shadow-sm md:mb-8">
       <Tabs value={view} onValueChange={setView} className="w-full gap-0 md:w-auto">
         <TabsList aria-label="Listing view" className="w-full md:w-fit">
           <TabsTrigger value="preview" className={tabsTriggerClassNames}>

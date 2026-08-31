@@ -177,17 +177,7 @@ function ClaimedBusinessStatus({
             className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-500/40 bg-amber-50 px-5 py-2.5 text-sm font-medium text-amber-900 transition-colors hover:bg-amber-100"
           >
             <Star className="size-4 shrink-0 fill-current" aria-hidden="true" />
-            Featured Listing
-          </Link>
-        ) : null}
-        {showOwnerChrome && !isFeatured ? (
-          <Link
-            href={`/pricing?business=${encodeURIComponent(businessId)}`}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-interactive hover:bg-muted"
-          >
-            <Star className="size-4 shrink-0" aria-hidden="true" />
-            Get Featured
-            <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            Manage Subscription
           </Link>
         ) : null}
       </div>

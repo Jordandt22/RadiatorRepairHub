@@ -1,4 +1,4 @@
-import { Images, MapPin, Search, Sparkles, Star } from "lucide-react";
+import { Calendar, Images, MapPin, Search, Sparkles, Star } from "lucide-react";
 
 export const FEATURED_BENEFITS = [
   {
@@ -11,7 +11,7 @@ export const FEATURED_BENEFITS = [
     icon: Search,
     title: "Priority in Search",
     description:
-      "Priority placement in search, state, city, category, and postal code listings.",
+      "Priority placement in search, state, city, category, and postal code listings. More drivers will see your local listing.",
   },
   {
     icon: MapPin,
@@ -23,12 +23,18 @@ export const FEATURED_BENEFITS = [
     icon: Sparkles,
     title: "More Visibility",
     description:
-      "Featured shops are prioritized wherever people browse the directory.",
+      "Featured shops are prioritized wherever people browse the directory and may lead to more phone calls.",
   },
   {
     icon: Images,
     title: "More Shop Photos",
     description:
       "Up to 10 shop photos on your listing. Claimed listings include 3.",
+  },
+  {
+    icon: Calendar,
+    title: "Flexible Monthly Plan",
+    description:
+      "Billed monthly through Stripe. Cancel anytime from your billing portal in Settings.",
   },
 ];

@@ -42,7 +42,7 @@ export function useIsBusinessOwner(businessId) {
         if (error || !Array.isArray(data)) {
           setIsOwner(false);
         } else {
-          setIsOwner(data.some((b) => b.id === businessId));
+          setIsOwner(data.some((b) => String(b.id) === String(businessId)));
         }
       } catch {
         if (mounted) setIsOwner(false);
