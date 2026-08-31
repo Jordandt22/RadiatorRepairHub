@@ -16,6 +16,8 @@ import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessHeroBanner from "@/components/businesses/BusinessHeroBanner";
 import BusinessHeroActions from "@/components/businesses/BusinessHeroActions";
 import ClaimBusinessButton from "@/components/businesses/ClaimBusinessButton";
+import ClaimListingBanner from "@/components/businesses/ClaimListingBanner";
+import ListingFeaturedCta from "@/components/businesses/ListingFeaturedCta";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import ContactInformationSection from "@/components/businesses/ContactInformationSection";
 import ServiceCategoriesSection from "@/components/businesses/ServiceCategoriesSection";
@@ -357,9 +359,25 @@ async function Page({ params }) {
           />
 
           <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 md:px-6 md:py-8 lg:px-8">
+            <ListingFeaturedCta
+              businessId={business.id}
+              businessSlug={business.slug}
+              businessName={business.title}
+            />
             <OwnerListingViewBar />
             <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
               <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-8">
+                <div className="hidden lg:block">
+                  <ClaimListingBanner
+                    businessId={business.id}
+                    businessSlug={business.slug}
+                    businessName={business.title}
+                    email={business.email}
+                    emailStatus={business.email_status}
+                    isClaimed={Boolean(business.is_claimed)}
+                    hasDuplicateEmail={Boolean(business.has_duplicate_email)}
+                  />
+                </div>
                 <AboutSection
                   businessId={business.id}
                   businessSlug={business.slug}
@@ -395,7 +413,7 @@ async function Page({ params }) {
                   secondaryCategories={business.secondary_categories || []}
                 />
 
-                <div className="order-4 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
+                <div className="order-5 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
                   <BusinessSectionHeader
                     title="Location"
                     titleClassName="text-xl font-semibold tracking-tight text-foreground font-heading md:text-2xl"
@@ -543,6 +561,18 @@ async function Page({ params }) {
                   hours={business.hours || []}
                   timezone={business.timezone}
                 />
+
+                <div className="order-4 lg:hidden">
+                  <ClaimListingBanner
+                    businessId={business.id}
+                    businessSlug={business.slug}
+                    businessName={business.title}
+                    email={business.email}
+                    emailStatus={business.email_status}
+                    isClaimed={Boolean(business.is_claimed)}
+                    hasDuplicateEmail={Boolean(business.has_duplicate_email)}
+                  />
+                </div>
 
                 <AmenitiesSection
                   businessId={business.id}

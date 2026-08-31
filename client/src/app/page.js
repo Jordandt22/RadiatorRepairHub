@@ -18,6 +18,7 @@ import { FEATURED_AFFILIATE_PRODUCT_ALIASES } from "@/lib/affiliateProducts";
 import { fetchTopPrimaryCategories } from "@/lib/api/categories";
 import {
   DIRECTORY_STATE_COUNTS_LIMIT,
+  fetchDirectoryTotals,
   fetchStateBusinessCountsByLimit,
 } from "@/lib/api/cachedReads";
 
@@ -36,16 +37,20 @@ export const metadata = buildPageMetadata({
 export const revalidate = 120;
 
 export default async function Home() {
-  const [affiliateRes, categoriesRes, statesRes] = await Promise.all([
+  const [affiliateRes, categoriesRes, statesRes, directoryTotalsRes] =
+    await Promise.all([
     fetchActiveAffiliateProductsByAliases(FEATURED_AFFILIATE_PRODUCT_ALIASES),
     fetchTopPrimaryCategories({ limit: 3 }),
     fetchStateBusinessCountsByLimit(DIRECTORY_STATE_COUNTS_LIMIT),
+    fetchDirectoryTotals(),
   ]);
 
   const featuredProducts = affiliateRes.data?.products ?? [];
   const featuredCategories = categoriesRes.data?.categories ?? [];
   const popularStates = statesRes.data?.states ?? [];
   const heroStates = popularStates.slice(0, 4);
+  const totalBusinesses = directoryTotalsRes.totalBusinesses ?? 0;
+  const totalCities = directoryTotalsRes.totalCities ?? 0;
 
   const faqs = [
     {
@@ -90,7 +95,11 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <HeroContent popularStates={heroStates} />
+      <HeroContent
+        popularStates={heroStates}
+        totalBusinesses={totalBusinesses}
+        totalCities={totalCities}
+      />
 
       <FeaturedBusinesses />
 

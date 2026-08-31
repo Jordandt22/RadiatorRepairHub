@@ -6,13 +6,21 @@ import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 
 import HeroSearchBar from "./HeroSearchBar";
+import HeroStatBox from "./HeroStatBox";
 import StrokeText from "@/components/ui/StrokeText";
 import FoldText from "@/components/ui/FoldText";
+import { STICKY_NAVBAR_OFFSET_CLASS } from "@/lib/layout/siteHeader";
 
-function HeroContent({ popularStates = [] }) {
+function HeroContent({
+  popularStates = [],
+  totalBusinesses = 0,
+  totalCities = 0,
+}) {
   const heroRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true });
   const reduceMotion = useReducedMotion();
+  const headerPullClass = "-mt-16";
+  const headerOffsetClass = STICKY_NAVBAR_OFFSET_CLASS;
 
   const strokeTextProps = {
     strokeColor: "#FFFFFF",
@@ -28,7 +36,7 @@ function HeroContent({ popularStates = [] }) {
   return (
     <section
       ref={heroRef}
-      className="relative isolate flex min-h-[80svh] items-center overflow-hidden border-b border-border"
+      className={`relative isolate ${headerPullClass} flex min-h-[80svh] items-center overflow-hidden border-b border-border`}
     >
       <Image
         src="/assets/images/rrh-hero-image.jpg"
@@ -48,7 +56,9 @@ function HeroContent({ popularStates = [] }) {
         aria-hidden="true"
       />
 
-      <div className="relative mx-auto w-full max-w-7xl px-4 py-16 pt-24 sm:px-6 lg:px-8 lg:py-20 lg:pt-28">
+      <div
+        className={`relative mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20 ${headerOffsetClass}`}
+      >
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="mb-4 font-heading">
             <span className="sr-only">
@@ -70,7 +80,7 @@ function HeroContent({ popularStates = [] }) {
               />
             </span>
           </h1>
-          <p className="mx-auto mb-10 max-w-2xl text-base text-white/75 md:text-lg">
+          <p className="mx-auto mb-6 max-w-2xl text-base text-white/75 md:text-lg">
             <FoldText
               text="Search our directory of verified radiator repair businesses across the U.S."
               splitBy="word"
@@ -125,6 +135,60 @@ function HeroContent({ popularStates = [] }) {
               ))}
             </motion.div>
           ) : null}
+
+          <motion.div
+            className="mx-auto mt-8 grid max-w-md grid-cols-2 gap-3"
+            initial="hidden"
+            animate={heroInView ? "visible" : "hidden"}
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  staggerChildren: reduceMotion ? 0 : 0.12,
+                  delayChildren: reduceMotion ? 0 : 2.15,
+                },
+              },
+            }}
+          >
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 8 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    duration: reduceMotion ? 0 : 0.45,
+                    ease: "easeOut",
+                  },
+                },
+              }}
+            >
+              <HeroStatBox
+                label="Total Businesses"
+                value={totalBusinesses}
+                heroInView={heroInView}
+              />
+            </motion.div>
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 8 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    duration: reduceMotion ? 0 : 0.45,
+                    ease: "easeOut",
+                  },
+                },
+              }}
+            >
+              <HeroStatBox
+                label="Total Cities"
+                value={totalCities}
+                heroInView={heroInView}
+              />
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </section>

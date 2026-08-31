@@ -176,7 +176,7 @@ export default function HowToClaimPage() {
                 that inbox for every location.
               </p>
             </div>
-            <div className="rounded-lg border border-border bg-muted p-4">
+            <div className="rounded-lg border border-border bg-muted p-4 md:col-span-2">
               <h3 className="mb-1 font-semibold text-foreground">
                 Unclaimable: Email Being Reviewed
               </h3>

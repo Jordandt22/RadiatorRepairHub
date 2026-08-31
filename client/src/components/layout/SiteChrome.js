@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/layout/Navbar/Navbar";
+import PricingPromoBanner from "@/components/layout/PricingPromoBanner";
 import Footer from "@/components/layout/Footer/Footer";
 import BackToTop from "@/components/layout/BackToTop/BackToTop";
 
@@ -29,13 +30,16 @@ export default function SiteChrome({
 
   return (
     <>
-      <Navbar />
+      <header className="sticky top-0 z-50">
+        <Navbar />
+      </header>
       {children}
       <Footer
         businessEmail={businessEmail}
         businessPhoneDigits={businessPhoneDigits}
         topStates={topStates}
       />
+      <PricingPromoBanner />
       <BackToTop />
     </>
   );

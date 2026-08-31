@@ -23,6 +23,10 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import {
+  dismissFeaturedCta,
+  isFeaturedCtaDismissed,
+} from "@/lib/featuredListingCtaStorage";
 
 const SOURCE_META = {
   search: {
@@ -238,26 +242,6 @@ function StatCard({
   );
 }
 
-const FEATURED_CTA_STORAGE_PREFIX = "rrh-analytics-featured-cta-dismissed:";
-const FEATURED_CTA_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
-
-function featuredCtaStorageKey(businessId) {
-  return `${FEATURED_CTA_STORAGE_PREFIX}${businessId}`;
-}
-
-function isFeaturedCtaDismissed(businessId) {
-  if (!businessId) return false;
-  try {
-    const stored = localStorage.getItem(featuredCtaStorageKey(businessId));
-    if (!stored) return false;
-    const dismissedAt = new Date(stored).getTime();
-    if (Number.isNaN(dismissedAt)) return false;
-    return Date.now() - dismissedAt < FEATURED_CTA_SNOOZE_MS;
-  } catch {
-    return false;
-  }
-}
-
 function AnalyticsFeaturedCta({ business }) {
   const posthog = usePostHog();
   const [visible, setVisible] = useState(false);
@@ -267,20 +251,13 @@ function AnalyticsFeaturedCta({ business }) {
       setVisible(false);
       return;
     }
-    setVisible(!isFeaturedCtaDismissed(business.id));
+    setVisible(!isFeaturedCtaDismissed(business.id, "analytics"));
   }, [business?.id, business?.is_featured]);
 
   if (!visible || !business?.id || business.is_featured) return null;
 
   const handleDismiss = () => {
-    try {
-      localStorage.setItem(
-        featuredCtaStorageKey(business.id),
-        new Date().toISOString()
-      );
-    } catch {
-      // localStorage unavailable
-    }
+    dismissFeaturedCta(business.id, "analytics");
     setVisible(false);
     posthog?.capture("featured_cta_dismissed", {
       source: "dashboard_analytics",

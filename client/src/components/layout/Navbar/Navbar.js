@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -124,7 +125,21 @@ function Navbar() {
   const { isSignedIn, user } = useIsSignedIn();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const isHome = pathname === "/";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isMobileMenuOpen]);
 
   const signedInMobileLinks = [
     { label: "Settings", path: "/settings" },
@@ -172,12 +187,182 @@ function Navbar() {
       : "text-foreground hover:bg-muted hover:text-primary"
     }`;
 
+  const mobileMenu =
+    mounted && isMobileMenuOpen
+      ? createPortal(
+          <>
+            <div
+              className="fixed inset-0 z-[100] bg-black/50 md:hidden"
+              onClick={closeMobileMenu}
+              aria-hidden="true"
+            />
+            <div
+              id="mobile-menu"
+              className="fixed top-0 right-0 z-[101] flex h-full w-80 translate-x-0 transform flex-col border-l border-border bg-card shadow-md transition-transform duration-300 ease-in-out md:hidden"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Mobile navigation menu"
+            >
+              <div className="flex items-center justify-between border-b border-border p-6">
+                <Link
+                  href="/"
+                  className="flex items-center space-x-3"
+                  onClick={closeMobileMenu}
+                  aria-label="RadiatorRepairHub - Go to homepage"
+                >
+                  <Image
+                    src="/assets/logos/logo.png"
+                    alt="RadiatorRepairHub - Find Trusted Radiator Repair Services"
+                    width={32}
+                    height={32}
+                    className="h-8 w-8"
+                  />
+                  <span className="font-heading text-xl font-bold tracking-tight text-primary">
+                    RadiatorRepairHub
+                  </span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={closeMobileMenu}
+                  className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                  aria-label="Close mobile menu"
+                >
+                  <X className="h-6 w-6" aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="space-y-3 border-b border-border p-6">
+                <Link
+                  href="/search?page=1&sort=verified"
+                  onClick={closeMobileMenu}
+                  className="flex w-full items-center justify-center space-x-2 rounded-full bg-primary px-4 py-3 font-medium text-primary-foreground transition-interactive hover:bg-primary/90"
+                  aria-label="Search for radiator repair businesses"
+                >
+                  <Search className="h-5 w-5" aria-hidden="true" />
+                  <span>Search Businesses</span>
+                </Link>
+                {!isSignedIn ? (
+                  <Link
+                    href="/signin"
+                    onClick={closeMobileMenu}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 font-medium text-primary transition-interactive hover:bg-tint"
+                    aria-label="Sign in to your business account"
+                  >
+                    Sign In
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                ) : null}
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-6 py-6">
+                <nav
+                  className="space-y-6"
+                  role="navigation"
+                  aria-label="Mobile navigation"
+                >
+                  <div>
+                    <Link
+                      href="/"
+                      onClick={closeMobileMenu}
+                      className={mobileLinkClassName("/")}
+                    >
+                      Home
+                    </Link>
+                  </div>
+
+                  <div>
+                    <p className="mb-2 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                      Browse
+                    </p>
+                    <div className="space-y-1">
+                      {BROWSE_LINKS.map((link) => (
+                        <Link
+                          key={link.label}
+                          href={link.path}
+                          onClick={closeMobileMenu}
+                          className={mobileLinkClassName(link.path)}
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="mb-2 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                      Resources
+                    </p>
+                    <div className="space-y-1">
+                      {RESOURCE_LINKS.map((link) => (
+                        <Link
+                          key={link.label}
+                          href={link.path}
+                          onClick={closeMobileMenu}
+                          className={mobileLinkClassName(link.path)}
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Link
+                      href="/about"
+                      onClick={closeMobileMenu}
+                      className={mobileLinkClassName("/about")}
+                    >
+                      About
+                    </Link>
+                    <Link
+                      href="/contact"
+                      onClick={closeMobileMenu}
+                      className={mobileLinkClassName("/contact")}
+                    >
+                      Contact
+                    </Link>
+                  </div>
+
+                  {isSignedIn ? (
+                    <div className="space-y-1 border-t border-border pt-4">
+                      {signedInMobileLinks.map((link) => (
+                        <Link
+                          key={link.label}
+                          href={link.path}
+                          onClick={closeMobileMenu}
+                          className={mobileLinkClassName(link.path)}
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                </nav>
+              </div>
+
+              {isSignedIn ? (
+                <div className="border-t border-border p-6">
+                  <button
+                    type="button"
+                    onClick={handleMobileLogout}
+                    disabled={isLoggingOut}
+                    className="flex w-full items-center justify-center gap-2 rounded-full border border-red-200 px-4 py-3 text-base font-medium text-red-600 transition-interactive hover:bg-red-50 disabled:opacity-60"
+                  >
+                    <LogOut className="size-5" aria-hidden="true" />
+                    {isLoggingOut ? "Signing out…" : "Log out"}
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </>,
+          document.body,
+        )
+      : null;
+
   return (
     <nav
       className={
-        isHome
-          ? "absolute inset-x-0 top-0 z-50 bg-transparent"
-          : "bg-card"
+        isHome ? "bg-black/20 backdrop-blur-md" : "bg-card"
       }
       role="navigation"
       aria-label="Main navigation"
@@ -272,174 +457,7 @@ function Navbar() {
         </div>
       </div>
 
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
-          onClick={closeMobileMenu}
-          aria-hidden="true"
-        />
-      )}
-
-      <div
-        id="mobile-menu"
-        className={`fixed top-0 right-0 z-50 h-full w-80 transform border-l border-border bg-card shadow-md transition-transform duration-300 ease-in-out md:hidden ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Mobile navigation menu"
-      >
-        <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-border p-6">
-            <Link
-              href="/"
-              className="flex items-center space-x-3"
-              onClick={closeMobileMenu}
-              aria-label="RadiatorRepairHub - Go to homepage"
-            >
-              <Image
-                src="/assets/logos/logo.png"
-                alt="RadiatorRepairHub - Find Trusted Radiator Repair Services"
-                width={32}
-                height={32}
-                className="h-8 w-8"
-              />
-              <span className="font-heading text-xl font-bold tracking-tight text-primary">
-                RadiatorRepairHub
-              </span>
-            </Link>
-            <button
-              onClick={closeMobileMenu}
-              className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
-              aria-label="Close mobile menu"
-            >
-              <X className="h-6 w-6" aria-hidden="true" />
-            </button>
-          </div>
-
-          <div className="space-y-3 border-b border-border p-6">
-            <Link
-              href="/search?page=1&sort=verified"
-              onClick={closeMobileMenu}
-              className="flex w-full items-center justify-center space-x-2 rounded-full bg-primary px-4 py-3 font-medium text-primary-foreground transition-interactive hover:bg-primary/90"
-              aria-label="Search for radiator repair businesses"
-            >
-              <Search className="h-5 w-5" aria-hidden="true" />
-              <span>Search Businesses</span>
-            </Link>
-            {!isSignedIn ? (
-              <Link
-                href="/signin"
-                onClick={closeMobileMenu}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 font-medium text-primary transition-interactive hover:bg-tint"
-                aria-label="Sign in to your business account"
-              >
-                Sign In
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-            ) : null}
-          </div>
-
-          <div className="flex-1 overflow-y-auto px-6 py-6">
-            <nav
-              className="space-y-6"
-              role="navigation"
-              aria-label="Mobile navigation"
-            >
-              <div>
-                <Link
-                  href="/"
-                  onClick={closeMobileMenu}
-                  className={mobileLinkClassName("/")}
-                >
-                  Home
-                </Link>
-              </div>
-
-              <div>
-                <p className="mb-2 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                  Browse
-                </p>
-                <div className="space-y-1">
-                  {BROWSE_LINKS.map((link) => (
-                    <Link
-                      key={link.label}
-                      href={link.path}
-                      onClick={closeMobileMenu}
-                      className={mobileLinkClassName(link.path)}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="mb-2 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                  Resources
-                </p>
-                <div className="space-y-1">
-                  {RESOURCE_LINKS.map((link) => (
-                    <Link
-                      key={link.label}
-                      href={link.path}
-                      onClick={closeMobileMenu}
-                      className={mobileLinkClassName(link.path)}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Link
-                  href="/about"
-                  onClick={closeMobileMenu}
-                  className={mobileLinkClassName("/about")}
-                >
-                  About
-                </Link>
-                <Link
-                  href="/contact"
-                  onClick={closeMobileMenu}
-                  className={mobileLinkClassName("/contact")}
-                >
-                  Contact
-                </Link>
-              </div>
-
-              {isSignedIn ? (
-                <div className="space-y-1 border-t border-border pt-4">
-                  {signedInMobileLinks.map((link) => (
-                    <Link
-                      key={link.label}
-                      href={link.path}
-                      onClick={closeMobileMenu}
-                      className={mobileLinkClassName(link.path)}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
-            </nav>
-          </div>
-
-          {isSignedIn ? (
-            <div className="border-t border-border p-6">
-              <button
-                type="button"
-                onClick={handleMobileLogout}
-                disabled={isLoggingOut}
-                className="flex w-full items-center justify-center gap-2 rounded-full border border-red-200 px-4 py-3 text-base font-medium text-red-600 transition-interactive hover:bg-red-50 disabled:opacity-60"
-              >
-                <LogOut className="size-5" aria-hidden="true" />
-                {isLoggingOut ? "Signing out…" : "Log out"}
-              </button>
-            </div>
-          ) : null}
-        </div>
-      </div>
+      {mobileMenu}
     </nav>
   );
 }

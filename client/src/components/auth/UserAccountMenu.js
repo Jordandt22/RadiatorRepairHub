@@ -51,7 +51,7 @@ export default function UserAccountMenu({
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger
-        className={`inline-flex size-9 shrink-0 items-center justify-center rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-interactive/40 ${
+        className={`inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-interactive/40 ${
           isHome
             ? "hover:bg-white/15 focus-visible:ring-white/50"
             : "hover:bg-tint focus-visible:ring-primary/30"
