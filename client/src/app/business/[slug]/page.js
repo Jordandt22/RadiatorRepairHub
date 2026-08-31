@@ -367,17 +367,16 @@ async function Page({ params }) {
             <OwnerListingViewBar />
             <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
               <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-8">
-                <div className="hidden lg:block">
-                  <ClaimListingBanner
-                    businessId={business.id}
-                    businessSlug={business.slug}
-                    businessName={business.title}
-                    email={business.email}
-                    emailStatus={business.email_status}
-                    isClaimed={Boolean(business.is_claimed)}
-                    hasDuplicateEmail={Boolean(business.has_duplicate_email)}
-                  />
-                </div>
+                <ClaimListingBanner
+                  placement="desktop"
+                  businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
+                  email={business.email}
+                  emailStatus={business.email_status}
+                  isClaimed={Boolean(business.is_claimed)}
+                  hasDuplicateEmail={Boolean(business.has_duplicate_email)}
+                />
                 <AboutSection
                   businessId={business.id}
                   businessSlug={business.slug}
@@ -562,17 +561,16 @@ async function Page({ params }) {
                   timezone={business.timezone}
                 />
 
-                <div className="order-4 lg:hidden">
-                  <ClaimListingBanner
-                    businessId={business.id}
-                    businessSlug={business.slug}
-                    businessName={business.title}
-                    email={business.email}
-                    emailStatus={business.email_status}
-                    isClaimed={Boolean(business.is_claimed)}
-                    hasDuplicateEmail={Boolean(business.has_duplicate_email)}
-                  />
-                </div>
+                <ClaimListingBanner
+                  placement="mobile"
+                  businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
+                  email={business.email}
+                  emailStatus={business.email_status}
+                  isClaimed={Boolean(business.is_claimed)}
+                  hasDuplicateEmail={Boolean(business.has_duplicate_email)}
+                />
 
                 <AmenitiesSection
                   businessId={business.id}
