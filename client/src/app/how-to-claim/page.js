@@ -54,13 +54,13 @@ const BENEFITS = [
   {
     title: "Listing Analytics",
     description:
-      "See page views, listing clicks, impressions, and how customers find your shop in your dashboard. Stats are not live and can take a few minutes to appear.",
+      "See page views, impressions, and impressions by source in your dashboard. Upgrade to Featured for full analytics, including listing clicks, CTR, average position, and contact clicks. Stats are not live and can take a few minutes to appear.",
     icon: BarChart3,
   },
   {
     title: "Featured Placement",
     description:
-      "Claiming is free. Optional paid Featured listings get a Featured badge, search priority, a place on the Featured page, and up to 10 shop photos.",
+      "Claiming is free. Optional paid Featured listings add a Featured badge, search priority, a place on the Featured page, up to 10 shop photos, and full listing analytics.",
     icon: Flag,
     cta: { href: "/pricing", label: "Get Featured" },
     fullRow: true,
@@ -112,12 +112,12 @@ function buildClaimFaqs(supportEmail) {
     {
       question: "What is a Featured listing?",
       answer:
-        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, a spot on the Featured businesses page, and up to 10 shop photos (claimed listings include 3). Claiming stays free; only Featured is paid.",
+        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, a spot on the Featured businesses page, up to 10 shop photos (claimed listings include 3), and full listing analytics. Claiming stays free; only Featured is paid.",
     },
     {
       question: "Can I see how customers find my listing?",
       answer:
-        "Yes. After you claim, sign in to your dashboard and open Analytics. You can see page views, listing clicks, impressions by source, and contact clicks. Stats are not live and can take a few minutes to appear.",
+        "Yes. After you claim, sign in to your dashboard and open Analytics. Claimed listings include page views, impressions, and impressions by source. Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source. Stats are not live and can take a few minutes to appear.",
     },
   ];
 }
@@ -303,6 +303,7 @@ export default function HowToClaimPage() {
               </h3>
               <p className="mb-6 text-muted-foreground">
                 Sign in to open your dashboard, view listing analytics, and manage your listing.
+                Claimed listings include page views and impressions; Featured unlocks full analytics.
               </p>
               <Link
                 href="/signin"
@@ -317,7 +318,7 @@ export default function HowToClaimPage() {
               </h3>
               <p className="mb-6 text-muted-foreground">
                 After you claim, upgrade to Featured for a badge, search priority,
-                extra shop photos, and a spot on the Featured page.
+                extra shop photos, a spot on the Featured page, and full listing analytics.
               </p>
               <Link
                 href="/pricing"

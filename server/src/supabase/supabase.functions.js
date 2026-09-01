@@ -3608,6 +3608,7 @@ const STAT_SOURCES = [
   "state",
   "city",
   "category",
+  "nearby",
 ];
 
 const emptyTotals = () => ({
@@ -3619,6 +3620,7 @@ const emptyTotals = () => ({
   listing_clicks_state: 0,
   listing_clicks_city: 0,
   listing_clicks_category: 0,
+  listing_clicks_nearby: 0,
   impressions_search: 0,
   search_position_sum: 0,
   impressions_featured: 0,
@@ -3631,6 +3633,8 @@ const emptyTotals = () => ({
   city_position_sum: 0,
   impressions_category: 0,
   category_position_sum: 0,
+  impressions_nearby: 0,
+  nearby_position_sum: 0,
   phone_clicks: 0,
   directions_clicks: 0,
   website_clicks: 0,
@@ -3647,6 +3651,7 @@ const BUSINESS_STATS_SELECT = [
   "listing_clicks_state",
   "listing_clicks_city",
   "listing_clicks_category",
+  "listing_clicks_nearby",
   "impressions_search",
   "search_position_sum",
   "impressions_featured",
@@ -3659,6 +3664,8 @@ const BUSINESS_STATS_SELECT = [
   "city_position_sum",
   "impressions_category",
   "category_position_sum",
+  "impressions_nearby",
+  "nearby_position_sum",
   "phone_clicks",
   "directions_clicks",
   "website_clicks",

@@ -23,7 +23,9 @@ import { resendClient } from "../resend/resend.js";
 import {
   SENDER_NAME,
   ADMIN_FEATURED_PURCHASED_MESSAGE,
+  OWNER_FEATURED_THANK_YOU_MESSAGE,
   buildBusinessClaimLink,
+  getWebBaseUrl,
 } from "../lib/constants/messages.js";
 
 const { SERVER_ERROR } = errorCodes;
@@ -86,15 +88,11 @@ async function retrieveSubscription(subscriptionId) {
   });
 }
 
-async function notifyAdminFeaturedPurchase({
+async function resolveFeaturedPurchaseContext({
   businessId,
   ownerUid,
-  subscription,
   customerEmail,
 }) {
-  const { SENDER_EMAIL, RESEND_API_KEY, ADMIN_EMAIL } = process.env;
-  if (!RESEND_API_KEY || !SENDER_EMAIL || !ADMIN_EMAIL) return;
-
   let businessTitle = null;
   let businessSlug = null;
   if (businessId) {
@@ -119,27 +117,53 @@ async function notifyAdminFeaturedPurchase({
     } catch (err) {
       logger.warn(
         { err, ownerUid },
-        "Could not load owner email for Featured purchase admin notice"
+        "Could not load owner email for Featured purchase notice"
       );
     }
   }
+
+  const businessPageUrl = businessSlug
+    ? buildBusinessClaimLink(businessSlug)
+    : null;
+  const baseUrl = getWebBaseUrl();
+
+  return {
+    businessTitle,
+    businessPageUrl,
+    ownerEmail,
+    dashboardUrl: `${baseUrl}/dashboard`,
+    analyticsUrl: `${baseUrl}/dashboard?tab=analytics`,
+    settingsPaymentsUrl: `${baseUrl}/settings?tab=payments`,
+  };
+}
+
+async function notifyAdminFeaturedPurchase({
+  businessId,
+  ownerUid,
+  subscription,
+  customerEmail,
+}) {
+  const { SENDER_EMAIL, RESEND_API_KEY, ADMIN_EMAIL } = process.env;
+  if (!RESEND_API_KEY || !SENDER_EMAIL || !ADMIN_EMAIL) return null;
+
+  const context = await resolveFeaturedPurchaseContext({
+    businessId,
+    ownerUid,
+    customerEmail,
+  });
 
   const stripeCustomerId =
     typeof subscription?.customer === "string"
       ? subscription.customer
       : subscription?.customer?.id || null;
 
-  const businessPageUrl = businessSlug
-    ? buildBusinessClaimLink(businessSlug)
-    : null;
-
   const { error: adminSendError } = await resendClient().emails.send({
     from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
     to: [ADMIN_EMAIL],
-    subject: ADMIN_FEATURED_PURCHASED_MESSAGE.subject(businessTitle),
-    html: ADMIN_FEATURED_PURCHASED_MESSAGE.html(businessTitle, {
-      email: ownerEmail || null,
-      businessPageUrl,
+    subject: ADMIN_FEATURED_PURCHASED_MESSAGE.subject(context.businessTitle),
+    html: ADMIN_FEATURED_PURCHASED_MESSAGE.html(context.businessTitle, {
+      email: context.ownerEmail || null,
+      businessPageUrl: context.businessPageUrl,
       stripeSubscriptionId: subscription?.id || null,
       stripeCustomerId,
       status: subscription?.status || null,
@@ -150,6 +174,50 @@ async function notifyAdminFeaturedPurchase({
     logger.error(
       { err: adminSendError, businessId, subscriptionId: subscription?.id },
       "Failed to send admin Featured purchase email"
+    );
+  }
+
+  return context;
+}
+
+async function notifyOwnerFeaturedThankYou({
+  businessId,
+  ownerUid,
+  customerEmail,
+  context = null,
+}) {
+  const { SENDER_EMAIL, RESEND_API_KEY, TEST_RECIPIENT_EMAIL } = process.env;
+  const isDev = process.env.NODE_ENV === "development";
+  if (!RESEND_API_KEY || !SENDER_EMAIL) return;
+  if (isDev && !TEST_RECIPIENT_EMAIL) return;
+
+  const resolved =
+    context ??
+    (await resolveFeaturedPurchaseContext({
+      businessId,
+      ownerUid,
+      customerEmail,
+    }));
+
+  const ownerRecipient = isDev ? TEST_RECIPIENT_EMAIL : resolved.ownerEmail;
+  if (!ownerRecipient) return;
+
+  const { error: ownerSendError } = await resendClient().emails.send({
+    from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+    to: [ownerRecipient],
+    subject: OWNER_FEATURED_THANK_YOU_MESSAGE.subject(resolved.businessTitle),
+    html: OWNER_FEATURED_THANK_YOU_MESSAGE.html(resolved.businessTitle, {
+      businessPageUrl: resolved.businessPageUrl,
+      dashboardUrl: resolved.dashboardUrl,
+      analyticsUrl: resolved.analyticsUrl,
+      settingsPaymentsUrl: resolved.settingsPaymentsUrl,
+    }),
+  });
+
+  if (ownerSendError) {
+    logger.error(
+      { err: ownerSendError, businessId },
+      "Failed to send owner Featured thank-you email"
     );
   }
 }
@@ -190,16 +258,22 @@ export const handleStripeWebhook = async (req, res) => {
 
         // Purchase notification only on checkout completion (not renewals).
         try {
-          await notifyAdminFeaturedPurchase({
+          const purchaseContext = await notifyAdminFeaturedPurchase({
             businessId: applied.businessId,
             ownerUid: applied.ownerUid,
             subscription,
             customerEmail: session.customer_details?.email || session.customer_email,
           });
+          await notifyOwnerFeaturedThankYou({
+            businessId: applied.businessId,
+            ownerUid: applied.ownerUid,
+            customerEmail: session.customer_details?.email || session.customer_email,
+            context: purchaseContext,
+          });
         } catch (emailError) {
           logger.error(
             { err: emailError, type: event.type },
-            "Admin Featured purchase email failed"
+            "Featured purchase email failed"
           );
         }
       }

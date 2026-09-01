@@ -4,6 +4,7 @@ import {
   successHandler,
   claimUnavailableHandler,
 } from "../helpers/customErrorHandler.js";
+import { gateOwnedBusinessStats } from "../lib/gateOwnedBusinessStats.js";
 import {
   cacheData,
   getFeaturedBusinessesKey,
@@ -1139,7 +1140,9 @@ export const getOwnedBusinessStatsHandler = async (req, res) => {
       );
   }
 
-  return res.status(200).json(successHandler(data));
+  const gatedData = gateOwnedBusinessStats(data, Boolean(profile.is_featured));
+
+  return res.status(200).json(successHandler(gatedData));
 };
 
 export const unclaimOwnedBusinessHandler = async (req, res) => {

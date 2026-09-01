@@ -73,7 +73,7 @@ function TabsContent({
   return (
     <TabsPrimitive.Panel
       data-slot="tabs-content"
-      className={cn("flex-1 text-sm outline-none", className)}
+      className={cn("flex-1 min-w-0 max-w-full overflow-x-hidden text-sm outline-none", className)}
       {...props} />
   );
 }

@@ -19,7 +19,7 @@ export default function ProtectedLayout({ children }) {
               <ProtectedBreadcrumb />
             </div>
           </header>
-          <div className="flex flex-1 flex-col">{children}</div>
+          <div className="flex flex-1 flex-col min-w-0">{children}</div>
         </SidebarInset>
       </SidebarProvider>
     </ProtectedAuthGate>

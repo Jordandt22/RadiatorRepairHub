@@ -5,6 +5,7 @@ export const LISTING_SOURCES = {
   STATE: "state",
   CITY: "city",
   CATEGORY: "category",
+  NEARBY: "nearby",
 };
 
 export function getListingSurface({

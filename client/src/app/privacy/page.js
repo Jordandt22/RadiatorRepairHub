@@ -74,7 +74,7 @@ function PrivacyPage() {
         },
         {
           label: "Listing Activity Stats:",
-          description:"When visitors view directory listings, we record aggregated activity such as listing impressions, listing clicks, business page views, and contact clicks (phone, directions, website, and email). Claimed owners can see those totals for their own listings in the dashboard. These stats are not live and can take a few minutes to appear. We do not use this data to identify a visitor to the shop owner.",
+          description:"When visitors view directory listings, we record aggregated activity such as listing impressions, listing clicks, business page views, and contact clicks (phone, directions, website, and email). Claimed owners can see basic analytics for their own listings in the dashboard (page views and impressions, plus impressions by source). Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source. These stats are not live and can take a few minutes to appear. We do not use this data to identify a visitor to the shop owner.",
         },
         {
           label: "Listing Report (Report Info) Submissions:",
@@ -376,7 +376,7 @@ function PrivacyPage() {
         },
         {
           label: "Account Management:",
-          description:"Allow claimed business owners to sign in, manage listing information (including shop photos), unclaim listings, view listing analytics, view subscription status, open the Stripe billing portal, delete their account, and maintain their accounts.",
+          description:"Allow claimed business owners to sign in, manage listing information (including shop photos), unclaim listings, view basic listing analytics (and full analytics with Featured), view subscription status, open the Stripe billing portal, delete their account, and maintain their accounts.",
         },
         {
           label: "Featured Listing Billing:",

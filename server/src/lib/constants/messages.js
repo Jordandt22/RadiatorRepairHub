@@ -612,9 +612,10 @@ export const LISTING_REQUEST_LIVE_MESSAGE = Object.freeze({
     <li>Add up to 3 shop photos to your listing</li>
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
+    <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
   </ul>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search results, increase your visibility and phone calls, and add up to 10 shop photos: <a href="${escapeEmailHtml(`${getWebBaseUrl()}/pricing`)}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>You can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${escapeEmailHtml(`${getWebBaseUrl()}/pricing`)}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>If you have any questions or need assistance, don't hesitate to reach out! You can also reply to this email.</p>
 
@@ -692,6 +693,62 @@ export const ADMIN_FEATURED_PURCHASED_MESSAGE = Object.freeze({
   `,
 });
 
+// Thank-you email sent to the business owner after a Featured purchase
+export const OWNER_FEATURED_THANK_YOU_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Thanks for upgrading to Featured${
+      businessName ? `: ${businessName}` : ""
+    }`,
+  html: (
+    businessName,
+    { businessPageUrl, dashboardUrl, analyticsUrl, settingsPaymentsUrl } = {},
+  ) => {
+    const listingBlock = businessPageUrl
+      ? `<p>View your listing:<br>
+  <a href="${escapeEmailHtml(businessPageUrl)}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl)}</a></p>`
+      : "";
+    const dashboardBlock = dashboardUrl
+      ? `<p>Go to your dashboard:<br>
+  <a href="${escapeEmailHtml(dashboardUrl)}" style="color: #1a73e8;">${escapeEmailHtml(dashboardUrl)}</a></p>`
+      : "";
+    const analyticsBlock = analyticsUrl
+      ? `<p>View full listing analytics:<br>
+  <a href="${escapeEmailHtml(analyticsUrl)}" style="color: #1a73e8;">${escapeEmailHtml(analyticsUrl)}</a></p>`
+      : "";
+    const billingBlock = settingsPaymentsUrl
+      ? `<p>Manage billing anytime from Settings:<br>
+  <a href="${escapeEmailHtml(settingsPaymentsUrl)}" style="color: #1a73e8;">${escapeEmailHtml(settingsPaymentsUrl)}</a></p>`
+      : "";
+
+    return `
+  <p>Hi there,</p>
+
+  <p>Thank you for upgrading <strong>${businessName ?? "your business"}</strong> to a Featured listing on RadiatorRepairHub. Your payment was received and Featured placement should be active on your listing now.</p>
+
+  ${listingBlock}
+  ${dashboardBlock}
+  ${analyticsBlock}
+
+  <p><strong>Your Featured listing includes:</strong></p>
+  <ul>
+    <li>A Featured badge on your listing and business cards</li>
+    <li>Priority placement in search and directory browse results</li>
+    <li>A spot on the Featured businesses page</li>
+    <li>Up to 10 shop photos on your listing</li>
+    <li>Full listing analytics, including listing clicks, CTR, average position, contact clicks, and performance by source</li>
+  </ul>
+
+  ${billingBlock}
+
+  <p>If Featured placement is not visible yet, give it a minute and refresh your listing page. You can also check status under Settings.</p>
+
+  <p>If you have any questions, just reply to this email. We're happy to help anytime!</p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `;
+  },
+});
+
 // Thank-you email sent to the business owner after a successful claim
 export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
   subject: (businessName) =>
@@ -716,10 +773,10 @@ export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
     <li>Receive Quick Contact inquiries from customers</li>
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
-    <li>See listing analytics in your dashboard (views, clicks, and impressions)</li>
+    <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
   </ul>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search results, increase your visibility and phone calls, and add up to 10 shop photos: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>You can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>If you have any questions, just reply to this email, we're happy to help anytime!</p>
 
@@ -741,14 +798,14 @@ export const CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>We listed <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub so local customers can find radiator repair shops near them.</p>
 
-  <p>Claim your free listing to update your info, add shop photos, receive Quick Contact inquiries, see listing analytics, and show customers you're verified:</p>
+  <p>Claim your free listing to update your info, add shop photos, receive Quick Contact inquiries, see basic listing analytics (page views and impressions), and show customers you're verified:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Not sure how? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
   <p>Your RadiatorRepairHub page can also work as a simple website link for Google Business Profile, ads, and social profiles.</p>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search results, increase your visibility and phone calls, and add up to 10 shop photos: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `;
@@ -768,12 +825,12 @@ export const OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Right now it isn't claimed, so customers may see outdated info and the page won't be verified, which might turn customers away.</p>
 
-  <p>Claim it for free (takes a few minutes) to update your listing, add shop photos, receive Quick Contact inquiries, and see listing analytics in your dashboard:</p>
+  <p>Claim it for free (takes a few minutes) to update your listing, add shop photos, receive Quick Contact inquiries, and see basic listing analytics (page views and impressions) in your dashboard:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Need a walkthrough? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search results, increase your visibility and phone calls, and add up to 10 shop photos: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `;
@@ -799,14 +856,14 @@ export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
     <li>Add up to 3 shop photos to your listing</li>
     <li>Show as a verified shop in search results</li>
     <li>Receive Quick Contact inquiries from customers</li>
-    <li>See listing analytics in your dashboard (views, clicks, and impressions)</li>
+    <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
   </ul>
 
   <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search results, increase your visibility and phone calls, and add up to 10 shop photos: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `;
@@ -832,14 +889,14 @@ export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
     <li>Add up to 3 shop photos to your listing</li>
     <li>Keep contact details accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
-    <li>See listing analytics in your dashboard</li>
+    <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
   </ul>
 
   <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Need help? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search results, increase your visibility and phone calls, and add up to 10 shop photos: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `;
@@ -865,7 +922,7 @@ export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
     <li>Add up to 3 shop photos to your listing</li>
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
-    <li>See listing analytics in your dashboard</li>
+    <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
     <li>Use your RadiatorRepairHub page as a website link for Google Business Profile, ads, and social profiles</li>
   </ul>
 
@@ -873,7 +930,7 @@ export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search results, increase your visibility and phone calls, and add up to 10 shop photos: <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>If you're not interested, no worries! We won't bother you again.</p>
 

@@ -52,7 +52,7 @@ const BENEFITS = [
     icon: BadgeCheck,
     title: "Claim and manage later",
     description:
-      "After your listing is live, claim it to update photos, hours, and other business information, and to see listing analytics.",
+      "After your listing is live, claim it to update photos, hours, and other business information, and to see basic listing analytics (page views and impressions).",
   },
 ];
 
