@@ -224,14 +224,15 @@ async function Page({ params }) {
     return (
       <>
         <script
+          key="business-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(structuredData),
           }}
         />
-        <BusinessPageViewTracker businessId={business.id} />
+        <BusinessPageViewTracker key="business-page-view" businessId={business.id} />
 
-        <OwnerListingViewProvider businessId={business.id}>
+        <OwnerListingViewProvider key="business-owner-view" businessId={business.id}>
         <div className="min-h-screen bg-background pb-24 md:pb-32">
           <BusinessHeroBanner
             heroImage={heroImage}

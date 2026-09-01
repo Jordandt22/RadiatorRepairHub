@@ -174,6 +174,7 @@ export function buildDirectoryMetadata({
   path,
   page = 1,
   searchParams = null,
+  indexable = true,
 }) {
   const isPaged = Number(page) > 1;
   const isFiltered = isFilteredListingUrl(searchParams);
@@ -195,7 +196,8 @@ export function buildDirectoryMetadata({
       description,
       url: canonicalPath,
     }),
-    robots: isPaged || isFiltered ? NOINDEX_ROBOTS : INDEX_ROBOTS,
+    robots:
+      !indexable || isPaged || isFiltered ? NOINDEX_ROBOTS : INDEX_ROBOTS,
   };
 }
 

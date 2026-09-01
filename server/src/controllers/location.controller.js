@@ -10,6 +10,7 @@ import {
   getCitiesKey,
   getPostalCodesKey,
   getAllCitiesKey,
+  getCitiesForSitemapKey,
   getCityBySlugKey,
   getPostalCodesByStateKey,
   getStateBusinessCountsKey,
@@ -24,6 +25,7 @@ import {
   getCityBySlug,
   getStateBusinessCounts,
   getCityBusinessCounts,
+  getCitiesWithBusinessesForSitemap,
 } from "../supabase/supabase.functions.js";
 
 const { SUPABASE_ERROR } = errorCodes;
@@ -143,6 +145,30 @@ export const getAllCitiesHandler = async (req, res) => {
   }
 
   if (data.length > 0) await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getCitiesForSitemapHandler = async (req, res) => {
+  const { key, interval } = getCitiesForSitemapKey();
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getCitiesWithBusinessesForSitemap();
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching cities for sitemap.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
   res.status(200).json(successHandler(data));
 };
 

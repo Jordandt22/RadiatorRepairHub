@@ -7,7 +7,7 @@ import { PostHogProvider } from "./providers";
 import SiteChrome from "@/components/layout/SiteChrome";
 import { ToastProvider } from "@/contexts/ToastProvider";
 import { ALL_KEYWORDS } from "@/lib/seo/keywords";
-import { DEFAULT_OG_IMAGE, INDEX_ROBOTS } from "@/lib/seo/metadata";
+import { DEFAULT_OG_IMAGE, INDEX_ROBOTS, SITE_URL } from "@/lib/seo/metadata";
 import {
   getBusinessEmail,
   getBusinessPhoneDigits,
@@ -146,17 +146,13 @@ export default async function RootLayout({ children }) {
     publisher: {
       "@id": "https://radiatorrepairhub.com/#organization",
     },
-    potentialAction: [
-      {
-        "@type": "SearchAction",
-        target: {
-          "@type": "EntryPoint",
-          urlTemplate:
-            "https://radiatorrepairhub.com/search?title={search_term_string}",
-        },
-        "query-input": "required name=search_term_string",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${SITE_URL}/search`,
       },
-    ],
+    },
     inLanguage: "en-US",
   };
 
@@ -192,20 +188,7 @@ export default async function RootLayout({ children }) {
           href="//streetviewpixels-pa.googleapis.com"
         />
 
-        {/* Favicon and Icons */}
-        <link key="favicon-ico" rel="icon" href="/favicon.ico" sizes="any" />
-        <link
-          key="favicon-svg"
-          rel="icon"
-          href="/favicon.svg"
-          type="image/svg+xml"
-        />
-        <link
-          key="apple-touch-icon"
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href="/apple-touch-icon.png"
-        />
+        {/* Favicon and icons are injected via root metadata.icons */}
         <link key="manifest" rel="manifest" href="/manifest.json" />
       </head>
       <body

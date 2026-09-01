@@ -12,6 +12,8 @@ import {
   composeTitle,
   NOINDEX_ROBOTS,
   INDEX_ROBOTS,
+  SITE_URL,
+  buildOpenGraph,
 } from "@/lib/seo/metadata";
 
 export const revalidate = 120;
@@ -33,25 +35,29 @@ export async function generateMetadata({ params }) {
 
   const title = composeTitle(`Radiator Repair in ${stateData.name} by City`);
   const description = composeDescription(
-    `Browse every ${stateData.name} city with radiator repair shops near you.`,
+    `Browse ${stateData.name} cities with radiator repair shops near you.`,
     "Pick your city to compare cooling system specialists, reviews, and hours."
+  );
+
+  const { data: countsData } = await fetchCityBusinessCounts(stateData.id);
+  const listingCount = (countsData?.cities ?? []).reduce(
+    (sum, city) => sum + (Number(city.business_count) || 0),
+    0
   );
 
   return {
     title,
     description,
     keywords: `radiator repair ${stateData.name} cities, radiator repair near me, radiator repair by city, auto repair ${stateData.name}`,
-    openGraph: {
+    openGraph: buildOpenGraph({
       title,
       description,
-      type: "website",
-      locale: "en_US",
-      siteName: "RadiatorRepairHub",
-    },
+      url: `/states/${stateCode}/cities`,
+    }),
     alternates: {
-      canonical: `https://radiatorrepairhub.com/states/${stateCode}/cities`,
+      canonical: `${SITE_URL}/states/${stateCode}/cities`,
     },
-    robots: INDEX_ROBOTS,
+    robots: listingCount > 0 ? INDEX_ROBOTS : NOINDEX_ROBOTS,
   };
 }
 

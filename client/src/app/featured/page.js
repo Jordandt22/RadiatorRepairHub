@@ -1,14 +1,13 @@
 import React from "react";
 import FeaturedBusinessesPage from "@/components/pages/featured/FeaturedBusinessesPage";
-import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
-
-const title = "Featured Radiator Repair Shops | RadiatorRepairHub";
-const description =
-  "Browse Featured radiator repair shops on RadiatorRepairHub. Featured is a paid upgrade for claimed listings with a badge, search priority, extra shop photos, and a spot on this page.";
+import { buildPageMetadata, composeDescription, composeTitle, SITE_URL } from "@/lib/seo/metadata";
 
 export const metadata = buildPageMetadata({
-  title,
-  description,
+  title: composeTitle("Featured Radiator Repair Shops"),
+  description: composeDescription(
+    "Browse Featured radiator repair listings with extra visibility.",
+    "Claimed shops with the Featured upgrade appear here with priority placement."
+  ),
   keywords:
     "featured radiator repair, featured auto repair listing, sponsored radiator shop, radiator repair directory featured",
   path: "/featured",

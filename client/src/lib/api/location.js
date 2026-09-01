@@ -27,6 +27,10 @@ export async function fetchAllCities(options = SHORT_CACHE) {
   return fetchLocation("/cities", options);
 }
 
+export async function fetchCitiesForSitemap(options = SHORT_CACHE) {
+  return fetchLocation("/cities/sitemap", options);
+}
+
 export async function fetchCitiesByStateId(stateId, options = SHORT_CACHE) {
   return fetchLocation(`/states/${stateId}/cities`, options);
 }

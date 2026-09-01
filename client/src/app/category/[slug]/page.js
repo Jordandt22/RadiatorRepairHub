@@ -64,6 +64,7 @@ export async function generateMetadata({ params, searchParams }) {
     path: `/category/${slug}`,
     page: formattedPage,
     searchParams: resolvedSearchParams,
+    indexable: listingCount > 0,
   });
 }
 

@@ -80,6 +80,7 @@ export async function generateMetadata({ params, searchParams }) {
     path: `/state/${stateData.code}/city/${city}`,
     page,
     searchParams: resolvedSearchParams,
+    indexable: listingCount > 0,
   });
 }
 

@@ -4,49 +4,25 @@ import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSectio
 import STATES from "@/lib/data/states";
 import { fetchStateBusinessCounts } from "@/lib/api/location";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
+import {
+  buildPageMetadata,
+  composeDescription,
+  composeTitle,
+  SITE_URL,
+} from "@/lib/seo/metadata";
 
 export const revalidate = 120;
 
-const statesTitle = "Radiator Repair by State | Find Shops Near You";
-const statesDescription =
-  "Browse radiator repair near you by state. Find trusted radiator repair shops, mechanics, and cooling system specialists in all 50 states with reviews and hours.";
-
-export const metadata = {
-  title: statesTitle,
-  description: statesDescription,
+export const metadata = buildPageMetadata({
+  title: composeTitle("Radiator Repair by State"),
+  description: composeDescription(
+    "Browse radiator repair shops in all 50 states.",
+    "Compare verified specialists by city, reviews, and opening hours near you."
+  ),
   keywords:
     "radiator repair by state, radiator repair near me, auto repair by state, radiator repair USA, cooling system repair by state",
-  openGraph: {
-    title: statesTitle,
-    description: statesDescription,
-    type: "website",
-    locale: "en_US",
-    siteName: "RadiatorRepairHub",
-    url: "https://radiatorrepairhub.com/states",
-    images: [
-      {
-        url: "https://radiatorrepairhub.com/assets/logos/logo.png",
-        width: 1200,
-        height: 630,
-        alt: "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
-      },
-    ],
-  },
-  alternates: {
-    canonical: "https://radiatorrepairhub.com/states",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-};
+  path: "/states",
+});
 
 async function Page() {
   const [{ data: countsData }, { data: affiliateData }] = await Promise.all([
@@ -77,7 +53,7 @@ async function Page() {
     "@type": "ItemList",
     name: "Radiator Repair Services by State",
     description: "Browse radiator repair services in all 50 US states",
-    url: "https://radiatorrepairhub.com/states",
+    url: `${SITE_URL}/states`,
     numberOfItems: STATES.length,
     itemListElement: STATES.map((state, index) => ({
       "@type": "ListItem",

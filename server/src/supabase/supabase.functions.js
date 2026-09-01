@@ -336,6 +336,7 @@ export const getBusinessSlugsForSitemap = async () => {
     const { data, error } = await supabase
       .from("businesses")
       .select("slug, scraped_at")
+      .eq("is_test", false)
       .order("slug")
       .range(from, from + pageSize - 1);
 
@@ -348,6 +349,79 @@ export const getBusinessSlugsForSitemap = async () => {
   }
 
   return { data: all, error: null };
+};
+
+/**
+ * Cities that have at least one non-test business, for sitemap generation.
+ * Includes the latest scraped_at in each city as a meaningful lastmod signal.
+ */
+export const getCitiesWithBusinessesForSitemap = async () => {
+  const citiesRes = await getAllCitiesList();
+  if (citiesRes.error) {
+    return { data: null, error: citiesRes.error };
+  }
+
+  const cityById = new Map(
+    (citiesRes.data ?? []).map((city) => [city.id, city])
+  );
+  const statsByCityId = new Map();
+  const pageSize = 1000;
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("city_id, scraped_at")
+      .eq("is_test", false)
+      .not("city_id", "is", null)
+      .order("id")
+      .range(from, from + pageSize - 1);
+
+    if (error) return { data: null, error };
+
+    for (const row of data ?? []) {
+      const cityId = row.city_id;
+      if (!cityId) continue;
+
+      const current = statsByCityId.get(cityId) ?? {
+        business_count: 0,
+        last_modified: null,
+      };
+      current.business_count += 1;
+
+      if (
+        row.scraped_at &&
+        (!current.last_modified || row.scraped_at > current.last_modified)
+      ) {
+        current.last_modified = row.scraped_at;
+      }
+
+      statsByCityId.set(cityId, current);
+    }
+
+    if (!data?.length || data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  const cities = [];
+  for (const [cityId, stats] of statsByCityId) {
+    if (stats.business_count <= 0) continue;
+
+    const city = cityById.get(cityId);
+    if (!city?.slug || !city.state_id) continue;
+
+    cities.push({
+      id: city.id,
+      slug: city.slug,
+      state_id: city.state_id,
+      business_count: stats.business_count,
+      last_modified: stats.last_modified,
+    });
+  }
+
+  cities.sort((a, b) => a.slug.localeCompare(b.slug));
+
+  return { data: cities, error: null };
 };
 
 export const countBusinessesByState = async (state_id) => {

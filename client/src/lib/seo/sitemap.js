@@ -4,50 +4,60 @@ const stateCodeById = Object.fromEntries(
   STATES.map((state) => [state.id, state.code])
 );
 
-export function buildSitemapEntries(
-  currentDate,
+function toIsoDate(value) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
+export function buildSitemapEntries({
   cities = [],
   primaryCategories = [],
   businesses = [],
-  blogPosts = []
-) {
+  blogPosts = [],
+  statesWithBusinesses = new Set(),
+}) {
   const staticPages = [
     { url: "", changeFrequency: "weekly", priority: 1.0 },
     { url: "/categories", changeFrequency: "weekly", priority: 0.9 },
-    { url: "/search", changeFrequency: "daily", priority: 0.9 },
     { url: "/states", changeFrequency: "weekly", priority: 0.9 },
     { url: "/about", changeFrequency: "monthly", priority: 0.7 },
     { url: "/blogs", changeFrequency: "weekly", priority: 0.8 },
-    { url: "/shop", changeFrequency: "weekly", priority: 0.7 },
+    { url: "/shop", changeFrequency: "weekly", priority: 0.6 },
     { url: "/how-to-claim", changeFrequency: "monthly", priority: 0.7 },
     { url: "/contact", changeFrequency: "monthly", priority: 0.7 },
     { url: "/get-listed", changeFrequency: "monthly", priority: 0.8 },
-    { url: "/featured", changeFrequency: "daily", priority: 0.85 },
+    { url: "/featured", changeFrequency: "weekly", priority: 0.6 },
     { url: "/pricing", changeFrequency: "monthly", priority: 0.75 },
     { url: "/faq", changeFrequency: "monthly", priority: 0.7 },
     { url: "/privacy", changeFrequency: "yearly", priority: 0.3 },
     { url: "/terms", changeFrequency: "yearly", priority: 0.3 },
-  ].map((page) => ({ ...page, lastModified: currentDate }));
-
-  const categoryPages = primaryCategories.map((category) => ({
-    url: `/category/${category.slug}`,
-    lastModified: currentDate,
-    changeFrequency: "weekly",
-    priority: 0.8,
-  }));
+  ];
 
   const majorStates = new Set(["CA", "TX", "NY", "FL", "WA", "IA"]);
 
-  const statePages = STATES.map((state) => ({
+  const categoryPages = primaryCategories
+    .filter(
+      (category) => category?.slug && Number(category.business_count) > 0
+    )
+    .map((category) => ({
+      url: `/category/${category.slug}`,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    }));
+
+  const statePages = STATES.filter((state) =>
+    statesWithBusinesses.has(state.code)
+  ).map((state) => ({
     url: `/state/${state.code}`,
-    lastModified: currentDate,
     changeFrequency: majorStates.has(state.code) ? "daily" : "weekly",
     priority: majorStates.has(state.code) ? 0.9 : 0.7,
   }));
 
-  const stateCityIndexPages = STATES.map((state) => ({
+  const stateCityIndexPages = STATES.filter((state) =>
+    statesWithBusinesses.has(state.code)
+  ).map((state) => ({
     url: `/states/${state.code}/cities`,
-    lastModified: currentDate,
     changeFrequency: "weekly",
     priority: 0.6,
   }));
@@ -55,11 +65,13 @@ export function buildSitemapEntries(
   const cityPages = cities
     .map((city) => {
       const stateCode = stateCodeById[city.state_id];
-      if (!stateCode) return null;
+      if (!stateCode || !city.slug || Number(city.business_count) <= 0) {
+        return null;
+      }
 
       return {
         url: `/state/${stateCode}/city/${city.slug}`,
-        lastModified: currentDate,
+        lastModified: toIsoDate(city.last_modified),
         changeFrequency: "weekly",
         priority: majorStates.has(stateCode) ? 0.8 : 0.6,
       };
@@ -70,7 +82,7 @@ export function buildSitemapEntries(
     .filter((business) => business.slug)
     .map((business) => ({
       url: `/business/${business.slug}`,
-      lastModified: business.scraped_at || currentDate,
+      lastModified: toIsoDate(business.scraped_at),
       changeFrequency: "weekly",
       priority: 0.7,
     }));
@@ -79,9 +91,7 @@ export function buildSitemapEntries(
     .filter((post) => post.slug)
     .map((post) => ({
       url: `/blogs/${post.slug}`,
-      lastModified: post.metadata?.date
-        ? new Date(post.metadata.date).toISOString()
-        : currentDate,
+      lastModified: toIsoDate(post.metadata?.date),
       changeFrequency: "monthly",
       priority: 0.7,
     }));
