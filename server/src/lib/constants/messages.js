@@ -615,7 +615,7 @@ export const LISTING_REQUEST_LIVE_MESSAGE = Object.freeze({
     <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
   </ul>
 
-  <p>You can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${escapeEmailHtml(`${getWebBaseUrl()}/pricing`)}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>You can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${escapeEmailHtml(`${getWebBaseUrl()}/pricing`)}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>If you have any questions or need assistance, don't hesitate to reach out! You can also reply to this email.</p>
 
@@ -736,6 +736,7 @@ export const OWNER_FEATURED_THANK_YOU_MESSAGE = Object.freeze({
     <li>A spot on the Featured businesses page</li>
     <li>Up to 10 shop photos on your listing</li>
     <li>Full listing analytics, including listing clicks, CTR, average position, contact clicks, and performance by source</li>
+    <li>Competitor insights showing how every shop in your city is performing and where you rank</li>
   </ul>
 
   ${billingBlock}
@@ -776,7 +777,7 @@ export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
     <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
   </ul>
 
-  <p>You can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>You can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>If you have any questions, just reply to this email, we're happy to help anytime!</p>
 
@@ -805,7 +806,7 @@ export const CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Your RadiatorRepairHub page can also work as a simple website link for Google Business Profile, ads, and social profiles.</p>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `;
@@ -830,7 +831,7 @@ export const OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Need a walkthrough? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `;
@@ -863,7 +864,7 @@ export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `;
@@ -896,7 +897,7 @@ export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Need help? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `;
@@ -930,7 +931,7 @@ export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, and source breakdown): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
 
   <p>If you're not interested, no worries! We won't bother you again.</p>
 

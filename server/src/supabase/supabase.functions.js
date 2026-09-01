@@ -3875,6 +3875,59 @@ export const getBusinessStatsForOwner = async (businessId, days, accessToken) =>
   );
 };
 
+const COMPETITOR_INSIGHTS_LIMIT = 10;
+const ADMIN_COMPETITOR_INSIGHTS_LIMIT = 25;
+
+async function fetchCompetitorInsights(businessId, days, limit) {
+  const today = businessStatDateKey();
+  const allTime = days === "all";
+  const startDate = allTime ? null : dateKeyOffset(today, -(Number(days) - 1));
+
+  const { data, error } = await supabase.rpc("owner_competitor_insights", {
+    p_business_id: businessId,
+    p_start_date: startDate,
+    p_end_date: today,
+    p_limit: limit,
+  });
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  const payload = data && typeof data === "object" ? data : {};
+
+  return {
+    data: {
+      ...payload,
+      days,
+      timezone: BUSINESS_STATS_TIMEZONE,
+      startDate,
+      endDate: today,
+    },
+    error: null,
+  };
+}
+
+/**
+ * Peer activity in the owner's city. Runs with the service-role client because
+ * RLS scopes business_stats to the owner, and ownership is verified upstream.
+ */
+export const getCompetitorInsightsForOwner = async (businessId, days) => {
+  return fetchCompetitorInsights(
+    businessId,
+    days,
+    COMPETITOR_INSIGHTS_LIMIT
+  );
+};
+
+export const getCompetitorInsightsForAdmin = async (businessId, days) => {
+  return fetchCompetitorInsights(
+    businessId,
+    days,
+    ADMIN_COMPETITOR_INSIGHTS_LIMIT
+  );
+};
+
 export const getBusinessStatsForAdmin = async (businessId, days) => {
   return fetchBusinessStats(supabase, businessId, days);
 };

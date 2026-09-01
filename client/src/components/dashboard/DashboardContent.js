@@ -6,6 +6,7 @@ import Link from "next/link";
 import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
 import OwnedBusinessCard from "@/components/dashboard/OwnedBusinessCard";
 import BusinessAnalyticsPanel from "@/components/dashboard/BusinessAnalyticsPanel";
+import BusinessInsightsPanel from "@/components/dashboard/BusinessInsightsPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { buttonVariants } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastProvider";
@@ -21,7 +22,7 @@ function DashboardContentInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, onTabChange] = useQueryTab(
-    ["inbox", "analytics"],
+    ["inbox", "analytics", "insights"],
     "my-businesses"
   );
 
@@ -108,6 +109,9 @@ function DashboardContentInner() {
           <TabsTrigger value="analytics" className={tabsTriggerClassNames}>
             Analytics
           </TabsTrigger>
+          <TabsTrigger value="insights" className={tabsTriggerClassNames}>
+            Insights
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-businesses" className="min-w-0">
@@ -170,6 +174,13 @@ function DashboardContentInner() {
 
         <TabsContent value="analytics" className="min-w-0">
           <BusinessAnalyticsPanel
+            businesses={businesses}
+            initialBusinessId={searchParams.get("business") || ""}
+          />
+        </TabsContent>
+
+        <TabsContent value="insights" className="min-w-0">
+          <BusinessInsightsPanel
             businesses={businesses}
             initialBusinessId={searchParams.get("business") || ""}
           />
