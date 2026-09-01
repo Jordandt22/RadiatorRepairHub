@@ -1,48 +1,40 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
-import {
-  buildCfImageUrl,
-  BUSINESS_HERO_IMAGE_SIZES,
-  CF_IMAGE_VARIANT,
-  getBusinessImageId,
-  usableImageSrc,
-} from "@/lib/images";
+import { useEffect, useState } from "react";
+
+function isRemoteHeroSrc(src) {
+  if (!src || typeof src !== "string") return false;
+  return !src.includes("/images/");
+}
 
 export default function BusinessHeroBanner({
-  src,
-  businessId,
-  imageId,
-  cdnStored = false,
+  heroImage = null,
   alt,
   top = null,
   children,
-  sizes = BUSINESS_HERO_IMAGE_SIZES,
 }) {
-  const cfImageId = getBusinessImageId({
-    businessId,
-    imageId,
-    cdnStored,
-  });
-  const cdnSrc = usableImageSrc(
-    buildCfImageUrl(cfImageId, CF_IMAGE_VARIANT.hero)
-  );
-  const remoteSrc = usableImageSrc(src);
-  const canUseCdn = Boolean(cdnSrc);
-  const hasRemote = Boolean(remoteSrc);
-
   const [source, setSource] = useState(() =>
-    canUseCdn ? "cdn" : hasRemote ? "remote" : "none"
+    heroImage?.src ? "primary" : "none"
   );
 
-  React.useEffect(() => {
-    setSource(canUseCdn ? "cdn" : hasRemote ? "remote" : "none");
-  }, [canUseCdn, hasRemote, cdnSrc, remoteSrc]);
+  useEffect(() => {
+    setSource(heroImage?.src ? "primary" : "none");
+  }, [heroImage?.src, heroImage?.srcSet, heroImage?.fallbackSrc]);
 
+  const primarySrc = heroImage?.src ?? null;
+  const fallbackSrc = heroImage?.fallbackSrc ?? null;
   const resolvedSrc =
-    source === "cdn" ? cdnSrc : source === "remote" ? remoteSrc : null;
+    source === "fallback" ? fallbackSrc : source === "primary" ? primarySrc : null;
   const hasImage = Boolean(resolvedSrc);
+  const useSrcSet = source === "primary" && Boolean(heroImage?.srcSet);
+
+  const handleError = () => {
+    if (source === "primary" && fallbackSrc) {
+      setSource("fallback");
+      return;
+    }
+    setSource("none");
+  };
 
   return (
     <div
@@ -52,18 +44,19 @@ export default function BusinessHeroBanner({
     >
       {hasImage ? (
         <>
-          <Image
+          {/* Native img for responsive Cloudflare srcset without Next optimizer delay. */}
+          <img
             src={resolvedSrc}
+            srcSet={useSrcSet ? heroImage.srcSet : undefined}
+            sizes={heroImage?.sizes}
             alt={alt}
-            fill
-            sizes={sizes}
-            className="object-cover object-center"
-            priority
-            unoptimized
-            referrerPolicy={source === "remote" ? "no-referrer" : undefined}
-            onError={() =>
-              setSource(source === "cdn" && hasRemote ? "remote" : "none")
+            fetchPriority="high"
+            decoding="async"
+            referrerPolicy={
+              isRemoteHeroSrc(resolvedSrc) ? "no-referrer" : undefined
             }
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            onError={handleError}
           />
           <div
             className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/25"

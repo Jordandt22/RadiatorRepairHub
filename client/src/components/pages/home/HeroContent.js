@@ -10,6 +10,7 @@ import HeroStatBox from "./HeroStatBox";
 import StrokeText from "@/components/ui/StrokeText";
 import FoldText from "@/components/ui/FoldText";
 import { STICKY_NAVBAR_OFFSET_CLASS } from "@/lib/layout/siteHeader";
+import { HOME_HERO_IMAGE_PATH } from "@/lib/images";
 
 function HeroContent({
   popularStates = [],
@@ -39,10 +40,11 @@ function HeroContent({
       className={`relative isolate ${headerPullClass} flex min-h-[80svh] items-center overflow-hidden border-b border-border`}
     >
       <Image
-        src="/assets/images/rrh-hero-image.jpg"
+        src={HOME_HERO_IMAGE_PATH}
         alt=""
         fill
         priority
+        unoptimized
         sizes="100vw"
         className="object-cover object-[70%_center]"
         aria-hidden="true"

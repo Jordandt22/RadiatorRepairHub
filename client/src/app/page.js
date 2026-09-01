@@ -1,4 +1,5 @@
 import React from "react";
+import { preload } from "react-dom";
 
 // Components
 import HeroContent from "@/components/pages/home/HeroContent";
@@ -21,6 +22,7 @@ import {
   fetchDirectoryTotals,
   fetchStateBusinessCountsByLimit,
 } from "@/lib/api/cachedReads";
+import { HOME_HERO_IMAGE_PATH } from "@/lib/images";
 
 const homeTitle =
   "Find Radiator Repair Shops Nationwide | RadiatorRepairHub Directory";
@@ -37,6 +39,11 @@ export const metadata = buildPageMetadata({
 export const revalidate = 120;
 
 export default async function Home() {
+  preload(HOME_HERO_IMAGE_PATH, {
+    as: "image",
+    fetchPriority: "high",
+  });
+
   const [affiliateRes, categoriesRes, statesRes, directoryTotalsRes] =
     await Promise.all([
     fetchActiveAffiliateProductsByAliases(FEATURED_AFFILIATE_PRODUCT_ALIASES),
