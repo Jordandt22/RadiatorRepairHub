@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { preload } from "react-dom";
 import {
   ArrowRight,
   MapPin,
@@ -41,7 +42,8 @@ import {
 import { fetchBusinessBySlug } from "@/lib/api/cachedReads";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { FEATURED_AFFILIATE_PRODUCT_ALIASES } from "@/lib/affiliateProducts";
-import { getBusinessDisplayImage } from "@/lib/images";
+import { getBusinessDisplayImage, getBusinessHeroImage } from "@/lib/images";
+import { SHORT_CACHE } from "@/lib/cachePolicy";
 import {
   getGoogleMapsDirectionsUrl,
   getGoogleMapsEmbedQuery,
@@ -49,11 +51,13 @@ import {
 } from "@/lib/googleMaps";
 
 // Generate metadata for business pages
+export const revalidate = 120;
+
 export async function generateMetadata({ params }) {
   const { slug } = await params;
 
   try {
-    const { data: business, error } = await fetchBusinessBySlug(slug);
+    const { data: business, error } = await fetchBusinessBySlug(slug, SHORT_CACHE);
 
     if (error || !business) {
       return {
@@ -124,7 +128,10 @@ async function Page({ params }) {
   const { slug } = await params;
 
   try {
-    const { data: business, error, status } = await fetchBusinessBySlug(slug);
+    const { data: business, error, status } = await fetchBusinessBySlug(
+      slug,
+      SHORT_CACHE
+    );
 
     if (error) {
       return (
@@ -269,7 +276,21 @@ async function Page({ params }) {
       { name: business.title, url: `/business/${slug}` },
     ];
 
-    const hasHeroImage = Boolean(getBusinessDisplayImage(business));
+    const heroImage = getBusinessHeroImage(business);
+    if (heroImage?.srcSet) {
+      preload(heroImage.src, {
+        as: "image",
+        imageSrcSet: heroImage.srcSet,
+        imageSizes: heroImage.sizes,
+        fetchPriority: "high",
+      });
+    } else if (heroImage?.src) {
+      preload(heroImage.src, {
+        as: "image",
+        fetchPriority: "high",
+      });
+    }
+
     const cityHref = `/state/${business.state.code}/city/${business.city.slug}`;
     const stateHref = `/state/${business.state.code}`;
     const categoryHref = business.primary_category
@@ -288,10 +309,7 @@ async function Page({ params }) {
         <OwnerListingViewProvider businessId={business.id}>
         <div className="min-h-screen bg-background pb-24 md:pb-32">
           <BusinessHeroBanner
-            src={business.image_url}
-            businessId={business.id}
-            imageId={business.primary_image_id}
-            cdnStored={Boolean(business.cdn_stored)}
+            heroImage={heroImage}
             alt={`${business.title} - Radiator Repair Services in ${business.city.name}, ${business.state.name}`}
             top={
               <div className="mx-auto hidden w-full max-w-7xl px-4 pt-6 sm:px-6 md:block md:pt-8 lg:px-8">
@@ -382,15 +400,6 @@ async function Page({ params }) {
                   businessSlug={business.slug}
                   businessName={business.title}
                   description={business.description || ""}
-                  imageUrl={business.image_url}
-                  imageId={business.primary_image_id}
-                  cdnStored={Boolean(business.cdn_stored)}
-                  showImage={!hasHeroImage}
-                  imageAlt={`${business.title} - ${
-                    business.keywords && business.keywords.length > 0
-                      ? business.keywords[0]
-                      : "radiator repair services"
-                  } in ${business.city.name}, ${business.state.name}`}
                 />
 
                 <PhotosSection

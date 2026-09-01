@@ -28,8 +28,8 @@ export const fetchDirectoryTotals = cache(async () => {
   return { totalBusinesses, totalCities };
 });
 
-export const fetchBusinessBySlug = cache((slug) =>
-  fetchBusinessBySlugRequest(slug)
+export const fetchBusinessBySlug = cache((slug, options) =>
+  fetchBusinessBySlugRequest(slug, options)
 );
 
 export const fetchCityBySlug = cache((stateId, citySlug) =>
