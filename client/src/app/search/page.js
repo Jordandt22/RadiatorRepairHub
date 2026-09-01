@@ -3,20 +3,41 @@ import React from "react";
 // Components
 import BusinessesContainer from "@/components/businesses/BusinessesContainer";
 import { SEARCH_KEYWORDS } from "@/lib/seo/keywords";
-import { buildPageMetadata } from "@/lib/seo/metadata";
+import {
+  buildPageMetadata,
+  isFilteredListingUrl,
+  NOINDEX_ROBOTS,
+  SITE_URL,
+} from "@/lib/seo/metadata";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 
-const searchTitle =
-  "Radiator Repair Near Me | Search Local Auto Repair Shops - RadiatorRepairHub";
+// Kept distinct from the homepage headline so the two pages do not compete for
+// the same "radiator repair near me" query.
+const searchTitle = "Search Radiator Repair Shops by City & Rating";
 const searchDescription =
-  "Search radiator repair near me by location, rating, and services. Compare local auto repair shops, read reviews, and contact certified cooling system professionals.";
+  "Search radiator repair shops near you by city, rating, reviews, and opening hours. Filter the directory to find a cooling system specialist you can call today.";
 
-export const metadata = buildPageMetadata({
+const baseSearchMetadata = buildPageMetadata({
   title: searchTitle,
   description: searchDescription,
   keywords: SEARCH_KEYWORDS,
   path: "/search",
 });
+
+/**
+ * Filtered result sets are near-duplicates of the bare search page, so only the
+ * clean URL stays indexable. The state, city, and category pages are the
+ * intended landing pages for those queries.
+ */
+export async function generateMetadata({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
+
+  if (!isFilteredListingUrl(resolvedSearchParams)) {
+    return baseSearchMetadata;
+  }
+
+  return { ...baseSearchMetadata, robots: NOINDEX_ROBOTS };
+}
 
 export const revalidate = 120;
 
@@ -34,12 +55,12 @@ async function Page({ searchParams }) {
   const searchResultsSchema = {
     "@context": "https://schema.org",
     "@type": "SearchResultsPage",
-    name: "Radiator Repair Near Me",
+    name: "Search radiator repair shops",
     description:
-      "Search results for radiator repair near me, auto repair shops near me, and radiator repair shop near me",
-    url: "https://radiatorrepairhub.com/search",
+      "Filter radiator repair shops and cooling system specialists by city, rating, reviews, and opening hours.",
+    url: `${SITE_URL}/search`,
     isPartOf: {
-      "@id": "https://radiatorrepairhub.com/#website",
+      "@id": `${SITE_URL}/#website`,
     },
   };
 

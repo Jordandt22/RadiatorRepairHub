@@ -22,7 +22,7 @@ function Footer({
     { label: "Featured", path: "/featured" },
     { label: "Categories", path: "/categories" },
     { label: "States", path: "/states" },
-    { label: "Find a Shop", path: "/search?page=1&sort=verified" },
+    { label: "Find a Shop", path: "/search" },
   ];
 
   const resourceLinks = [

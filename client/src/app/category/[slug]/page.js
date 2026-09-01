@@ -1,16 +1,34 @@
 import React from "react";
 import BusinessesContainer from "@/components/businesses/BusinessesContainer";
+import LocationLinks from "@/components/seo/LocationLinks";
 import { notFound } from "next/navigation";
-import { fetchPrimaryCategoryBySlug } from "@/lib/api/cachedReads";
+import {
+  fetchPrimaryCategoryBySlug,
+  fetchPrimaryCategoryBusinessCounts,
+  fetchStateBusinessCountsByLimit,
+} from "@/lib/api/cachedReads";
 import { CATEGORY_KEYWORDS } from "@/lib/seo/keywords";
-import { NOINDEX_ROBOTS, INDEX_ROBOTS, SITE_URL } from "@/lib/seo/metadata";
+import {
+  buildDirectoryMetadata,
+  composeDescription,
+  NOINDEX_ROBOTS,
+  SITE_URL,
+  toTitleCase,
+} from "@/lib/seo/metadata";
+import { buildDirectoryCollectionSchema } from "@/lib/seo/structuredData";
 import { getListingsPage } from "@/lib/businesses/listingsSearch";
 
 export const revalidate = 120;
 
-function buildCategoryUrl(slug, page) {
-  const base = `${SITE_URL}/category/${slug}`;
-  return page <= 1 ? base : `${base}?page=${page}`;
+const TOP_STATE_LINKS = 12;
+const SIBLING_CATEGORY_LINKS = 8;
+
+async function getCategoryListingCount(categoryId) {
+  const { data } = await fetchPrimaryCategoryBusinessCounts();
+  return Number(
+    (data?.categories ?? []).find((entry) => entry.id === categoryId)
+      ?.business_count || 0
+  );
 }
 
 export async function generateMetadata({ params, searchParams }) {
@@ -21,39 +39,32 @@ export async function generateMetadata({ params, searchParams }) {
 
   if (!primaryCategory) {
     return {
-      title: "Category Not Found - RadiatorRepairHub",
+      title: "Category Not Found | RadiatorRepairHub",
       description: "The requested category could not be found.",
       robots: NOINDEX_ROBOTS,
     };
   }
 
-  const title =
-    formattedPage > 1
-      ? `${primaryCategory.name} Services (Page ${formattedPage}) | RadiatorRepairHub`
-      : `${primaryCategory.name} Services | Find ${primaryCategory.name} Near You - RadiatorRepairHub`;
-  const description = `Find trusted ${primaryCategory.name.toLowerCase()} services near you. Browse our directory of verified ${primaryCategory.name.toLowerCase()} businesses across the U.S. Compare services, read reviews, and connect with certified professionals.`;
+  const displayName = toTitleCase(primaryCategory.name);
+  const lowerName = primaryCategory.name.toLowerCase();
+  const listingCount = await getCategoryListingCount(primaryCategory.id);
 
-  const defaultKeywords = `${primaryCategory.name}, ${primaryCategory.name.toLowerCase()} services, auto repair, automotive services, radiator repair, cooling system repair, car maintenance`;
-  const keywords =
-    CATEGORY_KEYWORDS[slug.toLowerCase()] ?? defaultKeywords;
-
-  return {
-    title,
-    description,
-    keywords,
-    openGraph: {
-      title,
-      description,
-      type: "website",
-      locale: "en_US",
-      siteName: "RadiatorRepairHub",
-      url: buildCategoryUrl(slug, formattedPage),
-    },
-    alternates: {
-      canonical: buildCategoryUrl(slug, formattedPage),
-    },
-    robots: INDEX_ROBOTS,
-  };
+  return buildDirectoryMetadata({
+    headline: `${displayName} Near Me | Find Local Shops`,
+    description: composeDescription(
+      listingCount > 0
+        ? `Compare ${listingCount.toLocaleString()} ${lowerName} listings near you.`
+        : `Find ${lowerName} listings near you.`,
+      "Browse ratings, reviews, and opening hours by city and state.",
+      "Call a shop directly today."
+    ),
+    keywords:
+      CATEGORY_KEYWORDS[slug.toLowerCase()] ??
+      `${lowerName}, ${lowerName} near me, ${lowerName} services, radiator repair near me, auto repair, cooling system repair`,
+    path: `/category/${slug}`,
+    page: formattedPage,
+    searchParams: resolvedSearchParams,
+  });
 }
 
 async function Page({ params, searchParams }) {
@@ -66,24 +77,55 @@ async function Page({ params, searchParams }) {
     return notFound();
   }
 
-  const collectionSchema = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: `${primaryCategory.name} Services`,
-    description: `Browse ${primaryCategory.name.toLowerCase()} businesses and services`,
-    url: buildCategoryUrl(slug, formattedPage),
-    isPartOf: {
-      "@id": "https://radiatorrepairhub.com/#website",
+  const [{ data: categoryCounts }, { data: stateCounts }] = await Promise.all([
+    fetchPrimaryCategoryBusinessCounts(),
+    fetchStateBusinessCountsByLimit(TOP_STATE_LINKS),
+  ]);
+
+  const displayName = toTitleCase(primaryCategory.name);
+  const lowerName = primaryCategory.name.toLowerCase();
+  const pageUrl = `${SITE_URL}/category/${slug}`;
+
+  const allCategories = categoryCounts?.categories ?? [];
+  const listingCount = Number(
+    allCategories.find((entry) => entry.id === primaryCategory.id)
+      ?.business_count || 0
+  );
+
+  const stateLinks = (stateCounts?.states ?? [])
+    .filter((state) => state?.code && Number(state.business_count) > 0)
+    .slice(0, TOP_STATE_LINKS)
+    .map((state) => ({
+      name: state.name,
+      href: `/state/${state.code}`,
+      count: state.business_count,
+    }));
+
+  const siblingCategoryLinks = allCategories
+    .filter(
+      (entry) =>
+        entry?.slug &&
+        entry.id !== primaryCategory.id &&
+        Number(entry.business_count) > 0
+    )
+    .sort((a, b) => Number(b.business_count) - Number(a.business_count))
+    .slice(0, SIBLING_CATEGORY_LINKS)
+    .map((entry) => ({
+      name: toTitleCase(entry.name),
+      href: `/category/${entry.slug}`,
+      count: entry.business_count,
+    }));
+
+  const collectionSchema = buildDirectoryCollectionSchema({
+    name: `${displayName} Near You`,
+    description: `Browse verified ${lowerName} businesses across the United States.`,
+    url: pageUrl,
+    totalBusinesses: listingCount,
+    areaServed: {
+      "@type": "Country",
+      name: "United States",
     },
-    about: {
-      "@type": "Service",
-      serviceType: primaryCategory.name,
-      provider: {
-        "@type": "Organization",
-        name: "RadiatorRepairHub",
-      },
-    },
-  };
+  });
 
   return (
     <>
@@ -96,6 +138,33 @@ async function Page({ params, searchParams }) {
       <BusinessesContainer
         categoryData={primaryCategory}
         searchParams={resolvedSearchParams}
+        listingsListName={`${displayName} businesses`}
+        listingsListUrl={pageUrl}
+        pageDescription={
+          listingCount > 0
+            ? `RadiatorRepairHub lists ${listingCount.toLocaleString()} ${lowerName} businesses across the United States. Filter by city, rating, and opening hours to find one near you, then call or get directions.`
+            : null
+        }
+      />
+
+      <LocationLinks
+        title={`${displayName} by state`}
+        description={`Browse ${lowerName} listings in the states with the most shops, then narrow down to your city.`}
+        links={stateLinks}
+        footerLink={{
+          label: "View all states",
+          href: "/states",
+        }}
+      />
+
+      <LocationLinks
+        title="Related services"
+        description={`Looking for something other than ${lowerName}? These categories cover the rest of the cooling system and general auto repair.`}
+        links={siblingCategoryLinks}
+        footerLink={{
+          label: "View all categories",
+          href: "/categories",
+        }}
       />
     </>
   );

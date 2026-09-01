@@ -7,7 +7,12 @@ import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSectio
 import STATES from "@/lib/data/states";
 import { fetchCitiesByStateId, fetchCityBusinessCounts } from "@/lib/api/location";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
-import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
+import {
+  composeDescription,
+  composeTitle,
+  NOINDEX_ROBOTS,
+  INDEX_ROBOTS,
+} from "@/lib/seo/metadata";
 
 export const revalidate = 120;
 
@@ -20,19 +25,22 @@ export async function generateMetadata({ params }) {
 
   if (!stateData) {
     return {
-      title: "Cities Not Found - RadiatorRepairHub",
+      title: "Cities Not Found | RadiatorRepairHub",
       description: "The requested state cities could not be found.",
       robots: NOINDEX_ROBOTS,
     };
   }
 
-  const title = `Cities in ${stateData.name} | Find Radiator Repair by City - RadiatorRepairHub`;
-  const description = `Browse all cities in ${stateData.name} with radiator repair services. Find auto repair shops and cooling system specialists by city. Compare services and read reviews.`;
+  const title = composeTitle(`Radiator Repair in ${stateData.name} by City`);
+  const description = composeDescription(
+    `Browse every ${stateData.name} city with radiator repair shops near you.`,
+    "Pick your city to compare cooling system specialists, reviews, and hours."
+  );
 
   return {
     title,
     description,
-    keywords: `${stateData.name} cities, radiator repair by city, auto repair ${stateData.name} cities, mechanics by city ${stateData.name}`,
+    keywords: `radiator repair ${stateData.name} cities, radiator repair near me, radiator repair by city, auto repair ${stateData.name}`,
     openGraph: {
       title,
       description,

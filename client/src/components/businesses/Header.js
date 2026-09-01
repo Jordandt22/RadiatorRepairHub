@@ -1,8 +1,13 @@
 import React from "react";
 import PageHeader from "@/components/layout/Header/PageHeader";
+import { toTitleCase } from "@/lib/seo/metadata";
 
-function Header({ stateData, cityData, categoryData }) {
+function Header({ stateData, cityData, categoryData, pageDescription }) {
   if (categoryData) {
+    const categoryDescription =
+      pageDescription ??
+      `Find a trusted ${categoryData.name.toLowerCase()} in your area. Compare ratings and reviews, check hours, and contact shops directly.`;
+
     return (
       <PageHeader
         breadcrumbItems={[
@@ -13,8 +18,8 @@ function Header({ stateData, cityData, categoryData }) {
             url: `/category/${categoryData.slug}`,
           },
         ]}
-        pageTitle={`${categoryData.name} Businesses`}
-        pageDescription={`Find trusted ${categoryData.name.toLowerCase()} specialists in your area. Compare services, read reviews, and get your vehicle running smoothly.`}
+        pageTitle={`${toTitleCase(categoryData.name)} Near You`}
+        pageDescription={categoryDescription}
         headerLink={{
           label: "View Categories",
           href: "/categories",
@@ -35,12 +40,14 @@ function Header({ stateData, cityData, categoryData }) {
     });
   }
 
-  const pageTitle = `Radiator Repair Services in ${
-    cityData ? cityData.name : stateData.name
-  }`;
-  const pageDescription = `Find trusted radiator repair specialists in ${
-    cityData ? cityData.name : stateData.name
-  }. Compare services, read reviews, and get your vehicle running smoothly.`;
+  const pageTitle = cityData
+    ? `Radiator Repair in ${cityData.name}, ${stateData.code}`
+    : `Radiator Repair in ${stateData.name}`;
+  const locationDescription =
+    pageDescription ??
+    (cityData
+      ? `Looking for radiator repair near you in ${cityData.name}? Compare local shops by rating and reviews, check hours, and call or get directions.`
+      : `Find radiator repair near you anywhere in ${stateData.name}. Compare verified shops by city, rating, and reviews, then contact them directly.`);
 
   const headerLink = cityData
     ? {
@@ -56,7 +63,7 @@ function Header({ stateData, cityData, categoryData }) {
     <PageHeader
       breadcrumbItems={breadcrumbItems}
       pageTitle={pageTitle}
-      pageDescription={pageDescription}
+      pageDescription={locationDescription}
       headerLink={headerLink}
     />
   );

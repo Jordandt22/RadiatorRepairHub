@@ -14,6 +14,7 @@ import {
   getListingsPage,
   LISTINGS_PAGE_LIMIT,
 } from "@/lib/businesses/listingsSearch";
+import { buildListingsItemList } from "@/lib/seo/structuredData";
 
 async function BusinessesContainer({
   stateData,
@@ -21,6 +22,9 @@ async function BusinessesContainer({
   categoryData,
   searchParams,
   affiliateProducts = [],
+  listingsListName = null,
+  listingsListUrl = null,
+  pageDescription = null,
 }) {
   if (cityData && !stateData) {
     return notFound();
@@ -40,12 +44,39 @@ async function BusinessesContainer({
   const showLocationHeader = Boolean(stateData);
   const showCategoryHeader = Boolean(categoryData) && !showLocationHeader;
 
+  const listingsSchema =
+    listingsListName && listingsListUrl
+      ? buildListingsItemList({
+          businesses: initialError ? [] : initialListings?.businesses,
+          name: listingsListName,
+          url: listingsListUrl,
+          page,
+          pageSize: LISTINGS_PAGE_LIMIT,
+        })
+      : null;
+
   return (
     <div className="min-h-screen bg-background">
+      {listingsSchema ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(listingsSchema),
+          }}
+        />
+      ) : null}
+
       {showLocationHeader ? (
-        <Header stateData={stateData} cityData={cityData} />
+        <Header
+          stateData={stateData}
+          cityData={cityData}
+          pageDescription={pageDescription}
+        />
       ) : showCategoryHeader ? (
-        <Header categoryData={categoryData} />
+        <Header
+          categoryData={categoryData}
+          pageDescription={pageDescription}
+        />
       ) : (
         <SearchHeader title={searchParams?.title} />
       )}

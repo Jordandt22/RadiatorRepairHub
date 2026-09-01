@@ -7,18 +7,18 @@ import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-produ
 
 export const revalidate = 120;
 
+const statesTitle = "Radiator Repair by State | Find Shops Near You";
+const statesDescription =
+  "Browse radiator repair near you by state. Find trusted radiator repair shops, mechanics, and cooling system specialists in all 50 states with reviews and hours.";
+
 export const metadata = {
-  title:
-    "Radiator Repair by State | Find Auto Repair Services Across the US - RadiatorRepairHub",
-  description:
-    "Browse radiator repair services by state. Find trusted auto repair shops, mechanics, and cooling system specialists in all 50 states. Compare services and read reviews.",
+  title: statesTitle,
+  description: statesDescription,
   keywords:
-    "radiator repair by state, auto repair by state, radiator repair USA, cooling system repair by state, automotive services by state",
+    "radiator repair by state, radiator repair near me, auto repair by state, radiator repair USA, cooling system repair by state",
   openGraph: {
-    title:
-      "Radiator Repair by State | Find Auto Repair Services Across the US - RadiatorRepairHub",
-    description:
-      "Browse radiator repair services by state. Find trusted auto repair shops, mechanics, and cooling system specialists in all 50 states. Compare services and read reviews.",
+    title: statesTitle,
+    description: statesDescription,
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",

@@ -233,7 +233,7 @@ function Navbar() {
 
               <div className="space-y-3 border-b border-border p-6">
                 <Link
-                  href="/search?page=1&sort=verified"
+                  href="/search"
                   onClick={closeMobileMenu}
                   className="flex w-full items-center justify-center space-x-2 rounded-full bg-primary px-4 py-3 font-medium text-primary-foreground transition-interactive hover:bg-primary/90"
                   aria-label="Search for radiator repair businesses"
@@ -423,7 +423,7 @@ function Navbar() {
                 Contact
               </Link>
               <Link
-                href="/search?page=1&sort=verified"
+                href="/search"
                 className="ml-2 flex items-center space-x-2 rounded-full bg-primary px-4 py-1.5 font-medium text-primary-foreground transition-interactive hover:bg-primary/90"
                 aria-label="Search for radiator repair services"
               >
