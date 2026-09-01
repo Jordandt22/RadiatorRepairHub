@@ -3608,6 +3608,7 @@ const STAT_SOURCES = [
   "state",
   "city",
   "category",
+  "nearby",
 ];
 
 const emptyTotals = () => ({
@@ -3619,6 +3620,7 @@ const emptyTotals = () => ({
   listing_clicks_state: 0,
   listing_clicks_city: 0,
   listing_clicks_category: 0,
+  listing_clicks_nearby: 0,
   impressions_search: 0,
   search_position_sum: 0,
   impressions_featured: 0,
@@ -3631,6 +3633,8 @@ const emptyTotals = () => ({
   city_position_sum: 0,
   impressions_category: 0,
   category_position_sum: 0,
+  impressions_nearby: 0,
+  nearby_position_sum: 0,
   phone_clicks: 0,
   directions_clicks: 0,
   website_clicks: 0,
@@ -3647,6 +3651,7 @@ const BUSINESS_STATS_SELECT = [
   "listing_clicks_state",
   "listing_clicks_city",
   "listing_clicks_category",
+  "listing_clicks_nearby",
   "impressions_search",
   "search_position_sum",
   "impressions_featured",
@@ -3659,6 +3664,8 @@ const BUSINESS_STATS_SELECT = [
   "city_position_sum",
   "impressions_category",
   "category_position_sum",
+  "impressions_nearby",
+  "nearby_position_sum",
   "phone_clicks",
   "directions_clicks",
   "website_clicks",
@@ -3865,6 +3872,59 @@ export const getBusinessStatsForOwner = async (businessId, days, accessToken) =>
     createUserSupabaseClient(accessToken),
     businessId,
     days
+  );
+};
+
+const COMPETITOR_INSIGHTS_LIMIT = 10;
+const ADMIN_COMPETITOR_INSIGHTS_LIMIT = 25;
+
+async function fetchCompetitorInsights(businessId, days, limit) {
+  const today = businessStatDateKey();
+  const allTime = days === "all";
+  const startDate = allTime ? null : dateKeyOffset(today, -(Number(days) - 1));
+
+  const { data, error } = await supabase.rpc("owner_competitor_insights", {
+    p_business_id: businessId,
+    p_start_date: startDate,
+    p_end_date: today,
+    p_limit: limit,
+  });
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  const payload = data && typeof data === "object" ? data : {};
+
+  return {
+    data: {
+      ...payload,
+      days,
+      timezone: BUSINESS_STATS_TIMEZONE,
+      startDate,
+      endDate: today,
+    },
+    error: null,
+  };
+}
+
+/**
+ * Peer activity in the owner's city. Runs with the service-role client because
+ * RLS scopes business_stats to the owner, and ownership is verified upstream.
+ */
+export const getCompetitorInsightsForOwner = async (businessId, days) => {
+  return fetchCompetitorInsights(
+    businessId,
+    days,
+    COMPETITOR_INSIGHTS_LIMIT
+  );
+};
+
+export const getCompetitorInsightsForAdmin = async (businessId, days) => {
+  return fetchCompetitorInsights(
+    businessId,
+    days,
+    ADMIN_COMPETITOR_INSIGHTS_LIMIT
   );
 };
 

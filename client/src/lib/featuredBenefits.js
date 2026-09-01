@@ -1,4 +1,13 @@
-import { Calendar, Images, MapPin, Search, Sparkles, Star } from "lucide-react";
+import {
+  BarChart3,
+  Calendar,
+  Images,
+  MapPin,
+  Search,
+  Sparkles,
+  Star,
+  Users,
+} from "lucide-react";
 
 export const FEATURED_BENEFITS = [
   {
@@ -30,6 +39,18 @@ export const FEATURED_BENEFITS = [
     title: "More Shop Photos",
     description:
       "Up to 10 shop photos on your listing. Claimed listings include 3.",
+  },
+  {
+    icon: BarChart3,
+    title: "Advanced Analytics",
+    description:
+      "Full listing analytics in your dashboard: listing clicks, CTR, average position, contact clicks, and performance by source. Claimed listings include page views and impressions.",
+  },
+  {
+    icon: Users,
+    title: "Competitor Insights",
+    description:
+      "See how every radiator shop in your city is performing: impressions, clicks, CTR, and average position, plus where you rank against them.",
   },
   {
     icon: Calendar,

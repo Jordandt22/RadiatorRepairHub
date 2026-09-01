@@ -6,6 +6,7 @@ import Link from "next/link";
 import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
 import OwnedBusinessCard from "@/components/dashboard/OwnedBusinessCard";
 import BusinessAnalyticsPanel from "@/components/dashboard/BusinessAnalyticsPanel";
+import BusinessInsightsPanel from "@/components/dashboard/BusinessInsightsPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { buttonVariants } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastProvider";
@@ -21,7 +22,7 @@ function DashboardContentInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, onTabChange] = useQueryTab(
-    ["inbox", "analytics"],
+    ["inbox", "analytics", "insights"],
     "my-businesses"
   );
 
@@ -80,7 +81,7 @@ function DashboardContentInner() {
 
   const tabsTriggerClassNames ="px-6 cursor-pointer transition-colors duration-200";
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+    <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
       <div>
         <h1 className="font-heading text-2xl font-bold text-foreground">
           Dashboard
@@ -93,7 +94,7 @@ function DashboardContentInner() {
       <Tabs
         value={activeTab}
         onValueChange={onTabChange}
-        className="gap-6"
+        className="min-w-0 w-full gap-6"
       >
         <TabsList>
           <TabsTrigger
@@ -108,9 +109,12 @@ function DashboardContentInner() {
           <TabsTrigger value="analytics" className={tabsTriggerClassNames}>
             Analytics
           </TabsTrigger>
+          <TabsTrigger value="insights" className={tabsTriggerClassNames}>
+            Insights
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="my-businesses">
+        <TabsContent value="my-businesses" className="min-w-0">
           <section aria-labelledby="my-businesses-heading">
             <h2 id="my-businesses-heading" className="sr-only">
               My Businesses
@@ -159,7 +163,7 @@ function DashboardContentInner() {
           </section>
         </TabsContent>
 
-        <TabsContent value="inbox">
+        <TabsContent value="inbox" className="min-w-0">
           <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">
             <p className="font-medium text-foreground">Coming soon</p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -168,8 +172,15 @@ function DashboardContentInner() {
           </div>
         </TabsContent>
 
-        <TabsContent value="analytics">
+        <TabsContent value="analytics" className="min-w-0">
           <BusinessAnalyticsPanel
+            businesses={businesses}
+            initialBusinessId={searchParams.get("business") || ""}
+          />
+        </TabsContent>
+
+        <TabsContent value="insights" className="min-w-0">
+          <BusinessInsightsPanel
             businesses={businesses}
             initialBusinessId={searchParams.get("business") || ""}
           />

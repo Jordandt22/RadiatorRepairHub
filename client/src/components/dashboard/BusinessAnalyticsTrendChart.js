@@ -46,11 +46,15 @@ function periodCaption(days) {
   return "Each day for the last 7 days";
 }
 
-export default function BusinessAnalyticsTrendChart({ stats, days }) {
+export default function BusinessAnalyticsTrendChart({ stats, days, isGated = false }) {
   const rawId = useId().replace(/:/g, "");
   const fillImpressions = `fill-impressions-${rawId}`;
   const fillClicks = `fill-listing-clicks-${rawId}`;
   const fillViews = `fill-page-views-${rawId}`;
+
+  const activeChartConfig = isGated
+    ? { impressions: chartConfig.impressions, page_views: chartConfig.page_views }
+    : chartConfig;
 
   const series = buildTrendSeries(
     stats?.daily,
@@ -61,14 +65,16 @@ export default function BusinessAnalyticsTrendChart({ stats, days }) {
   const showDots = series.length <= 1;
 
   return (
-    <div className="rounded-lg border border-border bg-card px-4 py-4">
+    <div className="min-w-0 max-w-full overflow-hidden rounded-lg border border-border bg-card px-4 py-4">
       <p className="text-sm font-medium text-foreground">Listing activity</p>
       <p className="mt-1 text-sm text-muted-foreground">
-        Page views, listing clicks, and impressions. {periodCaption(days)}.
+        {isGated
+          ? `Page views and impressions. ${periodCaption(days)}.`
+          : `Page views, listing clicks, and impressions. ${periodCaption(days)}.`}
       </p>
       <ChartContainer
-        config={chartConfig}
-        className="mt-4 aspect-auto h-56 w-full"
+        config={activeChartConfig}
+        className="mt-4 aspect-auto h-56 w-full min-w-0 max-w-full"
       >
         <AreaChart
           accessibilityLayer
@@ -143,16 +149,18 @@ export default function BusinessAnalyticsTrendChart({ stats, days }) {
             dot={showDots ? { r: 3, strokeWidth: 2 } : false}
             activeDot={{ r: 5, strokeWidth: 2 }}
           />
-          <Area
-            dataKey="listing_clicks"
-            type="linear"
-            fill={`url(#${fillClicks})`}
-            fillOpacity={0.4}
-            stroke="var(--color-listing_clicks)"
-            strokeWidth={2.5}
-            dot={showDots ? { r: 3, strokeWidth: 2 } : false}
-            activeDot={{ r: 5, strokeWidth: 2 }}
-          />
+          {!isGated ? (
+            <Area
+              dataKey="listing_clicks"
+              type="linear"
+              fill={`url(#${fillClicks})`}
+              fillOpacity={0.4}
+              stroke="var(--color-listing_clicks)"
+              strokeWidth={2.5}
+              dot={showDots ? { r: 3, strokeWidth: 2 } : false}
+              activeDot={{ r: 5, strokeWidth: 2 }}
+            />
+          ) : null}
           <Area
             dataKey="page_views"
             type="linear"
@@ -163,7 +171,7 @@ export default function BusinessAnalyticsTrendChart({ stats, days }) {
             dot={showDots ? { r: 3, strokeWidth: 2 } : false}
             activeDot={{ r: 5, strokeWidth: 2 }}
           />
-          <ChartLegend content={<ChartLegendContent />} />
+          <ChartLegend content={<ChartLegendContent className="flex-wrap gap-2 sm:gap-4" />} />
         </AreaChart>
       </ChartContainer>
     </div>

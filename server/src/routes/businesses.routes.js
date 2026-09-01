@@ -18,6 +18,7 @@ import {
   resendClaim,
   getOwnedBusinessesHandler,
   getOwnedBusinessStatsHandler,
+  getOwnedCompetitorInsightsHandler,
   unclaimOwnedBusinessHandler,
   updateBusinessContact,
   updateBusinessCategories,
@@ -121,6 +122,14 @@ businessesRouter.get(
   paramsValidator(OwnedBusinessIdParamsSchema),
   queryValidator(OwnedBusinessStatsQuerySchema),
   serverErrorCatcherWrapper(getOwnedBusinessStatsHandler)
+);
+
+businessesRouter.get(
+  "/owned/:businessId/competitor-insights",
+  authUser,
+  paramsValidator(OwnedBusinessIdParamsSchema),
+  queryValidator(OwnedBusinessStatsQuerySchema),
+  serverErrorCatcherWrapper(getOwnedCompetitorInsightsHandler)
 );
 
 // Owner unclaim (must be before /:business_slug)

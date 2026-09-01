@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
 import BusinessFeaturedBadge from "@/components/pages/businesses/BusinessFeaturedBadge";
 import BusinessDetailAnalyticsTab from "@/components/pages/businesses/analytics/BusinessDetailAnalyticsTab";
+import BusinessDetailInsightsTab from "@/components/pages/businesses/insights/BusinessDetailInsightsTab";
 import BusinessDetailEmailTab from "@/components/pages/businesses/BusinessDetailEmailTab";
 import BusinessDetailImagesTab from "@/components/pages/businesses/BusinessDetailImagesTab";
 import BusinessDetailListingTab from "@/components/pages/businesses/BusinessDetailListingTab";
@@ -308,6 +309,14 @@ export default function BusinessDetailPageContent() {
 
       {activeTab === "analytics" ? (
         <BusinessDetailAnalyticsTab
+          business={data}
+          accessToken={accessToken}
+          logout={logout}
+        />
+      ) : null}
+
+      {activeTab === "insights" ? (
+        <BusinessDetailInsightsTab
           business={data}
           accessToken={accessToken}
           logout={logout}

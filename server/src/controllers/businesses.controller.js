@@ -4,6 +4,8 @@ import {
   successHandler,
   claimUnavailableHandler,
 } from "../helpers/customErrorHandler.js";
+import { gateOwnedBusinessStats } from "../lib/gateOwnedBusinessStats.js";
+import { gateCompetitorInsights } from "../lib/gateCompetitorInsights.js";
 import {
   cacheData,
   getFeaturedBusinessesKey,
@@ -45,6 +47,7 @@ import {
   getOwnedBusinesses,
   getOwnedBusiness,
   getBusinessStatsForOwner,
+  getCompetitorInsightsForOwner,
   unclaimOwnedBusiness,
   updateOwnedBusinessContact,
   updateOwnedBusinessPrimaryCategory,
@@ -1073,6 +1076,13 @@ export const getOwnedBusinessesHandler = async (req, res) => {
   return res.status(200).json(successHandler(data ?? []));
 };
 
+function parseOwnedStatsDays(rawValue) {
+  const normalized = String(rawValue ?? "").toLowerCase();
+  if (normalized === "all") return "all";
+  const parsed = Number(rawValue);
+  return parsed === 1 || parsed === 7 || parsed === 30 ? parsed : 7;
+}
+
 export const getOwnedBusinessStatsHandler = async (req, res) => {
   const ownerUid = req.user?.id;
   const accessToken = req.accessToken;
@@ -1083,14 +1093,7 @@ export const getOwnedBusinessStatsHandler = async (req, res) => {
   }
 
   const { businessId } = req.params;
-  const rawDays = String(req.query.days ?? "").toLowerCase();
-  const parsedDays = Number(req.query.days);
-  const days =
-    rawDays === "all"
-      ? "all"
-      : parsedDays === 1 || parsedDays === 7 || parsedDays === 30
-        ? parsedDays
-        : 7;
+  const days = parseOwnedStatsDays(req.query.days);
 
   const { data: profile, error: profileError } = await getOwnedBusiness(
     businessId,
@@ -1139,7 +1142,72 @@ export const getOwnedBusinessStatsHandler = async (req, res) => {
       );
   }
 
-  return res.status(200).json(successHandler(data));
+  const gatedData = gateOwnedBusinessStats(data, Boolean(profile.is_featured));
+
+  return res.status(200).json(successHandler(gatedData));
+};
+
+export const getOwnedCompetitorInsightsHandler = async (req, res) => {
+  const ownerUid = req.user?.id;
+  const accessToken = req.accessToken;
+  if (!ownerUid || !accessToken) {
+    return res
+      .status(401)
+      .json(customErrorHandler(ACCESS_DENIED, "Authentication required."));
+  }
+
+  const { businessId } = req.params;
+  const days = parseOwnedStatsDays(req.query.days);
+
+  const { data: profile, error: profileError } = await getOwnedBusiness(
+    businessId,
+    ownerUid,
+    accessToken
+  );
+
+  if (profileError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying business ownership.",
+          profileError
+        )
+      );
+  }
+
+  if (!profile) {
+    return res
+      .status(403)
+      .json(
+        customErrorHandler(
+          ACCESS_DENIED,
+          "You do not own this business listing."
+        )
+      );
+  }
+
+  const { data, error } = await getCompetitorInsightsForOwner(businessId, days);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching competitor insights.",
+          error
+        )
+      );
+  }
+
+  const gatedData = gateCompetitorInsights(
+    data,
+    Boolean(profile.is_featured)
+  );
+
+  return res.status(200).json(successHandler(gatedData));
 };
 
 export const unclaimOwnedBusinessHandler = async (req, res) => {

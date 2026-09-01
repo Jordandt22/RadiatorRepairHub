@@ -5,6 +5,7 @@ import {
   ListIcon,
   MailIcon,
   MapPinIcon,
+  UsersIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,7 @@ export const BUSINESS_DETAIL_TABS = [
   { value: "location", label: "Location", Icon: MapPinIcon },
   { value: "images", label: "Images", Icon: ImageIcon },
   { value: "analytics", label: "Analytics", Icon: BarChart3Icon },
+  { value: "insights", label: "Insights", Icon: UsersIcon },
 ];
 
 export const VALID_BUSINESS_DETAIL_TABS = BUSINESS_DETAIL_TABS.map(

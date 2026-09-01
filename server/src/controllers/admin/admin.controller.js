@@ -37,6 +37,7 @@ import {
   getAdminBusinessById as fetchAdminBusinessById,
   getAdminBusinessExists as fetchAdminBusinessExists,
   getBusinessStatsForAdmin as fetchBusinessStatsForAdmin,
+  getCompetitorInsightsForAdmin as fetchCompetitorInsightsForAdmin,
   getAdminBusinessStatsList as fetchAdminBusinessStatsList,
   getAdminBusinessStatsSummary as fetchAdminBusinessStatsSummary,
   getAdminSearchStatsList as fetchAdminSearchStatsList,
@@ -136,6 +137,7 @@ import {
   businessStatDateKey,
   dateKeyOffset,
 } from "../../lib/businessStatsDate.js";
+import { gateCompetitorInsights } from "../../lib/gateCompetitorInsights.js";
 import {
   MESSAGE_ON_ITS_WAY,
   MESSAGE_DECLINED,
@@ -2295,6 +2297,49 @@ export const getBusinessStats = async (req, res) => {
   }
 
   return res.status(200).json(successHandler(data));
+};
+
+export const getBusinessCompetitorInsights = async (req, res) => {
+  const { id } = req.params;
+  const days = parseAdminStatsDays(req.query.days);
+
+  const { exists, error: existsError } = await fetchAdminBusinessExists(id);
+
+  if (existsError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error verifying the business.",
+          existsError
+        )
+      );
+  }
+
+  if (!exists) {
+    return res
+      .status(404)
+      .json(customErrorHandler(SUPABASE_ERROR, "Business not found."));
+  }
+
+  const { data, error } = await fetchCompetitorInsightsForAdmin(id, days);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching competitor insights.",
+          error
+        )
+      );
+  }
+
+  const enriched = gateCompetitorInsights(data, true);
+
+  return res.status(200).json(successHandler(enriched));
 };
 
 function parseAdminStatsDays(queryDays) {

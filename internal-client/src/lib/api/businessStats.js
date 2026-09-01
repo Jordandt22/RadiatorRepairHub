@@ -8,6 +8,18 @@ export async function fetchAdminBusinessStats(businessId, days = 7, accessToken)
   );
 }
 
+export async function fetchAdminCompetitorInsights(
+  businessId,
+  days = 7,
+  accessToken
+) {
+  const params = new URLSearchParams({ days: String(days) });
+  return fetchApi(
+    `/admin/businesses/${businessId}/competitor-insights?${params.toString()}`,
+    { accessToken }
+  );
+}
+
 export async function fetchAdminBusinessStatsList(query = {}, accessToken) {
   const params = new URLSearchParams();
   params.set("page", String(query.page || 1));

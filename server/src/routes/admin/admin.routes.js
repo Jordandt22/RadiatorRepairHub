@@ -33,6 +33,7 @@ import {
   hideBusinessImage,
   deleteBusinessImage,
   getBusinessStats,
+  getBusinessCompetitorInsights,
   getBusinessStatsList,
   getBusinessStatsSummary,
   getSearchStatsList,
@@ -348,6 +349,13 @@ adminRouter.get(
   paramsValidator(GetAdminBusinessParamsSchema),
   queryValidator(GetAdminBusinessStatsQuerySchema),
   serverErrorCatcherWrapper(getBusinessStats)
+);
+
+adminRouter.get(
+  "/businesses/:id/competitor-insights",
+  paramsValidator(GetAdminBusinessParamsSchema),
+  queryValidator(GetAdminBusinessStatsQuerySchema),
+  serverErrorCatcherWrapper(getBusinessCompetitorInsights)
 );
 
 adminRouter.get(

@@ -5,7 +5,7 @@ import DashboardContent from "@/components/dashboard/DashboardContent";
 export const metadata = {
   title: "Business Dashboard | RadiatorRepairHub",
   description:
-    "Manage your claimed radiator repair business listing and view listing analytics on RadiatorRepairHub.",
+    "Manage your claimed radiator repair business listing and view basic listing analytics on RadiatorRepairHub.",
   robots: NOINDEX_ROBOTS,
 };
 

@@ -5,6 +5,7 @@ const IMPRESSION_KEYS = [
   "impressions_state",
   "impressions_city",
   "impressions_category",
+  "impressions_nearby",
 ];
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;

@@ -17,6 +17,7 @@ export const BUSINESS_STAT_SOURCES = [
   "state",
   "city",
   "category",
+  "nearby",
 ];
 
 const LIST_EVENTS = new Set(["impression", "listing_click"]);
