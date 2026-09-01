@@ -7,7 +7,14 @@ import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSectio
 import STATES from "@/lib/data/states";
 import { fetchCitiesByStateId, fetchCityBusinessCounts } from "@/lib/api/location";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
-import { NOINDEX_ROBOTS, INDEX_ROBOTS } from "@/lib/seo/metadata";
+import {
+  composeDescription,
+  composeTitle,
+  NOINDEX_ROBOTS,
+  INDEX_ROBOTS,
+  SITE_URL,
+  buildOpenGraph,
+} from "@/lib/seo/metadata";
 
 export const revalidate = 120;
 
@@ -20,30 +27,37 @@ export async function generateMetadata({ params }) {
 
   if (!stateData) {
     return {
-      title: "Cities Not Found - RadiatorRepairHub",
+      title: "Cities Not Found | RadiatorRepairHub",
       description: "The requested state cities could not be found.",
       robots: NOINDEX_ROBOTS,
     };
   }
 
-  const title = `Cities in ${stateData.name} | Find Radiator Repair by City - RadiatorRepairHub`;
-  const description = `Browse all cities in ${stateData.name} with radiator repair services. Find auto repair shops and cooling system specialists by city. Compare services and read reviews.`;
+  const title = composeTitle(`Radiator Repair in ${stateData.name} by City`);
+  const description = composeDescription(
+    `Browse ${stateData.name} cities with radiator repair shops near you.`,
+    "Pick your city to compare cooling system specialists, reviews, and hours."
+  );
+
+  const { data: countsData } = await fetchCityBusinessCounts(stateData.id);
+  const listingCount = (countsData?.cities ?? []).reduce(
+    (sum, city) => sum + (Number(city.business_count) || 0),
+    0
+  );
 
   return {
     title,
     description,
-    keywords: `${stateData.name} cities, radiator repair by city, auto repair ${stateData.name} cities, mechanics by city ${stateData.name}`,
-    openGraph: {
+    keywords: `radiator repair ${stateData.name} cities, radiator repair near me, radiator repair by city, auto repair ${stateData.name}`,
+    openGraph: buildOpenGraph({
       title,
       description,
-      type: "website",
-      locale: "en_US",
-      siteName: "RadiatorRepairHub",
-    },
+      url: `/states/${stateCode}/cities`,
+    }),
     alternates: {
-      canonical: `https://radiatorrepairhub.com/states/${stateCode}/cities`,
+      canonical: `${SITE_URL}/states/${stateCode}/cities`,
     },
-    robots: INDEX_ROBOTS,
+    robots: listingCount > 0 ? INDEX_ROBOTS : NOINDEX_ROBOTS,
   };
 }
 

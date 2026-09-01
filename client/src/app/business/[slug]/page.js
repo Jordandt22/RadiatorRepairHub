@@ -34,12 +34,21 @@ import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import BusinessPageViewTracker from "@/components/businesses/stats/BusinessPageViewTracker";
+import NearbyBusinesses from "@/components/businesses/NearbyBusinesses";
 import {
+  composeDescription,
+  composeTitle,
   DEFAULT_OG_IMAGE,
   NOINDEX_ROBOTS,
   INDEX_ROBOTS,
+  SITE_URL,
+  toTitleCase,
 } from "@/lib/seo/metadata";
-import { fetchBusinessBySlug } from "@/lib/api/cachedReads";
+import { buildBusinessSchema } from "@/lib/seo/structuredData";
+import {
+  fetchBusinessBySlug,
+  fetchBusinessesInCity,
+} from "@/lib/api/cachedReads";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { FEATURED_AFFILIATE_PRODUCT_ALIASES } from "@/lib/affiliateProducts";
 import { getBusinessDisplayImage, getBusinessHeroImage } from "@/lib/images";
@@ -67,18 +76,27 @@ export async function generateMetadata({ params }) {
       };
     }
 
-    const title = `Radiator Repair: ${business.title_tag} | ${business.city.name}, ${business.state.name} - RadiatorRepairHub`;
-    const description = `Expert radiator repair services at ${
-      business.title
-    } in ${business.city.name}, ${business.state.name}. ${
-      business.meta_description ||
-      business.local_note ||
-      "Professional radiator repair and cooling system services for your vehicle."
-    } ${
-      business.phone
-        ? `Call ${business.phone} for radiator repair today!`
-        : "Contact us for quality radiator repair."
-    }`;
+    const location = `${business.city.name}, ${business.state.code}`;
+    const categoryLabel = toTitleCase(
+      business.primary_category?.name || "Radiator Repair"
+    );
+    const title = composeTitle(
+      `${business.title} | ${categoryLabel} in ${location}`,
+      { brand: false }
+    );
+    // meta_description is generated server-side already trimmed to a complete
+    // sentence, so prefer it verbatim instead of re-truncating a longer string.
+    const description =
+      business.meta_description?.trim() ||
+      composeDescription(
+        `${business.title} is a ${categoryLabel.toLowerCase()} in ${location}.`,
+        business.reviews_count > 0 && business.total_score > 0
+          ? `Rated ${business.total_score} from ${business.reviews_count.toLocaleString()} reviews.`
+          : null,
+        business.phone
+          ? `Call ${business.phone} or get directions.`
+          : "See hours, services, and directions."
+      );
     const displayImage = getBusinessDisplayImage(business);
 
     return {
@@ -111,7 +129,7 @@ export async function generateMetadata({ params }) {
         siteName: "RadiatorRepairHub",
       },
       alternates: {
-        canonical: `https://radiatorrepairhub.com/business/${slug}`,
+        canonical: `${SITE_URL}/business/${slug}`,
       },
       robots: INDEX_ROBOTS,
     };
@@ -147,115 +165,22 @@ async function Page({ params }) {
       return notFound();
     }
 
-    const featuredProducts = business.is_claimed
-      ? []
-      : ((
-          await fetchActiveAffiliateProductsByAliases(
+    // Claimed listings keep the page focused on the owner's business; only
+    // unclaimed pages surface affiliate products and competing shops.
+    const [featuredProducts, nearbyBusinesses] = business.is_claimed
+      ? [[], []]
+      : await Promise.all([
+          fetchActiveAffiliateProductsByAliases(
             FEATURED_AFFILIATE_PRODUCT_ALIASES
-          )
-        ).data?.products ?? []);
+          ).then((res) => res.data?.products ?? []),
+          fetchBusinessesInCity(business.city?.id, 4, business.id),
+        ]);
 
     const mapsQuery = getGoogleMapsEmbedQuery(business);
     const mapsHref = getGoogleMapsPlaceUrl(business);
     const directionsHref = getGoogleMapsDirectionsUrl(business);
 
-    // Generate structured data for LocalBusiness
-    const structuredData = {
-      "@context": "https://schema.org",
-      "@type": "LocalBusiness",
-      "@id": `https://radiatorrepairhub.com/business/${slug}`,
-      name: business.title_tag,
-      description: business.meta_description,
-      url: business.website || `https://radiatorrepairhub.com/business/${slug}`,
-      telephone: business.phone,
-      ...(business.keywords &&
-        business.keywords.length > 0 && {
-          keywords: business.keywords.join(", "),
-        }),
-      ...(business.highlights &&
-        business.highlights.length > 0 && {
-          amenityFeature: business.highlights.map((highlight) => ({
-            "@type": "LocationFeatureSpecification",
-            name: highlight,
-            value: true,
-          })),
-        }),
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: business.address,
-        addressLocality: business.city.name,
-        addressRegion: business.state.name,
-        addressCountry: "US",
-      },
-      geo:
-        business.latitude && business.longitude
-          ? {
-              "@type": "GeoCoordinates",
-              latitude: business.latitude,
-              longitude: business.longitude,
-            }
-          : undefined,
-      image: getBusinessDisplayImage(business),
-      ...(business.reviews_count > 0 &&
-        business.total_score > 0 && {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: business.total_score,
-            reviewCount: business.reviews_count,
-            bestRating: 5,
-            worstRating: 1,
-          },
-        }),
-      priceRange: "$$",
-      openingHoursSpecification: business.hours
-        ?.flatMap((day) => {
-          // If closed, skip this day
-          if (day.is_closed || !day.hours || day.hours.length === 0) {
-            return [];
-          }
-
-          // Map each time slot to an OpeningHoursSpecification
-          return day.hours.map((timeSlot) => ({
-            "@type": "OpeningHoursSpecification",
-            dayOfWeek: day.day_of_week,
-            opens: timeSlot.open,
-            closes: timeSlot.close,
-          }));
-        })
-        .filter(Boolean),
-      serviceArea: {
-        "@type": "GeoCircle",
-        geoMidpoint: {
-          "@type": "GeoCoordinates",
-          latitude: business.latitude,
-          longitude: business.longitude,
-        },
-        geoRadius: "50000",
-      },
-      hasOfferCatalog: {
-        "@type": "OfferCatalog",
-        name: "Radiator Repair Services",
-        itemListElement: [
-          {
-            "@type": "Offer",
-            itemOffered: {
-              "@type": "Service",
-              name:
-                business.primary_category?.name || "Radiator Repair Service",
-              description:
-                "Professional radiator repair and maintenance services",
-            },
-          },
-        ],
-      },
-      ...(business.local_note && {
-        additionalProperty: {
-          "@type": "PropertyValue",
-          name: "Local Note",
-          value: business.local_note,
-        },
-      }),
-    };
+    const structuredData = buildBusinessSchema(business, slug);
 
     // Generate breadcrumb items
     const breadcrumbItems = [
@@ -299,14 +224,15 @@ async function Page({ params }) {
     return (
       <>
         <script
+          key="business-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(structuredData),
           }}
         />
-        <BusinessPageViewTracker businessId={business.id} />
+        <BusinessPageViewTracker key="business-page-view" businessId={business.id} />
 
-        <OwnerListingViewProvider businessId={business.id}>
+        <OwnerListingViewProvider key="business-owner-view" businessId={business.id}>
         <div className="min-h-screen bg-background pb-24 md:pb-32">
           <BusinessHeroBanner
             heroImage={heroImage}
@@ -439,7 +365,7 @@ async function Page({ params }) {
                         href={cityHref}
                         className="rounded-full bg-tint px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-secondary md:px-5"
                       >
-                        Radiator repair in {business.city.name}
+                        Radiator Repair in {business.city.name}
                       </Link>
                       <Link
                         href={stateHref}
@@ -673,7 +599,7 @@ async function Page({ params }) {
                   </Link>
                 ) : (
                   <Link
-                    href="/search?page=1&sort=verified"
+                    href="/search"
                     className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
                   >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
@@ -700,6 +626,14 @@ async function Page({ params }) {
                 )}
               </div>
             </section>
+
+            {!business.is_claimed ? (
+              <NearbyBusinesses
+                businesses={nearbyBusinesses}
+                cityName={business.city.name}
+                cityHref={cityHref}
+              />
+            ) : null}
 
             {!business.is_claimed && featuredProducts.length > 0 ? (
               <AffiliateProductsSection

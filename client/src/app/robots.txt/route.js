@@ -14,33 +14,14 @@ Disallow: /private/
 Disallow: /checkout/
 Disallow: /dashboard/
 Disallow: /settings/
-Disallow: /signin/
+Disallow: /signin
 Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /claim/
 Disallow: /email-confirmed
 
 # Sitemap location
-Sitemap: https://radiatorrepairhub.com/sitemap.xml
-
-# Block AI training crawlers
-User-agent: GPTBot
-Disallow: /
-
-User-agent: ChatGPT-User
-Disallow: /
-
-User-agent: CCBot
-Disallow: /
-
-User-agent: anthropic-ai
-Disallow: /
-
-User-agent: Claude-Web
-Disallow: /
-
-User-agent: Bytespider
-Disallow: /`;
+Sitemap: https://radiatorrepairhub.com/sitemap.xml`;
 
   return new NextResponse(robotsTxt, {
     headers: {

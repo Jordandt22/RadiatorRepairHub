@@ -13,7 +13,7 @@ function ContactHeader() {
       pageTitle="Contact RadiatorRepairHub"
       pageDescription="Directory support, listing issues, partnerships, and website feedback. To reach a claimed repair shop, use Quick Contact on that business's page."
       headerLink={{
-        href: "/search?page=1&sort=verified",
+        href: "/search",
         label: "Search for a shop",
       }}
     />

@@ -2,7 +2,7 @@
 
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
-import { useEffect, Suspense } from "react";
+import { Fragment, useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 const isPostHogEnabled =
@@ -52,8 +52,8 @@ export function PostHogProvider({ children }) {
 
   return (
     <PHProvider client={posthog}>
-      <SuspendedPostHogPageView />
-      {children}
+      <SuspendedPostHogPageView key="posthog-pageview" />
+      <Fragment key="posthog-app-root">{children}</Fragment>
     </PHProvider>
   );
 }

@@ -200,6 +200,11 @@ export const getAllCitiesKey = () => ({
   interval: 60 * 60,
 });
 
+export const getCitiesForSitemapKey = () => ({
+  key: "CITIES_SITEMAP",
+  interval: 60 * 60,
+});
+
 export const getCityBySlugKey = (state_id, city_slug) => ({
   key: `CITY?CITY-SLUG:${city_slug}&STATE-ID:${state_id}`,
   interval: 60 * 60,

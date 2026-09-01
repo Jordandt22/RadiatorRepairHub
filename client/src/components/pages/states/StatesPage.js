@@ -57,7 +57,7 @@ function StatesPage({ statesWithCounts = [] }) {
         pageDescription={pageDescription}
         headerLink={{
           label: "Search",
-          href: "/search?page=1&sort=verified",
+          href: "/search",
         }}
       />
 

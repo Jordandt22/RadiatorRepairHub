@@ -39,7 +39,7 @@ function CategoriesPage({ categoriesWithCounts = [] }) {
         pageDescription="Explore all the automotive service categories available. Find specialized repair shops and services for your specific vehicle needs."
         headerLink={{
           label: "Search",
-          href: "/search?page=1&sort=verified",
+          href: "/search",
         }}
       />
       <CategoriesGrid

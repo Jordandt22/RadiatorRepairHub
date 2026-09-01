@@ -29,7 +29,7 @@ function HeroSearchBar({ heroInView }) {
           { source: "hero", page: 1, sort_option: "verified" }
         )
       );
-      router.push(`/search?page=1&sort=verified`);
+      router.push(`/search`);
       return;
     }
 

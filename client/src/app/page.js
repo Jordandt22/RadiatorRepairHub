@@ -24,10 +24,9 @@ import {
 } from "@/lib/api/cachedReads";
 import { HOME_HERO_IMAGE_PATH } from "@/lib/images";
 
-const homeTitle =
-  "Find Radiator Repair Shops Nationwide | RadiatorRepairHub Directory";
+const homeTitle = "Radiator Repair Near Me | Find Local Radiator Shops";
 const homeDescription =
-  "Browse RadiatorRepairHub's nationwide directory of radiator repair shops. Compare reviews, filter by city, and connect with cooling system specialists near you.";
+  "Find radiator repair near me. Compare verified radiator repair shops by city, read reviews and hours, and call a cooling system specialist near you today.";
 
 export const metadata = buildPageMetadata({
   title: homeTitle,

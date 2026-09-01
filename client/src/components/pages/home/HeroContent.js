@@ -84,7 +84,7 @@ function HeroContent({
           </h1>
           <p className="mx-auto mb-6 max-w-2xl text-base text-white/75 md:text-lg">
             <FoldText
-              text="Search our directory of verified radiator repair businesses across the U.S."
+              text="Search radiator repair near me and compare verified shops across the U.S."
               splitBy="word"
               hinge="top"
               duration={0.65}
