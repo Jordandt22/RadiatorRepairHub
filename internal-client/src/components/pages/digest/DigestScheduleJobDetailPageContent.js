@@ -263,6 +263,9 @@ export default function DigestScheduleJobDetailPageContent() {
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-semibold tracking-tight">
             {SEGMENT_LABELS[job.digest_segment] ?? job.digest_segment}
+            {Number.isInteger(job.chunk_index)
+              ? ` · batch ${job.chunk_index + 1}`
+              : ""}
           </h1>
           <Badge className={jobStatusClassName(job.status)}>{job.status}</Badge>
         </div>

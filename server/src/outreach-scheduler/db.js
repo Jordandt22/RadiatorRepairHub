@@ -1,4 +1,5 @@
 import { supabase } from "../supabase/supabase.js";
+import { expandCampaignsIntoSendChunks, getEmailSendChunkOptions } from "../lib/emailSendChunks.js";
 import {
   buildOutreachSendQueueJobId,
   OUTREACH_DEFAULT_TIME,
@@ -105,19 +106,30 @@ export async function createOutreachRun({
 }
 
 export async function createOutreachSendJobs(runId, campaigns) {
-  const rows = campaigns.map((campaign) => ({
+  const chunks = expandCampaignsIntoSendChunks(
+    campaigns,
+    getEmailSendChunkOptions()
+  );
+  const rows = chunks.map((campaign) => ({
     run_id: runId,
     outreach_type: campaign.outreach_type,
+    chunk_index: campaign.chunk_index,
     limit_count: campaign.limit_count,
     status: "pending",
     bullmq_job_id: buildOutreachSendQueueJobId(
       runId,
-      campaign.outreach_type
+      campaign.outreach_type,
+      campaign.chunk_index
     ),
   }));
+  if (rows.length === 0) return [];
+
   const { data, error } = await supabase
     .from("outreach_send_jobs")
-    .upsert(rows, { onConflict: "run_id,outreach_type", ignoreDuplicates: true })
+    .upsert(rows, {
+      onConflict: "run_id,outreach_type,chunk_index",
+      ignoreDuplicates: true,
+    })
     .select("*");
   if (error) throw error;
 
@@ -129,7 +141,9 @@ export async function createOutreachSendJobs(runId, campaigns) {
     .in(
       "outreach_type",
       campaigns.map((campaign) => campaign.outreach_type)
-    );
+    )
+    .order("outreach_type", { ascending: true })
+    .order("chunk_index", { ascending: true });
   if (existingError) throw existingError;
   return existing ?? [];
 }

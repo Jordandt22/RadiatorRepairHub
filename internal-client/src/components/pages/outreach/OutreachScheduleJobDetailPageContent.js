@@ -214,6 +214,9 @@ export default function OutreachScheduleJobDetailPageContent() {
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-semibold tracking-tight">
             {CAMPAIGN_LABELS[job.outreach_type] ?? job.outreach_type}
+            {Number.isInteger(job.chunk_index)
+              ? ` · batch ${job.chunk_index + 1}`
+              : ""}
           </h1>
           <Badge variant={statusVariant(job.status)}>{job.status}</Badge>
         </div>

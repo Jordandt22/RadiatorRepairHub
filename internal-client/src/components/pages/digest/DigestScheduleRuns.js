@@ -102,6 +102,7 @@ const JOB_COLUMNS = [
         className="font-semibold hover:underline"
       >
         {SEGMENT_LABELS[row.digest_segment] ?? row.digest_segment ?? "—"}
+        {Number.isInteger(row.chunk_index) ? ` · batch ${row.chunk_index + 1}` : ""}
       </Link>
     ),
   },

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Star } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,6 +32,7 @@ function BusinessNotificationCard({
   accountEmail,
   onSaved,
 }) {
+  const posthog = usePostHog();
   const { showCustomSuccess, showCustomError } = useToast();
   const [settings, setSettings] = useState(null);
   const [notificationEmail, setNotificationEmail] = useState("");
@@ -74,6 +76,8 @@ function BusinessNotificationCard({
       setError("Enter a valid notification email or leave it blank.");
       return;
     }
+    const previousEnabled = settings?.weeklyDigestEnabled !== false;
+    const previousEmail = (settings?.notificationEmail || "").trim().toLowerCase();
     setSaving(true);
     setError("");
     const { data, error: saveError } = await updateOwnedBusinessNotifications(
@@ -95,6 +99,30 @@ function BusinessNotificationCard({
     setNotificationEmail(data.notificationEmail || "");
     setWeeklyDigestEnabled(data.weeklyDigestEnabled !== false);
     showCustomSuccess("Notification settings saved.");
+
+    const enabledNow = data.weeklyDigestEnabled !== false;
+    if (previousEnabled !== enabledNow) {
+      posthog?.capture(
+        enabledNow
+          ? "weekly_digest_enabled"
+          : "weekly_digest_disabled",
+        {
+          business_id: business.id,
+          business_slug: business.slug || undefined,
+          business_name: business.title || undefined,
+          source: "settings_notifications",
+        }
+      );
+    }
+    if (previousEmail !== (data.notificationEmail || "").trim().toLowerCase()) {
+      posthog?.capture("notification_email_updated", {
+        business_id: business.id,
+        business_slug: business.slug || undefined,
+        business_name: business.title || undefined,
+        has_notification_email: Boolean(data.notificationEmail),
+        source: "settings_notifications",
+      });
+    }
     onSaved?.(data);
   };
 

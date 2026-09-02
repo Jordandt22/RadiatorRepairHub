@@ -36,6 +36,10 @@ export function pickUnclaimedDigestStats(stats) {
 }
 
 export function hasUnclaimedDigestActivity(stats) {
+  return hasDigestActivity(stats);
+}
+
+export function hasDigestActivity(stats) {
   const picked = pickUnclaimedDigestStats(stats);
   return (
     picked.impressions > 0 ||
@@ -102,7 +106,7 @@ export function evaluateDigestEligibility(
     if (business?.claim_eligibility && business.claim_eligibility !== "able") {
       return { ok: false, reason: `eligibility_${business.claim_eligibility}` };
     }
-    if (stats && !hasUnclaimedDigestActivity(stats)) {
+    if (stats && !hasDigestActivity(stats)) {
       return { ok: false, reason: "zero_activity" };
     }
     return { ok: true, recipient, tier: DIGEST_TIERS.UNCLAIMED };
@@ -114,6 +118,9 @@ export function evaluateDigestEligibility(
     }
     if (business.weekly_digest_enabled === false) {
       return { ok: false, reason: "digest_disabled" };
+    }
+    if (stats && !hasDigestActivity(stats)) {
+      return { ok: false, reason: "zero_activity" };
     }
     return { ok: true, recipient, tier: getDigestTier(business) };
   }

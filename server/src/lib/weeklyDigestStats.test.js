@@ -119,6 +119,24 @@ test("evaluateDigestEligibility skips suppressed recipients", () => {
   );
 });
 
+test("evaluateDigestEligibility skips zero-activity claimed digests", () => {
+  const claimed = {
+    is_claimed: true,
+    weekly_digest_enabled: true,
+    email: "shop@example.com",
+  };
+  assert.equal(
+    evaluateDigestEligibility(claimed, "claimed", {
+      stats: { totals: { impressions: 0, page_views: 0, phone_clicks: 0 } },
+    }).reason,
+    "zero_activity"
+  );
+  assert.equal(
+    evaluateDigestEligibility(claimed, "claimed", { stats }).ok,
+    true
+  );
+});
+
 test("evaluateDigestEligibility honors claimed digest preference", () => {
   const claimed = {
     is_claimed: true,
@@ -132,7 +150,8 @@ test("evaluateDigestEligibility honors claimed digest preference", () => {
   assert.equal(
     evaluateDigestEligibility(
       { ...claimed, weekly_digest_enabled: true },
-      "claimed"
+      "claimed",
+      { stats }
     ).ok,
     true
   );

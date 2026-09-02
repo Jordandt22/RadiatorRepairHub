@@ -28,8 +28,8 @@ export function buildDigestCronPattern(localTime, weekday = DIGEST_DEFAULT_WEEKD
   return `0 ${minute} ${hour} * * ${day}`;
 }
 
-export function buildDigestSendQueueJobId(runId, digestSegment) {
-  return `${runId}-${digestSegment}`;
+export function buildDigestSendQueueJobId(runId, digestSegment, chunkIndex = 0) {
+  return `${runId}-${digestSegment}-${chunkIndex}`;
 }
 
 export function buildDigestIdempotencyKey(sendJobId) {
