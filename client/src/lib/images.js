@@ -88,7 +88,7 @@ export function getBusinessImageId({
 
 /**
  * Absolute Cloudflare Images delivery URL via custom domain rewrite.
- * Example: https://radiatorrepairhub.com/images/{id}/w=400,fit=cover,f=auto,q=75
+ * Example: https://images.radiatorrepairhub.com/images/{id}/w=400,fit=cover,f=auto,q=75
  */
 export function buildCfImageUrl(imageId, variant = CF_IMAGE_VARIANT.card) {
   const base = getCfImagesBaseUrl();

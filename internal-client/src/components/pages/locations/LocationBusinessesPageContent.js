@@ -23,6 +23,7 @@ import BusinessesTable from "@/components/pages/businesses/BusinessesTable";
 import BusinessesTableSkeleton from "@/components/pages/businesses/BusinessesTableSkeleton";
 import { VALID_TABS as ANALYTICS_SEGMENTS } from "@/components/pages/businesses/BusinessFilterTabs";
 import { ACTIVITY_OPTIONS } from "@/components/pages/businesses/listing-analytics/BusinessesAnalyticsActions";
+import { EMAIL_FILTERS, SCORE_TIERS } from "@/lib/businessTiers";
 import Pagination from "@/components/pages/dashboard/Pagination";
 import LocationDetailTabs, {
   LOCATION_DETAIL_TABS,
@@ -121,6 +122,8 @@ export default function LocationBusinessesPageContent({ kind, param }) {
     sort: sortRaw,
     segment: segmentOption,
     activity: activityOption,
+    score: scoreTier,
+    contact: emailFilter,
     setField,
     setFields,
   } = useUrlQueryState(
@@ -154,6 +157,8 @@ export default function LocationBusinessesPageContent({ kind, param }) {
         param: "activity",
         options: ACTIVITY_OPTIONS,
       },
+      score: { type: "option", param: "score", options: SCORE_TIERS },
+      contact: { type: "option", param: "contact", options: EMAIL_FILTERS },
     },
     { pathname: locationPathname(kind, param) },
   );
@@ -534,6 +539,10 @@ export default function LocationBusinessesPageContent({ kind, param }) {
                   : ACTIVITY_OPTIONS.find((option) => option.id === value),
               )
             }
+            scoreTier={scoreTier}
+            onScoreTierChange={(tier) => setField("score", tier)}
+            emailFilter={emailFilter}
+            onEmailFilterChange={(filter) => setField("contact", filter)}
             onPageChange={(nextPage) =>
               setField("page", nextPage, { resetPage: false })
             }

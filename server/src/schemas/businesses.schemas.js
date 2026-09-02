@@ -291,6 +291,41 @@ export const UpdateBusinessImageHiddenSchema = Yup.object({
   isHidden: Yup.boolean().required(),
 });
 
+const imageOrderIdField = Yup.string()
+  .trim()
+  .required()
+  .test(
+    "image-order-id",
+    "Invalid image ID",
+    (value) =>
+      value === DEFAULT_LISTING_IMAGE_ID ||
+      Yup.string().uuid().isValidSync(value)
+  );
+
+export const UpdateOwnedBusinessNotificationsSchema = Yup.object({
+  notificationEmail: Yup.string()
+    .trim()
+    .email("Enter a valid email address.")
+    .max(254)
+    .nullable()
+    .transform((value) => (value === "" ? null : value)),
+  weeklyDigestEnabled: Yup.boolean(),
+}).test(
+  "has-notification-field",
+  "Provide a notification email or weekly digest setting.",
+  (value) =>
+    value?.notificationEmail !== undefined ||
+    value?.weeklyDigestEnabled !== undefined
+);
+
+export const UpdateBusinessImageOrderSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  imageIds: Yup.array()
+    .of(imageOrderIdField)
+    .min(1, "At least one photo is required")
+    .required(),
+});
+
 export const SearchBusinessesSchema = Yup.object({
   title: Yup.string().trim().max(150),
   state_id: Yup.string().trim().max(150),

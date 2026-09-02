@@ -151,7 +151,7 @@ export const FAQ_ITEMS = [
     id: "claim-listing",
     question: "How do I claim my business listing?",
     answer:
-      "Open your business page and use Claim Business. We send a verification email to the address on file for that listing. After you verify, create your account password and sign in to manage the listing, add shop photos, and view basic listing analytics (page views and impressions). Claiming is free. Full steps and eligibility rules are on our How to Claim page."
+      "Open your business page and use Claim Business. We send a verification email to the address on file for that listing. After you verify, create your account password and sign in to manage the listing, add shop photos, view basic listing analytics (page views and impressions), and manage weekly activity report emails in Settings. Claiming is free. Full steps and eligibility rules are on our How to Claim page."
   },
   {
     id: "cant-claim",
@@ -169,7 +169,7 @@ export const FAQ_ITEMS = [
     id: "listing-analytics",
     question: "Can I see how customers find my listing?",
     answer:
-      "Yes. After you claim, sign in to your dashboard and open Analytics. Claimed listings include page views, impressions, and impressions by source. Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source. Stats are not live and can take a few minutes to appear.",
+      "Yes. After you claim, sign in to your dashboard and open Analytics. Claimed listings include page views, impressions, and impressions by source. Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source. We may also email a weekly activity report with the same tier of stats; claimed owners can change the notification email or turn reports off in Settings → Notifications, and every report includes an unsubscribe link. Stats are not live and can take a few minutes to appear.",
   },
   {
     id: "report-listing",
@@ -247,7 +247,7 @@ export const FAQ_SECTIONS = [
   {
     id: "business-listings",
     title: "Business Owners & Listings",
-    description: "Get listed, claim your shop, listing analytics, Featured upgrades, and report listing issues.",
+    description: "Get listed, claim your shop, listing analytics, weekly activity reports, Featured upgrades, and report listing issues.",
     faqIds: [
       "verify-businesses",
       "get-listed",

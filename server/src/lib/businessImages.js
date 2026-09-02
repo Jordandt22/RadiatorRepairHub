@@ -18,10 +18,36 @@ function sortByCreatedAt(a, b) {
   return aTime - bTime;
 }
 
+function sortByGalleryOrder(a, b) {
+  const aOrder = Number(a?.sort_order ?? 0);
+  const bOrder = Number(b?.sort_order ?? 0);
+  if (aOrder !== bOrder) return aOrder - bOrder;
+  return sortByCreatedAt(a, b);
+}
+
 function toPublicImage(row) {
   return {
     image_id: row.image_id,
     is_primary: Boolean(row.is_primary),
+  };
+}
+
+function finalizePublicGalleryImage(image) {
+  if (image.is_default) {
+    return {
+      image_id: image.image_id,
+      is_primary: image.is_primary,
+      visible: image.visible,
+      is_default: true,
+      image_url: image.image_url,
+    };
+  }
+
+  return {
+    image_id: image.image_id,
+    is_primary: Boolean(image.is_primary),
+    image_url: null,
+    is_default: false,
   };
 }
 
@@ -49,14 +75,12 @@ function orderGalleryImages(images) {
   if (!list.length) return list;
 
   const primary = list.find((image) => image.is_primary);
-  const hidden = list.filter((image) => image.is_hidden && image !== primary);
-  const visibleRest = list.filter(
-    (image) => image !== primary && !image.is_hidden
-  );
+  const rest = list
+    .filter((image) => image !== primary)
+    .slice()
+    .sort(sortByGalleryOrder);
 
-  return primary
-    ? [primary, ...visibleRest, ...hidden]
-    : [...visibleRest, ...hidden];
+  return primary ? [primary, ...rest] : rest;
 }
 
 export function withDefaultListingImage(
@@ -66,6 +90,7 @@ export function withDefaultListingImage(
     hideDefaultImage = false,
     includeHiddenDefault = false,
     hasStoredPrimary,
+    defaultImageSortOrder = 0,
   } = {}
 ) {
   const stored = (Array.isArray(images) ? images.filter(Boolean) : [])
@@ -99,6 +124,7 @@ export function withDefaultListingImage(
     visible: !hideDefaultImage,
     is_default: true,
     image_url: imageUrl,
+    sort_order: Number(defaultImageSortOrder ?? 0),
   };
 
   if (includeHiddenDefault) {
@@ -116,7 +142,13 @@ export function withDefaultListingImage(
  */
 export function selectPublicGalleryImages(
   rows,
-  { isClaimed, isFeatured, imageUrl, hideDefaultImage = false } = {}
+  {
+    isClaimed,
+    isFeatured,
+    imageUrl,
+    hideDefaultImage = false,
+    defaultImageSortOrder = 0,
+  } = {}
 ) {
   const images = Array.isArray(rows) ? rows.filter((row) => row?.image_id) : [];
   const visibleImages = images.filter((row) => !row.is_hidden);
@@ -136,15 +168,22 @@ export function selectPublicGalleryImages(
   const others = visibleImages
     .filter((row) => !row.is_primary)
     .slice()
-    .sort(sortByCreatedAt);
+    .sort(sortByGalleryOrder);
   const ordered = primary ? [primary, ...others] : others;
-  const stored = ordered.slice(0, limit).map(toPublicImage);
+  const stored = ordered.slice(0, limit).map((row) => ({
+    image_id: row.image_id,
+    is_primary: Boolean(row.is_primary),
+    is_hidden: Boolean(row.is_hidden),
+    created_at: row.created_at,
+    sort_order: Number(row.sort_order ?? 0),
+  }));
 
   return withDefaultListingImage(stored, {
     imageUrl,
     hideDefaultImage,
     hasStoredPrimary,
-  });
+    defaultImageSortOrder,
+  }).map(finalizePublicGalleryImage);
 }
 
 export function detectImageMime(buffer) {
@@ -192,6 +231,7 @@ export function formatAdminGalleryImages(business) {
     isFeatured: Boolean(business?.is_featured),
     imageUrl,
     hideDefaultImage,
+    defaultImageSortOrder: business?.default_image_sort_order,
   });
   const visibleIds = new Set(publicImages.map((image) => image.image_id));
 
@@ -199,6 +239,7 @@ export function formatAdminGalleryImages(business) {
     imageUrl,
     hideDefaultImage,
     includeHiddenDefault: true,
+    defaultImageSortOrder: business?.default_image_sort_order,
   })
     .filter((image) => image?.image_id)
     .map((image) => ({
@@ -208,6 +249,7 @@ export function formatAdminGalleryImages(business) {
       is_default: Boolean(image.is_default),
       visible: visibleIds.has(image.image_id),
       created_at: image.created_at ?? null,
+      sort_order: image.sort_order ?? null,
       image_url: image.is_default ? imageUrl : null,
     }));
 }

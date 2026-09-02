@@ -138,7 +138,7 @@ export default function BusinessesAnalyticsTable({
       <div className="flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-muted/40 px-6 py-16 text-center">
         <p className="text-sm font-medium text-foreground">No businesses found</p>
         <p className="text-sm text-muted-foreground">
-          Try a different search, activity filter, or period.
+          Try a different search, filter, or period.
         </p>
       </div>
     );

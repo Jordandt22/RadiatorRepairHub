@@ -10,11 +10,11 @@ import {
 
 export const metadata = {
   title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
-  description:"How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing photos, Featured listing billing, listing reports, accounts, analytics, and affiliate product links.",
+  description:"How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing photos, Featured listing billing, weekly activity reports, listing reports, accounts, analytics, and affiliate product links.",
   keywords:"privacy policy, data protection, personal information, GDPR, CCPA, privacy rights, data security",
   openGraph: {
     title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
-    description:"How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing photos, Featured listing billing, listing reports, accounts, analytics, and affiliate product links.",
+    description:"How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing photos, Featured listing billing, weekly activity reports, listing reports, accounts, analytics, and affiliate product links.",
     type: "website",
     locale: "en_US",
     siteName: "RadiatorRepairHub",
@@ -34,7 +34,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date(2026, 7, 29).toLocaleDateString("en-US", {
+  const lastUpdated = new Date(2026, 8, 2).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -77,6 +77,10 @@ function PrivacyPage() {
           description:"When visitors view directory listings, we record aggregated activity such as listing impressions, listing clicks, business page views, and contact clicks (phone, directions, website, and email). Claimed owners can see basic analytics for their own listings in the dashboard (page views and impressions, plus impressions by source). Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source. Featured listings also unlock competitor insights, which show aggregated directory activity (impressions, listing clicks, CTR, and average position) for other public listings in the same city so owners can benchmark their own performance. Competitor insights cover directory activity only, never a shop's private account or contact details, and are withheld in cities with too few listings. These stats are not live and can take a few minutes to appear. We do not use this data to identify a visitor to the shop owner.",
         },
         {
+          label: "Weekly Activity Reports:",
+          description:"We may email a weekly activity report summarizing the last 7 days of listing stats. Unclaimed listings with recent activity may receive impressions, page views, a note when someone clicked the phone button (without an exact count), and a claim offer, sent to the listing contact email when one is on file. Claimed owners receive dashboard-tier stats (basic for claimed; full metrics for Featured, including exact phone and other contact-click counts when applicable). For claimed listings we send to an optional notification email if set, otherwise the account email, otherwise the listing contact email. Claimed owners can set or clear a notification email, turn weekly reports off, or turn them back on in account Settings → Notifications. Every weekly report includes an unsubscribe link (and one-click unsubscribe where supported by the email client). Unsubscribing or turning reports off stores a suppression so we stop sending those reports to that address for that listing until reports are re-enabled.",
+        },
+        {
           label: "Listing Report (Report Info) Submissions:",
           description:"When you use Report Info on a business listing, we collect your name (optional), email address, report reason, details you provide, the business you selected, and (when reporting wrong claim contact info) any suggested phone number or email you submit so we can review and update listing contact details.",
         },
@@ -94,7 +98,7 @@ function PrivacyPage() {
         },
         {
           label: "Account Information:",
-          description:"Email address, password (stored in hashed form), and account profile details for business owners who create an account through the claim process or sign in to manage claimed listings. We may also store which businesses your account owns or manages, and a Stripe customer identifier if you start Featured listing checkout. If you unclaim a listing or delete your account, we clear ownership links for affected listings and cancel any related Featured subscription as described in our Terms of Service.",
+          description:"Email address, password (stored in hashed form), and account profile details for business owners who create an account through the claim process or sign in to manage claimed listings. We may also store which businesses your account owns or manages, an optional per-listing notification email for RadiatorRepairHub reports, a weekly activity report preference (on or off), email suppression records when you unsubscribe from weekly reports, and a Stripe customer identifier if you start Featured listing checkout. If you unclaim a listing or delete your account, we clear ownership links for affected listings and cancel any related Featured subscription as described in our Terms of Service.",
         },
         {
           label: "Featured Listing Billing Information:",
@@ -244,11 +248,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Send transactional emails, including general Contact and Get Listed confirmations and admin notifications, Quick Contact acknowledgments and status updates, forwarding inquiries to listed businesses, business claim verification emails and codes, listing-live notices, and internal admin notifications for listing reports, completed claims, and Featured listing purchases.",
+          description:"Send transactional emails, including general Contact and Get Listed confirmations and admin notifications, Quick Contact acknowledgments and status updates, forwarding inquiries to listed businesses, business claim verification emails and codes, listing-live notices, weekly listing activity digest emails, and internal admin notifications for listing reports, completed claims, and Featured listing purchases.",
         },
         {
           label: "Data Collected:",
-          description:"Name, email address, phone number, inquiry subject, Google listing links, vehicle information, issue details, urgency, message content, claim verification details, listing request details, listing report details, and Featured purchase notification details (such as business name, owner email, listing link, and Stripe subscription identifiers) needed to process and deliver those emails.",
+          description:"Name, email address, phone number, inquiry subject, Google listing links, vehicle information, issue details, urgency, message content, claim verification details, listing request details, listing report details, optional owner/employee notification emails for weekly reports, aggregated listing activity used in weekly digest emails, unsubscribe requests, and Featured purchase notification details (such as business name, owner email, listing link, and Stripe subscription identifiers) needed to process and deliver those emails.",
         },
         {
           label: "Privacy Policy:",
@@ -265,11 +269,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Database hosting, authentication, and backend data storage for our directory, Contact and Get Listed submissions, Quick Contact messages, user accounts, business claim requests, listing photo records, Featured listing subscription records, listing reports, optional site feedback survey responses, and related operational records.",
+          description:"Database hosting, authentication, and backend data storage for our directory, Contact and Get Listed submissions, Quick Contact messages, user accounts, business claim requests, listing photo records, Featured listing subscription records, weekly activity report preferences and delivery records, listing reports, optional site feedback survey responses, and related operational records.",
         },
         {
           label: "Data Collected:",
-          description:"Contact and Get Listed submission data; Quick Contact submission data; account credentials and ownership links; claim-request records; listing photo records (image identifiers, primary/hidden/visibility flags, and linked business IDs; image files themselves are stored with Cloudflare Images); Featured subscription records (including Stripe identifiers, status, period end, cancel scheduling flags, and linked business/owner IDs); listing report data (including reporter contact details and suggested corrections); site feedback survey answers (how you found us, whether you found what you were looking for, optional comments, form type, and related business identifiers when applicable); associated business identifiers; and operational metadata such as timestamps and processing status.",
+          description:"Contact and Get Listed submission data; Quick Contact submission data; account credentials and ownership links; claim-request records; listing photo records (image identifiers, primary/hidden/visibility flags, and linked business IDs; image files themselves are stored with Cloudflare Images); Featured subscription records (including Stripe identifiers, status, period end, cancel scheduling flags, and linked business/owner IDs); optional notification emails and weekly digest preferences on claimed listings; email suppression records for weekly report unsubscribes; digest delivery/history records used to avoid duplicate weekly sends; listing report data (including reporter contact details and suggested corrections); site feedback survey answers (how you found us, whether you found what you were looking for, optional comments, form type, and related business identifiers when applicable); associated business identifiers; and operational metadata such as timestamps and processing status.",
         },
         {
           label: "Privacy Policy:",
@@ -376,7 +380,11 @@ function PrivacyPage() {
         },
         {
           label: "Account Management:",
-          description:"Allow claimed business owners to sign in, manage listing information (including shop photos), unclaim listings, view basic listing analytics (and full analytics with Featured), view subscription status, open the Stripe billing portal, delete their account, and maintain their accounts.",
+          description:"Allow claimed business owners to sign in, manage listing information (including shop photos), unclaim listings, view basic listing analytics (and full analytics with Featured), manage notification email and weekly activity report preferences, view subscription status, open the Stripe billing portal, delete their account, and maintain their accounts.",
+        },
+        {
+          label: "Weekly Activity Reports:",
+          description:"Send optional weekly emails with aggregated listing activity to listing contact emails (for eligible unclaimed listings) or to claimed owners using the notification, account, or listing email as described above; honor unsubscribe and in-account opt-out preferences; and keep limited delivery and suppression records so we do not re-send unwanted reports.",
         },
         {
           label: "Featured Listing Billing:",
@@ -519,6 +527,10 @@ function PrivacyPage() {
       description:"Account credentials and ownership records are retained while your account remains active. If you delete your account, we remove or anonymize account credentials and clear ownership links on affected listings, except where we must retain limited records for security, dispute resolution, tax, accounting, or legal obligations. Deleting your account cancels any active Featured subscription in Stripe; related Featured billing records we store may still be retained as described under Featured Listing Billing Records.",
     },
     {
+      label: "Weekly Activity Report Preferences:",
+      description:"Optional notification emails and weekly report on/off preferences are retained while the related listing or account relationship remains active and may be cleared or updated when you change Settings or unclaim a listing. Email suppression records from unsubscribe requests are retained while needed to honor your opt-out (typically while the listing remains in our directory or until you re-enable reports). Digest delivery/history records used to prevent duplicate weekly sends are retained for operational purposes for up to 2 years, then deleted or aggregated.",
+    },
+    {
       label: "Featured Listing Billing Records:",
       description:"Subscription records linked to Featured upgrades (including Stripe identifiers and status history we store) are retained while the subscription is active and for up to 7 years after it ends, or longer if required for tax, accounting, chargeback, or legal obligations. This may include records that remain after you unclaim a listing or delete your account. Payment card details are retained by Stripe under Stripe's policies, not in our card vault.",
     },
@@ -582,6 +594,9 @@ function PrivacyPage() {
         },
         {
           label:"Limit analytics tracking through your browser's privacy settings, cookie controls, or ad-blocking extensions",
+        },
+        {
+          label:"Unsubscribe from weekly activity reports using the link in those emails, or (for claimed listings you own) turn weekly reports off in Settings → Notifications",
         },
       ],
     },

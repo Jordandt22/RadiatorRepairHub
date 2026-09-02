@@ -43,3 +43,11 @@ export async function deleteOwnedBusinessImage({ businessId, imageId }) {
     body: JSON.stringify({ businessId, imageId }),
   });
 }
+
+export async function reorderOwnedBusinessImages({ businessId, imageIds }) {
+  return fetchAuthenticatedApi("/businesses/images/order", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ businessId, imageIds }),
+  });
+}

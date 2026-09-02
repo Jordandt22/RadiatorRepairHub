@@ -22,7 +22,7 @@ const BUSINESS_COVER_PLACEHOLDER =
   "/assets/images/business-cover-placeholder.svg";
 const CF_IMAGES_BASE =
   process.env.NEXT_PUBLIC_CF_IMAGES_BASE_URL?.replace(/\/+$/, "") ||
-  "https://radiatorrepairhub.com/images";
+  "https://images.radiatorrepairhub.com/images";
 
 function getCdnEnvFolder() {
   const explicit = process.env.NEXT_PUBLIC_CF_IMAGES_ENV?.trim();

@@ -16,7 +16,7 @@ export function buildBusinessImagePublicId(businessId, imageId) {
 
 const ADMIN_GALLERY_VARIANT = "w=800,fit=cover,f=auto,q=80";
 
-const PUBLIC_CF_IMAGES_BASE = "https://radiatorrepairhub.com/images";
+const PUBLIC_CF_IMAGES_BASE = "https://images.radiatorrepairhub.com/images";
 
 function isLocalHostname(url) {
   try {

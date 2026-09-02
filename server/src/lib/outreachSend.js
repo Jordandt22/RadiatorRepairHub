@@ -9,6 +9,7 @@ import {
   buildBusinessClaimLink,
   getWebBaseUrl,
 } from "./constants/messages.js";
+import { normalizeNotificationEmail } from "./notificationRecipient.js";
 
 export const OUTREACH_TYPES = Object.freeze({
   CLAIM_INVITE: "claim_invite",
@@ -88,17 +89,14 @@ export const resolveOutreachRecipientEmail = (email) => {
 };
 
 export const resolveOutreachRecipient = (business) => {
-  const listingEmail =
-    typeof business?.email === "string" ? business.email.trim() : "";
-  const ownerEmail =
-    typeof business?.owner_email === "string"
-      ? business.owner_email.trim()
-      : "";
-
-  if (business?.is_claimed || business?.claim_eligibility === "claimed") {
+  const listingEmail = normalizeNotificationEmail(business?.email);
+  const ownerEmail = normalizeNotificationEmail(business?.owner_email);
+  const isClaimed = Boolean(
+    business?.is_claimed || business?.claim_eligibility === "claimed"
+  );
+  if (isClaimed) {
     return ownerEmail || listingEmail || null;
   }
-
   return listingEmail || null;
 };
 

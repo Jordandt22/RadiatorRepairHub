@@ -5,10 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useReducedMotion } from "framer-motion";
 import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   Eye,
   EyeOff,
+  Lock,
   Plus,
   Star,
   Trash2,
@@ -49,6 +53,7 @@ import { captureOwnerListingUpdate } from "@/lib/analytics/ownerListing";
 import {
   deleteOwnedBusinessImage,
   fetchOwnedBusinessImages,
+  reorderOwnedBusinessImages,
   setOwnedBusinessImageHidden,
   setOwnedBusinessImagePrimary,
   uploadOwnedBusinessImage,
@@ -63,22 +68,41 @@ const DESKTOP_PAGE_SIZE = 2;
 const OWNER_IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 const DEFAULT_IMAGE_KEY = "listing-default";
 
+function sortGalleryImages(a, b) {
+  const aOrder = Number(a?.sort_order ?? 0);
+  const bOrder = Number(b?.sort_order ?? 0);
+  if (aOrder !== bOrder) return aOrder - bOrder;
+  const aTime = Date.parse(a?.created_at || "") || 0;
+  const bTime = Date.parse(b?.created_at || "") || 0;
+  return aTime - bTime;
+}
+
 function orderGalleryImages(images) {
   const list = Array.isArray(images) ? images.filter(Boolean) : [];
   if (!list.length) return list;
 
   const primary = list.find((image) => image.is_primary);
-  const hidden = list.filter((image) => image.is_hidden && image !== primary);
-  const visibleRest = list.filter(
-    (image) => image !== primary && !image.is_hidden
-  );
+  const rest = list
+    .filter((image) => image !== primary)
+    .slice()
+    .sort(sortGalleryImages);
 
-  return primary
-    ? [primary, ...visibleRest, ...hidden]
-    : [...visibleRest, ...hidden];
+  return primary ? [primary, ...rest] : rest;
 }
 
-function withDefaultListingImage(images, { imageUrl, hideDefaultImage = false } = {}) {
+function reorderableGalleryImages(images) {
+  return orderGalleryImages(images).filter((image) => !image.is_primary);
+}
+
+function withDefaultListingImage(
+  images,
+  {
+    imageUrl,
+    hideDefaultImage = false,
+    defaultImageSortOrder = 0,
+    includeHiddenDefault = false,
+  } = {}
+) {
   const stored = (Array.isArray(images) ? images.filter(Boolean) : [])
     .filter(
       (image) =>
@@ -92,21 +116,50 @@ function withDefaultListingImage(images, { imageUrl, hideDefaultImage = false } 
       is_default: false,
     }));
 
-  const combined = imageUrl && !hideDefaultImage
-    ? [
-      {
-        image_id: DEFAULT_IMAGE_KEY,
-        is_primary: !stored.some((image) => image.is_primary),
-        visible: true,
-        is_default: true,
-        is_hidden: false,
-        image_url: imageUrl,
-      },
-      ...stored,
-    ]
-    : stored;
+  const includeDefault =
+    Boolean(imageUrl) && (!hideDefaultImage || includeHiddenDefault);
 
-  return orderGalleryImages(combined);
+  if (!includeDefault) {
+    return orderGalleryImages(stored);
+  }
+
+  const defaultImage = {
+    image_id: DEFAULT_IMAGE_KEY,
+    is_primary: !stored.some((image) => image.is_primary),
+    visible: !hideDefaultImage,
+    is_default: true,
+    is_hidden: includeHiddenDefault ? Boolean(hideDefaultImage) : false,
+    image_url: imageUrl,
+    sort_order: Number(defaultImageSortOrder ?? 0),
+  };
+
+  return orderGalleryImages([defaultImage, ...stored]);
+}
+
+function isDefaultListingImage(image) {
+  return Boolean(image?.is_default || image?.image_id === DEFAULT_IMAGE_KEY);
+}
+
+function defaultListingImageSrc(image, imageUrl) {
+  if (!isDefaultListingImage(image)) return image?.image_url ?? null;
+  return image?.image_url || imageUrl || null;
+}
+
+function buildOwnerGalleryImages(
+  images,
+  { imageUrl, hideDefaultImage = false } = {}
+) {
+  const list = Array.isArray(images) ? images.filter(Boolean) : [];
+  if (!imageUrl) return list;
+
+  const existingDefault = list.find((image) => isDefaultListingImage(image));
+
+  return withDefaultListingImage(list, {
+    imageUrl,
+    hideDefaultImage,
+    includeHiddenDefault: true,
+    defaultImageSortOrder: existingDefault?.sort_order ?? 0,
+  });
 }
 
 function publicOwnerGallerySlice(images) {
@@ -777,6 +830,228 @@ function PhotosAddDialog({
   );
 }
 
+function ReorderPhotoThumbnail({
+  image,
+  imageUrl,
+  businessId,
+  cdnStored,
+}) {
+  const isDefault = isDefaultListingImage(image);
+  const thumbnailSrc = defaultListingImageSrc(image, imageUrl);
+
+  return (
+    <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
+      <BusinessImage
+        src={thumbnailSrc}
+        businessId={businessId}
+        imageId={isDefault ? null : image.image_id}
+        cdnStored={imageUsesCdn(
+          { ...image, image_url: thumbnailSrc },
+          cdnStored
+        )}
+        alt=""
+        sizes="96px"
+        variant={CF_IMAGE_VARIANT.gallery}
+        className="object-cover object-center"
+      />
+    </div>
+  );
+}
+
+function PhotosReorderDialog({
+  open,
+  onOpenChange,
+  images = [],
+  imageUrl,
+  businessId,
+  businessSlug,
+  businessName,
+  cdnStored,
+  onGalleryChange,
+}) {
+  const router = useRouter();
+  const posthog = usePostHog();
+  const { showCustomSuccess, showCustomError } = useToast();
+  const [orderedImages, setOrderedImages] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+  const primaryImage =
+    orderGalleryImages(images).find((image) => image.is_primary) ?? null;
+
+  useEffect(() => {
+    if (!open) {
+      setFormError("");
+      setIsSaving(false);
+      return;
+    }
+    setOrderedImages(reorderableGalleryImages(images));
+  }, [open, images]);
+
+  const moveImage = (index, direction) => {
+    const nextIndex = index + direction;
+    if (nextIndex < 0 || nextIndex >= orderedImages.length) return;
+    setOrderedImages((current) => {
+      const next = [...current];
+      const [moved] = next.splice(index, 1);
+      next.splice(nextIndex, 0, moved);
+      return next;
+    });
+  };
+
+  const handleSave = async () => {
+    if (isSaving || orderedImages.length === 0) return;
+    setIsSaving(true);
+    setFormError("");
+    const { data, error } = await reorderOwnedBusinessImages({
+      businessId,
+      imageIds: orderedImages.map((image) => image.image_id),
+    });
+    setIsSaving(false);
+    if (error) {
+      const message = apiErrorMessage(error, "Unable to save photo order.");
+      setFormError(message);
+      showCustomError(message);
+      return;
+    }
+    captureOwnerListingUpdate(posthog, {
+      businessId,
+      businessSlug,
+      businessName,
+      section: "photos",
+      imageAction: "reorder",
+    });
+    showCustomSuccess("Photo order updated.");
+    onOpenChange(false);
+    onGalleryChange?.(data?.images);
+    router.refresh();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Reorder photos</DialogTitle>
+          <DialogDescription>
+            Change the order of your gallery photos. The primary photo is pinned
+            at the top.
+          </DialogDescription>
+        </DialogHeader>
+
+        <p className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          Your primary photo appears on business cards and the listing banner.
+          It always stays first in the gallery and cannot be moved here. To
+          change which photo is primary, open a photo and choose &ldquo;Set as
+          primary.&rdquo;
+        </p>
+
+        <div className="space-y-2">
+          {primaryImage ? (
+            <div className="flex items-center gap-3 rounded-lg border border-dashed border-border bg-muted/30 p-2">
+              <ReorderPhotoThumbnail
+                image={primaryImage}
+                imageUrl={imageUrl}
+                businessId={businessId}
+                cdnStored={cdnStored}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-foreground">
+                  {isDefaultListingImage(primaryImage)
+                    ? "Original listing photo"
+                    : "Primary photo"}
+                </p>
+                <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                  <Star className="size-3 fill-current text-primary" aria-hidden="true" />
+                  Primary · always first
+                </p>
+              </div>
+              <div
+                className="flex size-8 shrink-0 items-center justify-center text-muted-foreground"
+                aria-hidden="true"
+              >
+                <Lock className="size-4" />
+              </div>
+            </div>
+          ) : null}
+
+          {orderedImages.length < 2 ? (
+            <p className="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+              Add at least one more gallery photo to change the order.
+            </p>
+          ) : null}
+          {orderedImages.map((image, index) => {
+            const isDefault = isDefaultListingImage(image);
+
+            return (
+            <div
+              key={image.image_id}
+              className="flex items-center gap-3 rounded-lg border border-border bg-card p-2"
+            >
+              <ReorderPhotoThumbnail
+                image={image}
+                imageUrl={imageUrl}
+                businessId={businessId}
+                cdnStored={cdnStored}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-foreground">
+                  {isDefault ? "Original listing photo" : `Photo ${index + 1}`}
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-col gap-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-8"
+                  disabled={index === 0 || isSaving}
+                  aria-label={`Move photo ${index + 1} up`}
+                  onClick={() => moveImage(index, -1)}
+                >
+                  <ArrowUp className="size-4" aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-8"
+                  disabled={index === orderedImages.length - 1 || isSaving}
+                  aria-label={`Move photo ${index + 1} down`}
+                  onClick={() => moveImage(index, 1)}
+                >
+                  <ArrowDown className="size-4" aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+            );
+          })}
+        </div>
+
+        {formError ? (
+          <p className="text-xs text-red-600">{formError}</p>
+        ) : null}
+
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSaving}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSave}
+            disabled={isSaving || orderedImages.length < 2}
+          >
+            {isSaving ? "Saving…" : "Save order"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function PhotosImageEditDialog({
   open,
   onOpenChange,
@@ -1025,6 +1300,7 @@ export default function PhotosSection({
 }) {
   const { isOwner, showOwnerChrome } = useOwnerListingView();
   const [addOpen, setAddOpen] = useState(false);
+  const [reorderOpen, setReorderOpen] = useState(false);
   const [editImage, setEditImage] = useState(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -1049,7 +1325,11 @@ export default function PhotosSection({
     };
   }, [isOwner, businessId, galleryRevision]);
 
-  const refreshOwnerGallery = () => {
+  const refreshOwnerGallery = (nextImages) => {
+    if (Array.isArray(nextImages)) {
+      setOwnerImages(nextImages);
+      return;
+    }
     setGalleryRevision((current) => current + 1);
   };
 
@@ -1057,12 +1337,17 @@ export default function PhotosSection({
     imageUrl,
     hideDefaultImage,
   });
-  const images = showOwnerChrome && ownerImages
-    ? orderGalleryImages(ownerImages)
+  const ownerGallerySource = buildOwnerGalleryImages(
+    ownerImages ?? (showOwnerChrome ? publicImagesWithDefault : []),
+    { imageUrl, hideDefaultImage }
+  );
+  const images = showOwnerChrome && isOwner
+    ? orderGalleryImages(ownerGallerySource)
     : isOwner && ownerImages
-      ? publicOwnerGallerySlice(ownerImages)
+      ? publicOwnerGallerySlice(ownerGallerySource)
       : publicImagesWithDefault;
   const imageCount = images.length;
+  const canReorderPhotos = showOwnerChrome && imageCount >= 2;
   const galleryKey = images.map((image) => image.image_id).join(",");
 
   useEffect(() => {
@@ -1090,6 +1375,20 @@ export default function PhotosSection({
         editAriaLabel="Add photos"
         editIcon={Plus}
         titleClassName="text-xl font-semibold tracking-tight text-foreground font-heading md:text-2xl"
+        trailing={
+          canReorderPhotos ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              onClick={() => setReorderOpen(true)}
+            >
+              <ArrowUpDown className="size-4" aria-hidden="true" />
+              Reorder
+            </Button>
+          ) : null
+        }
       />
 
       {images.length > 0 ? (
@@ -1144,6 +1443,18 @@ export default function PhotosSection({
         businessSlug={businessSlug}
         businessName={businessName}
         initialImages={publicImages}
+        onGalleryChange={refreshOwnerGallery}
+      />
+
+      <PhotosReorderDialog
+        open={reorderOpen}
+        onOpenChange={setReorderOpen}
+        images={ownerGallerySource}
+        imageUrl={imageUrl}
+        businessId={businessId}
+        businessSlug={businessSlug}
+        businessName={businessName}
+        cdnStored={cdnStored}
         onGalleryChange={refreshOwnerGallery}
       />
 

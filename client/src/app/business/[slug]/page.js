@@ -35,6 +35,7 @@ import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import BusinessPageViewTracker from "@/components/businesses/stats/BusinessPageViewTracker";
 import NearbyBusinesses from "@/components/businesses/NearbyBusinesses";
+import HideWhenListingOwner from "@/components/businesses/HideWhenListingOwner";
 import {
   composeDescription,
   composeTitle,
@@ -628,23 +629,24 @@ async function Page({ params }) {
             </section>
 
             {!business.is_claimed ? (
-              <NearbyBusinesses
-                businesses={nearbyBusinesses}
-                cityName={business.city.name}
-                cityHref={cityHref}
-              />
-            ) : null}
-
-            {!business.is_claimed && featuredProducts.length > 0 ? (
-              <AffiliateProductsSection
-                products={featuredProducts}
-                title="Recommended Amazon Tools & Supplies"
-                description={`Optional DIY supplies recommended by RadiatorRepairHub. These products are not sold, endorsed, or affiliated with ${business?.title ?? "this business"}.`}
-                descriptionVariant="notice"
-                disclosure="Product links are RadiatorRepairHub Amazon Associate recommendations. As an Amazon Associate, RadiatorRepairHub earns from qualifying purchases. This shop is not responsible for these products or purchases."
-                variant="related"
-                layout="carousel"
-              />
+              <HideWhenListingOwner>
+                <NearbyBusinesses
+                  businesses={nearbyBusinesses}
+                  cityName={business.city.name}
+                  cityHref={cityHref}
+                />
+                {featuredProducts.length > 0 ? (
+                  <AffiliateProductsSection
+                    products={featuredProducts}
+                    title="Recommended Amazon Tools & Supplies"
+                    description={`Optional DIY supplies recommended by RadiatorRepairHub. These products are not sold, endorsed, or affiliated with ${business?.title ?? "this business"}.`}
+                    descriptionVariant="notice"
+                    disclosure="Product links are RadiatorRepairHub Amazon Associate recommendations. As an Amazon Associate, RadiatorRepairHub earns from qualifying purchases. This shop is not responsible for these products or purchases."
+                    variant="related"
+                    layout="carousel"
+                  />
+                ) : null}
+              </HideWhenListingOwner>
             ) : null}
 
             <DirectoryDisclaimer className="mt-10" />

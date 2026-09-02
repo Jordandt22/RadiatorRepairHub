@@ -65,9 +65,14 @@ import {
   clearOwnedBusinessImagePrimary,
   setOwnedBusinessImageHidden,
   setOwnedBusinessHideDefaultImage,
+  updateOwnedBusinessImageSortOrder,
+  updateOwnedBusinessDefaultImageSortOrder,
   deleteOwnedBusinessImageRow,
   markOwnedBusinessCdnStored,
+  updateOwnedBusinessNotifications,
+  deleteEmailSuppression,
 } from "../supabase/supabase.functions.js";
+import { resolveNotificationRecipientSource } from "../lib/notificationRecipient.js";
 import {
   getBusinessImageLimit,
   selectPublicGalleryImages,
@@ -1208,6 +1213,76 @@ export const getOwnedCompetitorInsightsHandler = async (req, res) => {
   );
 
   return res.status(200).json(successHandler(gatedData));
+};
+
+function formatNotificationSettings(profile, ownerAuthEmail) {
+  const resolved = resolveNotificationRecipientSource(profile, ownerAuthEmail);
+  return {
+    businessId: profile.id,
+    businessName: profile.title,
+    businessSlug: profile.slug,
+    listingEmail: profile.email ?? null,
+    accountEmail: ownerAuthEmail ?? null,
+    notificationEmail: profile.notification_email ?? null,
+    weeklyDigestEnabled: profile.weekly_digest_enabled !== false,
+    isFeatured: Boolean(profile.is_featured),
+    resolvedRecipient: resolved.email,
+    resolvedRecipientSource: resolved.source,
+  };
+}
+
+export const getOwnedBusinessNotificationsHandler = async (req, res) => {
+  const owned = await requireOwnedListing(req, res, req.params.businessId);
+  if (!owned) return;
+
+  return res.status(200).json(
+    successHandler(
+      formatNotificationSettings(owned.profile, req.user?.email ?? null)
+    )
+  );
+};
+
+export const updateOwnedBusinessNotificationsHandler = async (req, res) => {
+  const owned = await requireOwnedListing(req, res, req.params.businessId);
+  if (!owned) return;
+
+  const { notificationEmail, weeklyDigestEnabled } = req.body;
+  const { data, error } = await updateOwnedBusinessNotifications(
+    owned.profile.id,
+    owned.ownerUid,
+    { notificationEmail, weeklyDigestEnabled },
+    owned.accessToken
+  );
+
+  if (error) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error saving notification settings.",
+        error
+      )
+    );
+  }
+
+  if (!data) {
+    return res.status(403).json(
+      customErrorHandler(
+        ACCESS_DENIED,
+        "You do not own this business listing."
+      )
+    );
+  }
+
+  if (weeklyDigestEnabled === true) {
+    await deleteEmailSuppression({
+      businessId: data.id,
+      email: null,
+    });
+  }
+
+  return res.status(200).json(
+    successHandler(formatNotificationSettings(data, req.user?.email ?? null))
+  );
 };
 
 export const unclaimOwnedBusinessHandler = async (req, res) => {
@@ -2596,13 +2671,14 @@ const invalidateOwnedImageCaches = async (businessId, { primaryChanged }) => {
 
 const formatOwnerImageRows = (
   rows,
-  { isFeatured, imageUrl, hideDefaultImage }
+  { isFeatured, imageUrl, hideDefaultImage, defaultImageSortOrder = 0 }
 ) => {
   const publicImages = selectPublicGalleryImages(rows, {
     isClaimed: true,
     isFeatured,
     imageUrl,
     hideDefaultImage,
+    defaultImageSortOrder,
   });
   const visibleIds = new Set(publicImages.map((image) => image.image_id));
   const stored = rows.map((row) => ({
@@ -2610,6 +2686,7 @@ const formatOwnerImageRows = (
     is_primary: Boolean(row.is_primary),
     is_hidden: Boolean(row.is_hidden),
     created_at: row.created_at,
+    sort_order: Number(row.sort_order ?? 0),
     visible: visibleIds.has(row.image_id),
   }));
 
@@ -2618,7 +2695,21 @@ const formatOwnerImageRows = (
       imageUrl,
       hideDefaultImage,
       includeHiddenDefault: true,
-    }),
+      defaultImageSortOrder,
+    })
+      .filter((image) => image?.image_id)
+      .map((image) => ({
+        image_id: image.image_id,
+        is_primary: Boolean(image.is_primary),
+        is_hidden: Boolean(image.is_hidden),
+        is_default: Boolean(image.is_default),
+        visible: image.visible,
+        created_at: image.created_at ?? null,
+        sort_order: image.is_default
+          ? Number(defaultImageSortOrder ?? 0)
+          : Number(image.sort_order ?? 0),
+        image_url: image.is_default ? imageUrl : null,
+      })),
     limit: getBusinessImageLimit({ isFeatured }),
     visible_count: publicImages.length,
   };
@@ -2628,6 +2719,7 @@ const ownerGalleryOptions = (profile, overrides = {}) => ({
   isFeatured: Boolean(profile.is_featured),
   imageUrl: profile.image_url,
   hideDefaultImage: Boolean(profile.hide_default_image),
+  defaultImageSortOrder: profile.default_image_sort_order ?? 0,
   ...overrides,
 });
 
@@ -2724,6 +2816,11 @@ export const uploadOwnedBusinessImage = async (req, res) => {
   const hasDefaultSource = Boolean(owned.profile.image_url);
   const isPrimary =
     !hasPrimaryRow && !hasDefaultSource && existing.length === 0;
+  const nextSortOrder =
+    existing.reduce(
+      (max, row) => Math.max(max, Number(row.sort_order ?? 0)),
+      -1
+    ) + 1;
 
   try {
     await uploadBufferToCloudflareImages(file.buffer, { publicId });
@@ -2741,6 +2838,7 @@ export const uploadOwnedBusinessImage = async (req, res) => {
     imageId,
     businessId,
     isPrimary,
+    sortOrder: nextSortOrder,
   });
 
   if (insertError || !inserted) {
@@ -3021,6 +3119,124 @@ export const deleteOwnedBusinessImageHandler = async (req, res) => {
         nextRows ?? [],
         ownerGalleryOptions(owned.profile)
       )
+    )
+  );
+};
+
+export const setOwnedBusinessImageOrderHandler = async (req, res) => {
+  const { businessId, imageIds } = req.body;
+  const owned = await requireOwnedListing(req, res, businessId);
+  if (!owned) return;
+
+  const { data: rows, error: listError } =
+    await listBusinessImagesByBusinessId(businessId);
+  if (listError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error loading listing photos.",
+        listError
+      )
+    );
+  }
+
+  const hasDefaultImage = Boolean(owned.profile.image_url);
+  const hasStoredPrimary = rows.some((row) => row.is_primary);
+  const defaultIsPrimary = hasDefaultImage && !hasStoredPrimary;
+  const reorderableIds = new Set();
+  for (const row of rows) {
+    if (!row.is_primary) {
+      reorderableIds.add(row.image_id);
+    }
+  }
+  if (hasDefaultImage && !defaultIsPrimary) {
+    reorderableIds.add(DEFAULT_LISTING_IMAGE_ID);
+  }
+
+  const requestedIds = Array.isArray(imageIds) ? imageIds : [];
+  if (requestedIds.length !== reorderableIds.size) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        imageIds: "Provide every reorderable photo in the new order.",
+      })
+    );
+  }
+
+  const seen = new Set();
+  for (const imageId of requestedIds) {
+    if (!reorderableIds.has(imageId) || seen.has(imageId)) {
+      return res.status(422).json(
+        customErrorHandler(YUP_ERROR, {
+          imageIds: "Photo order includes an invalid or duplicate photo.",
+        })
+      );
+    }
+    seen.add(imageId);
+  }
+
+  const updates = [];
+  let defaultImageSortOrder = null;
+  requestedIds.forEach((imageId, index) => {
+    if (imageId === DEFAULT_LISTING_IMAGE_ID) {
+      defaultImageSortOrder = index;
+      return;
+    }
+    updates.push(
+      updateOwnedBusinessImageSortOrder({
+        businessId,
+        imageId,
+        sortOrder: index,
+      })
+    );
+  });
+
+  const updateResults = await Promise.all(updates);
+  const updateError = updateResults.find((result) => result.error)?.error;
+  if (updateError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error saving photo order.",
+        updateError
+      )
+    );
+  }
+
+  if (defaultImageSortOrder !== null) {
+    const { error: defaultOrderError } =
+      await updateOwnedBusinessDefaultImageSortOrder(
+        businessId,
+        defaultImageSortOrder
+      );
+    if (defaultOrderError) {
+      return res.status(500).json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error saving photo order.",
+          defaultOrderError
+        )
+      );
+    }
+  }
+
+  await touchOwnedBusinessEditedAt(
+    businessId,
+    owned.ownerUid,
+    owned.accessToken
+  );
+  await invalidateOwnedImageCaches(businessId, { primaryChanged: false });
+
+  const { data: nextRows } = await listBusinessImagesByBusinessId(businessId);
+  const { data: refreshedProfile } = await getOwnedBusiness(
+    businessId,
+    owned.ownerUid,
+    owned.accessToken
+  );
+  const profile = refreshedProfile ?? owned.profile;
+
+  return res.status(200).json(
+    successHandler(
+      formatOwnerImageRows(nextRows ?? [], ownerGalleryOptions(profile))
     )
   );
 };

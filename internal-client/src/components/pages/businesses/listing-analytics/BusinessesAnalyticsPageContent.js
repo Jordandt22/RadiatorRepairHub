@@ -19,6 +19,7 @@ import BusinessFilterTabs, {
   TAB_FILTERS,
   VALID_TABS,
 } from "@/components/pages/businesses/BusinessFilterTabs";
+import { EMAIL_FILTERS, SCORE_TIERS } from "@/lib/businessTiers";
 import BusinessesAnalyticsActions, {
   ACTIVITY_OPTIONS,
 } from "@/components/pages/businesses/listing-analytics/BusinessesAnalyticsActions";
@@ -95,6 +96,8 @@ export default function BusinessesAnalyticsPageContent() {
     days: daysOption,
     segment: segmentOption,
     activity: activityOption,
+    score: scoreTier,
+    contact: emailFilter,
     sort: sortRaw,
     setField,
   } = useUrlQueryState(
@@ -117,6 +120,8 @@ export default function BusinessesAnalyticsPageContent() {
         param: "activity",
         options: ACTIVITY_OPTIONS,
       },
+      score: { type: "option", param: "score", options: SCORE_TIERS },
+      contact: { type: "option", param: "contact", options: EMAIL_FILTERS },
       sort: {
         type: "string",
         param: "sort",
@@ -130,6 +135,8 @@ export default function BusinessesAnalyticsPageContent() {
   const days = apiDays(daysParam);
   const segment = resolveSegment(segmentOption?.id || "all");
   const activity = activityOption?.id || "all";
+  const scoreTierId = scoreTier?.id ?? null;
+  const emailFilterId = emailFilter?.id ?? null;
   const sort = resolveSort(sortRaw);
   const searchQuery = (q || "").trim();
   const claimedFilter = TAB_FILTERS[segment]?.claimed ?? null;
@@ -177,6 +184,8 @@ export default function BusinessesAnalyticsPageContent() {
       activity,
       searchQuery,
       sort,
+      scoreTierId,
+      emailFilterId,
     ],
     queryFn: async () => {
       const result = await fetchAdminBusinessStatsList(
@@ -189,6 +198,8 @@ export default function BusinessesAnalyticsPageContent() {
           featured: featuredFilter === true,
           activity,
           sort,
+          scoreTier: scoreTierId,
+          emailFilter: emailFilterId,
         },
         accessToken,
       );
@@ -209,13 +220,21 @@ export default function BusinessesAnalyticsPageContent() {
   });
 
   const summaryQuery = useQuery({
-    queryKey: ["admin-business-stats-summary", daysParam, segment],
+    queryKey: [
+      "admin-business-stats-summary",
+      daysParam,
+      segment,
+      scoreTierId,
+      emailFilterId,
+    ],
     queryFn: async () => {
       const result = await fetchAdminBusinessStatsSummary(
         {
           days,
           claimed: claimedFilter === true,
           featured: featuredFilter === true,
+          scoreTier: scoreTierId,
+          emailFilter: emailFilterId,
         },
         accessToken,
       );
@@ -368,6 +387,10 @@ export default function BusinessesAnalyticsPageContent() {
                 : ACTIVITY_OPTIONS.find((option) => option.id === value),
             )
           }
+          scoreTier={scoreTier}
+          onScoreTierChange={(tier) => setField("score", tier)}
+          emailFilter={emailFilter}
+          onEmailFilterChange={(filter) => setField("contact", filter)}
           disabled={refreshPending && showListSkeleton}
         />
 
