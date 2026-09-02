@@ -6,7 +6,7 @@ import {
 import { verifyUnsubscribeToken } from "../lib/unsubscribeToken.js";
 import {
   getBusinessTitleById,
-  insertEmailSuppression,
+  insertBulkEmailSuppressions,
   disableWeeklyDigestForBusiness,
 } from "../supabase/supabase.functions.js";
 
@@ -28,10 +28,10 @@ async function applyUnsubscribe(token) {
     return { ok: false, status: 404, reason: "business_not_found" };
   }
 
-  const { error } = await insertEmailSuppression({
+  // One unsubscribe stops outreach + weekly digests for this address.
+  const { error } = await insertBulkEmailSuppressions({
     businessId,
     email,
-    suppressionType: type,
     source: "unsubscribe_link",
   });
   if (error) {

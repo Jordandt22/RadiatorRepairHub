@@ -169,7 +169,7 @@ export const FAQ_ITEMS = [
     id: "listing-analytics",
     question: "Can I see how customers find my listing?",
     answer:
-      "Yes. After you claim, sign in to your dashboard and open Analytics. Claimed listings include page views, impressions, and impressions by source. Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source. We may also email a weekly activity report with the same tier of stats; claimed owners can change the notification email or turn reports off in Settings → Notifications, and every report includes an unsubscribe link. Stats are not live and can take a few minutes to appear.",
+      "Yes. After you claim, sign in to your dashboard and open Analytics. Claimed listings include page views, impressions, and impressions by source. Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source. We may also email a weekly activity report with the same tier of stats; claimed owners can change the notification email or turn reports off in Settings → Notifications. Weekly reports and claim-related listing emails include an unsubscribe link that stops those messages for that address (Quick Contact inquiries are not blocked). Stats are not live and can take a few minutes to appear.",
   },
   {
     id: "report-listing",

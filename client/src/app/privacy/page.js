@@ -78,7 +78,7 @@ function PrivacyPage() {
         },
         {
           label: "Weekly Activity Reports:",
-          description:"We may email a weekly activity report summarizing the last 7 days of listing stats. Unclaimed listings with recent activity may receive impressions, page views, a note when someone clicked the phone button (without an exact count), and a claim offer, sent to the listing contact email when one is on file. Claimed owners receive dashboard-tier stats (basic for claimed; full metrics for Featured, including exact phone and other contact-click counts when applicable). For claimed listings we send to an optional notification email if set, otherwise the account email, otherwise the listing contact email. Claimed owners can set or clear a notification email, turn weekly reports off, or turn them back on in account Settings → Notifications. Every weekly report includes an unsubscribe link (and one-click unsubscribe where supported by the email client). Unsubscribing or turning reports off stores a suppression so we stop sending those reports to that address for that listing until reports are re-enabled.",
+          description:"We may email a weekly activity report summarizing the last 7 days of listing stats. Unclaimed listings with recent activity may receive impressions, page views, a note when someone clicked the phone button (without an exact count), and a claim offer, sent to the listing contact email when one is on file. Claimed owners receive dashboard-tier stats (basic for claimed; full metrics for Featured, including exact phone and other contact-click counts when applicable). For claimed listings we send to an optional notification email if set, otherwise the account email, otherwise the listing contact email. Claimed owners can set or clear a notification email, turn weekly reports off, or turn them back on in account Settings → Notifications. Weekly reports and claim-related listing emails (invites and follow-ups) include an unsubscribe link (and one-click unsubscribe where supported by the email client). Unsubscribing stores a suppression so we stop sending those listing emails to that address for that listing. Turning weekly reports off in Settings also stops weekly reports; customer Quick Contact messages are not blocked by unsubscribe.",
         },
         {
           label: "Listing Report (Report Info) Submissions:",
@@ -98,7 +98,7 @@ function PrivacyPage() {
         },
         {
           label: "Account Information:",
-          description:"Email address, password (stored in hashed form), and account profile details for business owners who create an account through the claim process or sign in to manage claimed listings. We may also store which businesses your account owns or manages, an optional per-listing notification email for RadiatorRepairHub reports, a weekly activity report preference (on or off), email suppression records when you unsubscribe from weekly reports, and a Stripe customer identifier if you start Featured listing checkout. If you unclaim a listing or delete your account, we clear ownership links for affected listings and cancel any related Featured subscription as described in our Terms of Service.",
+          description:"Email address, password (stored in hashed form), and account profile details for business owners who create an account through the claim process or sign in to manage claimed listings. We may also store which businesses your account owns or manages, an optional per-listing notification email for RadiatorRepairHub reports, a weekly activity report preference (on or off), email suppression records when you unsubscribe from listing emails (weekly reports and claim-related outreach), and a Stripe customer identifier if you start Featured listing checkout. If you unclaim a listing or delete your account, we clear ownership links for affected listings and cancel any related Featured subscription as described in our Terms of Service.",
         },
         {
           label: "Featured Listing Billing Information:",
@@ -384,7 +384,7 @@ function PrivacyPage() {
         },
         {
           label: "Weekly Activity Reports:",
-          description:"Send optional weekly emails with aggregated listing activity to listing contact emails (for eligible unclaimed listings) or to claimed owners using the notification, account, or listing email as described above; honor unsubscribe and in-account opt-out preferences; and keep limited delivery and suppression records so we do not re-send unwanted reports.",
+          description:"Send optional weekly emails with aggregated listing activity to listing contact emails (for eligible unclaimed listings) or to claimed owners using the notification, account, or listing email as described above; send claim invites and follow-ups to eligible listing contacts; honor unsubscribe and in-account opt-out preferences for those listing emails (not Quick Contact); and keep limited delivery and suppression records so we do not re-send unwanted messages.",
         },
         {
           label: "Featured Listing Billing:",
@@ -596,7 +596,7 @@ function PrivacyPage() {
           label:"Limit analytics tracking through your browser's privacy settings, cookie controls, or ad-blocking extensions",
         },
         {
-          label:"Unsubscribe from weekly activity reports using the link in those emails, or (for claimed listings you own) turn weekly reports off in Settings → Notifications",
+          label:"Unsubscribe from listing emails (weekly reports, claim invites, and follow-ups) using the link in those emails, or (for claimed listings you own) turn weekly reports off in Settings → Notifications. Quick Contact messages are not stopped by unsubscribe.",
         },
       ],
     },

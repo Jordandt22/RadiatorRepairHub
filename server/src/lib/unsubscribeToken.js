@@ -1,7 +1,11 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { EMAIL_SUPPRESSION_TYPES } from "./emailSuppressionTypes.js";
 
-const WEEKLY_DIGEST_TYPE = "weekly_digest";
 const DEFAULT_TTL_SECONDS = 60 * 60 * 24 * 365;
+const ALLOWED_UNSUBSCRIBE_TYPES = new Set([
+  EMAIL_SUPPRESSION_TYPES.WEEKLY_DIGEST,
+  EMAIL_SUPPRESSION_TYPES.BUSINESS_EMAIL,
+]);
 
 function getUnsubscribeSecret() {
   return (
@@ -31,14 +35,17 @@ function signEncoded(encoded) {
 export function signUnsubscribeToken({
   businessId,
   email,
-  type = WEEKLY_DIGEST_TYPE,
+  type = EMAIL_SUPPRESSION_TYPES.BUSINESS_EMAIL,
   ttlSeconds = DEFAULT_TTL_SECONDS,
   now = Date.now(),
 }) {
+  const normalizedType = ALLOWED_UNSUBSCRIBE_TYPES.has(type)
+    ? type
+    : EMAIL_SUPPRESSION_TYPES.BUSINESS_EMAIL;
   const payload = {
     businessId,
     email: String(email || "").trim().toLowerCase(),
-    type,
+    type: normalizedType,
     exp: Math.floor(now / 1000) + ttlSeconds,
   };
   const encoded = encodePayload(payload);
@@ -78,7 +85,7 @@ export function verifyUnsubscribeToken(token) {
   if (
     !payload?.businessId ||
     !payload?.email ||
-    payload.type !== WEEKLY_DIGEST_TYPE
+    !ALLOWED_UNSUBSCRIBE_TYPES.has(payload.type)
   ) {
     return { ok: false, reason: "invalid_payload" };
   }

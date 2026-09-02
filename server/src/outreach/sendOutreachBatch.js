@@ -1,6 +1,7 @@
 import {
   getOutreachBusinessesByIds,
   insertOutreachHistory,
+  listEmailSuppressionsForBusinesses,
 } from "../supabase/supabase.functions.js";
 import {
   applyOutreachDevelopmentCap,
@@ -10,6 +11,7 @@ import {
   isOutreachDevRedirect,
   resolveOutreachRecipientEmail,
 } from "../lib/outreachSend.js";
+import { BULK_EMAIL_SUPPRESSION_TYPES } from "../lib/emailSuppressionTypes.js";
 import { resendClient } from "../resend/resend.js";
 
 export class OutreachSendError extends Error {
@@ -21,14 +23,18 @@ export class OutreachSendError extends Error {
   }
 }
 
-export const planOutreachBatch = (
+export async function planOutreachBatch(
   businessIds,
   businesses,
   outreachType
-) => {
+) {
   const byId = new Map((businesses ?? []).map((row) => [row.id, row]));
   const skipped = [];
   const eligible = [];
+  const suppressions = await listEmailSuppressionsForBusinesses(
+    businessIds,
+    BULK_EMAIL_SUPPRESSION_TYPES
+  );
 
   for (const id of businessIds) {
     const business = byId.get(id);
@@ -37,21 +43,30 @@ export const planOutreachBatch = (
       continue;
     }
 
-    const result = evaluateOutreachEligibility(business, outreachType);
-    if (!result.ok) {
+    const provisional = evaluateOutreachEligibility(business, outreachType);
+    if (!provisional.ok) {
       skipped.push({
         id,
-        reason: result.reason,
+        reason: provisional.reason,
         title: business.title ?? null,
       });
       continue;
     }
 
-    eligible.push({ business, recipient: result.recipient });
+    if (suppressions.has(`${business.id}:${provisional.recipient}`)) {
+      skipped.push({
+        id,
+        reason: "suppressed",
+        title: business.title ?? null,
+      });
+      continue;
+    }
+
+    eligible.push({ business, recipient: provisional.recipient });
   }
 
   return { skipped, eligible };
-};
+}
 
 function assertEmailConfiguration() {
   const { SENDER_EMAIL, TEST_RECIPIENT_EMAIL, RESEND_API_KEY } = process.env;
@@ -88,9 +103,12 @@ export async function sendOutreachBatch({
     );
   }
 
-  const { skipped, eligible } = applyOutreachDevelopmentCap(
-    planOutreachBatch(businessIds, businesses, outreachType)
+  const planned = await planOutreachBatch(
+    businessIds,
+    businesses,
+    outreachType
   );
+  const { skipped, eligible } = applyOutreachDevelopmentCap(planned);
 
   if (eligible.length === 0) {
     return { sent: [], skipped, resendIds: [], history: [] };

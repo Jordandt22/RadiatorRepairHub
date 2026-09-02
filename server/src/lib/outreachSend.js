@@ -9,7 +9,13 @@ import {
   buildBusinessClaimLink,
   getWebBaseUrl,
 } from "./constants/messages.js";
+import { EMAIL_SUPPRESSION_TYPES } from "./emailSuppressionTypes.js";
 import { normalizeNotificationEmail } from "./notificationRecipient.js";
+import {
+  buildOneClickUnsubscribeUrl,
+  buildUnsubscribeUrl,
+  signUnsubscribeToken,
+} from "./unsubscribeToken.js";
 
 export const OUTREACH_TYPES = Object.freeze({
   CLAIM_INVITE: "claim_invite",
@@ -106,8 +112,16 @@ export const hasWebsite = (business) => {
   return Boolean(website);
 };
 
-export const evaluateOutreachEligibility = (business, outreachType) => {
+export const evaluateOutreachEligibility = (
+  business,
+  outreachType,
+  { isSuppressed = false } = {}
+) => {
   const eligibility = business?.claim_eligibility;
+
+  if (isSuppressed) {
+    return { ok: false, reason: "suppressed" };
+  }
 
   if (isClaimInviteOutreachType(outreachType)) {
     if (eligibility !== CLAIM_ELIGIBILITY.ABLE) {
@@ -233,6 +247,28 @@ export const buildOutreachEmailContent = (business, outreachType) => {
   return null;
 };
 
+function appendOutreachUnsubscribeFooter(html, unsubscribeUrl) {
+  if (!unsubscribeUrl) return html;
+  return `${html}
+  <hr style="border: none; border-top: 1px solid #e6ebf0; margin: 24px 0 12px;">
+  <p style="font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.5; color: #667788;">
+    Don't want emails about this listing (claim invites, follow-ups, or weekly reports)?
+    <a href="${unsubscribeUrl}" style="color: #1a73e8; text-decoration: underline;">Unsubscribe</a>
+  </p>`;
+}
+
+export function buildOutreachUnsubscribeUrls(businessId, email) {
+  const token = signUnsubscribeToken({
+    businessId,
+    email,
+    type: EMAIL_SUPPRESSION_TYPES.BUSINESS_EMAIL,
+  });
+  return {
+    unsubscribeUrl: buildUnsubscribeUrl(token, getWebBaseUrl()),
+    oneClickUnsubscribeUrl: buildOneClickUnsubscribeUrl(token, getWebBaseUrl()),
+  };
+}
+
 export const buildOutreachEmailPayload = ({
   business,
   outreachType,
@@ -242,6 +278,8 @@ export const buildOutreachEmailPayload = ({
   const content = buildOutreachEmailContent(business, outreachType);
   if (!content) return null;
 
+  const { unsubscribeUrl, oneClickUnsubscribeUrl } =
+    buildOutreachUnsubscribeUrls(business.id, recipient);
   const deliveryTo = resolveOutreachRecipientEmail(recipient);
   const subject = isOutreachDevRedirect()
     ? `[DEV] ${content.subject}`
@@ -251,6 +289,10 @@ export const buildOutreachEmailPayload = ({
     from: `${SENDER_NAME} <${senderEmail}>`,
     to: [deliveryTo],
     subject,
-    html: content.html,
+    html: appendOutreachUnsubscribeFooter(content.html, unsubscribeUrl),
+    headers: {
+      "List-Unsubscribe": `<${oneClickUnsubscribeUrl}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   };
 };

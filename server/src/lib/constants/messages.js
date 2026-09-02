@@ -1105,7 +1105,8 @@ const digestShell = ({
             <td style="padding: 20px 28px 28px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.5; color: #667788; border-top: 1px solid #e6ebf0;">
               You're receiving this because your shop is listed on RadiatorRepairHub.
               <br>
-              <a href="${unsubscribeUrl}" style="color: #1a73e8; text-decoration: underline;">Unsubscribe from weekly reports</a>
+              <a href="${unsubscribeUrl}" style="color: #1a73e8; text-decoration: underline;">Unsubscribe from listing emails</a>
+              <span style="color: #99a7b5;"> (claim invites, follow-ups, and weekly reports)</span>
               <br><br>
               Thanks,<br>
               RadiatorRepairHub Team
