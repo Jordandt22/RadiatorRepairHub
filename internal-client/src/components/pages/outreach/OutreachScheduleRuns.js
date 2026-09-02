@@ -94,6 +94,7 @@ const JOB_COLUMNS = [
         className="font-semibold hover:underline"
       >
         {CAMPAIGN_LABELS[row.outreach_type] ?? row.outreach_type ?? "—"}
+        {Number.isInteger(row.chunk_index) ? ` · batch ${row.chunk_index + 1}` : ""}
       </Link>
     ),
   },

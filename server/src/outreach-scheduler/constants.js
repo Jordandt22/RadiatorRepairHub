@@ -29,8 +29,12 @@ export function buildOutreachCronPattern(localTime) {
   return `0 ${minute} ${hour} * * 1-5`;
 }
 
-export function buildOutreachSendQueueJobId(runId, outreachType) {
-  return `${runId}-${outreachType}`;
+export function buildOutreachSendQueueJobId(
+  runId,
+  outreachType,
+  chunkIndex = 0
+) {
+  return `${runId}-${outreachType}-${chunkIndex}`;
 }
 
 export function buildOutreachIdempotencyKey(sendJobId) {

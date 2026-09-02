@@ -1,4 +1,5 @@
 import { supabase } from "../supabase/supabase.js";
+import { expandCampaignsIntoSendChunks, getEmailSendChunkOptions } from "../lib/emailSendChunks.js";
 import {
   buildDigestSendQueueJobId,
   DIGEST_DEFAULT_TIME,
@@ -107,16 +108,30 @@ export async function createDigestRun({
 }
 
 export async function createDigestSendJobs(runId, campaigns) {
-  const rows = campaigns.map((campaign) => ({
+  const chunks = expandCampaignsIntoSendChunks(
+    campaigns,
+    getEmailSendChunkOptions()
+  );
+  const rows = chunks.map((campaign) => ({
     run_id: runId,
     digest_segment: campaign.digest_segment,
+    chunk_index: campaign.chunk_index,
     limit_count: campaign.limit_count,
     status: "pending",
-    bullmq_job_id: buildDigestSendQueueJobId(runId, campaign.digest_segment),
+    bullmq_job_id: buildDigestSendQueueJobId(
+      runId,
+      campaign.digest_segment,
+      campaign.chunk_index
+    ),
   }));
+  if (rows.length === 0) return [];
+
   const { data, error } = await supabase
     .from("digest_send_jobs")
-    .upsert(rows, { onConflict: "run_id,digest_segment", ignoreDuplicates: true })
+    .upsert(rows, {
+      onConflict: "run_id,digest_segment,chunk_index",
+      ignoreDuplicates: true,
+    })
     .select("*");
   if (error) throw error;
 
@@ -128,7 +143,9 @@ export async function createDigestSendJobs(runId, campaigns) {
     .in(
       "digest_segment",
       campaigns.map((campaign) => campaign.digest_segment)
-    );
+    )
+    .order("digest_segment", { ascending: true })
+    .order("chunk_index", { ascending: true });
   if (existingError) throw existingError;
   return existing ?? [];
 }

@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { usePostHog } from "posthog-js/react";
 import { fetchApi } from "@/lib/api/fetchApi";
 
 export default function UnsubscribePageContent() {
+  const posthog = usePostHog();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
   const [state, setState] = useState(token ? "loading" : "missing");
@@ -20,15 +22,24 @@ export default function UnsubscribePageContent() {
       if (!mounted) return;
       if (error || !data) {
         setState("error");
+        posthog?.capture("weekly_digest_unsubscribe_failed", {
+          has_token: true,
+        });
         return;
       }
       setResult(data);
       setState("success");
+      posthog?.capture("weekly_digest_unsubscribed", {
+        business_id: data.businessId || undefined,
+        business_slug: data.businessSlug || undefined,
+        business_name: data.businessName || undefined,
+        is_claimed: Boolean(data.isClaimed),
+      });
     });
     return () => {
       mounted = false;
     };
-  }, [token]);
+  }, [token, posthog]);
 
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-16">

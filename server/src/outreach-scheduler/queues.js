@@ -37,11 +37,13 @@ export async function enqueueOutreachSendJobs(jobs) {
         sendJobId: job.id,
         outreachType: job.outreach_type,
         limitCount: job.limit_count,
+        chunkIndex: job.chunk_index ?? 0,
       },
       opts: {
         jobId: buildOutreachSendQueueJobId(
           job.run_id,
-          job.outreach_type
+          job.outreach_type,
+          job.chunk_index ?? 0
         ),
         attempts: 3,
         backoff: { type: "exponential", delay: 30_000 },

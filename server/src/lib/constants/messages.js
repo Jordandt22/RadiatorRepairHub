@@ -613,6 +613,7 @@ export const LISTING_REQUEST_LIVE_MESSAGE = Object.freeze({
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
     <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
+    <li>Get a weekly activity report by email (manage it in Settings → Notifications after you claim)</li>
   </ul>
 
   <p>You can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${escapeEmailHtml(`${getWebBaseUrl()}/pricing`)}" style="color: #1a73e8;">Featured pricing</a>.</p>
@@ -756,6 +757,7 @@ export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
     `Thanks for claiming ${businessName ?? "your business"} on RadiatorRepairHub`,
   html: (businessName, { businessPageUrl, dashboardUrl }) => {
     const pricingUrl = `${getWebBaseUrl()}/pricing`;
+    const notificationsUrl = `${getWebBaseUrl()}/settings?tab=notifications`;
     return `
   <p>Hi there,</p>
 
@@ -775,6 +777,7 @@ export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
     <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
+    <li>Get a weekly activity report by email — set a notification email or turn reports off anytime in <a href="${notificationsUrl}" style="color: #1a73e8;">Settings → Notifications</a></li>
   </ul>
 
   <p>You can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
@@ -799,7 +802,7 @@ export const CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>We listed <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub so local customers can find radiator repair shops near them.</p>
 
-  <p>Claim your free listing to update your info, add shop photos, receive Quick Contact inquiries, see basic listing analytics (page views and impressions), and show customers you're verified:</p>
+  <p>Claim your free listing to update your info, add shop photos, receive Quick Contact inquiries, see basic listing analytics (page views and impressions), get weekly activity reports by email, and show customers you're verified:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Not sure how? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
@@ -826,7 +829,7 @@ export const OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p>Right now it isn't claimed, so customers may see outdated info and the page won't be verified, which might turn customers away.</p>
 
-  <p>Claim it for free (takes a few minutes) to update your listing, add shop photos, receive Quick Contact inquiries, and see basic listing analytics (page views and impressions) in your dashboard:</p>
+  <p>Claim it for free (takes a few minutes) to update your listing, add shop photos, receive Quick Contact inquiries, see basic listing analytics (page views and impressions) in your dashboard, and get a weekly activity report by email:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
   <p>Need a walkthrough? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
@@ -858,6 +861,7 @@ export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
     <li>Show as a verified shop in search results</li>
     <li>Receive Quick Contact inquiries from customers</li>
     <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
+    <li>Get a weekly activity report by email after you claim</li>
   </ul>
 
   <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
@@ -891,6 +895,7 @@ export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
     <li>Keep contact details accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
     <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
+    <li>Get a weekly activity report by email after you claim</li>
   </ul>
 
   <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
@@ -924,6 +929,7 @@ export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
     <li>Keep contact info accurate so customers can reach you</li>
     <li>Show as a verified shop in search results</li>
     <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
+    <li>Get a weekly activity report by email</li>
     <li>Use your RadiatorRepairHub page as a website link for Google Business Profile, ads, and social profiles</li>
   </ul>
 

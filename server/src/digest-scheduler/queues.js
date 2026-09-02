@@ -37,9 +37,14 @@ export async function enqueueDigestSendJobs(jobs) {
         sendJobId: job.id,
         digestSegment: job.digest_segment,
         limitCount: job.limit_count,
+        chunkIndex: job.chunk_index ?? 0,
       },
       opts: {
-        jobId: buildDigestSendQueueJobId(job.run_id, job.digest_segment),
+        jobId: buildDigestSendQueueJobId(
+          job.run_id,
+          job.digest_segment,
+          job.chunk_index ?? 0
+        ),
         attempts: 3,
         backoff: { type: "exponential", delay: 30_000 },
         removeOnComplete: 200,
