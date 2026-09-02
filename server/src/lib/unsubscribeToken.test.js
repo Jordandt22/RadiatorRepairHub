@@ -20,6 +20,18 @@ test("signs and verifies an unsubscribe token", () => {
     verified.payload.businessId,
     "11111111-1111-1111-1111-111111111111"
   );
+  assert.equal(verified.payload.type, "business_email");
+});
+
+test("still verifies legacy weekly_digest unsubscribe tokens", () => {
+  process.env.UNSUBSCRIBE_TOKEN_SECRET = "test-unsubscribe-secret";
+  const token = signUnsubscribeToken({
+    businessId: "11111111-1111-1111-1111-111111111111",
+    email: "shop@example.com",
+    type: "weekly_digest",
+  });
+  const verified = verifyUnsubscribeToken(token);
+  assert.equal(verified.ok, true);
   assert.equal(verified.payload.type, "weekly_digest");
 });
 

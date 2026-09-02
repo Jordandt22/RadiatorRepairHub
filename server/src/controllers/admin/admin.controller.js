@@ -3689,7 +3689,7 @@ export const previewOutreachEmails = async (req, res) => {
   }
 
   const { skipped, eligible } = applyOutreachDevelopmentCap(
-    planOutreachBatch(business_ids, businesses, outreach_type)
+    await planOutreachBatch(business_ids, businesses, outreach_type)
   );
 
   const sample = eligible[0] ?? null;
@@ -4035,7 +4035,7 @@ export const markOutreachEmailsSent = async (req, res) => {
       );
   }
 
-  const { skipped, eligible } = planOutreachBatch(
+  const { skipped, eligible } = await planOutreachBatch(
     business_ids,
     businesses,
     outreach_type

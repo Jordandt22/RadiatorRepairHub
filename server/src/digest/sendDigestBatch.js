@@ -16,6 +16,7 @@ import {
   buildWeeklyDigestStats,
 } from "../lib/weeklyDigestStats.js";
 import { buildWeeklyDigestEmailPayload } from "../lib/weeklyDigestSend.js";
+import { BULK_EMAIL_SUPPRESSION_TYPES } from "../lib/emailSuppressionTypes.js";
 import { resendClient } from "../resend/resend.js";
 
 export class DigestSendError extends Error {
@@ -31,7 +32,10 @@ export async function planDigestBatch(businessIds, businesses, digestSegment) {
   const byId = new Map((businesses ?? []).map((row) => [row.id, row]));
   const skipped = [];
   const eligible = [];
-  const suppressions = await listEmailSuppressionsForBusinesses(businessIds);
+  const suppressions = await listEmailSuppressionsForBusinesses(
+    businessIds,
+    BULK_EMAIL_SUPPRESSION_TYPES
+  );
 
   const statsById = new Map();
   await Promise.all(

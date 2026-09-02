@@ -22,18 +22,19 @@ export default function UnsubscribePageContent() {
       if (!mounted) return;
       if (error || !data) {
         setState("error");
-        posthog?.capture("weekly_digest_unsubscribe_failed", {
+        posthog?.capture("listing_email_unsubscribe_failed", {
           has_token: true,
         });
         return;
       }
       setResult(data);
       setState("success");
-      posthog?.capture("weekly_digest_unsubscribed", {
+      posthog?.capture("listing_email_unsubscribed", {
         business_id: data.businessId || undefined,
         business_slug: data.businessSlug || undefined,
         business_name: data.businessName || undefined,
         is_claimed: Boolean(data.isClaimed),
+        suppression_type: data.type || undefined,
       });
     });
     return () => {
@@ -44,7 +45,7 @@ export default function UnsubscribePageContent() {
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-16">
       <h1 className="font-heading text-2xl font-bold text-foreground">
-        Weekly report unsubscribe
+        Unsubscribe from listing emails
       </h1>
 
       {state === "loading" ? (
@@ -56,18 +57,22 @@ export default function UnsubscribePageContent() {
       {state === "missing" || state === "error" ? (
         <p className="mt-4 text-sm text-muted-foreground">
           This unsubscribe link is invalid or expired. If you still receive
-          weekly reports, use the latest unsubscribe link in a recent email.
+          listing emails, use the latest unsubscribe link in a recent message.
         </p>
       ) : null}
 
       {state === "success" ? (
         <div className="mt-4 space-y-4 text-sm text-muted-foreground">
           <p>
-            You won’t receive weekly activity reports for{" "}
+            You won’t receive claim invites, follow-ups, or weekly reports for{" "}
             <strong className="text-foreground">
               {result?.businessName || "this listing"}
             </strong>
             {result?.email ? ` at ${result.email}` : ""}.
+          </p>
+          <p>
+            Customer Quick Contact messages about your shop can still be
+            forwarded if your listing is claimed.
           </p>
           {!result?.isClaimed ? (
             <p>

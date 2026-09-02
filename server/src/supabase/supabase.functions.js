@@ -5443,16 +5443,20 @@ export const insertDigestHistory = async (rows) => {
 
 export const listEmailSuppressionsForBusinesses = async (
   businessIds,
-  suppressionType = "weekly_digest"
+  suppressionTypes = ["weekly_digest", "business_email"]
 ) => {
   const ids = (businessIds ?? []).filter(Boolean);
   const keys = new Set();
   if (!ids.length) return keys;
 
+  const types = Array.isArray(suppressionTypes)
+    ? suppressionTypes
+    : [suppressionTypes];
+
   const { data, error } = await supabase
     .from("email_suppressions")
     .select("business_id, email")
-    .eq("suppression_type", suppressionType)
+    .in("suppression_type", types)
     .in("business_id", ids);
 
   if (error) {
@@ -5468,7 +5472,7 @@ export const listEmailSuppressionsForBusinesses = async (
 export const insertEmailSuppression = async ({
   businessId,
   email,
-  suppressionType = "weekly_digest",
+  suppressionType = "business_email",
   source = "unsubscribe_link",
 }) => {
   const normalized = String(email || "").trim().toLowerCase();
@@ -5489,16 +5493,37 @@ export const insertEmailSuppression = async ({
   return { data, error };
 };
 
+export const insertBulkEmailSuppressions = async ({
+  businessId,
+  email,
+  source = "unsubscribe_link",
+}) => {
+  const normalized = String(email || "").trim().toLowerCase();
+  const rows = ["business_email", "weekly_digest"].map((suppressionType) => ({
+    business_id: businessId,
+    email: normalized,
+    suppression_type: suppressionType,
+    source,
+  }));
+  const { data, error } = await supabase
+    .from("email_suppressions")
+    .upsert(rows, { onConflict: "business_id,email,suppression_type" })
+    .select("id, business_id, email, suppression_type, created_at");
+  return { data, error };
+};
+
 export const deleteEmailSuppression = async ({
   businessId,
   email,
-  suppressionType = "weekly_digest",
+  suppressionType = null,
 }) => {
-  let query = supabase
-    .from("email_suppressions")
-    .delete()
-    .eq("business_id", businessId)
-    .eq("suppression_type", suppressionType);
+  let query = supabase.from("email_suppressions").delete().eq("business_id", businessId);
+
+  if (suppressionType) {
+    query = query.eq("suppression_type", suppressionType);
+  } else {
+    query = query.in("suppression_type", ["weekly_digest", "business_email"]);
+  }
 
   if (email) {
     query = query.eq("email", String(email).trim().toLowerCase());
