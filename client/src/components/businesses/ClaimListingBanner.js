@@ -19,6 +19,7 @@ import { claimBusiness, fetchBusinessBySlug } from "@/lib/api/businesses";
 import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
 import { isClaimListingEligible } from "@/lib/claimListingEligibility";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
+import { useOwnerListingView } from "@/contexts/OwnerListingViewProvider";
 import { cn } from "@/lib/utils";
 
 function findOwnedBusiness(businesses, businessId) {
@@ -43,6 +44,7 @@ export default function ClaimListingBanner({
   const { showCustomError } = useToast();
   const posthog = usePostHog();
   const { isSignedIn, isLoading: authLoading } = useIsSignedIn();
+  const { isOwner, loading: ownerLoading } = useOwnerListingView();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [metaReady, setMetaReady] = useState(false);
@@ -126,6 +128,8 @@ export default function ClaimListingBanner({
       hasDuplicateEmail,
     });
 
+  if (isOwner) return null;
+  if (ownerLoading && !initialIsClaimed) return null;
   if (!eligible) return null;
 
   const capture = (event, props = {}) => {

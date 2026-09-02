@@ -29,6 +29,7 @@ import {
   uploadOwnedBusinessImage,
   setOwnedBusinessImagePrimaryHandler,
   setOwnedBusinessImageHiddenHandler,
+  setOwnedBusinessImageOrderHandler,
   deleteOwnedBusinessImageHandler,
 } from "../controllers/businesses.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
@@ -52,6 +53,7 @@ import {
   UploadBusinessImageSchema,
   UpdateBusinessImagePrimarySchema,
   UpdateBusinessImageHiddenSchema,
+  UpdateBusinessImageOrderSchema,
   DeleteBusinessImageSchema,
 } from "../schemas/businesses.schemas.js";
 import { paginationSchema, featuredBusinessesQuerySchema } from "../schemas/query.schemas.js";
@@ -208,6 +210,13 @@ businessesRouter.patch(
   authUser,
   bodyValidator(UpdateBusinessImageHiddenSchema),
   serverErrorCatcherWrapper(setOwnedBusinessImageHiddenHandler)
+);
+
+businessesRouter.patch(
+  "/images/order",
+  authUser,
+  bodyValidator(UpdateBusinessImageOrderSchema),
+  serverErrorCatcherWrapper(setOwnedBusinessImageOrderHandler)
 );
 
 businessesRouter.delete(

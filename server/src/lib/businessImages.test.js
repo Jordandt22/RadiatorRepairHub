@@ -153,6 +153,43 @@ describe("selectPublicGalleryImages", () => {
     );
   });
 
+  it("sorts non-primary photos by sort_order instead of upload time", () => {
+    const orderedRows = [
+      { image_id: "primary", is_primary: true, sort_order: 0, created_at: "2026-01-02T00:00:00Z" },
+      { image_id: "newer", is_primary: false, sort_order: 0, created_at: "2026-01-03T00:00:00Z" },
+      { image_id: "older", is_primary: false, sort_order: 1, created_at: "2026-01-01T00:00:00Z" },
+    ];
+
+    assert.deepEqual(
+      selectPublicGalleryImages(orderedRows, { isClaimed: true, isFeatured: true }),
+      [
+        { image_id: "primary", is_primary: true, image_url: null, is_default: false },
+        { image_id: "newer", is_primary: false, image_url: null, is_default: false },
+        { image_id: "older", is_primary: false, image_url: null, is_default: false },
+      ]
+    );
+  });
+
+  it("places the default listing photo using default_image_sort_order", () => {
+    const images = selectPublicGalleryImages(
+      [
+        { image_id: "upload-a", is_primary: true, sort_order: 0, created_at: "2026-01-02T00:00:00Z" },
+        { image_id: "upload-b", is_primary: false, sort_order: 2, created_at: "2026-01-03T00:00:00Z" },
+      ],
+      {
+        isClaimed: true,
+        isFeatured: true,
+        imageUrl: "https://example.com/original.jpg",
+        defaultImageSortOrder: 1,
+      }
+    );
+
+    assert.deepEqual(
+      images.map((image) => image.image_id),
+      ["upload-a", "listing-default", "upload-b"]
+    );
+  });
+
   it("excludes hidden extras and does not let them consume a public slot", () => {
     const mixed = [
       { image_id: "primary", is_primary: true, created_at: "2026-01-02T00:00:00Z" },
@@ -215,25 +252,28 @@ describe("applyPublicCoverImage", () => {
 });
 
 describe("withDefaultListingImage", () => {
-  it("puts hidden extras after visible photos in the owner gallery", () => {
+  it("sorts hidden and default photos by sort_order after the primary", () => {
     const images = withDefaultListingImage(
       [
         {
           image_id: "hidden-early",
           is_primary: false,
           is_hidden: true,
+          sort_order: 0,
           created_at: "2026-01-01T00:00:00Z",
         },
         {
           image_id: "visible-extra",
           is_primary: false,
           is_hidden: false,
+          sort_order: 1,
           created_at: "2026-01-02T00:00:00Z",
         },
         {
           image_id: "primary",
           is_primary: true,
           is_hidden: false,
+          sort_order: 2,
           created_at: "2026-01-03T00:00:00Z",
         },
       ],
@@ -241,12 +281,13 @@ describe("withDefaultListingImage", () => {
         imageUrl: "https://example.com/original.jpg",
         hideDefaultImage: true,
         includeHiddenDefault: true,
+        defaultImageSortOrder: 3,
       }
     );
 
     assert.deepEqual(
       images.map((image) => image.image_id),
-      ["primary", "visible-extra", "listing-default", "hidden-early"]
+      ["primary", "hidden-early", "visible-extra", "listing-default"]
     );
   });
 });

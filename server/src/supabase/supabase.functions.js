@@ -25,8 +25,8 @@ import {
 } from "../lib/businessStatsDate.js";
 import { selectPublicGalleryImages, applyPublicCoverImage } from "../lib/businessImages.js";
 
-const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*), business_images(image_id, is_primary, is_hidden)`;
-const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_images(image_id, is_primary, is_hidden, created_at)`;
+const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*), business_images(image_id, is_primary, is_hidden, sort_order)`;
+const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_images(image_id, is_primary, is_hidden, created_at, sort_order)`;
 
 function attachPrimaryImageId(business) {
   if (!business) return business;
@@ -104,6 +104,7 @@ const formatFullBusiness = (business, { includeGallery = false } = {}) => {
       isFeatured: business.is_featured,
       imageUrl: business.image_url,
       hideDefaultImage: Boolean(business.hide_default_image),
+      defaultImageSortOrder: business.default_image_sort_order,
     });
   }
 
@@ -907,7 +908,7 @@ export const getListingReports = async (page, limit, status = null) => {
 const ADMIN_BUSINESS_SELECT =
   "id, title, slug, email, phone, address, website, is_claimed, is_featured, is_test, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
-const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, hide_default_image, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at)`;
+const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, hide_default_image, default_image_sort_order, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at, sort_order)`;
 
 const flattenAdminSecondaryCategories = (rows) =>
   (rows ?? [])
@@ -3538,7 +3539,7 @@ export const getOwnedBusiness = async (businessId, ownerUid, accessToken) => {
   const { data, error } = await client
     .from("businesses")
     .select(
-      "id, owner_uid, title, slug, phone, email, website, description, image_url, hide_default_image, last_edited_at, is_claimed, is_featured"
+      "id, owner_uid, title, slug, phone, email, website, description, image_url, hide_default_image, default_image_sort_order, last_edited_at, is_claimed, is_featured"
     )
     .eq("id", businessId)
     .eq("owner_uid", ownerUid)
@@ -4458,8 +4459,9 @@ export const touchOwnedBusinessEditedAt = async (
 export const listBusinessImagesByBusinessId = async (businessId) => {
   const { data, error } = await supabase
     .from("business_images")
-    .select("image_id, is_primary, is_hidden, created_at")
+    .select("image_id, is_primary, is_hidden, created_at, sort_order")
     .eq("business_id", businessId)
+    .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
 
   return { data: data ?? [], error };
@@ -4469,6 +4471,7 @@ export const insertOwnedBusinessImage = async ({
   imageId,
   businessId,
   isPrimary,
+  sortOrder = 0,
 }) => {
   const { data, error } = await supabase
     .from("business_images")
@@ -4476,8 +4479,9 @@ export const insertOwnedBusinessImage = async ({
       image_id: imageId,
       business_id: businessId,
       is_primary: Boolean(isPrimary),
+      sort_order: Number(sortOrder) || 0,
     })
-    .select("image_id, is_primary, is_hidden, created_at")
+    .select("image_id, is_primary, is_hidden, created_at, sort_order")
     .single();
 
   return { data, error };
@@ -4507,7 +4511,7 @@ export const setOwnedBusinessImagePrimary = async ({ businessId, imageId }) => {
     .update({ is_primary: true, is_hidden: false })
     .eq("business_id", businessId)
     .eq("image_id", imageId)
-    .select("image_id, is_primary, is_hidden, created_at")
+    .select("image_id, is_primary, is_hidden, created_at, sort_order")
     .maybeSingle();
 
   return { data, error };
@@ -4523,10 +4527,36 @@ export const setOwnedBusinessImageHidden = async ({
     .update({ is_hidden: Boolean(isHidden) })
     .eq("business_id", businessId)
     .eq("image_id", imageId)
-    .select("image_id, is_primary, is_hidden, created_at")
+    .select("image_id, is_primary, is_hidden, created_at, sort_order")
     .maybeSingle();
 
   return { data, error };
+};
+
+export const updateOwnedBusinessImageSortOrder = async ({
+  businessId,
+  imageId,
+  sortOrder,
+}) => {
+  const { error } = await supabase
+    .from("business_images")
+    .update({ sort_order: Number(sortOrder) || 0 })
+    .eq("business_id", businessId)
+    .eq("image_id", imageId);
+
+  return { error };
+};
+
+export const updateOwnedBusinessDefaultImageSortOrder = async (
+  businessId,
+  sortOrder
+) => {
+  const { error } = await supabase
+    .from("businesses")
+    .update({ default_image_sort_order: Number(sortOrder) || 0 })
+    .eq("id", businessId);
+
+  return { error };
 };
 
 export const setOwnedBusinessHideDefaultImage = async (

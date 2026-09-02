@@ -201,7 +201,14 @@ export default function ClaimBusinessButton({
   hasDuplicateEmail = false,
   lastEditedAt = null,
 }) {
-  if (isClaimed) {
+  const { isOwner, loading } = useOwnerListingView();
+  const treatAsClaimed = Boolean(isClaimed) || isOwner;
+
+  // Wait for ownership check so a stale public is_claimed=false does not flash
+  // Claim next to Preview/Edit for the owner.
+  if (loading && !isClaimed) return null;
+
+  if (treatAsClaimed) {
     return (
       <ClaimedBusinessStatus
         businessId={businessId}

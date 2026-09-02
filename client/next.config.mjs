@@ -29,6 +29,11 @@ const nextConfig = {
         hostname: "radiatorrepairhub.com",
         pathname: "/images/**",
       },
+      {
+        protocol: "https",
+        hostname: "images.radiatorrepairhub.com",
+        pathname: "/images/**",
+      },
     ],
     formats: ["image/webp", "image/avif"],
     // Cap at 1920 — heroes/cards never need 2K/4K derivatives.
