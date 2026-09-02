@@ -139,6 +139,10 @@ import {
 } from "../../lib/businessStatsDate.js";
 import { gateCompetitorInsights } from "../../lib/gateCompetitorInsights.js";
 import {
+  EMAIL_FILTER_IDS,
+  SCORE_TIER_IDS,
+} from "../../lib/adminBusinessTiers.js";
+import {
   MESSAGE_ON_ITS_WAY,
   MESSAGE_DECLINED,
   MESSAGE_NO_RESPONSE,
@@ -214,6 +218,18 @@ import {
   getOutreachSchedulerState,
   reconcileOutreachScheduler,
 } from "../../outreach-scheduler/scheduler.js";
+import {
+  getDigestSchedule,
+  getDigestSendJobDetail,
+  listDigestRuns,
+  listRecentDigestRuns,
+  clearDigestSendJobHistory,
+  updateDigestSchedule as saveDigestSchedule,
+} from "../../digest-scheduler/db.js";
+import {
+  getDigestSchedulerState,
+  reconcileDigestScheduler,
+} from "../../digest-scheduler/scheduler.js";
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR, ROUTE_NOT_FOUND } =
   errorCodes;
 
@@ -2367,6 +2383,11 @@ function parseAdminStatsFilterBool(value) {
   return null;
 }
 
+function parseAdminStatsTextFilter(value, allowedIds) {
+  const raw = typeof value === "string" ? value.trim() : "";
+  return allowedIds.includes(raw) ? raw : null;
+}
+
 export const getBusinessStatsList = async (req, res) => {
   const days = parseAdminStatsDays(req.query.days);
   const { startDate, endDate } = adminStatsDateWindow(days);
@@ -2395,6 +2416,11 @@ export const getBusinessStatsList = async (req, res) => {
     limit,
     stateId: req.query.state_id || null,
     cityId: req.query.city_id || null,
+    scoreTier: parseAdminStatsTextFilter(req.query.score_tier, SCORE_TIER_IDS),
+    emailFilter: parseAdminStatsTextFilter(
+      req.query.email_filter,
+      EMAIL_FILTER_IDS
+    ),
   });
 
   if (error) {
@@ -2431,6 +2457,11 @@ export const getBusinessStatsSummary = async (req, res) => {
     featured: parseAdminStatsFilterBool(req.query.featured),
     stateId: req.query.state_id || null,
     cityId: req.query.city_id || null,
+    scoreTier: parseAdminStatsTextFilter(req.query.score_tier, SCORE_TIER_IDS),
+    emailFilter: parseAdminStatsTextFilter(
+      req.query.email_filter,
+      EMAIL_FILTER_IDS
+    ),
   });
 
   if (error) {
@@ -3835,6 +3866,150 @@ export const getOutreachSchedulerJob = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "Unable to load the scheduled outreach job.",
+          error
+        )
+      );
+  }
+};
+
+async function buildDigestSchedulerResponse(scheduleOverride = null) {
+  const scheduleWithCampaigns =
+    scheduleOverride ?? (await getDigestSchedule());
+  const {
+    digest_schedule_campaigns: campaigns = [],
+    ...schedule
+  } = scheduleWithCampaigns;
+  const [bullmqState, recentRuns] = await Promise.all([
+    getDigestSchedulerState(),
+    listRecentDigestRuns(10),
+  ]);
+  return {
+    schedule,
+    campaigns,
+    next_run_at: bullmqState?.next ?? null,
+    bullmq_state: bullmqState,
+    recent_runs: recentRuns,
+  };
+}
+
+export const getDigestScheduler = async (_req, res) => {
+  try {
+    return res
+      .status(200)
+      .json(successHandler(await buildDigestSchedulerResponse()));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "Unable to load the digest scheduler.",
+          error
+        )
+      );
+  }
+};
+
+export const updateDigestScheduler = async (req, res) => {
+  const { enabled, local_time, timezone, weekday, campaigns } = req.body;
+  let schedule;
+  try {
+    schedule = await saveDigestSchedule({
+      enabled,
+      localTime: local_time,
+      timezone,
+      weekday,
+      campaigns,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Unable to save digest scheduler settings.",
+          error
+        )
+      );
+  }
+
+  try {
+    await reconcileDigestScheduler(schedule);
+    return res
+      .status(200)
+      .json(successHandler(await buildDigestSchedulerResponse(schedule)));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "Scheduler settings were saved, but scheduler reconciliation failed.",
+          error
+        )
+      );
+  }
+};
+
+export const getDigestSchedulerRuns = async (req, res) => {
+  try {
+    const result = await listDigestRuns(req.query.page, req.query.limit);
+    return res.status(200).json(successHandler(result));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Unable to load digest scheduler runs.",
+          error
+        )
+      );
+  }
+};
+
+export const getDigestSchedulerJob = async (req, res) => {
+  try {
+    const detail = await getDigestSendJobDetail(req.params.jobId);
+    if (!detail) {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(SERVER_ERROR, "Scheduled digest job not found.")
+        );
+    }
+    return res.status(200).json(successHandler(detail));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Unable to load the scheduled digest job.",
+          error
+        )
+      );
+  }
+};
+
+export const clearDigestSchedulerJobHistory = async (req, res) => {
+  try {
+    const cleared = await clearDigestSendJobHistory(req.params.jobId);
+    if (!cleared) {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(SERVER_ERROR, "Scheduled digest job not found.")
+        );
+    }
+    return res.status(200).json(successHandler(cleared));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Unable to clear digest send history for this job.",
           error
         )
       );

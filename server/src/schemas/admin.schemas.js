@@ -729,6 +729,26 @@ const adminBusinessStatsBoolField = Yup.boolean()
   .nullable()
   .optional();
 
+const adminBusinessStatsScoreTierField = Yup.string()
+  .transform((value) => {
+    if (value == null) return null;
+    const trimmed = String(value).trim();
+    return trimmed === "" ? null : trimmed;
+  })
+  .nullable()
+  .oneOf([...SCORE_TIER_IDS, null], "Invalid score tier")
+  .optional();
+
+const adminBusinessStatsEmailFilterField = Yup.string()
+  .transform((value) => {
+    if (value == null) return null;
+    const trimmed = String(value).trim();
+    return trimmed === "" ? null : trimmed;
+  })
+  .nullable()
+  .oneOf([...EMAIL_FILTER_IDS, null], "Invalid email filter")
+  .optional();
+
 export const ADMIN_BUSINESS_STATS_SORTS = [
   "impressions_desc",
   "impressions_asc",
@@ -773,6 +793,8 @@ export const GetAdminBusinessStatsListQuerySchema = Yup.object({
     .optional(),
   claimed: adminBusinessStatsBoolField,
   featured: adminBusinessStatsBoolField,
+  score_tier: adminBusinessStatsScoreTierField,
+  email_filter: adminBusinessStatsEmailFilterField,
   activity: Yup.string()
     .transform((value) => {
       if (value == null || String(value).trim() === "") return undefined;
@@ -809,6 +831,8 @@ export const GetAdminBusinessStatsSummaryQuerySchema = Yup.object({
   days: adminBusinessStatsDaysField,
   claimed: adminBusinessStatsBoolField,
   featured: adminBusinessStatsBoolField,
+  score_tier: adminBusinessStatsScoreTierField,
+  email_filter: adminBusinessStatsEmailFilterField,
   state_id: Yup.string()
     .transform((value) => {
       if (value === "" || value == null) return null;
@@ -1154,6 +1178,61 @@ export const GetOutreachSchedulerRunsQuerySchema = Yup.object({
 
 export const GetOutreachSchedulerJobParamsSchema = Yup.object({
   jobId: Yup.string().uuid("Invalid scheduled outreach job ID").required(),
+});
+
+export const SCHEDULED_DIGEST_SEGMENTS = ["unclaimed", "claimed"];
+export const DIGEST_SCHEDULE_LIMITS = [100, 200, 500, 1000, 2500, 5000, 10000];
+
+const DigestScheduleCampaignSchema = Yup.object({
+  digest_segment: Yup.string()
+    .oneOf(SCHEDULED_DIGEST_SEGMENTS, "Invalid digest segment")
+    .required("Digest segment is required"),
+  enabled: Yup.boolean().required("Campaign enabled state is required"),
+  limit_count: Yup.number()
+    .oneOf(DIGEST_SCHEDULE_LIMITS, "Invalid campaign limit")
+    .required("Campaign limit is required"),
+}).noUnknown();
+
+export const UpdateDigestSchedulerSchema = Yup.object({
+  enabled: Yup.boolean().required("Scheduler enabled state is required"),
+  local_time: Yup.string()
+    .matches(
+      /^(?:[01]\d|2[0-3]):[0-5]\d$/,
+      "Time must use 24-hour HH:mm format"
+    )
+    .required("Schedule time is required"),
+  timezone: Yup.string()
+    .oneOf(["America/Los_Angeles"], "Timezone must be Pacific Time")
+    .required("Timezone is required"),
+  weekday: Yup.number()
+    .integer()
+    .min(0, "Weekday must be between Sunday (0) and Saturday (6)")
+    .max(6, "Weekday must be between Sunday (0) and Saturday (6)")
+    .required("Schedule weekday is required"),
+  campaigns: Yup.array()
+    .of(DigestScheduleCampaignSchema)
+    .length(
+      SCHEDULED_DIGEST_SEGMENTS.length,
+      "All digest campaigns are required"
+    )
+    .test(
+      "scheduled-digest-segments",
+      "Each digest segment must appear exactly once",
+      (campaigns) => {
+        const types = (campaigns ?? []).map((item) => item?.digest_segment);
+        return (
+          types.length === SCHEDULED_DIGEST_SEGMENTS.length &&
+          SCHEDULED_DIGEST_SEGMENTS.every(
+            (type) => types.filter((value) => value === type).length === 1
+          )
+        );
+      }
+    )
+    .required("Campaign settings are required"),
+}).noUnknown();
+
+export const GetDigestSchedulerJobParamsSchema = Yup.object({
+  jobId: Yup.string().uuid("Invalid scheduled digest job ID").required(),
 });
 
 export const OutreachMarkSentSchema = Yup.object({

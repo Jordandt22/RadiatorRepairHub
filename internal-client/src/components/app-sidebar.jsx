@@ -154,6 +154,11 @@ const data = {
       icon: <MegaphoneIcon />,
     },
     {
+      title: "Weekly Digest",
+      url: "/digest",
+      icon: <BarChart3Icon />,
+    },
+    {
       title: "Email Cleaner",
       url: "/email-cleaner?tab=cleaner",
       icon: <MailXIcon />,

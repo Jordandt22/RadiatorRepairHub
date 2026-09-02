@@ -54,7 +54,7 @@ const BENEFITS = [
   {
     title: "Listing Analytics",
     description:
-      "See page views, impressions, and impressions by source in your dashboard. Upgrade to Featured for full analytics, including listing clicks, CTR, average position, and contact clicks. Stats are not live and can take a few minutes to appear.",
+      "See page views, impressions, and impressions by source in your dashboard, and optionally receive a weekly activity report by email. Upgrade to Featured for full analytics, including listing clicks, CTR, average position, and contact clicks. Stats are not live and can take a few minutes to appear.",
     icon: BarChart3,
   },
   {
@@ -117,7 +117,7 @@ function buildClaimFaqs(supportEmail) {
     {
       question: "Can I see how customers find my listing?",
       answer:
-        "Yes. After you claim, sign in to your dashboard and open Analytics. Claimed listings include page views, impressions, and impressions by source. Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source, plus competitor insights that show how every shop in your city is performing and where you rank. Stats are not live and can take a few minutes to appear.",
+        "Yes. After you claim, sign in to your dashboard and open Analytics. Claimed listings include page views, impressions, and impressions by source. Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source, plus competitor insights that show how every shop in your city is performing and where you rank. We may also email a weekly activity report; manage the notification email or turn reports off in Settings → Notifications. Stats are not live and can take a few minutes to appear.",
     },
   ];
 }

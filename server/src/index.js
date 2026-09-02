@@ -23,6 +23,7 @@ import billingRouter from "./routes/billing.routes.js";
 import businessStatsRouter from "./routes/business-stats.routes.js";
 import searchStatsRouter from "./routes/search-stats.routes.js";
 import stripeWebhookRouter from "./routes/stripeWebhook.routes.js";
+import emailUnsubscribeRouter from "./routes/email-unsubscribe.routes.js";
 
 const app = express();
 
@@ -126,6 +127,8 @@ app.use(`/v${API_VERSION}/api/business-stats`, businessStatsRouter);
 
 // Routes for public search demand stats ingest
 app.use(`/v${API_VERSION}/api/search-stats`, searchStatsRouter);
+
+app.use(`/v${API_VERSION}/api/email`, emailUnsubscribeRouter);
 
 // PORT and Sever
 const server = http.createServer(app);

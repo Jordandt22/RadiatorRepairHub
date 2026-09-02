@@ -302,6 +302,22 @@ const imageOrderIdField = Yup.string()
       Yup.string().uuid().isValidSync(value)
   );
 
+export const UpdateOwnedBusinessNotificationsSchema = Yup.object({
+  notificationEmail: Yup.string()
+    .trim()
+    .email("Enter a valid email address.")
+    .max(254)
+    .nullable()
+    .transform((value) => (value === "" ? null : value)),
+  weeklyDigestEnabled: Yup.boolean(),
+}).test(
+  "has-notification-field",
+  "Provide a notification email or weekly digest setting.",
+  (value) =>
+    value?.notificationEmail !== undefined ||
+    value?.weeklyDigestEnabled !== undefined
+);
+
 export const UpdateBusinessImageOrderSchema = Yup.object({
   businessId: Yup.string().trim().uuid("Invalid business ID").required(),
   imageIds: Yup.array()

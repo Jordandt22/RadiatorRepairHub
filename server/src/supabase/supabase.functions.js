@@ -3512,7 +3512,7 @@ export const getOwnedBusinesses = async (ownerUid, accessToken) => {
   const { data, error } = await client
     .from("businesses")
     .select(
-      "id, title, slug, address, image_url, hide_default_image, place_id, cdn_stored, last_edited_at, is_featured, is_claimed, business_images(image_id, is_primary, is_hidden)"
+      "id, title, slug, address, email, notification_email, weekly_digest_enabled, image_url, hide_default_image, place_id, cdn_stored, last_edited_at, is_featured, is_claimed, business_images(image_id, is_primary, is_hidden)"
     )
     .eq("owner_uid", ownerUid)
     .eq("is_claimed", true)
@@ -3539,7 +3539,7 @@ export const getOwnedBusiness = async (businessId, ownerUid, accessToken) => {
   const { data, error } = await client
     .from("businesses")
     .select(
-      "id, owner_uid, title, slug, phone, email, website, description, image_url, hide_default_image, default_image_sort_order, last_edited_at, is_claimed, is_featured"
+      "id, owner_uid, title, slug, phone, email, website, description, image_url, hide_default_image, default_image_sort_order, notification_email, weekly_digest_enabled, last_edited_at, is_claimed, is_featured"
     )
     .eq("id", businessId)
     .eq("owner_uid", ownerUid)
@@ -3964,6 +3964,8 @@ export const getAdminBusinessStatsList = async ({
   limit = 20,
   stateId = null,
   cityId = null,
+  scoreTier = null,
+  emailFilter = null,
 }) => {
   const sanitizedQ = sanitizeIlikeSearch(q);
   const resolvedActivity =
@@ -3984,6 +3986,8 @@ export const getAdminBusinessStatsList = async ({
     p_limit: resolvedLimit,
     p_state_id: stateId || null,
     p_city_id: cityId || null,
+    p_score_tier: scoreTier || null,
+    p_email_filter: emailFilter || null,
   });
 
   if (error) {
@@ -4015,6 +4019,8 @@ export const getAdminBusinessStatsSummary = async ({
   featured = null,
   stateId = null,
   cityId = null,
+  scoreTier = null,
+  emailFilter = null,
 }) => {
   const { data, error } = await supabase.rpc("admin_summary_business_stats", {
     p_start_date: startDate || null,
@@ -4023,6 +4029,8 @@ export const getAdminBusinessStatsSummary = async ({
     p_featured: parseAdminStatsBool(featured),
     p_state_id: stateId || null,
     p_city_id: cityId || null,
+    p_score_tier: scoreTier || null,
+    p_email_filter: emailFilter || null,
   });
 
   if (error) {
@@ -5392,6 +5400,159 @@ export const applyStripeSubscriptionStateRpc = async ({
     p_current_period_end: currentPeriodEnd ?? null,
     p_cancel_at_period_end: Boolean(cancelAtPeriodEnd),
   });
+
+  return { data, error };
+};
+
+export const getDigestBusinessesByIds = async (ids) => {
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return { data: [], error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("digest_recipient_list")
+    .select(
+      "id, title, slug, email, notification_email, weekly_digest_enabled, is_claimed, is_featured, owner_uid, claim_eligibility"
+    )
+    .in("id", ids);
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  const byId = new Map((data ?? []).map((row) => [row.id, row]));
+  const ordered = ids.map((id) => byId.get(id)).filter(Boolean);
+  const businesses = await withOwnerEmails(ordered);
+  return { data: businesses, error: null };
+};
+
+export const insertDigestHistory = async (rows) => {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return { data: [], error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("digest_history")
+    .insert(rows)
+    .select(
+      "id, business_id, digest_segment, recipient, subject, provider_message_id, sent_at, send_job_id"
+    );
+
+  return { data, error };
+};
+
+export const listEmailSuppressionsForBusinesses = async (
+  businessIds,
+  suppressionType = "weekly_digest"
+) => {
+  const ids = (businessIds ?? []).filter(Boolean);
+  const keys = new Set();
+  if (!ids.length) return keys;
+
+  const { data, error } = await supabase
+    .from("email_suppressions")
+    .select("business_id, email")
+    .eq("suppression_type", suppressionType)
+    .in("business_id", ids);
+
+  if (error) {
+    throw error;
+  }
+
+  for (const row of data ?? []) {
+    keys.add(`${row.business_id}:${String(row.email || "").toLowerCase()}`);
+  }
+  return keys;
+};
+
+export const insertEmailSuppression = async ({
+  businessId,
+  email,
+  suppressionType = "weekly_digest",
+  source = "unsubscribe_link",
+}) => {
+  const normalized = String(email || "").trim().toLowerCase();
+  const { data, error } = await supabase
+    .from("email_suppressions")
+    .upsert(
+      {
+        business_id: businessId,
+        email: normalized,
+        suppression_type: suppressionType,
+        source,
+      },
+      { onConflict: "business_id,email,suppression_type" }
+    )
+    .select("id, business_id, email, suppression_type, created_at")
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const deleteEmailSuppression = async ({
+  businessId,
+  email,
+  suppressionType = "weekly_digest",
+}) => {
+  let query = supabase
+    .from("email_suppressions")
+    .delete()
+    .eq("business_id", businessId)
+    .eq("suppression_type", suppressionType);
+
+  if (email) {
+    query = query.eq("email", String(email).trim().toLowerCase());
+  }
+
+  const { error } = await query;
+  return { error };
+};
+
+export const getBusinessTitleById = async (businessId) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, title, slug, is_claimed")
+    .eq("id", businessId)
+    .maybeSingle();
+  return { data, error };
+};
+
+export const disableWeeklyDigestForBusiness = async (businessId) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({ weekly_digest_enabled: false })
+    .eq("id", businessId)
+    .select("id, weekly_digest_enabled, is_claimed")
+    .maybeSingle();
+  return { data, error };
+};
+
+export const updateOwnedBusinessNotifications = async (
+  businessId,
+  ownerUid,
+  { notificationEmail, weeklyDigestEnabled },
+  accessToken
+) => {
+  const client = createUserSupabaseClient(accessToken);
+  const update = {};
+  if (notificationEmail !== undefined) {
+    update.notification_email = notificationEmail
+      ? String(notificationEmail).trim().toLowerCase()
+      : null;
+  }
+  if (weeklyDigestEnabled !== undefined) {
+    update.weekly_digest_enabled = Boolean(weeklyDigestEnabled);
+  }
+
+  const { data, error } = await client
+    .from("businesses")
+    .update(update)
+    .eq("id", businessId)
+    .eq("owner_uid", ownerUid)
+    .select(
+      "id, title, slug, email, notification_email, weekly_digest_enabled, is_claimed, is_featured"
+    )
+    .maybeSingle();
 
   return { data, error };
 };

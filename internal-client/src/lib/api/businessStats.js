@@ -34,6 +34,8 @@ export async function fetchAdminBusinessStatsList(query = {}, accessToken) {
   if (query.sort) params.set("sort", query.sort);
   if (query.stateId) params.set("state_id", query.stateId);
   if (query.cityId) params.set("city_id", query.cityId);
+  if (query.scoreTier) params.set("score_tier", query.scoreTier);
+  if (query.emailFilter) params.set("email_filter", query.emailFilter);
   return fetchApi(`/admin/businesses/stats?${params.toString()}`, {
     accessToken,
   });
@@ -45,6 +47,8 @@ export async function fetchAdminBusinessStatsSummary(query = {}, accessToken) {
   if (query.featured === true) params.set("featured", "true");
   if (query.stateId) params.set("state_id", query.stateId);
   if (query.cityId) params.set("city_id", query.cityId);
+  if (query.scoreTier) params.set("score_tier", query.scoreTier);
+  if (query.emailFilter) params.set("email_filter", query.emailFilter);
   return fetchApi(`/admin/businesses/stats/summary?${params.toString()}`, {
     accessToken,
   });

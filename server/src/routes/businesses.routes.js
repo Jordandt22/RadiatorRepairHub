@@ -19,6 +19,8 @@ import {
   getOwnedBusinessesHandler,
   getOwnedBusinessStatsHandler,
   getOwnedCompetitorInsightsHandler,
+  getOwnedBusinessNotificationsHandler,
+  updateOwnedBusinessNotificationsHandler,
   unclaimOwnedBusinessHandler,
   updateBusinessContact,
   updateBusinessCategories,
@@ -54,6 +56,7 @@ import {
   UpdateBusinessImagePrimarySchema,
   UpdateBusinessImageHiddenSchema,
   UpdateBusinessImageOrderSchema,
+  UpdateOwnedBusinessNotificationsSchema,
   DeleteBusinessImageSchema,
 } from "../schemas/businesses.schemas.js";
 import { paginationSchema, featuredBusinessesQuerySchema } from "../schemas/query.schemas.js";
@@ -132,6 +135,21 @@ businessesRouter.get(
   paramsValidator(OwnedBusinessIdParamsSchema),
   queryValidator(OwnedBusinessStatsQuerySchema),
   serverErrorCatcherWrapper(getOwnedCompetitorInsightsHandler)
+);
+
+businessesRouter.get(
+  "/owned/:businessId/notifications",
+  authUser,
+  paramsValidator(OwnedBusinessIdParamsSchema),
+  serverErrorCatcherWrapper(getOwnedBusinessNotificationsHandler)
+);
+
+businessesRouter.patch(
+  "/owned/:businessId/notifications",
+  authUser,
+  paramsValidator(OwnedBusinessIdParamsSchema),
+  bodyValidator(UpdateOwnedBusinessNotificationsSchema),
+  serverErrorCatcherWrapper(updateOwnedBusinessNotificationsHandler)
 );
 
 // Owner unclaim (must be before /:business_slug)

@@ -1046,3 +1046,175 @@ export const MESSAGE_NO_RESPONSE = Object.freeze({
   <p>The RadiatorRepairHub Team</p>
   `,
 });
+
+const digestShell = ({
+  eyebrow,
+  title,
+  introHtml,
+  statsHtml,
+  ctaHtml,
+  unsubscribeUrl,
+}) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${title}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #eef2f6;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; background-color: #eef2f6;">
+    <tr>
+      <td align="center" style="padding: 24px 12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+          <tr>
+            <td style="padding: 22px 28px; background-color: #0f2744; font-family: Arial, Helvetica, sans-serif;">
+              <div style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #9fb3c8;">
+                ${eyebrow}
+              </div>
+              <div style="margin-top: 6px; font-size: 20px; font-weight: 700; color: #ffffff;">
+                RadiatorRepairHub
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 28px 28px 8px; font-family: Arial, Helvetica, sans-serif; color: #1a2332;">
+              <h1 style="margin: 0 0 12px; font-size: 22px; line-height: 1.3; font-weight: 700; color: #0f2744;">
+                ${title}
+              </h1>
+              ${introHtml}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 28px 12px;">
+              ${statsHtml}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 28px 8px; font-family: Arial, Helvetica, sans-serif;">
+              ${ctaHtml}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 20px 28px 28px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.5; color: #667788; border-top: 1px solid #e6ebf0;">
+              You're receiving this because your shop is listed on RadiatorRepairHub.
+              <br>
+              <a href="${unsubscribeUrl}" style="color: #1a73e8; text-decoration: underline;">Unsubscribe from weekly reports</a>
+              <br><br>
+              Thanks,<br>
+              RadiatorRepairHub Team
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
+const digestPrimaryButton = (href, label) => `
+  <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin: 4px 0 10px;">
+    <tr>
+      <td style="border-radius: 8px; background-color: #0f2744;">
+        <a href="${href}" style="display: inline-block; padding: 12px 18px; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none;">
+          ${label}
+        </a>
+      </td>
+    </tr>
+  </table>
+`;
+
+const digestSecondaryLink = (href, label) =>
+  `<a href="${href}" style="color: #1a73e8; text-decoration: underline;">${label}</a>`;
+
+export const WEEKLY_DIGEST_UNCLAIMED_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `${businessName ?? "Your shop"} had customer activity this week on RadiatorRepairHub`,
+  html: (businessName, { statsHtml, claimUrl, howToClaimUrl, unsubscribeUrl }) =>
+    digestShell({
+      eyebrow: "Weekly activity report",
+      title: "People found your shop last week",
+      introHtml: `
+        <p style="margin: 0 0 8px; font-size: 15px; line-height: 1.55; color: #334155;">
+          Hi there,
+        </p>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #334155;">
+          Here's a snapshot of activity for <strong>${businessName ?? "your shop"}</strong> on RadiatorRepairHub over the last 7 days.
+        </p>
+      `,
+      statsHtml,
+      ctaHtml: `
+        <p style="margin: 0 0 14px; font-size: 14px; line-height: 1.55; color: #334155;">
+          Claim your listing free to edit shop details, see more activity, and choose where weekly reports go.
+        </p>
+        ${digestPrimaryButton(claimUrl, "Claim your listing free")}
+        <p style="margin: 0; font-size: 13px; color: #667788;">
+          ${digestSecondaryLink(howToClaimUrl, "How to claim")}
+        </p>
+      `,
+      unsubscribeUrl,
+    }),
+});
+
+export const WEEKLY_DIGEST_CLAIMED_BASIC_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `${businessName ?? "Your listing"} weekly activity report`,
+  html: (
+    businessName,
+    { statsHtml, featuredUrl, dashboardUrl, unsubscribeUrl }
+  ) =>
+    digestShell({
+      eyebrow: "Weekly activity report",
+      title: "Your listing activity this week",
+      introHtml: `
+        <p style="margin: 0 0 8px; font-size: 15px; line-height: 1.55; color: #334155;">
+          Hi there,
+        </p>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #334155;">
+          Thanks for claiming <strong>${businessName ?? "your listing"}</strong>. Here's your dashboard-level activity for the last 7 days.
+        </p>
+      `,
+      statsHtml,
+      ctaHtml: `
+        <p style="margin: 0 0 14px; font-size: 14px; line-height: 1.55; color: #334155;">
+          Get Featured to see exact phone clicks, click-through rate, average position, and competitor insights.
+        </p>
+        ${digestPrimaryButton(featuredUrl, "Get Featured")}
+        <p style="margin: 0; font-size: 13px; color: #667788;">
+          ${digestSecondaryLink(dashboardUrl, "View dashboard")}
+        </p>
+      `,
+      unsubscribeUrl,
+    }),
+});
+
+export const WEEKLY_DIGEST_FEATURED_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `${businessName ?? "Your listing"} weekly Featured report`,
+  html: (
+    businessName,
+    { statsHtml, dashboardUrl, insightsUrl, unsubscribeUrl }
+  ) =>
+    digestShell({
+      eyebrow: "Featured weekly report",
+      title: "Your full weekly report",
+      introHtml: `
+        <p style="margin: 0 0 8px; font-size: 15px; line-height: 1.55; color: #334155;">
+          Hi there,
+        </p>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #334155;">
+          Thanks for being Featured. Here's the complete last-7-days report for <strong>${businessName ?? "your listing"}</strong>.
+        </p>
+      `,
+      statsHtml,
+      ctaHtml: `
+        ${digestPrimaryButton(dashboardUrl, "View analytics")}
+        <p style="margin: 0; font-size: 13px; color: #667788;">
+          ${digestSecondaryLink(insightsUrl, "Competitor insights")}
+        </p>
+      `,
+      unsubscribeUrl,
+    }),
+});
+

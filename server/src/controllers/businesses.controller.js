@@ -69,7 +69,10 @@ import {
   updateOwnedBusinessDefaultImageSortOrder,
   deleteOwnedBusinessImageRow,
   markOwnedBusinessCdnStored,
+  updateOwnedBusinessNotifications,
+  deleteEmailSuppression,
 } from "../supabase/supabase.functions.js";
+import { resolveNotificationRecipientSource } from "../lib/notificationRecipient.js";
 import {
   getBusinessImageLimit,
   selectPublicGalleryImages,
@@ -1210,6 +1213,76 @@ export const getOwnedCompetitorInsightsHandler = async (req, res) => {
   );
 
   return res.status(200).json(successHandler(gatedData));
+};
+
+function formatNotificationSettings(profile, ownerAuthEmail) {
+  const resolved = resolveNotificationRecipientSource(profile, ownerAuthEmail);
+  return {
+    businessId: profile.id,
+    businessName: profile.title,
+    businessSlug: profile.slug,
+    listingEmail: profile.email ?? null,
+    accountEmail: ownerAuthEmail ?? null,
+    notificationEmail: profile.notification_email ?? null,
+    weeklyDigestEnabled: profile.weekly_digest_enabled !== false,
+    isFeatured: Boolean(profile.is_featured),
+    resolvedRecipient: resolved.email,
+    resolvedRecipientSource: resolved.source,
+  };
+}
+
+export const getOwnedBusinessNotificationsHandler = async (req, res) => {
+  const owned = await requireOwnedListing(req, res, req.params.businessId);
+  if (!owned) return;
+
+  return res.status(200).json(
+    successHandler(
+      formatNotificationSettings(owned.profile, req.user?.email ?? null)
+    )
+  );
+};
+
+export const updateOwnedBusinessNotificationsHandler = async (req, res) => {
+  const owned = await requireOwnedListing(req, res, req.params.businessId);
+  if (!owned) return;
+
+  const { notificationEmail, weeklyDigestEnabled } = req.body;
+  const { data, error } = await updateOwnedBusinessNotifications(
+    owned.profile.id,
+    owned.ownerUid,
+    { notificationEmail, weeklyDigestEnabled },
+    owned.accessToken
+  );
+
+  if (error) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error saving notification settings.",
+        error
+      )
+    );
+  }
+
+  if (!data) {
+    return res.status(403).json(
+      customErrorHandler(
+        ACCESS_DENIED,
+        "You do not own this business listing."
+      )
+    );
+  }
+
+  if (weeklyDigestEnabled === true) {
+    await deleteEmailSuppression({
+      businessId: data.id,
+      email: null,
+    });
+  }
+
+  return res.status(200).json(
+    successHandler(formatNotificationSettings(data, req.user?.email ?? null))
+  );
 };
 
 export const unclaimOwnedBusinessHandler = async (req, res) => {

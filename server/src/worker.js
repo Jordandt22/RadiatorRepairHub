@@ -39,6 +39,16 @@ import {
 } from "./outreach-scheduler/handlers.js";
 import { closeOutreachQueues } from "./outreach-scheduler/queues.js";
 import { reconcileOutreachScheduler } from "./outreach-scheduler/scheduler.js";
+import {
+  DIGEST_DISPATCH_QUEUE_NAME,
+  DIGEST_SEND_QUEUE_NAME,
+} from "./digest-scheduler/constants.js";
+import {
+  processDigestDispatchJob,
+  processDigestSendJob,
+} from "./digest-scheduler/handlers.js";
+import { closeDigestQueues } from "./digest-scheduler/queues.js";
+import { reconcileDigestScheduler } from "./digest-scheduler/scheduler.js";
 import { logger } from "./lib/logger.js";
 
 const connection = getBullmqConnectionOptions();
@@ -111,6 +121,18 @@ const outreachSendWorker = new Worker(
   { connection, concurrency: 1 }
 );
 
+const digestDispatchWorker = new Worker(
+  DIGEST_DISPATCH_QUEUE_NAME,
+  processDigestDispatchJob,
+  { connection, concurrency: 1 }
+);
+
+const digestSendWorker = new Worker(
+  DIGEST_SEND_QUEUE_NAME,
+  processDigestSendJob,
+  { connection, concurrency: 1 }
+);
+
 function attachLogging(worker, label) {
   const log = logger.child({ worker: label });
   worker.on("completed", (job, result) => {
@@ -129,6 +151,8 @@ attachLogging(emailScrapeWorker, "email-scrape");
 attachLogging(apifyScrapeWorker, "apify-scrape-city");
 attachLogging(outreachDispatchWorker, "outreach-dispatch");
 attachLogging(outreachSendWorker, "outreach-send");
+attachLogging(digestDispatchWorker, "digest-dispatch");
+attachLogging(digestSendWorker, "digest-send");
 
 logger.info(
   {
@@ -139,6 +163,8 @@ logger.info(
       APIFY_SCRAPE_QUEUE_NAME,
       OUTREACH_DISPATCH_QUEUE_NAME,
       OUTREACH_SEND_QUEUE_NAME,
+      DIGEST_DISPATCH_QUEUE_NAME,
+      DIGEST_SEND_QUEUE_NAME,
     ],
   },
   "Worker listening"
@@ -152,6 +178,17 @@ reconcileOutreachScheduler()
     logger.error(
       { err: err?.message || err },
       "Outreach scheduler reconciliation failed"
+    );
+  });
+
+reconcileDigestScheduler()
+  .then((scheduler) => {
+    logger.info({ scheduler }, "Digest scheduler reconciled");
+  })
+  .catch((err) => {
+    logger.error(
+      { err: err?.message || err },
+      "Digest scheduler reconciliation failed"
     );
   });
 
@@ -182,7 +219,10 @@ async function shutdown() {
     apifyScrapeWorker.close(),
     outreachDispatchWorker.close(),
     outreachSendWorker.close(),
+    digestDispatchWorker.close(),
+    digestSendWorker.close(),
     closeOutreachQueues(),
+    closeDigestQueues(),
     closeApifyScrapeQueue(),
     closeEmailScrapeQueue(),
   ]);

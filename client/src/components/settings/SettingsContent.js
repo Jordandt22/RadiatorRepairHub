@@ -35,6 +35,7 @@ import {
   fetchBillingSubscriptions,
   createBillingPortalSession,
 } from "@/lib/api/billing";
+import NotificationsSettingsPanel from "@/components/settings/NotificationsSettingsPanel";
 
 function isValidEmail(value) {
   return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/.test(
@@ -917,12 +918,16 @@ function SettingsContentInner() {
         </TabsContent>
 
         <TabsContent value="notifications">
-          <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">
-            <p className="font-medium text-foreground">Coming soon</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Choose how you hear about inquiries and account updates.
-            </p>
-          </div>
+          <section aria-labelledby="notifications-settings-heading">
+            <h2 id="notifications-settings-heading" className="sr-only">
+              Notifications
+            </h2>
+            {showAccountSkeleton ? (
+              <SettingsAccountSkeleton />
+            ) : (
+              <NotificationsSettingsPanel accountEmail={currentEmail} />
+            )}
+          </section>
         </TabsContent>
       </Tabs>
     </div>

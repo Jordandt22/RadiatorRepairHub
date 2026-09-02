@@ -70,6 +70,11 @@ import {
   getOutreachSchedulerRuns,
   getOutreachSchedulerJob,
   updateOutreachScheduler,
+  getDigestScheduler,
+  getDigestSchedulerRuns,
+  getDigestSchedulerJob,
+  clearDigestSchedulerJobHistory,
+  updateDigestScheduler,
   markOutreachEmailsSent,
   getOutreachHistoryList,
   getOutreachHistoryMatchingIdsList,
@@ -166,6 +171,8 @@ import {
   UpdateOutreachSchedulerSchema,
   GetOutreachSchedulerRunsQuerySchema,
   GetOutreachSchedulerJobParamsSchema,
+  UpdateDigestSchedulerSchema,
+  GetDigestSchedulerJobParamsSchema,
   OutreachMarkSentSchema,
   GetOutreachHistoryQuerySchema,
   GetOutreachHistoryMatchingIdsSchema,
@@ -475,6 +482,35 @@ adminRouter.patch(
   "/outreach/scheduler",
   bodyValidator(UpdateOutreachSchedulerSchema),
   serverErrorCatcherWrapper(updateOutreachScheduler)
+);
+
+adminRouter.get(
+  "/digest/scheduler",
+  serverErrorCatcherWrapper(getDigestScheduler)
+);
+
+adminRouter.get(
+  "/digest/scheduler/runs",
+  queryValidator(GetOutreachSchedulerRunsQuerySchema),
+  serverErrorCatcherWrapper(getDigestSchedulerRuns)
+);
+
+adminRouter.get(
+  "/digest/scheduler/jobs/:jobId",
+  paramsValidator(GetDigestSchedulerJobParamsSchema),
+  serverErrorCatcherWrapper(getDigestSchedulerJob)
+);
+
+adminRouter.delete(
+  "/digest/scheduler/jobs/:jobId/history",
+  paramsValidator(GetDigestSchedulerJobParamsSchema),
+  serverErrorCatcherWrapper(clearDigestSchedulerJobHistory)
+);
+
+adminRouter.patch(
+  "/digest/scheduler",
+  bodyValidator(UpdateDigestSchedulerSchema),
+  serverErrorCatcherWrapper(updateDigestScheduler)
 );
 
 adminRouter.post(

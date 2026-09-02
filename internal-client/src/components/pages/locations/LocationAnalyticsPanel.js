@@ -67,6 +67,10 @@ export default function LocationAnalyticsPanel({
   onSegmentChange,
   activity,
   onActivityChange,
+  scoreTier = null,
+  onScoreTierChange,
+  emailFilter = null,
+  onEmailFilterChange,
   onPageChange,
   accessToken,
   logout,
@@ -79,6 +83,8 @@ export default function LocationAnalyticsPanel({
   const resolvedSort = resolveAnalyticsSort(sort);
   const claimedFilter = TAB_FILTERS[resolvedSegment]?.claimed ?? null;
   const featuredFilter = TAB_FILTERS[resolvedSegment]?.featured ?? null;
+  const scoreTierId = scoreTier?.id ?? null;
+  const emailFilterId = emailFilter?.id ?? null;
 
   const listQuery = useQuery({
     queryKey: [
@@ -92,6 +98,8 @@ export default function LocationAnalyticsPanel({
       resolvedActivity,
       searchQuery,
       resolvedSort,
+      scoreTierId,
+      emailFilterId,
     ],
     queryFn: async () => {
       const result = await fetchAdminBusinessStatsList(
@@ -106,6 +114,8 @@ export default function LocationAnalyticsPanel({
           sort: resolvedSort,
           stateId,
           cityId,
+          scoreTier: scoreTierId,
+          emailFilter: emailFilterId,
         },
         accessToken,
       );
@@ -133,6 +143,8 @@ export default function LocationAnalyticsPanel({
       locationId,
       daysParam,
       resolvedSegment,
+      scoreTierId,
+      emailFilterId,
     ],
     queryFn: async () => {
       const result = await fetchAdminBusinessStatsSummary(
@@ -142,6 +154,8 @@ export default function LocationAnalyticsPanel({
           featured: featuredFilter === true,
           stateId,
           cityId,
+          scoreTier: scoreTierId,
+          emailFilter: emailFilterId,
         },
         accessToken,
       );
@@ -213,6 +227,10 @@ export default function LocationAnalyticsPanel({
         onSearchChange={onSearchChange}
         activity={resolvedActivity}
         onActivityChange={onActivityChange}
+        scoreTier={scoreTier}
+        onScoreTierChange={onScoreTierChange}
+        emailFilter={emailFilter}
+        onEmailFilterChange={onEmailFilterChange}
         disabled={showListSkeleton}
       />
 
