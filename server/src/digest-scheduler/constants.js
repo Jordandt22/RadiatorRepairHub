@@ -4,7 +4,9 @@ export const DIGEST_SEND_QUEUE_NAME = "digest-send";
 export const DIGEST_TIMEZONE = "America/Los_Angeles";
 export const DIGEST_DEFAULT_TIME = "09:00";
 export const DIGEST_DEFAULT_WEEKDAY = 1;
-export const DIGEST_LIMIT_OPTIONS = [100, 200, 500, 1000, 2500, 5000, 10000];
+export const DIGEST_LIMIT_OPTIONS = [
+  10, 20, 50, 100, 200, 500, 1000, 2500, 5000, 10000,
+];
 export const SCHEDULED_DIGEST_SEGMENTS = ["unclaimed", "claimed"];
 
 export function buildDigestCronPattern(localTime, weekday = DIGEST_DEFAULT_WEEKDAY) {
