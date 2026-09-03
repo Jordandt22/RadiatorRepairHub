@@ -34,6 +34,11 @@ test("outreach payload includes unsubscribe footer and List-Unsubscribe headers"
   );
   assert.match(payload.html, /\/email\/unsubscribe\?token=/);
   assert.match(payload.html, /claim invites, follow-ups, or weekly reports/i);
+  assert.match(payload.from, /^Jordan at RadiatorRepairHub </);
+  assert.equal(payload.replyTo, "hello@radiatorrepairhub.com");
+  assert.match(payload.html, /Jordan<br>RadiatorRepairHub/);
+  assert.doesNotMatch(payload.html, /competitor insights for your city/);
+  assert.doesNotMatch(payload.html, /By claiming your listing, you can/);
 });
 
 test("evaluateOutreachEligibility honors isSuppressed", () => {

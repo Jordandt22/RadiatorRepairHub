@@ -5,7 +5,7 @@ import {
   CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE,
   CLAIM_FOLLOWUP_OUTREACH_MESSAGE,
   WEBSITE_OFFER_OUTREACH_MESSAGE,
-  SENDER_NAME,
+  OUTREACH_SENDER_NAME,
   buildBusinessClaimLink,
   getWebBaseUrl,
 } from "./constants/messages.js";
@@ -286,7 +286,8 @@ export const buildOutreachEmailPayload = ({
     : content.subject;
 
   return {
-    from: `${SENDER_NAME} <${senderEmail}>`,
+    from: `${OUTREACH_SENDER_NAME} <${senderEmail}>`,
+    replyTo: senderEmail,
     to: [deliveryTo],
     subject,
     html: appendOutreachUnsubscribeFooter(content.html, unsubscribeUrl),

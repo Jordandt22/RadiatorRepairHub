@@ -1,4 +1,13 @@
 export const SENDER_NAME = "RadiatorRepairHub Team";
+export const OUTREACH_SENDER_NAME = "Jordan at RadiatorRepairHub";
+
+const outreachSignOffHtml = `
+  <p>Thanks,<br>Jordan<br>RadiatorRepairHub</p>
+`;
+
+const outreachFeaturedNoteHtml = (pricingUrl) => `
+  <p>After you claim, we have an optional Featured upgrade if you want higher placement in search: <a href="${pricingUrl}" style="color: #1a73e8;">see pricing</a>.</p>
+`;
 
 const URGENCY_LABELS = {
   1: "ASAP",
@@ -616,7 +625,7 @@ export const LISTING_REQUEST_LIVE_MESSAGE = Object.freeze({
     <li>Get a weekly activity report by email (manage it in Settings → Notifications after you claim)</li>
   </ul>
 
-  <p>You can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${escapeEmailHtml(`${getWebBaseUrl()}/pricing`)}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>We have an optional Featured upgrade if you want higher placement in search: <a href="${escapeEmailHtml(`${getWebBaseUrl()}/pricing`)}" style="color: #1a73e8;">see pricing</a>.</p>
 
   <p>If you have any questions or need assistance, don't hesitate to reach out! You can also reply to this email.</p>
 
@@ -780,7 +789,7 @@ export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
     <li>Get a weekly activity report by email — set a notification email or turn reports off anytime in <a href="${notificationsUrl}" style="color: #1a73e8;">Settings → Notifications</a></li>
   </ul>
 
-  <p>You can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>We have an optional Featured upgrade if you want higher placement in search: <a href="${pricingUrl}" style="color: #1a73e8;">see pricing</a>.</p>
 
   <p>If you have any questions, just reply to this email, we're happy to help anytime!</p>
 
@@ -800,18 +809,15 @@ export const CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
     return `
   <p>Hi there,</p>
 
-  <p>We listed <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub so local customers can find radiator repair shops near them.</p>
+  <p><strong>${businessName ?? "Your business"}</strong> is listed on RadiatorRepairHub so local customers can find radiator repair shops near them.</p>
 
-  <p>Claim your free listing to update your info, add shop photos, receive Quick Contact inquiries, see basic listing analytics (page views and impressions), get weekly activity reports by email, and show customers you're verified:</p>
+  <p>Claim it for free to update your info, add shop photos, get customer messages, and show as verified:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
-  <p>Not sure how? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
+  <p>Need a walkthrough? <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a></p>
 
-  <p>Your RadiatorRepairHub page can also work as a simple website link for Google Business Profile, ads, and social profiles.</p>
-
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
-
-  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  ${outreachFeaturedNoteHtml(pricingUrl)}
+  ${outreachSignOffHtml}
   `;
   },
 });
@@ -827,16 +833,15 @@ export const OWNERSHIP_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p><strong>${businessName ?? "Your business"}</strong> already has a listing on RadiatorRepairHub, the directory customers use to find radiator repair shops near them.</p>
 
-  <p>Right now it isn't claimed, so customers may see outdated info and the page won't be verified, which might turn customers away.</p>
+  <p>It isn't claimed yet, so customers may see outdated info and the page won't show as verified.</p>
 
-  <p>Claim it for free (takes a few minutes) to update your listing, add shop photos, receive Quick Contact inquiries, see basic listing analytics (page views and impressions) in your dashboard, and get a weekly activity report by email:</p>
+  <p>Claim it for free (takes a few minutes) to update the listing and keep your shop in control of what's shown:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
-  <p>Need a walkthrough? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
+  <p>Need a walkthrough? <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a></p>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
-
-  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  ${outreachFeaturedNoteHtml(pricingUrl)}
+  ${outreachSignOffHtml}
   `;
   },
 });
@@ -850,27 +855,15 @@ export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
     return `
   <p>Hi there,</p>
 
-  <p>We've been getting an increase in traffic to our site, RadiatorRepairHub, which customers use to find radiator repair shops near them.</p>
+  <p>More customers have been using RadiatorRepairHub to find radiator repair shops near them, and there's already a page for <strong>${businessName ?? "your business"}</strong>.</p>
 
-  <p>We already have a page for <strong>${businessName ?? "your business"}</strong> on our site and we wanted to make sure that customers are getting the most up to date information.</p>
+  <p>Claim it for free so customers see up-to-date contact info, and so you can start getting leads from the directory:</p>
+  <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
-  <p>Claim your free listing so you can:</p>
-  <ul>
-    <li>Keep your contact info, hours, and services accurate</li>
-    <li>Add up to 3 shop photos to your listing</li>
-    <li>Show as a verified shop in search results</li>
-    <li>Receive Quick Contact inquiries from customers</li>
-    <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
-    <li>Get a weekly activity report by email after you claim</li>
-  </ul>
+  <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a></p>
 
-  <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
-
-  <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
-
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
-
-  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  ${outreachFeaturedNoteHtml(pricingUrl)}
+  ${outreachSignOffHtml}
   `;
   },
 });
@@ -888,23 +881,13 @@ export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 
   <p><strong>${businessName ?? "Your business"}</strong> has a free listing on RadiatorRepairHub, where customers look for radiator repair shops near them.</p>
 
-  <p>Claiming your listing only takes a few minutes and lets you:</p>
-  <ul>
-    <li>Update your business information</li>
-    <li>Add up to 3 shop photos to your listing</li>
-    <li>Keep contact details accurate so customers can reach you</li>
-    <li>Show as a verified shop in search results</li>
-    <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
-    <li>Get a weekly activity report by email after you claim</li>
-  </ul>
+  <p>Claiming takes a few minutes and lets you update your info, add photos, and show as verified:</p>
+  <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
-  <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
+  <p>Need help? <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a></p>
 
-  <p>Need help? See our <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
-
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
-
-  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  ${outreachFeaturedNoteHtml(pricingUrl)}
+  ${outreachSignOffHtml}
   `;
   },
 });
@@ -915,35 +898,19 @@ export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
     `Follow-up: Claim your listing on RadiatorRepairHub${
       businessName ? `: ${businessName}` : ""
     }`,
-  html: (businessName, { businessPageUrl, howToClaimUrl }) => {
-    const pricingUrl = `${getWebBaseUrl()}/pricing`;
-    return `
+  html: (businessName, { businessPageUrl, howToClaimUrl }) => `
   <p>Hi there,</p>
 
-  <p>We previously reached out about claiming your free listing for <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub.</p>
-
-  <p><strong>By claiming your listing, you can:</strong></p>
-  <ul>
-    <li>Update information about your business</li>
-    <li>Add up to 3 shop photos to your listing</li>
-    <li>Keep contact info accurate so customers can reach you</li>
-    <li>Show as a verified shop in search results</li>
-    <li>See basic listing analytics in your dashboard (page views and impressions, plus impressions by source)</li>
-    <li>Get a weekly activity report by email</li>
-    <li>Use your RadiatorRepairHub page as a website link for Google Business Profile, ads, and social profiles</li>
-  </ul>
+  <p>Just a quick follow-up about claiming the free listing for <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub.</p>
 
   <p>Claim here: <a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
-  <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a> guide.</p>
+  <p>Step-by-step: <a href="${howToClaimUrl}" style="color: #1a73e8;">How to Claim</a></p>
 
-  <p>After you claim, you can optionally upgrade to a Featured listing for higher priority in search, a Featured badge, up to 10 shop photos, a spot on the Featured page, and full listing analytics (clicks, CTR, contact clicks, source breakdown, and competitor insights for your city): <a href="${pricingUrl}" style="color: #1a73e8;">Featured pricing</a>.</p>
+  <p>If you're not interested, no worries. You can unsubscribe below and I won't email you again about this listing.</p>
 
-  <p>If you're not interested, no worries! We won't bother you again.</p>
-
-  <p>Thanks,<br>RadiatorRepairHub Team</p>
-  `;
-  },
+  ${outreachSignOffHtml}
+  `,
 });
 
 // Outreach: offer website help / RRH page as web presence
@@ -953,16 +920,12 @@ export const WEBSITE_OFFER_OUTREACH_MESSAGE = Object.freeze({
   html: (businessName, { businessPageUrl }) => `
   <p>Hi there,</p>
 
-  <p>Many shops we work with don't have a dedicated website yet and that can make it harder to run ads, set up Google Business Profile, or share a professional link with customers.</p>
-
-  <p>Good news: <strong>${businessName ?? "your business"}</strong> already has a page on RadiatorRepairHub you can use as your website right now:</p>
+  <p><strong>${businessName ?? "Your business"}</strong> already has a page on RadiatorRepairHub you can use as a website link for Google Business Profile, ads, and social profiles:</p>
   <p><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></p>
 
-  <p>Add that link to your Google Business Profile, ads, social profiles, and business cards so customers can find your hours, contact info, and services in one place.</p>
+  <p>If you'd rather have your own custom site, just reply to this email and I can talk through options.</p>
 
-  <p>If you'd rather have your own custom website, reply to this email and we can talk about options.</p>
-
-  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  ${outreachSignOffHtml}
   `,
 });
 
