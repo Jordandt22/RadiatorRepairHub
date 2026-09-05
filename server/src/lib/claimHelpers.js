@@ -15,6 +15,25 @@ export const CLAIM_RESTART_MESSAGE =
 export const CLAIM_MAX_ATTEMPTS_MESSAGE =
   "Too many attempts. Please restart the claim process from the business page.";
 
+export const CLAIM_CHANNELS = Object.freeze({ EMAIL: "email", PHONE: "phone" });
+
+/** Verification calls are expensive and intrusive, so both are capped. */
+export const MAX_PHONE_CLAIMS_PER_DAY = 3;
+export const MAX_PHONE_CLAIM_RESENDS = 1;
+export const CLAIM_RESEND_COOLDOWN_SECONDS = 60;
+
+/** Expiry the client shows on the listing and verify pages. */
+export const getClaimExpiresAt = (claim) => {
+  const lastAttemptedAt = claim?.last_attempted_at
+    ? new Date(claim.last_attempted_at).getTime()
+    : NaN;
+  if (Number.isNaN(lastAttemptedAt)) return null;
+  return new Date(lastAttemptedAt + CLAIM_STALE_MS).toISOString();
+};
+
+export const getPhoneResendsRemaining = (claim) =>
+  Math.max(MAX_PHONE_CLAIM_RESENDS - Number(claim?.resend_count || 0), 0);
+
 export const isClaimStale = (claim) => {
   if (!claim?.last_attempted_at) return false;
   const lastAttemptedAt = new Date(claim.last_attempted_at).getTime();

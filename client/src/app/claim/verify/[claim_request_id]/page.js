@@ -61,6 +61,9 @@ export default async function ClaimVerifyPage({ params }) {
         <ClaimVerifyForm
           claimRequestId={data.claimRequestId}
           business={data.business}
+          channel={data.channel === "phone" ? "phone" : "email"}
+          phone={data.phone ?? data.business?.phone}
+          phoneResendsRemaining={data.phoneResendsRemaining}
         />
 
         <p className="mt-6 text-center text-sm text-muted-foreground">

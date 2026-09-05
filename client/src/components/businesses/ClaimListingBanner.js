@@ -5,22 +5,17 @@ import Link from "next/link";
 import { BadgeCheck } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/contexts/ToastProvider";
-import { claimBusiness, fetchBusinessBySlug } from "@/lib/api/businesses";
+import { fetchBusinessBySlug } from "@/lib/api/businesses";
 import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
-import { isClaimListingEligible } from "@/lib/claimListingEligibility";
+import {
+  canClaimListing,
+  isClaimListingEligible,
+  isPhoneClaimListingEligible,
+} from "@/lib/claimListingEligibility";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { useOwnerListingView } from "@/contexts/OwnerListingViewProvider";
 import { cn } from "@/lib/utils";
+import ClaimListingDialog from "./ClaimListingDialog";
 
 function findOwnedBusiness(businesses, businessId) {
   if (!businessId || !Array.isArray(businesses)) return null;
@@ -40,13 +35,15 @@ export default function ClaimListingBanner({
   emailStatus: initialEmailStatus = null,
   isClaimed: initialIsClaimed = false,
   hasDuplicateEmail: initialHasDuplicateEmail = false,
+  phone: initialPhone = null,
+  phoneClaimEligible: initialPhoneClaimEligible = false,
+  phoneClaimBlockReason: initialPhoneClaimBlockReason = null,
+  pendingClaim: initialPendingClaim = null,
 }) {
-  const { showCustomError } = useToast();
   const posthog = usePostHog();
   const { isSignedIn, isLoading: authLoading } = useIsSignedIn();
   const { isOwner, loading: ownerLoading } = useOwnerListingView();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successOpen, setSuccessOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [metaReady, setMetaReady] = useState(false);
   const [email, setEmail] = useState(initialEmail);
   const [emailStatus, setEmailStatus] = useState(initialEmailStatus);
@@ -54,6 +51,14 @@ export default function ClaimListingBanner({
   const [hasDuplicateEmail, setHasDuplicateEmail] = useState(
     initialHasDuplicateEmail
   );
+  const [phone, setPhone] = useState(initialPhone);
+  const [phoneClaimEligible, setPhoneClaimEligible] = useState(
+    initialPhoneClaimEligible
+  );
+  const [phoneClaimBlockReason, setPhoneClaimBlockReason] = useState(
+    initialPhoneClaimBlockReason
+  );
+  const [pendingClaim, setPendingClaim] = useState(initialPendingClaim);
 
   useEffect(() => {
     let active = true;
@@ -78,6 +83,10 @@ export default function ClaimListingBanner({
           setEmailStatus(business.email_status ?? initialEmailStatus);
           setHasDuplicateEmail(Boolean(business.has_duplicate_email));
           setIsClaimed(Boolean(ownedBusiness) || Boolean(business.is_claimed));
+          setPhone(business.phone ?? initialPhone);
+          setPhoneClaimEligible(Boolean(business.phone_claim_eligible));
+          setPhoneClaimBlockReason(business.phone_claim_block_reason ?? null);
+          setPendingClaim(business.pending_claim ?? null);
         } else if (ownedBusiness) {
           setIsClaimed(true);
         }
@@ -87,6 +96,10 @@ export default function ClaimListingBanner({
         setEmailStatus(initialEmailStatus);
         setHasDuplicateEmail(initialHasDuplicateEmail);
         setIsClaimed(initialIsClaimed);
+        setPhone(initialPhone);
+        setPhoneClaimEligible(initialPhoneClaimEligible);
+        setPhoneClaimBlockReason(initialPhoneClaimBlockReason);
+        setPendingClaim(initialPendingClaim);
       } finally {
         if (active) setMetaReady(true);
       }
@@ -108,25 +121,44 @@ export default function ClaimListingBanner({
     initialEmailStatus,
     initialHasDuplicateEmail,
     initialIsClaimed,
+    initialPhone,
+    initialPendingClaim,
+    initialPhoneClaimBlockReason,
+    initialPhoneClaimEligible,
     isSignedIn,
   ]);
 
-  const initiallyEligible = isClaimListingEligible({
+  const initiallyEligible = canClaimListing({
     isClaimed: initialIsClaimed,
     email: initialEmail,
     emailStatus: initialEmailStatus,
     hasDuplicateEmail: initialHasDuplicateEmail,
+    phoneClaimEligible: initialPhoneClaimEligible,
+    phoneClaimBlockReason: initialPhoneClaimBlockReason,
+  });
+
+  const emailEligible = isClaimListingEligible({
+    isClaimed,
+    email,
+    emailStatus,
+    hasDuplicateEmail,
+  });
+  const phoneEligible = isPhoneClaimListingEligible({
+    isClaimed,
+    phoneClaimEligible,
+    phoneClaimBlockReason,
+  });
+  const claimable = canClaimListing({
+    isClaimed,
+    email,
+    emailStatus,
+    hasDuplicateEmail,
+    phoneClaimEligible,
+    phoneClaimBlockReason,
   });
 
   const eligible =
-    initiallyEligible &&
-    metaReady &&
-    isClaimListingEligible({
-      isClaimed,
-      email,
-      emailStatus,
-      hasDuplicateEmail,
-    });
+    initiallyEligible && metaReady && !pendingClaim && claimable;
 
   if (isOwner) return null;
   if (ownerLoading && !initialIsClaimed) return null;
@@ -141,40 +173,6 @@ export default function ClaimListingBanner({
       source: "listing_banner",
       ...props,
     });
-  };
-
-  const handleClaim = async () => {
-    if (isSubmitting) return;
-
-    setIsSubmitting(true);
-    capture("claim_started");
-    try {
-      const { error } = await claimBusiness(businessId);
-
-      if (error) {
-        capture("claim_failed", {
-          stage: "start",
-          error_code:
-            typeof error.code === "string" ? error.code : undefined,
-          error_message:
-            typeof error.message === "string" ? error.message : undefined,
-        });
-        showCustomError(
-          typeof error.message === "string"
-            ? error.message
-            : "Unable to start the claim process. Please try again."
-        );
-        return;
-      }
-
-      capture("claim_code_sent");
-      setSuccessOpen(true);
-    } catch {
-      capture("claim_failed", { stage: "start" });
-      showCustomError("Unable to start the claim process. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const wrapperClassName =
@@ -209,11 +207,10 @@ export default function ClaimListingBanner({
           <Button
             type="button"
             className="shrink-0 rounded-full"
-            disabled={isSubmitting}
-            onClick={handleClaim}
+            onClick={() => setDialogOpen(true)}
           >
             <BadgeCheck className="size-4" aria-hidden="true" />
-            {isSubmitting ? "Sending..." : "Claim this listing"}
+            Claim this listing
           </Button>
           <Link
             href="/how-to-claim"
@@ -230,27 +227,21 @@ export default function ClaimListingBanner({
       </div>
       </div>
 
-      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Check your inbox</DialogTitle>
-            <DialogDescription>
-              We&apos;ve sent a verification code to{" "}
-              <strong className="font-semibold text-foreground">
-                {email || "the email on file for this business"}
-              </strong>
-              . Check your inbox and click the link to complete your claim.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose
-              render={<Button type="button" className="w-full px-8 sm:w-auto" />}
-            >
-              Got it
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ClaimListingDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        businessId={businessId}
+        businessSlug={businessSlug}
+        businessName={businessName}
+        email={email}
+        emailStatus={emailStatus}
+        hasDuplicateEmail={hasDuplicateEmail}
+        phone={phone}
+        emailEligible={emailEligible}
+        phoneEligible={phoneEligible}
+        phoneBlockReason={phoneClaimBlockReason}
+        source="listing_banner"
+      />
     </>
   );
 }

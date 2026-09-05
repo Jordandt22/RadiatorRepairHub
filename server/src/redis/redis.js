@@ -263,8 +263,20 @@ export const getClaimRequestCodeKey = (claim_request_id) => ({
   interval: 60 * 60,
 });
 
+/** Cooldown between claim code resends (email and phone). */
+export const getClaimResendCooldownKey = (claim_request_id) => ({
+  key: `CLAIM_RESEND_COOLDOWN?ID:${claim_request_id}`,
+  interval: 60,
+});
+
+/** Twilio Lookup line-type result, cached to avoid repeat lookup charges. */
+export const getPhoneLookupKey = (phoneE164) => ({
+  key: `PHONE_LOOKUP?PHONE:${phoneE164}`,
+  interval: 60 * 60 * 24,
+});
+
 export const getClaimRequestsKey = (page, limit, status = null) => ({
-  key: `CLAIM_REQUESTS?PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}`,
+  key: `CLAIM_REQUESTS?V:2&PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}`,
   interval: 60 * 5,
 });
 

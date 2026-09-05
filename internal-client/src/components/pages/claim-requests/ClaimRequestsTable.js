@@ -17,6 +17,12 @@ function shortId(value) {
   return value.length > 8 ? `${value.slice(0, 8)}…` : value;
 }
 
+function channelLabel(channel) {
+  if (channel === "phone") return "Phone call";
+  if (channel === "email") return "Email";
+  return "—";
+}
+
 function ClaimRequestsTableView({
   claimRequests,
   selectedIds,
@@ -46,8 +52,9 @@ function ClaimRequestsTableView({
                 aria-label="Select all claim requests"
               />
             </TableHead>
-            <TableHead className="w-[32%]">Business</TableHead>
-            <TableHead className="w-[14%]">Status</TableHead>
+            <TableHead className="w-[26%]">Business</TableHead>
+            <TableHead className="w-[12%]">Status</TableHead>
+            <TableHead className="w-[12%]">Channel</TableHead>
             <TableHead className="w-[10%]">Attempts</TableHead>
             {isSuccessTab ? (
               <>
@@ -84,6 +91,9 @@ function ClaimRequestsTableView({
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <ClaimRequestStatusBadge status={row.status} />
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {channelLabel(row.channel)}
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   {row.attempts ?? 0}
@@ -178,6 +188,8 @@ function ClaimRequestsCardList({
               </div>
             </div>
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 pl-8 text-sm">
+              <dt className="text-muted-foreground">Channel</dt>
+              <dd>{channelLabel(row.channel)}</dd>
               <dt className="text-muted-foreground">Attempts</dt>
               <dd>{row.attempts ?? 0}</dd>
               {isSuccessTab ? (

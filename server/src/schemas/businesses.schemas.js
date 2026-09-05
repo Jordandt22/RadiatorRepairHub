@@ -20,6 +20,20 @@ export const ClaimRequestIdSchema = Yup.object({
 // ---- Body Request ----
 export const ClaimBusinessSchema = Yup.object({
   businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  channel: Yup.string()
+    .trim()
+    .lowercase()
+    .oneOf(["email", "phone"], "Invalid verification method")
+    .default("email"),
+  // TCPA consent must be explicit before we place an automated call.
+  consentAcknowledged: Yup.boolean().when("channel", {
+    is: "phone",
+    then: (schema) =>
+      schema
+        .oneOf([true], "You must consent to the automated verification call")
+        .required("You must consent to the automated verification call"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
 });
 
 export const CancelClaimSchema = Yup.object({
@@ -27,6 +41,17 @@ export const CancelClaimSchema = Yup.object({
     .trim()
     .uuid("Invalid claim request ID")
     .required(),
+});
+
+/** Resends re-confirm consent because they trigger another call/email. */
+export const ResendClaimSchema = Yup.object({
+  claimRequestId: Yup.string()
+    .trim()
+    .uuid("Invalid claim request ID")
+    .required(),
+  consentAcknowledged: Yup.boolean()
+    .oneOf([true], "You must confirm before we send another code")
+    .required("You must confirm before we send another code"),
 });
 
 const ClaimVerificationCodeSchema = {
@@ -46,9 +71,19 @@ export const CompleteClaimAuthenticatedSchema = Yup.object({
   ...ClaimVerificationCodeSchema,
 });
 
-/** Unsigned: create account with password during claim. */
+/**
+ * Unsigned: create account with password during claim. Phone claims also send
+ * a login email since there is no listing email to use; the controller
+ * requires it for that channel.
+ */
 export const CompleteClaimSchema = Yup.object({
   ...ClaimVerificationCodeSchema,
+  email: Yup.string()
+    .trim()
+    .lowercase()
+    .email("Please enter a valid email address")
+    .max(255)
+    .notRequired(),
   password: Yup.string()
     .required("Password is required")
     .test("password-strength", function (value) {

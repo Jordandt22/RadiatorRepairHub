@@ -16,10 +16,13 @@ import {
   getSearchedBusinessesKey,
   getCountBusinessesBySearchKey,
   getClaimRequestCodeKey,
+  getClaimResendCooldownKey,
   getBusinessByIdKey,
   setWithExactTtl,
   deleteCacheData,
   deleteCacheDataByPrefix,
+  redisClient,
+  checkKey,
 } from "../redis/redis.js";
 import {
   getPaidFeaturedBusinesses,
@@ -30,10 +33,15 @@ import {
   getBusinessSlugsForSitemap,
   getBusinessClaimInfo,
   isBusinessEmailShared,
+  isBusinessPhoneShared,
+  countRecentPhoneClaimStarts,
+  insertClaimConsentEvent,
+  incrementClaimResendCount,
   getBusinessLastEditedAt,
   getBusinessEmailStatus,
   getBusinessClaimFlags,
   insertClaimRequest,
+  getPendingClaimRequest,
   updateClaimRequestStatus,
   getClaimRequestWithBusiness,
   deleteClaimRequest,
@@ -112,10 +120,29 @@ import {
   MAX_CLAIM_ATTEMPTS,
   CLAIM_RESTART_MESSAGE,
   CLAIM_MAX_ATTEMPTS_MESSAGE,
+  CLAIM_CHANNELS,
+  MAX_PHONE_CLAIMS_PER_DAY,
+  MAX_PHONE_CLAIM_RESENDS,
+  CLAIM_RESEND_COOLDOWN_SECONDS,
+  getClaimExpiresAt,
+  getPhoneResendsRemaining,
   expireStaleClaimIfNeeded,
   failClaimForMaxAttempts,
   expireStalePendingClaimsForBusiness,
 } from "../lib/claimHelpers.js";
+import {
+  CLAIM_PHONE_BLOCK_REASONS,
+  getPhoneClaimEligibility,
+  normalizeClaimPhone,
+  resolveClaimCallTarget,
+} from "../lib/claimPhone.js";
+import { CALL_WINDOW_LABEL } from "../lib/claimCallWindow.js";
+import { PHONE_CLAIM_CONSENT_VERSION } from "../lib/claimConsent.js";
+import { isCallableLineType, lookupPhoneLineType } from "../twilio/lookup.js";
+import {
+  checkVoiceVerification,
+  startVoiceVerification,
+} from "../twilio/verifyVoice.js";
 import {
   EMAIL_STATUS,
   EMAIL_UNDER_REVIEW_MESSAGE,
@@ -128,6 +155,7 @@ import { cancelFeaturedSubscriptionForBusiness } from "../lib/cancelFeaturedSubs
 import {
   invalidateBusinessListingCache,
   invalidateClaimStatusCaches,
+  revalidateClientCache,
 } from "../lib/invalidateListingCaches.js";
 import crypto from "crypto";
 
@@ -150,8 +178,120 @@ const respondEmailUnderReview = (res) =>
     .status(422)
     .json(customErrorHandler(YUP_ERROR, EMAIL_UNDER_REVIEW_MESSAGE));
 
+const PHONE_CLAIM_BLOCK_MESSAGES = {
+  [CLAIM_PHONE_BLOCK_REASONS.NO_PHONE]:
+    "This business cannot be claimed by phone because it has no phone number on file.",
+  [CLAIM_PHONE_BLOCK_REASONS.INVALID_PHONE]:
+    "This business cannot be claimed by phone because its phone number is not a valid US number.",
+  [CLAIM_PHONE_BLOCK_REASONS.FILTERED_PHONE]:
+    "This business cannot be claimed by phone because its phone number cannot receive verification calls.",
+  [CLAIM_PHONE_BLOCK_REASONS.SHARED_PHONE]:
+    "This business cannot be claimed by phone because its phone number is shared with other listings.",
+  [CLAIM_PHONE_BLOCK_REASONS.NO_TIMEZONE]:
+    "This business cannot be claimed by phone right now. Please claim it by email or contact support.",
+  [CLAIM_PHONE_BLOCK_REASONS.OUTSIDE_HOURS]: `Verification calls are only placed during business hours (${CALL_WINDOW_LABEL} local time). Please try again then.`,
+};
+
+/** The IP we store on consent records, matching Express' trust proxy setup. */
+const getRequestIp = (req) =>
+  req.ip ?? req.socket?.remoteAddress ?? null;
+
+const getRequestUserAgent = (req) => {
+  const ua = req.get?.("user-agent") ?? req.headers?.["user-agent"];
+  if (!ua || typeof ua !== "string") return null;
+  return ua.slice(0, 512);
+};
+
+const recordClaimConsentEvent = (req, { claim, business, action, destination }) =>
+  insertClaimConsentEvent({
+    claim_request_id: claim.claim_request_id,
+    business_id: business.id,
+    channel: claim.channel,
+    action,
+    destination,
+    ip: getRequestIp(req),
+    consent_version:
+      claim.channel === "phone" ? PHONE_CLAIM_CONSENT_VERSION : null,
+    user_agent: getRequestUserAgent(req),
+  });
+
+/** Email consent is informational, so a failed write must not fail the claim. */
+const logClaimConsentEvent = async (req, options) => {
+  try {
+    const { error } = await recordClaimConsentEvent(req, options);
+    if (error && process.env.NODE_ENV === "development") {
+      console.error("Failed to log claim consent event:", error);
+    }
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Failed to log claim consent event:", error);
+    }
+  }
+};
+
+/**
+ * Only one claim can be pending per business, regardless of channel.
+ * Returns an error payload to send, or null when a slot is free.
+ */
+const takeClaimSlot = async (business) => {
+  const { error, remainingPending } = await expireStalePendingClaimsForBusiness(
+    business.id
+  );
+
+  if (error) {
+    return {
+      status: 500,
+      body: customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error checking existing claim requests.",
+        error
+      ),
+    };
+  }
+
+  if (remainingPending.length > 0) {
+    return {
+      status: 409,
+      body: customErrorHandler(
+        ACCESS_DENIED,
+        "A claim request for this business is already in progress."
+      ),
+    };
+  }
+
+  return null;
+};
+
+/**
+ * Blocks a resend until the cooldown expires. Returns seconds remaining, or 0
+ * when the resend may proceed.
+ */
+const getResendCooldownRemaining = async (claimRequestId) => {
+  try {
+    const { key } = getClaimResendCooldownKey(claimRequestId);
+    const ttl = await redisClient.ttl(checkKey(key));
+    return ttl > 0 ? ttl : 0;
+  } catch {
+    // Never block a legitimate resend on a cache failure.
+    return 0;
+  }
+};
+
+const startResendCooldown = async (claimRequestId) => {
+  try {
+    const { key } = getClaimResendCooldownKey(claimRequestId);
+    await setWithExactTtl(key, CLAIM_RESEND_COOLDOWN_SECONDS, true);
+  } catch {
+    // best-effort cooldown
+  }
+};
+
 export const claimBusiness = async (req, res) => {
   const { businessId } = req.body;
+  const channel =
+    req.body.channel === CLAIM_CHANNELS.PHONE
+      ? CLAIM_CHANNELS.PHONE
+      : CLAIM_CHANNELS.EMAIL;
 
   const { data: business, error: businessError } =
     await getBusinessClaimInfo(businessId);
@@ -166,6 +306,10 @@ export const claimBusiness = async (req, res) => {
           businessError
         )
       );
+  }
+
+  if (channel === CLAIM_CHANNELS.PHONE) {
+    return startPhoneClaim(req, res, business);
   }
 
   const email =
@@ -223,34 +367,15 @@ export const claimBusiness = async (req, res) => {
       );
   }
 
-  const { error: expireError, remainingPending } =
-    await expireStalePendingClaimsForBusiness(business.id);
-
-  if (expireError) {
-    return res
-      .status(500)
-      .json(
-        customErrorHandler(
-          SUPABASE_ERROR,
-          "There was an error checking existing claim requests.",
-          expireError
-        )
-      );
+  const slotError = await takeClaimSlot(business);
+  if (slotError) {
+    return res.status(slotError.status).json(slotError.body);
   }
 
-  if (remainingPending.length > 0) {
-    return res
-      .status(409)
-      .json(
-        customErrorHandler(
-          ACCESS_DENIED,
-          "A claim request for this business is already in progress."
-        )
-      );
-  }
-
-  const { data: claimRequest, error: insertError } =
-    await insertClaimRequest(business.id);
+  const { data: claimRequest, error: insertError } = await insertClaimRequest(
+    business.id,
+    CLAIM_CHANNELS.EMAIL
+  );
 
   if (insertError || !claimRequest) {
     return res
@@ -343,18 +468,221 @@ export const claimBusiness = async (req, res) => {
       );
   }
 
+  await logClaimConsentEvent(req, {
+    claim: claimRequest,
+    business,
+    action: "start",
+    destination: email,
+  });
+
   await invalidateBusinessCache(business);
 
   return res.status(201).json(
     successHandler({
+      channel: CLAIM_CHANNELS.EMAIL,
       maskedEmail: maskEmail(email),
       claimRequestId,
+      expiresAt: getClaimExpiresAt(claimRequest),
+    })
+  );
+};
+
+/**
+ * Phone claims place a Twilio Verify voice call that reads a one-time code.
+ * Twilio owns the code, so nothing is stored in Redis for this channel.
+ */
+const startPhoneClaim = async (req, res, business) => {
+  if (business.is_claimed) {
+    return res
+      .status(409)
+      .json(
+        customErrorHandler(ACCESS_DENIED, "This business has already been claimed.")
+      );
+  }
+
+  const { isShared, error: sharedPhoneError } = await isBusinessPhoneShared(
+    business.phone
+  );
+
+  if (sharedPhoneError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error checking whether this business can be claimed by phone.",
+          sharedPhoneError
+        )
+      );
+  }
+
+  const eligibility = getPhoneClaimEligibility({
+    phone: business.phone,
+    hours: business.hours,
+    timezone: business.timezone,
+    isPhoneShared: isShared,
+  });
+
+  if (!eligibility.eligible) {
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          PHONE_CLAIM_BLOCK_MESSAGES[eligibility.reason] ??
+            "This business cannot be claimed by phone right now."
+        )
+      );
+  }
+
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count: recentPhoneClaims, error: countError } =
+    await countRecentPhoneClaimStarts(business.id, since);
+
+  if (countError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error checking recent verification calls.",
+          countError
+        )
+      );
+  }
+
+  if (recentPhoneClaims >= MAX_PHONE_CLAIMS_PER_DAY) {
+    return res
+      .status(429)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "This business has reached the daily limit for verification calls. Please try again tomorrow or claim it by email."
+        )
+      );
+  }
+
+  const lookup = await lookupPhoneLineType(eligibility.phoneE164);
+
+  if (!lookup.ok) {
+    return res
+      .status(lookup.error?.type === "config" ? 500 : 503)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          lookup.error?.message ??
+            "Phone verification is unavailable right now.",
+          lookup.error?.cause
+        )
+      );
+  }
+
+  if (!lookup.data.valid || !isCallableLineType(lookup.data.lineType)) {
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          PHONE_CLAIM_BLOCK_MESSAGES[CLAIM_PHONE_BLOCK_REASONS.FILTERED_PHONE]
+        )
+      );
+  }
+
+  const callTarget = resolveClaimCallTarget(eligibility.phoneE164);
+  if (!callTarget) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "TEST_RECIPIENT_PHONE is required in development."
+        )
+      );
+  }
+
+  const slotError = await takeClaimSlot(business);
+  if (slotError) {
+    return res.status(slotError.status).json(slotError.body);
+  }
+
+  const { data: claimRequest, error: insertError } = await insertClaimRequest(
+    business.id,
+    CLAIM_CHANNELS.PHONE
+  );
+
+  if (insertError || !claimRequest) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error creating your claim request.",
+          insertError
+        )
+      );
+  }
+
+  const claimRequestId = claimRequest.claim_request_id;
+
+  // Consent is recorded before dialing: it is the evidence that this call was
+  // requested, and it is what the daily call limit counts.
+  const { error: consentError } = await recordClaimConsentEvent(req, {
+    claim: claimRequest,
+    business,
+    action: "start",
+    destination: eligibility.phoneE164,
+  });
+
+  if (consentError) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error recording your consent for the verification call.",
+          consentError
+        )
+      );
+  }
+
+  const call = await startVoiceVerification(callTarget);
+
+  if (!call.ok) {
+    await updateClaimRequestStatus(claimRequestId, "failed");
+    return res
+      .status(call.error?.type === "config" ? 500 : 503)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          call.error?.message ?? "Unable to place the verification call right now.",
+          call.error?.cause
+        )
+      );
+  }
+
+  await invalidateBusinessCache(business);
+
+  return res.status(201).json(
+    successHandler({
+      channel: CLAIM_CHANNELS.PHONE,
+      claimRequestId,
+      phone: business.phone ?? null,
+      expiresAt: getClaimExpiresAt(claimRequest),
+      phoneResendsRemaining: MAX_PHONE_CLAIM_RESENDS,
     })
   );
 };
 
 const invalidateBusinessCache = async (business) => {
   await invalidateBusinessListingCache(business);
+  // Drop Next.js cached listing payloads so pending_claim / claim UI stay fresh.
+  if (business?.slug) {
+    await revalidateClientCache({
+      paths: [`/business/${business.slug}`],
+      tags: [`business:${business.slug}`, "business-listings"],
+    });
+  }
 };
 
 const refreshOwnedListingDerivedSeo = async (businessId, listing, fields) => {
@@ -437,31 +765,41 @@ export const getClaimRequest = async (req, res) => {
       );
   }
 
+  const isPhoneClaim = claim.channel === CLAIM_CHANNELS.PHONE;
   const email =
     typeof business.email === "string" ? business.email.trim() : "";
-  if (!email) {
-    return res
-      .status(422)
-      .json(
-        customErrorHandler(
-          YUP_ERROR,
-          "This business cannot be claimed because it has no email on file."
-        )
-      );
-  }
 
-  if (isEmailUnderReview(business.email_status)) {
-    return respondEmailUnderReview(res);
+  if (!isPhoneClaim) {
+    if (!email) {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "This business cannot be claimed because it has no email on file."
+          )
+        );
+    }
+
+    if (isEmailUnderReview(business.email_status)) {
+      return respondEmailUnderReview(res);
+    }
   }
 
   return res.status(200).json(
     successHandler({
       claimRequestId: claim.claim_request_id,
+      channel: claim.channel,
+      expiresAt: getClaimExpiresAt(claim),
+      resendCount: Number(claim.resend_count || 0),
+      phoneResendsRemaining: isPhoneClaim ? getPhoneResendsRemaining(claim) : null,
+      phone: isPhoneClaim ? business.phone ?? null : null,
       business: {
         id: business.id,
         title: business.title,
         slug: business.slug,
-        email,
+        email: isPhoneClaim ? null : email,
+        phone: isPhoneClaim ? business.phone ?? null : null,
       },
     })
   );
@@ -547,6 +885,8 @@ export const cancelClaim = async (req, res) => {
 export const completeClaim = async (req, res) => {
   const { claimRequestId, code, password } = req.body;
   const normalizedCode = String(code).trim().toUpperCase();
+  const submittedEmail =
+    typeof req.body.email === "string" ? req.body.email.trim().toLowerCase() : "";
 
   const { data: claim, error } =
     await getClaimRequestWithBusiness(claimRequestId);
@@ -611,21 +951,44 @@ export const completeClaim = async (req, res) => {
       );
   }
 
-  const email =
+  const isPhoneClaim = claim.channel === CLAIM_CHANNELS.PHONE;
+  const listingEmail =
     typeof business.email === "string" ? business.email.trim() : "";
-  if (!email) {
+
+  if (!isPhoneClaim) {
+    if (!listingEmail) {
+      return res
+        .status(422)
+        .json(
+          customErrorHandler(
+            YUP_ERROR,
+            "This business cannot be claimed because it has no email on file."
+          )
+        );
+    }
+
+    if (isEmailUnderReview(business.email_status)) {
+      return respondEmailUnderReview(res);
+    }
+  }
+
+  const authenticatedUser = req.user ?? null;
+
+  // Phone claims have no listing email to build an account from, so the owner
+  // supplies the login email on the verify page.
+  const email = isPhoneClaim
+    ? submittedEmail || authenticatedUser?.email || ""
+    : listingEmail;
+
+  if (!authenticatedUser && !email) {
     return res
       .status(422)
       .json(
         customErrorHandler(
           YUP_ERROR,
-          "This business cannot be claimed because it has no email on file."
+          "Please enter the email address you want to use for your account."
         )
       );
-  }
-
-  if (isEmailUnderReview(business.email_status)) {
-    return respondEmailUnderReview(res);
   }
 
   const { key: codeKey } = getClaimRequestCodeKey(claimRequestId);
@@ -655,22 +1018,7 @@ export const completeClaim = async (req, res) => {
 
   const attempts = Number(attemptData?.attempts || Number(claim.attempts || 0) + 1);
 
-  let cachedCode = null;
-  try {
-    cachedCode = await getCacheData(codeKey);
-  } catch (redisError) {
-    return res
-      .status(500)
-      .json(
-        customErrorHandler(
-          SERVER_ERROR,
-          "There was an error checking the verification code.",
-          redisError
-        )
-      );
-  }
-
-  if (!cachedCode?.data) {
+  const rejectCode = async (message) => {
     if (attempts >= MAX_CLAIM_ATTEMPTS) {
       await failClaimForMaxAttempts(claimRequestId);
       return res
@@ -678,31 +1026,69 @@ export const completeClaim = async (req, res) => {
         .json(claimUnavailableHandler(CLAIM_MAX_ATTEMPTS_MESSAGE, business));
     }
 
-    return res
-      .status(422)
-      .json(
-        customErrorHandler(
-          YUP_ERROR,
-          "Verification code expired. Please resend a new verification code."
-        )
-      );
-  }
+    return res.status(422).json(customErrorHandler(YUP_ERROR, message));
+  };
 
-  const storedCode = String(cachedCode.data).trim().toUpperCase();
-  if (storedCode !== normalizedCode) {
-    if (attempts >= MAX_CLAIM_ATTEMPTS) {
-      await failClaimForMaxAttempts(claimRequestId);
+  if (isPhoneClaim) {
+    const phoneE164 = normalizeClaimPhone(business.phone);
+    const callTarget = phoneE164 ? resolveClaimCallTarget(phoneE164) : null;
+
+    if (!callTarget) {
       return res
         .status(422)
-        .json(claimUnavailableHandler(CLAIM_MAX_ATTEMPTS_MESSAGE, business));
+        .json(claimUnavailableHandler(CLAIM_RESTART_MESSAGE, business));
     }
 
-    return res
-      .status(422)
-      .json(customErrorHandler(YUP_ERROR, "Incorrect verification code."));
+    const check = await checkVoiceVerification(callTarget, normalizedCode);
+
+    if (!check.ok) {
+      return res
+        .status(check.error?.type === "config" ? 500 : 503)
+        .json(
+          customErrorHandler(
+            SERVER_ERROR,
+            check.error?.message ??
+              "There was an error checking the verification code.",
+            check.error?.cause
+          )
+        );
+    }
+
+    if (!check.approved) {
+      return rejectCode(
+        check.expired
+          ? "Verification code expired. Please request a new call."
+          : "Incorrect verification code."
+      );
+    }
+  } else {
+    let cachedCode = null;
+    try {
+      cachedCode = await getCacheData(codeKey);
+    } catch (redisError) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SERVER_ERROR,
+            "There was an error checking the verification code.",
+            redisError
+          )
+        );
+    }
+
+    if (!cachedCode?.data) {
+      return rejectCode(
+        "Verification code expired. Please resend a new verification code."
+      );
+    }
+
+    const storedCode = String(cachedCode.data).trim().toUpperCase();
+    if (storedCode !== normalizedCode) {
+      return rejectCode("Incorrect verification code.");
+    }
   }
 
-  const authenticatedUser = req.user ?? null;
   let uid = authenticatedUser?.id ?? null;
   let createdAuthUser = false;
 
@@ -796,8 +1182,9 @@ export const completeClaim = async (req, res) => {
     }
   }
 
-  if (RESEND_API_KEY && SENDER_EMAIL && (!isDev || TEST_RECIPIENT_EMAIL)) {
-    const ownerRecipient = isDev ? TEST_RECIPIENT_EMAIL : email;
+  const ownerRecipient = isDev ? TEST_RECIPIENT_EMAIL : email;
+
+  if (RESEND_API_KEY && SENDER_EMAIL && ownerRecipient) {
     const dashboardUrl = `${getWebBaseUrl()}/dashboard`;
     const { error: thankYouSendError } = await resendClient().emails.send({
       from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
@@ -918,6 +1305,24 @@ export const resendClaim = async (req, res) => {
           business
         )
       );
+  }
+
+  const cooldownRemaining = await getResendCooldownRemaining(claimRequestId);
+  if (cooldownRemaining > 0) {
+    return res
+      .status(429)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          `Please wait ${cooldownRemaining} second${
+            cooldownRemaining === 1 ? "" : "s"
+          } before requesting another code.`
+        )
+      );
+  }
+
+  if (claim.channel === CLAIM_CHANNELS.PHONE) {
+    return resendPhoneClaim(req, res, claim, business);
   }
 
   const email =
@@ -1049,9 +1454,149 @@ export const resendClaim = async (req, res) => {
       );
   }
 
+  await startResendCooldown(claimRequestId);
+
+  await logClaimConsentEvent(req, {
+    claim,
+    business,
+    action: "resend",
+    destination: email,
+  });
+
   return res.status(200).json(
     successHandler({
+      channel: CLAIM_CHANNELS.EMAIL,
       maskedEmail: maskEmail(email),
+    })
+  );
+};
+
+/**
+ * Phone resends are capped at one per claim request, so a listing can receive
+ * at most two verification calls per claim.
+ */
+const resendPhoneClaim = async (req, res, claim, business) => {
+  const claimRequestId = claim.claim_request_id;
+
+  if (getPhoneResendsRemaining(claim) <= 0) {
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "You've used your one repeat call for this claim. Please wait for it to expire before starting again, or claim by email."
+        )
+      );
+  }
+
+  const { isShared, error: sharedPhoneError } = await isBusinessPhoneShared(
+    business.phone
+  );
+
+  if (sharedPhoneError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error checking whether this business can be claimed by phone.",
+          sharedPhoneError
+        )
+      );
+  }
+
+  const eligibility = getPhoneClaimEligibility({
+    phone: business.phone,
+    hours: business.hours,
+    timezone: business.timezone,
+    isPhoneShared: isShared,
+  });
+
+  if (!eligibility.eligible) {
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          PHONE_CLAIM_BLOCK_MESSAGES[eligibility.reason] ??
+            "This business cannot be claimed by phone right now."
+        )
+      );
+  }
+
+  const callTarget = resolveClaimCallTarget(eligibility.phoneE164);
+  if (!callTarget) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          "TEST_RECIPIENT_PHONE is required in development."
+        )
+      );
+  }
+
+  // Consume the resend and record consent before dialing so a failed call
+  // cannot be retried into extra calls.
+  const { data: updated, error: resendError } = await incrementClaimResendCount(
+    claimRequestId,
+    claim.resend_count
+  );
+
+  if (resendError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error recording the verification call.",
+          resendError
+        )
+      );
+  }
+
+  const { error: consentError } = await recordClaimConsentEvent(req, {
+    claim,
+    business,
+    action: "resend",
+    destination: eligibility.phoneE164,
+  });
+
+  if (consentError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error recording your consent for the verification call.",
+          consentError
+        )
+      );
+  }
+
+  await startResendCooldown(claimRequestId);
+
+  const call = await startVoiceVerification(callTarget);
+  if (!call.ok) {
+    return res
+      .status(call.error?.type === "config" ? 500 : 503)
+      .json(
+        customErrorHandler(
+          SERVER_ERROR,
+          call.error?.message ?? "Unable to place the verification call right now.",
+          call.error?.cause
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      channel: CLAIM_CHANNELS.PHONE,
+      phone: business.phone ?? null,
+      expiresAt: getClaimExpiresAt(updated ?? claim),
+      phoneResendsRemaining: getPhoneResendsRemaining(
+        updated ?? { resend_count: Number(claim.resend_count || 0) + 1 }
+      ),
     })
   );
 };
@@ -2225,6 +2770,58 @@ export const getBusiness = async (req, res) => {
       );
   }
 
+  // Phone claim eligibility uses local filters, shared-phone, timezone, and
+  // hours only. Twilio Lookup runs when a claim actually starts.
+  const { isShared: isPhoneShared, error: sharedPhoneError } =
+    await isBusinessPhoneShared(business?.phone);
+
+  if (sharedPhoneError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          `There was an error checking phone claim eligibility for business (${business_slug}).`,
+          sharedPhoneError
+        )
+      );
+  }
+
+  const phoneEligibility = isClaimed
+    ? { eligible: false, reason: null }
+    : getPhoneClaimEligibility({
+        phone: business?.phone,
+        hours: business?.hours,
+        timezone: business?.timezone,
+        isPhoneShared,
+      });
+
+  let pendingClaim = null;
+  if (!isClaimed && business?.id) {
+    const { data: pending, error: pendingError } = await getPendingClaimRequest(
+      business.id
+    );
+
+    if (pendingError) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            `There was an error fetching claim status for business (${business_slug}).`,
+            pendingError
+          )
+        );
+    }
+
+    if (pending) {
+      pendingClaim = {
+        channel: pending.channel,
+        expires_at: getClaimExpiresAt(pending),
+      };
+    }
+  }
+
   // Always refresh last_edited_at for claimed listings so stale Redis payloads
   // still show the edit date under the verified badge.
   let lastEditedAt = business?.last_edited_at ?? null;
@@ -2246,6 +2843,10 @@ export const getBusiness = async (req, res) => {
       is_featured: isFeatured,
       owner_uid: ownerUid,
       has_duplicate_email: isShared,
+      has_duplicate_phone: isPhoneShared,
+      phone_claim_eligible: phoneEligibility.eligible,
+      phone_claim_block_reason: phoneEligibility.reason,
+      pending_claim: pendingClaim,
     })
   );
 };

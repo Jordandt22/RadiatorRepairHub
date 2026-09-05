@@ -139,7 +139,7 @@ export const FAQ_ITEMS = [
     id: "verify-businesses",
     question: "Do you verify the businesses listed on your site?",
     answer:
-      "We work to list genuine radiator repair businesses and keep the directory updated, including reviewing Get Listed submissions and Report Info tips. Claimed listings mean an owner verified access to the listing email and created an account, but we still recommend calling ahead to confirm current services and hours.",
+      "We work to list genuine radiator repair businesses and keep the directory updated, including reviewing Get Listed submissions and Report Info tips. Claimed listings mean an owner verified access to the listing email or phone and created an account, but we still recommend calling ahead to confirm current services and hours.",
   },
   {
     id: "get-listed",
@@ -151,13 +151,13 @@ export const FAQ_ITEMS = [
     id: "claim-listing",
     question: "How do I claim my business listing?",
     answer:
-      "Open your business page and use Claim Business. We send a verification email to the address on file for that listing. After you verify, create your account password and sign in to manage the listing, add shop photos, view basic listing analytics (page views and impressions), and manage weekly activity report emails in Settings. Claiming is free. Full steps and eligibility rules are on our How to Claim page."
+      "Open your business page and use Claim Business. Choose email verification (code to the listing email) or phone verification (automated call that reads a code to the listing phone). After you verify, create your account password—or sign in if you already have one—then manage the listing, add shop photos, view basic listing analytics (page views and impressions), and manage weekly activity report emails in Settings. Claiming is free. Full steps and eligibility rules are on our How to Claim page.",
   },
   {
     id: "cant-claim",
     question: "Why can't I claim my business?",
     answer:
-      "Self-serve claiming needs a unique email on the listing. If there is no email, or the same email is shared by multiple businesses, the listing may show as unclaimable. Use Report Info on the business page to send the correct contact details, or contact us for help. More detail is on How to Claim.",
+      "Self-serve claiming needs a unique email or a unique phone number on the listing. If there is no usable contact, the same email or phone is shared by multiple businesses, the phone is toll-free or otherwise filtered, or verification calls are outside shop hours, email or phone claim may be unavailable. Open Claim Business to see why each option is blocked. Use Report Info on the business page to send the correct contact details, or contact us for help. More detail is on How to Claim.",
   },
   {
     id: "featured-listing",

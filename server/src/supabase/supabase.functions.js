@@ -867,7 +867,9 @@ export const insertContactMessage = async (payload) => {
 export const getBusinessClaimInfo = async (business_id) => {
   const { data, error } = await supabase
     .from("businesses")
-    .select("id, title, slug, email, phone, is_claimed, email_status")
+    .select(
+      "id, title, slug, email, phone, timezone, is_claimed, email_status, hours:business_hours(day_of_week, is_closed, hours)"
+    )
     .eq("id", business_id)
     .single();
 
@@ -2852,10 +2854,29 @@ export const isBusinessEmailShared = async (email) => {
   return { isShared: (count ?? 0) > 1, error: null };
 };
 
+/** True when another listing shares this phone number (mirrors shared email). */
+export const isBusinessPhoneShared = async (phone) => {
+  const trimmed = typeof phone === "string" ? phone.trim() : "";
+  if (!trimmed) {
+    return { isShared: false, error: null };
+  }
+
+  const { count, error } = await supabase
+    .from("businesses")
+    .select("id", { count: "exact", head: true })
+    .eq("phone", trimmed);
+
+  if (error) {
+    return { isShared: false, error };
+  }
+
+  return { isShared: (count ?? 0) > 1, error: null };
+};
+
 export const getPendingClaimRequest = async (business_id) => {
   const { data, error } = await supabase
     .from("claim_requests")
-    .select("claim_request_id, last_attempted_at")
+    .select("claim_request_id, channel, last_attempted_at")
     .eq("business_id", business_id)
     .eq("status", "pending")
     .limit(1)
@@ -2867,9 +2888,54 @@ export const getPendingClaimRequest = async (business_id) => {
 export const getPendingClaimRequestsForBusiness = async (business_id) => {
   const { data, error } = await supabase
     .from("claim_requests")
-    .select("claim_request_id, last_attempted_at")
+    .select("claim_request_id, channel, last_attempted_at")
     .eq("business_id", business_id)
     .eq("status", "pending");
+
+  return { data, error };
+};
+
+/**
+ * Phone claim starts for a business within a rolling window (rate limiting).
+ * Counts consent events rather than claim requests so canceling a claim cannot
+ * reset the daily call budget.
+ */
+export const countRecentPhoneClaimStarts = async (business_id, sinceIso) => {
+  const { count, error } = await supabase
+    .from("claim_consent_events")
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", business_id)
+    .eq("channel", "phone")
+    .eq("action", "start")
+    .gte("created_at", sinceIso);
+
+  return { count: count ?? 0, error };
+};
+
+export const insertClaimConsentEvent = async ({
+  claim_request_id,
+  business_id,
+  channel,
+  action,
+  destination,
+  ip = null,
+  consent_version = null,
+  user_agent = null,
+}) => {
+  const { data, error } = await supabase
+    .from("claim_consent_events")
+    .insert({
+      claim_request_id,
+      business_id,
+      channel,
+      action,
+      destination,
+      ip,
+      consent_version,
+      user_agent,
+    })
+    .select("id")
+    .single();
 
   return { data, error };
 };
@@ -2890,7 +2956,7 @@ export const getClaimRequests = async (page, limit, status = null) => {
   let query = supabase
     .from("claim_requests")
     .select(
-      "claim_request_id, business_id, status, attempts, last_attempted_at, created_at, completed_by, completed_at, business:businesses(id, title, slug)",
+      "claim_request_id, business_id, status, channel, attempts, resend_count, last_attempted_at, created_at, completed_by, completed_at, business:businesses(id, title, slug)",
       { count: "exact" }
     )
     .order("created_at", { ascending: false });
@@ -2919,11 +2985,30 @@ export const updateClaimRequestsStatus = async (ids, status) => {
   return { data, error };
 };
 
-export const insertClaimRequest = async (business_id) => {
+export const insertClaimRequest = async (business_id, channel = "email") => {
   const { data, error } = await supabase
     .from("claim_requests")
-    .insert({ business_id })
-    .select("claim_request_id")
+    .insert({ business_id, channel })
+    .select("claim_request_id, channel, last_attempted_at, created_at")
+    .single();
+
+  return { data, error };
+};
+
+/** Records one more verification resend for a claim request. */
+export const incrementClaimResendCount = async (
+  claim_request_id,
+  currentResendCount
+) => {
+  const nextResendCount = Number(currentResendCount || 0) + 1;
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .update({
+      resend_count: nextResendCount,
+      last_attempted_at: new Date().toISOString(),
+    })
+    .eq("claim_request_id", claim_request_id)
+    .select("claim_request_id, resend_count, last_attempted_at")
     .single();
 
   return { data, error };
@@ -2944,7 +3029,7 @@ export const getClaimRequestWithBusiness = async (claim_request_id) => {
   const { data, error } = await supabase
     .from("claim_requests")
     .select(
-      "claim_request_id, business_id, status, attempts, last_attempted_at, business:businesses(id, title, slug, email, is_claimed, email_status)"
+      "claim_request_id, business_id, status, channel, attempts, resend_count, last_attempted_at, business:businesses(id, title, slug, email, phone, timezone, is_claimed, email_status, hours:business_hours(day_of_week, is_closed, hours))"
     )
     .eq("claim_request_id", claim_request_id)
     .maybeSingle();
