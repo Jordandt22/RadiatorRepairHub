@@ -133,6 +133,7 @@ import {
 } from "../lib/claimHelpers.js";
 import {
   CLAIM_PHONE_BLOCK_REASONS,
+  formatClaimPhoneDisplay,
   getPhoneClaimEligibility,
   normalizeClaimPhone,
   resolveClaimCallTarget,
@@ -151,7 +152,6 @@ import {
 } from "../lib/emailStatus.js";
 import { isPhoneUnderReview } from "../lib/phoneStatus.js";
 import { verifyEmailReputation } from "../abstract/emailReputation.js";
-import { verifyPhoneNumber } from "../abstract/phoneValidation.js";
 import { verifyWebsiteReachable } from "../lib/websiteReachability.js";
 import { cancelFeaturedSubscriptionForBusiness } from "../lib/cancelFeaturedSubscriptions.js";
 import {
@@ -2009,25 +2009,43 @@ export const updateBusinessContact = async (req, res) => {
   const websiteChanged = (normalizedWebsite || null) !== (existingWebsite || null);
 
   if (phoneChanged) {
-    const phoneResult = await verifyPhoneNumber(normalizedPhone);
-    if (!phoneResult.ok) {
-      const status =
-        phoneResult.error?.type === "config" || phoneResult.error?.type === "api"
-          ? 503
-          : 422;
-      return res.status(status).json(
+    const phoneE164 = normalizeClaimPhone(normalizedPhone);
+    if (!phoneE164) {
+      return res.status(422).json(
+        customErrorHandler(YUP_ERROR, {
+          phone: "Please enter a valid phone number.",
+        })
+      );
+    }
+
+    const lookup = await lookupPhoneLineType(phoneE164);
+    if (!lookup.ok) {
+      return res.status(503).json(
         customErrorHandler(
           YUP_ERROR,
           {
             phone:
-              phoneResult.error?.message ||
-              "Please enter a valid phone number.",
+              lookup.error?.message ||
+              "Unable to verify phone number right now.",
           },
-          phoneResult.error
+          lookup.error
         )
       );
     }
+
+    if (!lookup.data.valid) {
+      return res.status(422).json(
+        customErrorHandler(YUP_ERROR, {
+          phone: "Please enter a valid phone number.",
+        })
+      );
+    }
   }
+
+  // Prefer a consistent display format after a successful Twilio check.
+  const savedPhone = phoneChanged
+    ? formatClaimPhoneDisplay(normalizedPhone) || normalizedPhone
+    : normalizedPhone;
 
   if (normalizedEmail && emailChanged) {
     const emailResult = await verifyEmailReputation(normalizedEmail);
@@ -2075,7 +2093,7 @@ export const updateBusinessContact = async (req, res) => {
     businessId,
     ownerUid,
     {
-      phone: normalizedPhone,
+      phone: savedPhone,
       email: normalizedEmail,
       website: savedWebsite,
       ...(emailChanged
