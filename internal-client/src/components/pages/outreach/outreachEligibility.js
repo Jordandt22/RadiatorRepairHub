@@ -1,6 +1,7 @@
 import {
   CLAIM_ELIGIBILITY_LABELS,
   isClaimInviteOutreachType,
+  isEmailChannelClaimEligible,
 } from "@/components/pages/outreach/outreachConstants";
 
 export const CLAIM_FOLLOWUP_MIN_DAYS_SINCE_INVITE = 7;
@@ -14,10 +15,14 @@ export const OUTREACH_SKIP_REASON_LABELS = {
   already_added: "Already added",
   claim_invite_not_sent: "No claim invite sent",
   claim_invite_too_recent: "Claim invite sent less than 7 days ago",
-  eligibility_able: "Eligibility: Able",
-  eligibility_no_email: "No email",
+  eligibility_both_able: "Eligibility: Both able",
+  eligibility_email_able: "Eligibility: Email able",
+  eligibility_phone_able: "Phone able only",
+  eligibility_no_contact: "No contact",
   eligibility_email_review: "Email review",
+  eligibility_phone_review: "Phone review",
   eligibility_duplicate_email: "Duplicate email",
+  eligibility_duplicate_phone: "Duplicate phone",
   eligibility_claimed: "Claimed",
   eligibility_unknown: "Unknown eligibility",
 };
@@ -68,7 +73,7 @@ export function evaluateOutreachEligibilityClient(business, outreachType) {
   const eligibility = business?.claim_eligibility;
 
   if (isClaimInviteOutreachType(outreachType)) {
-    if (eligibility !== "able") {
+    if (!isEmailChannelClaimEligible(eligibility)) {
       return { ok: false, reason: `eligibility_${eligibility || "unknown"}` };
     }
     if (business?.claim_invite_sent_at) {
@@ -81,7 +86,7 @@ export function evaluateOutreachEligibilityClient(business, outreachType) {
   }
 
   if (outreachType === "claim_followup") {
-    if (eligibility !== "able") {
+    if (!isEmailChannelClaimEligible(eligibility)) {
       return { ok: false, reason: `eligibility_${eligibility || "unknown"}` };
     }
     if (!business?.claim_invite_sent_at) {
@@ -100,7 +105,10 @@ export function evaluateOutreachEligibilityClient(business, outreachType) {
   }
 
   if (outreachType === "website_offer") {
-    if (eligibility !== "able" && eligibility !== "claimed") {
+    if (
+      !isEmailChannelClaimEligible(eligibility) &&
+      eligibility !== "claimed"
+    ) {
       return { ok: false, reason: `eligibility_${eligibility || "unknown"}` };
     }
     if (hasWebsite(business)) {

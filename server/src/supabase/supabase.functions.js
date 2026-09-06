@@ -13,7 +13,11 @@ import {
   REVIEW_TIERS,
 } from "../lib/adminBusinessTiers.js";
 import { getSuspiciousEmailReasons } from "../lib/suspiciousEmail.js";
-import { CLAIM_INVITE_OUTREACH_TYPES } from "../lib/outreachSend.js";
+import { getSuspiciousPhoneReasons } from "../lib/suspiciousPhone.js";
+import {
+  CLAIM_INVITE_OUTREACH_TYPES,
+  isEmailChannelClaimEligible,
+} from "../lib/outreachSend.js";
 import {
   buildIlikeOrFilter,
   sanitizeIlikeSearch,
@@ -323,6 +327,34 @@ export const getBusinessEmailStatus = async (business_id) => {
     data: {
       email: data.email ?? null,
       email_status: data.email_status ?? null,
+    },
+    error: null,
+  };
+};
+
+export const getBusinessPhoneStatus = async (business_id) => {
+  if (!business_id) {
+    return { data: null, error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("phone, phone_status")
+    .eq("id", business_id)
+    .maybeSingle();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  if (!data) {
+    return { data: null, error: null };
+  }
+
+  return {
+    data: {
+      phone: data.phone ?? null,
+      phone_status: data.phone_status ?? null,
     },
     error: null,
   };
@@ -867,7 +899,9 @@ export const insertContactMessage = async (payload) => {
 export const getBusinessClaimInfo = async (business_id) => {
   const { data, error } = await supabase
     .from("businesses")
-    .select("id, title, slug, email, phone, is_claimed, email_status")
+    .select(
+      "id, title, slug, email, phone, timezone, is_claimed, email_status, phone_status, hours:business_hours(day_of_week, is_closed, hours)"
+    )
     .eq("id", business_id)
     .single();
 
@@ -908,7 +942,7 @@ export const getListingReports = async (page, limit, status = null) => {
 const ADMIN_BUSINESS_SELECT =
   "id, title, slug, email, phone, address, website, is_claimed, is_featured, is_test, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
-const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, cdn_stored, cdn_stored_attempts, hide_default_image, default_image_sort_order, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at, sort_order)`;
+const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, phone_status, phone_status_marked_at, cdn_stored, cdn_stored_attempts, hide_default_image, default_image_sort_order, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at, sort_order)`;
 
 const flattenAdminSecondaryCategories = (rows) =>
   (rows ?? [])
@@ -1385,6 +1419,217 @@ export const getAdminBusinessesWithEmails = async (
   return { data: businesses, count, error: null };
 };
 
+const PHONE_CLEANER_BUSINESS_SELECT =
+  "id, title, slug, phone, phone_status, phone_status_marked_at";
+
+/**
+ * Paginated businesses for phone cleaner / review.
+ * When requirePhone is true (default), only rows with a non-empty phone are returned.
+ * When requirePhone is false, optional hasPhone filters Has Phone / No Phone / all.
+ * Optional suspicious filter scores phones in JS (correct counts across pages).
+ */
+export const getAdminBusinessesWithPhones = async (
+  page,
+  limit,
+  {
+    q = null,
+    emailsSent = null,
+    suspicious = null,
+    phoneStatus = null,
+    requirePhone = true,
+    hasPhone = null,
+  } = {}
+) => {
+  let sentBusinessIds = null;
+
+  if (emailsSent === true || emailsSent === false) {
+    const { data: historyRows, error: historyError } = await supabase
+      .from("outreach_history")
+      .select("business_id");
+
+    if (historyError) {
+      return { data: null, count: null, error: historyError };
+    }
+
+    sentBusinessIds = [
+      ...new Set(
+        (historyRows ?? [])
+          .map((row) => row?.business_id)
+          .filter(Boolean)
+      ),
+    ];
+
+    if (emailsSent === true && sentBusinessIds.length === 0) {
+      return { data: [], count: 0, error: null };
+    }
+  }
+
+  const needsFullScan =
+    requirePhone && (suspicious === true || suspicious === false);
+
+  let query = supabase
+    .from("businesses")
+    .select(PHONE_CLEANER_BUSINESS_SELECT, { count: "exact" })
+    .order("title", { ascending: true });
+
+  if (requirePhone || hasPhone === true) {
+    query = query.not("phone", "is", null).neq("phone", "");
+  } else if (hasPhone === false) {
+    query = query.or("phone.is.null,phone.eq.");
+  }
+
+  if (emailsSent === true) {
+    query = query.in("id", sentBusinessIds);
+  } else if (emailsSent === false && sentBusinessIds.length > 0) {
+    query = query.not("id", "in", `(${sentBusinessIds.join(",")})`);
+  }
+
+  if (phoneStatus) {
+    query = query.eq("phone_status", phoneStatus);
+  }
+
+  const sanitized = sanitizeAdminBusinessSearch(q);
+  if (sanitized) {
+    query = query.or(buildIlikeOrFilter(["title", "slug", "phone"], sanitized));
+  }
+
+  let rows = [];
+  let count = 0;
+
+  if (needsFullScan) {
+    const PAGE_SIZE = 1000;
+    let start = 0;
+    const allRows = [];
+
+    for (;;) {
+      const { data, error } = await query.range(start, start + PAGE_SIZE - 1);
+      if (error) {
+        return { data: null, count: null, error };
+      }
+      allRows.push(...(data ?? []));
+      if (!data || data.length < PAGE_SIZE) break;
+      start += PAGE_SIZE;
+    }
+
+    const scored = allRows.map((row) => {
+      const suspicion_reasons = getSuspiciousPhoneReasons(row.phone);
+      return { ...row, suspicion_reasons };
+    });
+
+    const filtered =
+      suspicious === true
+        ? scored.filter((row) => row.suspicion_reasons.length > 0)
+        : scored.filter((row) => row.suspicion_reasons.length === 0);
+
+    count = filtered.length;
+    const safePage = Math.max(1, Number(page) || 1);
+    const safeLimit = Math.max(1, Number(limit) || 20);
+    rows = filtered.slice((safePage - 1) * safeLimit, safePage * safeLimit);
+  } else {
+    const { data, count: total, error } = await query.range(
+      (page - 1) * limit,
+      page * limit - 1
+    );
+
+    if (error) {
+      return { data: null, count: total, error };
+    }
+
+    rows = (data ?? []).map((row) => ({
+      ...row,
+      suspicion_reasons: getSuspiciousPhoneReasons(row.phone),
+    }));
+    count = total ?? 0;
+  }
+
+  const ids = rows.map((row) => row.id);
+  const emailsSentByBusinessId = new Map();
+
+  if (ids.length) {
+    const { data: historyRows, error: historyError } = await supabase
+      .from("outreach_history")
+      .select("business_id")
+      .in("business_id", ids);
+
+    if (historyError) {
+      return { data: null, count, error: historyError };
+    }
+
+    for (const row of historyRows ?? []) {
+      if (!row?.business_id) continue;
+      emailsSentByBusinessId.set(
+        row.business_id,
+        (emailsSentByBusinessId.get(row.business_id) ?? 0) + 1
+      );
+    }
+  }
+
+  const businesses = rows.map((row) => ({
+    ...row,
+    emails_sent_count: emailsSentByBusinessId.get(row.id) ?? 0,
+    suspicion_reasons: row.suspicion_reasons ?? [],
+  }));
+
+  return { data: businesses, count, error: null };
+};
+
+/**
+ * Set business phone to null and mark unable_to_find for the given IDs.
+ */
+export const clearBusinessPhones = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({
+      phone: null,
+      phone_status: "unable_to_find",
+      phone_status_marked_at: new Date().toISOString(),
+    })
+    .in("id", ids)
+    .not("phone", "is", null)
+    .select("id");
+
+  return { data, error };
+};
+
+/**
+ * Set phone_status (+ marked_at) for Phone Cleaner review.
+ */
+export const updateBusinessesPhoneStatus = async (ids, phoneStatus) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({
+      phone_status: phoneStatus,
+      phone_status_marked_at: new Date().toISOString(),
+    })
+    .in("id", ids)
+    .select("id, slug, phone_status, phone_status_marked_at");
+
+  return { data, error };
+};
+
+/**
+ * Update a single business phone (admin phone cleaner).
+ */
+export const updateBusinessPhone = async (id, phone) => {
+  const markedAt = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({
+      phone,
+      phone_status: "checked",
+      phone_status_marked_at: markedAt,
+    })
+    .eq("id", id)
+    .select("id, title, slug, phone, phone_status, phone_status_marked_at")
+    .single();
+
+  return { data, error };
+};
+
 /**
  * Set business email to null and mark unable_to_find for the given IDs (admin email cleaner).
  */
@@ -1464,7 +1709,7 @@ export const updateBusinessListing = async (
 ) => {
   const { data: existing, error: existingError } = await supabase
     .from("businesses")
-    .select("email")
+    .select("email, phone")
     .eq("id", id)
     .maybeSingle();
 
@@ -1479,6 +1724,13 @@ export const updateBusinessListing = async (
   const nextEmail =
     typeof email === "string" && email.trim() ? email.trim() : null;
   const emailChanged = existingEmail !== nextEmail;
+  const existingPhone =
+    typeof existing?.phone === "string" && existing.phone.trim()
+      ? existing.phone.trim()
+      : null;
+  const nextPhone =
+    typeof phone === "string" && phone.trim() ? phone.trim() : null;
+  const phoneChanged = existingPhone !== nextPhone;
   const markedAt = new Date().toISOString();
 
   const update = {
@@ -1502,12 +1754,17 @@ export const updateBusinessListing = async (
     update.email_status_marked_at = markedAt;
   }
 
+  if (phoneChanged) {
+    update.phone_status = nextPhone ? "checked" : "unable_to_find";
+    update.phone_status_marked_at = markedAt;
+  }
+
   const { data, error } = await supabase
     .from("businesses")
     .update(update)
     .eq("id", id)
     .select(
-      "id, title, slug, email, website, phone, address, description, title_tag, meta_description, local_note, keywords, total_score, reviews_count, last_edited_at, email_status, email_status_marked_at"
+      "id, title, slug, email, website, phone, address, description, title_tag, meta_description, local_note, keywords, total_score, reviews_count, last_edited_at, email_status, email_status_marked_at, phone_status, phone_status_marked_at"
     )
     .single();
 
@@ -1760,11 +2017,22 @@ const OUTREACH_TYPE_STAT_LABELS = {
 };
 
 const CLAIM_ELIGIBILITY_STAT_LABELS = {
-  able: "Able",
-  no_email: "No email",
+  both_able: "Both able",
+  email_able: "Email able only",
+  phone_able: "Phone able only",
+  no_contact: "No contact",
   email_review: "Email review",
+  phone_review: "Phone review",
   duplicate_email: "Duplicate email",
+  duplicate_phone: "Duplicate phone",
   claimed: "Claimed",
+};
+
+const PHONE_STATUS_STAT_LABELS = {
+  suspicious: "Suspicious",
+  checked: "Checked",
+  unable_to_find: "Unable to Find",
+  not_checked: "Not Checked",
 };
 
 const EMAIL_STATUS_STAT_LABELS = {
@@ -1838,13 +2106,25 @@ export const getAdminDashboardStats = async () => {
       supabase
         .from("outreach_business_list")
         .select("id", { count: "exact", head: true })
-        .eq("claim_eligibility", "able")
+        .eq("claim_eligibility", "both_able")
     ),
     countExact(
       supabase
         .from("outreach_business_list")
         .select("id", { count: "exact", head: true })
-        .eq("claim_eligibility", "no_email")
+        .eq("claim_eligibility", "email_able")
+    ),
+    countExact(
+      supabase
+        .from("outreach_business_list")
+        .select("id", { count: "exact", head: true })
+        .eq("claim_eligibility", "phone_able")
+    ),
+    countExact(
+      supabase
+        .from("outreach_business_list")
+        .select("id", { count: "exact", head: true })
+        .eq("claim_eligibility", "no_contact")
     ),
     countExact(
       supabase
@@ -1856,7 +2136,19 @@ export const getAdminDashboardStats = async () => {
       supabase
         .from("outreach_business_list")
         .select("id", { count: "exact", head: true })
+        .eq("claim_eligibility", "duplicate_phone")
+    ),
+    countExact(
+      supabase
+        .from("outreach_business_list")
+        .select("id", { count: "exact", head: true })
         .eq("claim_eligibility", "email_review")
+    ),
+    countExact(
+      supabase
+        .from("outreach_business_list")
+        .select("id", { count: "exact", head: true })
+        .eq("claim_eligibility", "phone_review")
     ),
     countExact(
       supabase
@@ -1929,10 +2221,14 @@ export const getAdminDashboardStats = async () => {
     checkedRes,
     unableToFindRes,
     notCheckedRes,
-    ableRes,
-    noEmailRes,
+    bothAbleRes,
+    emailAbleRes,
+    phoneAbleRes,
+    noContactRes,
     duplicateEmailRes,
+    duplicatePhoneRes,
     emailReviewRes,
+    phoneReviewRes,
     claimedRes,
     claimInviteRes,
     ownershipClaimRes,
@@ -2028,14 +2324,24 @@ export const getAdminDashboardStats = async () => {
 
   const claimEligibilitySlices = [
     {
-      key: "able",
-      label: CLAIM_ELIGIBILITY_STAT_LABELS.able,
-      count: ableRes.count,
+      key: "both_able",
+      label: CLAIM_ELIGIBILITY_STAT_LABELS.both_able,
+      count: bothAbleRes.count,
     },
     {
-      key: "no_email",
-      label: CLAIM_ELIGIBILITY_STAT_LABELS.no_email,
-      count: noEmailRes.count,
+      key: "email_able",
+      label: CLAIM_ELIGIBILITY_STAT_LABELS.email_able,
+      count: emailAbleRes.count,
+    },
+    {
+      key: "phone_able",
+      label: CLAIM_ELIGIBILITY_STAT_LABELS.phone_able,
+      count: phoneAbleRes.count,
+    },
+    {
+      key: "no_contact",
+      label: CLAIM_ELIGIBILITY_STAT_LABELS.no_contact,
+      count: noContactRes.count,
     },
     {
       key: "duplicate_email",
@@ -2043,9 +2349,19 @@ export const getAdminDashboardStats = async () => {
       count: duplicateEmailRes.count,
     },
     {
+      key: "duplicate_phone",
+      label: CLAIM_ELIGIBILITY_STAT_LABELS.duplicate_phone,
+      count: duplicatePhoneRes.count,
+    },
+    {
       key: "email_review",
       label: CLAIM_ELIGIBILITY_STAT_LABELS.email_review,
       count: emailReviewRes.count,
+    },
+    {
+      key: "phone_review",
+      label: CLAIM_ELIGIBILITY_STAT_LABELS.phone_review,
+      count: phoneReviewRes.count,
     },
     {
       key: "claimed",
@@ -2852,10 +3168,29 @@ export const isBusinessEmailShared = async (email) => {
   return { isShared: (count ?? 0) > 1, error: null };
 };
 
+/** True when another listing shares this phone number (mirrors shared email). */
+export const isBusinessPhoneShared = async (phone) => {
+  const trimmed = typeof phone === "string" ? phone.trim() : "";
+  if (!trimmed) {
+    return { isShared: false, error: null };
+  }
+
+  const { count, error } = await supabase
+    .from("businesses")
+    .select("id", { count: "exact", head: true })
+    .eq("phone", trimmed);
+
+  if (error) {
+    return { isShared: false, error };
+  }
+
+  return { isShared: (count ?? 0) > 1, error: null };
+};
+
 export const getPendingClaimRequest = async (business_id) => {
   const { data, error } = await supabase
     .from("claim_requests")
-    .select("claim_request_id, last_attempted_at")
+    .select("claim_request_id, channel, last_attempted_at")
     .eq("business_id", business_id)
     .eq("status", "pending")
     .limit(1)
@@ -2867,9 +3202,54 @@ export const getPendingClaimRequest = async (business_id) => {
 export const getPendingClaimRequestsForBusiness = async (business_id) => {
   const { data, error } = await supabase
     .from("claim_requests")
-    .select("claim_request_id, last_attempted_at")
+    .select("claim_request_id, channel, last_attempted_at")
     .eq("business_id", business_id)
     .eq("status", "pending");
+
+  return { data, error };
+};
+
+/**
+ * Phone claim starts for a business within a rolling window (rate limiting).
+ * Counts consent events rather than claim requests so canceling a claim cannot
+ * reset the daily call budget.
+ */
+export const countRecentPhoneClaimStarts = async (business_id, sinceIso) => {
+  const { count, error } = await supabase
+    .from("claim_consent_events")
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", business_id)
+    .eq("channel", "phone")
+    .eq("action", "start")
+    .gte("created_at", sinceIso);
+
+  return { count: count ?? 0, error };
+};
+
+export const insertClaimConsentEvent = async ({
+  claim_request_id,
+  business_id,
+  channel,
+  action,
+  destination,
+  ip = null,
+  consent_version = null,
+  user_agent = null,
+}) => {
+  const { data, error } = await supabase
+    .from("claim_consent_events")
+    .insert({
+      claim_request_id,
+      business_id,
+      channel,
+      action,
+      destination,
+      ip,
+      consent_version,
+      user_agent,
+    })
+    .select("id")
+    .single();
 
   return { data, error };
 };
@@ -2886,11 +3266,16 @@ export const expireClaimRequestsByIds = async (claim_request_ids) => {
   return { data, error };
 };
 
-export const getClaimRequests = async (page, limit, status = null) => {
+export const getClaimRequests = async (
+  page,
+  limit,
+  status = null,
+  channel = null
+) => {
   let query = supabase
     .from("claim_requests")
     .select(
-      "claim_request_id, business_id, status, attempts, last_attempted_at, created_at, completed_by, completed_at, business:businesses(id, title, slug)",
+      "claim_request_id, business_id, status, channel, attempts, resend_count, last_attempted_at, created_at, completed_by, completed_at, business:businesses(id, title, slug, email, phone)",
       { count: "exact" }
     )
     .order("created_at", { ascending: false });
@@ -2899,12 +3284,40 @@ export const getClaimRequests = async (page, limit, status = null) => {
     query = query.eq("status", status);
   }
 
+  if (channel) {
+    query = query.eq("channel", channel);
+  }
+
   const { data, count, error } = await query.range(
     (page - 1) * limit,
     page * limit - 1
   );
 
   return { data, count, error };
+};
+
+export const getClaimRequestById = async (claim_request_id) => {
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .select(
+      "claim_request_id, business_id, status, channel, attempts, resend_count, last_attempted_at, created_at, completed_by, completed_at, business:businesses(id, title, slug, email, phone)"
+    )
+    .eq("claim_request_id", claim_request_id)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const getClaimConsentEventsByClaimRequestId = async (claim_request_id) => {
+  const { data, error } = await supabase
+    .from("claim_consent_events")
+    .select(
+      "id, action, channel, destination, consent_version, ip, user_agent, created_at"
+    )
+    .eq("claim_request_id", claim_request_id)
+    .order("created_at", { ascending: true });
+
+  return { data, error };
 };
 
 export const updateClaimRequestsStatus = async (ids, status) => {
@@ -2919,11 +3332,30 @@ export const updateClaimRequestsStatus = async (ids, status) => {
   return { data, error };
 };
 
-export const insertClaimRequest = async (business_id) => {
+export const insertClaimRequest = async (business_id, channel = "email") => {
   const { data, error } = await supabase
     .from("claim_requests")
-    .insert({ business_id })
-    .select("claim_request_id")
+    .insert({ business_id, channel })
+    .select("claim_request_id, channel, last_attempted_at, created_at")
+    .single();
+
+  return { data, error };
+};
+
+/** Records one more verification resend for a claim request. */
+export const incrementClaimResendCount = async (
+  claim_request_id,
+  currentResendCount
+) => {
+  const nextResendCount = Number(currentResendCount || 0) + 1;
+  const { data, error } = await supabase
+    .from("claim_requests")
+    .update({
+      resend_count: nextResendCount,
+      last_attempted_at: new Date().toISOString(),
+    })
+    .eq("claim_request_id", claim_request_id)
+    .select("claim_request_id, resend_count, last_attempted_at")
     .single();
 
   return { data, error };
@@ -2944,7 +3376,7 @@ export const getClaimRequestWithBusiness = async (claim_request_id) => {
   const { data, error } = await supabase
     .from("claim_requests")
     .select(
-      "claim_request_id, business_id, status, attempts, last_attempted_at, business:businesses(id, title, slug, email, is_claimed, email_status)"
+      "claim_request_id, business_id, status, channel, attempts, resend_count, last_attempted_at, business:businesses(id, title, slug, email, phone, timezone, is_claimed, email_status, hours:business_hours(day_of_week, is_closed, hours))"
     )
     .eq("claim_request_id", claim_request_id)
     .maybeSingle();
@@ -4981,17 +5413,23 @@ export const getOutreachMatchingBusinessIds = async ({
     outreachType === "custom_claim_invite";
 
   if (isClaimInviteType) {
-    filters.claimEligibility = claimEligibility || "able";
+    filters.claimEligibility = claimEligibility || [
+      "both_able",
+      "email_able",
+    ];
     if (claimInviteSent == null) filters.claimInviteSent = false;
   } else if (outreachType === "claim_followup") {
-    filters.claimEligibility = claimEligibility || "able";
+    filters.claimEligibility = claimEligibility || [
+      "both_able",
+      "email_able",
+    ];
     if (claimInviteSent == null) filters.claimInviteSent = true;
     if (claimFollowupSent == null) filters.claimFollowupSent = false;
   } else if (outreachType === "website_offer") {
     if (websiteFilter == null) filters.websiteFilter = "none";
     if (websiteOfferSent == null) filters.websiteOfferSent = false;
     if (!claimEligibility) {
-      filters.claimEligibility = ["able", "claimed"];
+      filters.claimEligibility = ["both_able", "email_able", "claimed"];
     }
   }
 
@@ -5011,7 +5449,7 @@ export const getOutreachMatchingBusinessIds = async ({
     if (matched.length >= limit) break;
 
     if (isClaimInviteType) {
-      if (row.claim_eligibility !== "able") continue;
+      if (!isEmailChannelClaimEligible(row.claim_eligibility)) continue;
       if (row.claim_invite_sent_at) continue;
       const email = typeof row.email === "string" ? row.email.trim() : "";
       if (!email) continue;
@@ -5020,7 +5458,7 @@ export const getOutreachMatchingBusinessIds = async ({
     }
 
     if (outreachType === "claim_followup") {
-      if (row.claim_eligibility !== "able") continue;
+      if (!isEmailChannelClaimEligible(row.claim_eligibility)) continue;
       if (!row.claim_invite_sent_at) continue;
       const inviteSentAt = new Date(row.claim_invite_sent_at);
       if (
@@ -5038,7 +5476,7 @@ export const getOutreachMatchingBusinessIds = async ({
 
     if (outreachType === "website_offer") {
       if (
-        row.claim_eligibility !== "able" &&
+        !isEmailChannelClaimEligible(row.claim_eligibility) &&
         row.claim_eligibility !== "claimed"
       ) {
         continue;

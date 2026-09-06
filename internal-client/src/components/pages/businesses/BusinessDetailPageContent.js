@@ -13,6 +13,7 @@ import BusinessFeaturedBadge from "@/components/pages/businesses/BusinessFeature
 import BusinessDetailAnalyticsTab from "@/components/pages/businesses/analytics/BusinessDetailAnalyticsTab";
 import BusinessDetailInsightsTab from "@/components/pages/businesses/insights/BusinessDetailInsightsTab";
 import BusinessDetailEmailTab from "@/components/pages/businesses/BusinessDetailEmailTab";
+import BusinessDetailPhoneTab from "@/components/pages/businesses/BusinessDetailPhoneTab";
 import BusinessDetailImagesTab from "@/components/pages/businesses/BusinessDetailImagesTab";
 import BusinessDetailListingTab from "@/components/pages/businesses/BusinessDetailListingTab";
 import BusinessDetailLocationTab from "@/components/pages/businesses/BusinessDetailLocationTab";
@@ -48,6 +49,7 @@ export default function BusinessDetailPageContent() {
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [categoriesError, setCategoriesError] = useState(null);
   const [markStatusError, setMarkStatusError] = useState(null);
+  const [markPhoneStatusError, setMarkPhoneStatusError] = useState(null);
   const activeTab = resolveBusinessDetailTab(searchParams.get("tab"));
 
   useEffect(() => {
@@ -108,6 +110,9 @@ export default function BusinessDetailPageContent() {
       await queryClient.invalidateQueries({ queryKey: ["admin-businesses"] });
       await queryClient.invalidateQueries({
         queryKey: ["admin-businesses-with-emails"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["admin-businesses-with-phones"],
       });
     },
     onError: (err) => {
@@ -180,6 +185,44 @@ export default function BusinessDetailPageContent() {
     },
     onError: (err) => {
       setMarkStatusError(err.message || "Failed to mark status");
+    },
+  });
+
+  const markPhoneStatusMutation = useMutation({
+    mutationFn: async (phone_status) => {
+      const result = await fetchApi("/admin/businesses/phone-status", {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify({
+          business_ids: [id],
+          phone_status,
+        }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to mark status");
+      }
+
+      return result.data;
+    },
+    onMutate: () => {
+      setMarkPhoneStatusError(null);
+    },
+    onSuccess: async () => {
+      setMarkPhoneStatusError(null);
+      await queryClient.invalidateQueries({ queryKey: ["admin-business", id] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-businesses"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["admin-businesses-with-phones"],
+      });
+    },
+    onError: (err) => {
+      setMarkPhoneStatusError(err.message || "Failed to mark status");
     },
   });
 
@@ -291,6 +334,17 @@ export default function BusinessDetailPageContent() {
           markStatusError={markStatusError}
           onMarkStatus={(emailStatus) =>
             markStatusMutation.mutateAsync(emailStatus)
+          }
+        />
+      ) : null}
+
+      {activeTab === "phone" ? (
+        <BusinessDetailPhoneTab
+          business={data}
+          markStatusPending={markPhoneStatusMutation.isPending}
+          markStatusError={markPhoneStatusError}
+          onMarkStatus={(phoneStatus) =>
+            markPhoneStatusMutation.mutateAsync(phoneStatus)
           }
         />
       ) : null}

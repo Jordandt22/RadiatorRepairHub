@@ -29,6 +29,7 @@ const SEGMENT_LABELS = {
   cities: "Cities",
   outreach: "Outreach",
   "email-cleaner": "Email Cleaner",
+  "phone-cleaner": "Phone Cleaner",
   "email-scrape": "Email Scrape",
   websites: "Websites",
   users: "Users",
@@ -60,6 +61,7 @@ const SEGMENT_HREF = {
   "email-scrape": "/email-scrape?tab=jobs",
   websites: "/websites?tab=businesses",
   users: "/users",
+  "claim-requests": "/claim-requests?tab=pending",
   testing: "/testing?tab=businesses",
   businesses: "/businesses?tab=all",
   systems: "/systems/cache/redis",
@@ -106,6 +108,9 @@ function formatSegment(segment, index, segments) {
     return "Details";
   }
   if (index === 1 && parent === "businesses") {
+    return "Details";
+  }
+  if (index === 1 && parent === "claim-requests") {
     return "Details";
   }
 
@@ -168,7 +173,8 @@ export default function ProtectedBreadcrumb() {
             (!isLast && segments[0] === "group" && index === 0) ||
             (!isLast && segments[0] === "batch" && index === 0) ||
             (!isLast && segments[0] === "users" && index === 0) ||
-            (!isLast && segments[0] === "businesses" && index === 0);
+            (!isLast && segments[0] === "businesses" && index === 0) ||
+            (!isLast && segments[0] === "claim-requests" && index === 0);
 
           return (
             <Fragment key={`${href}-${index}`}>

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,13 +26,28 @@ import {
 } from "@/lib/validation/password";
 import { usePostHog } from "posthog-js/react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { PHONE_CLAIM_RESEND_CONSENT_TEXT } from "@/lib/claimConsent";
+import ClaimConsentPolicyLinks from "@/components/businesses/ClaimConsentPolicyLinks";
 
-function ClaimVerifyFormContent({ claimRequestId, business }) {
+const RESEND_COOLDOWN_SECONDS = 60;
+
+const EMAIL_RESEND_CONSENT_TEXT =
+  "Send a new verification code to this listing's email address.";
+
+function ClaimVerifyFormContent({
+  claimRequestId,
+  business,
+  channel = "email",
+  phone = null,
+  phoneResendsRemaining = null,
+}) {
   const router = useRouter();
   const { showCustomError, showCustomSuccess } = useToast();
   const posthog = usePostHog();
   const { isSignedIn, user, isLoading: isAuthLoading } = useIsSignedIn();
+  const isPhoneClaim = channel === "phone";
   const [code, setCode] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -40,6 +55,17 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
   const [isCanceling, setIsCanceling] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [errors, setErrors] = useState({});
+  const [resendConsent, setResendConsent] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [resendsLeft, setResendsLeft] = useState(
+    isPhoneClaim ? Number(phoneResendsRemaining ?? 1) : null
+  );
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown((prev) => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
   const capture = (event, props = {}) => {
     posthog?.capture(event, {
@@ -47,6 +73,7 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
       business_slug: business?.slug || undefined,
       business_name: business?.title || undefined,
       signed_in: Boolean(isSignedIn),
+      channel: isPhoneClaim ? "phone" : "email",
       source: "claim_verify",
       ...props,
     });
@@ -96,6 +123,9 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
       next.code = "Enter the 6-character verification code.";
     }
     if (!isSignedIn) {
+      if (isPhoneClaim && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginEmail.trim())) {
+        next.email = "Enter a valid email address for your account.";
+      }
       const passwordError = getPasswordStrengthError(password);
       if (passwordError) {
         next.password = passwordError;
@@ -111,9 +141,16 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
   const handleCancel = async () => {
     if (isCanceling || isSubmitting || isResending) return;
     setIsCanceling(true);
+    capture("claim_cancel_started");
     try {
       const { data, error } = await cancelClaimRequest(claimRequestId);
       if (error) {
+        capture("claim_failed", {
+          stage: "cancel",
+          error_code: typeof error.code === "string" ? error.code : undefined,
+          error_message:
+            typeof error.message === "string" ? error.message : undefined,
+        });
         if (isClaimUnavailableError(error)) {
           handleClaimUnavailable(error);
           return;
@@ -125,8 +162,10 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
         );
         return;
       }
+      capture("claim_cancelled");
       goToBusinessPage(data?.slug || business.slug);
     } catch {
+      capture("claim_failed", { stage: "cancel" });
       showCustomError("Unable to cancel the claim request.");
     } finally {
       setIsCanceling(false);
@@ -135,10 +174,20 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
 
   const handleResend = async () => {
     if (isResending || isSubmitting || isCanceling) return;
+    if (!resendConsent || cooldown > 0) return;
+    if (isPhoneClaim && resendsLeft <= 0) return;
+
     setIsResending(true);
+    capture("claim_resend_started");
     try {
-      const { error } = await resendClaimCode(claimRequestId);
+      const { data, error } = await resendClaimCode(claimRequestId, true);
       if (error) {
+        capture("claim_failed", {
+          stage: "resend",
+          error_code: typeof error.code === "string" ? error.code : undefined,
+          error_message:
+            typeof error.message === "string" ? error.message : undefined,
+        });
         if (isClaimUnavailableError(error)) {
           handleClaimUnavailable(error);
           return;
@@ -156,8 +205,23 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
         delete next.code;
         return next;
       });
-      showCustomSuccess("A new verification code has been sent.");
+      setResendConsent(false);
+      setCooldown(RESEND_COOLDOWN_SECONDS);
+      if (isPhoneClaim) {
+        setResendsLeft(Number(data?.phoneResendsRemaining ?? 0));
+      }
+      capture("claim_code_resent", {
+        phone_resends_remaining: isPhoneClaim
+          ? Number(data?.phoneResendsRemaining ?? 0)
+          : undefined,
+      });
+      showCustomSuccess(
+        isPhoneClaim
+          ? "We're calling the business number again with a new code."
+          : "A new verification code has been sent."
+      );
     } catch {
+      capture("claim_failed", { stage: "resend" });
       showCustomError("Unable to resend the verification code.");
     } finally {
       setIsResending(false);
@@ -181,6 +245,8 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
             code: code.toUpperCase(),
             password,
             confirmPassword,
+            // Phone claims have no listing email, so the owner picks their own.
+            ...(isPhoneClaim ? { email: loginEmail.trim() } : {}),
           };
 
       const { data, error } = await completeClaimRequest(payload, {
@@ -288,8 +354,13 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
       <h2 className="mb-2 font-heading text-2xl font-bold tracking-tight text-foreground">
         Complete your claim
       </h2>
-      <p className="mb-6 text-muted-foreground">
-        {isSignedIn ? (
+      <p className="mb-4 text-muted-foreground">
+        {isPhoneClaim ? (
+          <>
+            Enter the 6-digit code from the automated call to claim{" "}
+            <span className="font-medium text-foreground">{business.title}</span>.
+          </>
+        ) : isSignedIn ? (
           <>
             Enter the verification code sent to the listing email to claim{" "}
             <span className="font-medium text-foreground">{business.title}</span>.
@@ -301,6 +372,16 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
           </>
         )}
       </p>
+
+      {isPhoneClaim ? (
+        <div className="mb-6 flex items-start gap-2 rounded-md border border-border bg-muted/50 p-3 text-xs text-muted-foreground">
+          <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <p>
+            Stay on this page until you finish. If you leave, you&apos;ll need to
+            wait for this claim to expire before starting a new one.
+          </p>
+        </div>
+      ) : null}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-2">
@@ -340,41 +421,109 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
           {errors.code && (
             <p className="text-xs text-destructive">{errors.code}</p>
           )}
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground">
-              This code expires in 1 hour.
-            </p>
-            <Button
-              type="button"
-              variant="link"
-              className="h-auto shrink-0 p-0 text-sm text-interactive"
-              disabled={busy}
-              onClick={handleResend}
-            >
-              {isResending ? "Sending..." : "Resend code"}
-            </Button>
-          </div>
+          <p className="text-xs text-muted-foreground">
+            {isPhoneClaim
+              ? "This code expires in about 10 minutes."
+              : "This code expires in 1 hour."}
+          </p>
+        </div>
+
+        <div className="grid gap-2 rounded-md border border-border p-4">
+          <p className="text-sm font-medium text-foreground">
+            {isPhoneClaim ? "Didn't get the call?" : "Didn't get the code?"}
+          </p>
+          {isPhoneClaim && resendsLeft <= 0 ? (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">
+                You&apos;ve used your one repeat call for this claim.
+              </p>
+              <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-3 text-xs text-foreground">
+                <p>
+                  If you still didn&apos;t receive it or the code expired, wait for this claim request to
+                  expire (1 hr after starting this attempt) and start again
+                  from the listing, or{" "}
+                  <Link
+                    href="/contact"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-interactive underline underline-offset-2"
+                  >
+                    contact support
+                  </Link>
+                  .
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {isPhoneClaim ? (
+                <p className="text-xs text-muted-foreground">
+                  You have {resendsLeft} repeat call left for this claim. After
+                  that, you&apos;ll need to wait for the claim to expire or contact
+                  support if the call still doesn&apos;t come through.
+                </p>
+              ) : null}
+              <div className="space-y-2">
+                <label className="flex cursor-pointer items-start gap-3 text-sm text-foreground">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 size-4 accent-primary"
+                    checked={resendConsent}
+                    onChange={(event) => setResendConsent(event.target.checked)}
+                    disabled={busy}
+                  />
+                  <span className="text-xs leading-relaxed">
+                    {isPhoneClaim
+                      ? PHONE_CLAIM_RESEND_CONSENT_TEXT
+                      : EMAIL_RESEND_CONSENT_TEXT}
+                  </span>
+                </label>
+                {isPhoneClaim ? <ClaimConsentPolicyLinks /> : null}
+              </div>
+              <div>
+                <Button
+                  type="button"
+                  className="mt-1"
+                  disabled={busy || !resendConsent || cooldown > 0}
+                  onClick={handleResend}
+                >
+                  {isResending
+                    ? isPhoneClaim
+                      ? "Calling..."
+                      : "Sending..."
+                    : cooldown > 0
+                      ? `Wait ${cooldown}s`
+                      : isPhoneClaim
+                        ? "Call me again"
+                        : "Resend code"}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="grid gap-1.5">
           <label
-            htmlFor="claim-email"
+            htmlFor="claim-destination"
             className="text-sm font-medium text-foreground"
           >
-            Listing email <span className="text-destructive">*</span>
+            {isPhoneClaim ? "Listing phone" : "Listing email"}{" "}
+            <span className="text-destructive">*</span>
           </label>
           <Input
-            id="claim-email"
-            type="email"
-            value={business.email}
+            id="claim-destination"
+            type={isPhoneClaim ? "tel" : "email"}
+            value={(isPhoneClaim ? phone : business.email) ?? ""}
             readOnly
             disabled
             className="bg-muted"
           />
           <p className="text-xs text-muted-foreground">
-            {isSignedIn
-              ? "Verification code is sent to this listing email. Your login email stays the same."
-              : "Email can be changed after account creation"}
+            {isPhoneClaim
+              ? "We call this number to read your verification code. It never asks for personal or payment information."
+              : isSignedIn
+                ? "Verification code is sent to this listing email. Your login email stays the same."
+                : "Email can be changed after account creation"}
           </p>
         </div>
 
@@ -399,6 +548,42 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
 
         {!isSignedIn ? (
           <>
+            {isPhoneClaim ? (
+              <div className="grid gap-1.5">
+                <label
+                  htmlFor="claim-login-email"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Your email <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  id="claim-login-email"
+                  type="email"
+                  autoComplete="email"
+                  value={loginEmail}
+                  onChange={(e) => {
+                    setLoginEmail(e.target.value);
+                    if (errors.email) {
+                      setErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.email;
+                        return next;
+                      });
+                    }
+                  }}
+                  disabled={busy}
+                  aria-invalid={Boolean(errors.email)}
+                  placeholder="you@example.com"
+                />
+                <p className="text-xs text-muted-foreground">
+                  This becomes the login email for your owner account.
+                </p>
+                {errors.email && (
+                  <p className="text-xs text-destructive">{errors.email}</p>
+                )}
+              </div>
+            ) : null}
+
             <div className="grid gap-1.5">
               <label
                 htmlFor="claim-password"
@@ -550,3 +735,4 @@ function ClaimVerifyFormContent({ claimRequestId, business }) {
 export default function ClaimVerifyForm(props) {
   return <ClaimVerifyFormContent {...props} />;
 }
+

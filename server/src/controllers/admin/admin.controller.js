@@ -46,6 +46,12 @@ import {
   clearBusinessEmails as clearEmailsOnBusinesses,
   updateBusinessesEmailStatus as patchBusinessesEmailStatus,
   updateBusinessEmail as patchBusinessEmail,
+  getAdminBusinessesWithPhones as fetchAdminBusinessesWithPhones,
+  clearBusinessPhones as clearPhonesOnBusinesses,
+  updateBusinessesPhoneStatus as patchBusinessesPhoneStatus,
+  updateBusinessPhone as patchBusinessPhone,
+  getClaimRequestById as fetchClaimRequestById,
+  getClaimConsentEventsByClaimRequestId as fetchClaimConsentEvents,
   updateBusinessListing as patchBusinessListing,
   updateAdminBusinessCategories as patchAdminBusinessCategories,
   unclaimBusinessesByIds,
@@ -1415,14 +1421,20 @@ export const getClaimRequests = async (req, res) => {
   let page = Number(req.query.page);
   const limit = Number(req.query.limit);
   const status = req.query.status || null;
+  const channel = req.query.channel || null;
 
-  const { key, interval } = getClaimRequestsKey(page, limit, status);
+  const { key, interval } = getClaimRequestsKey(page, limit, status, channel);
   const cachedData = await getCacheData(key);
   if (cachedData) {
     return res.status(200).json(successHandler(cachedData.data));
   }
 
-  const { data, count, error } = await fetchClaimRequests(page, limit, status);
+  const { data, count, error } = await fetchClaimRequests(
+    page,
+    limit,
+    status,
+    channel
+  );
   if (error) {
     return res
       .status(500)
@@ -1448,10 +1460,66 @@ export const getClaimRequests = async (req, res) => {
     page,
     limit,
     status,
+    channel,
   };
 
   await cacheData(key, interval, compiledData);
   return res.status(200).json(successHandler(compiledData));
+};
+
+export const getClaimRequestById = async (req, res) => {
+  const { claim_request_id } = req.params;
+
+  const { data: claimRequest, error } =
+    await fetchClaimRequestById(claim_request_id);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the claim request.",
+          error
+        )
+      );
+  }
+
+  if (!claimRequest) {
+    return res
+      .status(404)
+      .json(customErrorHandler(SUPABASE_ERROR, "Claim request not found."));
+  }
+
+  const { data: consentEvents, error: consentError } =
+    await fetchClaimConsentEvents(claim_request_id);
+
+  if (consentError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching consent events.",
+          consentError
+        )
+      );
+  }
+
+  const contact =
+    claimRequest.channel === "phone"
+      ? claimRequest.business?.phone ?? null
+      : claimRequest.business?.email ?? null;
+
+  return res.status(200).json(
+    successHandler({
+      claim_request: {
+        ...claimRequest,
+        contact,
+      },
+      consent_events: consentEvents ?? [],
+    })
+  );
 };
 
 export const updateClaimRequestsStatus = async (req, res) => {
@@ -2769,6 +2837,189 @@ export const updateBusinessEmail = async (req, res) => {
       title: data.title,
       slug: data.slug,
       email: data.email,
+    })
+  );
+};
+
+export const getBusinessesWithPhones = async (req, res) => {
+  let page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+  const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const q = rawQ ? rawQ.slice(0, 100) : null;
+
+  const parseBool = (value) => {
+    if (value === true || value === "true") return true;
+    if (value === false || value === "false") return false;
+    return null;
+  };
+  const emailsSent = parseBool(req.query.emails_sent);
+  const suspicious = parseBool(req.query.suspicious);
+  const phoneStatus =
+    typeof req.query.phone_status === "string" && req.query.phone_status.trim()
+      ? req.query.phone_status.trim()
+      : null;
+  const requirePhone = parseBool(req.query.require_phone);
+  const requirePhoneValue = requirePhone === null ? true : requirePhone;
+  const hasPhone = parseBool(req.query.has_phone);
+
+  const { data, count, error } = await fetchAdminBusinessesWithPhones(
+    page,
+    limit,
+    {
+      q,
+      emailsSent,
+      suspicious: requirePhoneValue ? suspicious : null,
+      phoneStatus,
+      requirePhone: requirePhoneValue,
+      hasPhone: requirePhoneValue ? null : hasPhone,
+    }
+  );
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching businesses with phones.",
+          error
+        )
+      );
+  }
+
+  const total = count ?? 0;
+  let totalPages = Math.ceil(total / limit);
+  if (totalPages > 0 && page > totalPages) {
+    page = totalPages;
+  }
+
+  return res.status(200).json(
+    successHandler({
+      businesses: data ?? [],
+      total,
+      totalPages,
+      page,
+      limit,
+      q,
+      emails_sent: emailsSent,
+      suspicious: requirePhoneValue ? suspicious : null,
+      require_phone: requirePhoneValue,
+      has_phone: requirePhoneValue ? null : hasPhone,
+    })
+  );
+};
+
+export const clearBusinessPhones = async (req, res) => {
+  const { business_ids } = req.body;
+
+  const { data, error } = await clearPhonesOnBusinesses(business_ids);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error clearing business phones.",
+          error
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+  await deleteCacheDataByPrefix("ADMIN_LOCATIONS");
+
+  const clearedIds = (data ?? []).map((row) => row.id);
+
+  return res.status(200).json(
+    successHandler({
+      cleared: clearedIds.length,
+      business_ids: clearedIds,
+    })
+  );
+};
+
+export const markBusinessPhoneStatus = async (req, res) => {
+  const { business_ids, phone_status } = req.body;
+
+  const { data, error } = await patchBusinessesPhoneStatus(
+    business_ids,
+    phone_status
+  );
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating phone status.",
+          error
+        )
+      );
+  }
+
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+  await invalidatePublicBusinessListingCaches(data ?? []);
+
+  const markedIds = (data ?? []).map((row) => row.id);
+
+  return res.status(200).json(
+    successHandler({
+      marked: markedIds.length,
+      business_ids: markedIds,
+      phone_status,
+      phone_status_marked_at: data?.[0]?.phone_status_marked_at ?? null,
+    })
+  );
+};
+
+export const updateBusinessPhone = async (req, res) => {
+  const { business_id, phone } = req.body;
+  const normalizedPhone = String(phone).trim();
+
+  const { data, error } = await patchBusinessPhone(
+    business_id,
+    normalizedPhone
+  );
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(SUPABASE_ERROR, "Business not found.", error)
+        );
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error updating the business phone.",
+          error
+        )
+      );
+  }
+
+  try {
+    await invalidatePublicBusinessListingCaches([data]);
+  } catch {
+    // best-effort cache cleanup
+  }
+
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+  await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
+  await deleteCacheDataByPrefix("ADMIN_LOCATIONS");
+
+  return res.status(200).json(
+    successHandler({
+      id: data.id,
+      title: data.title,
+      slug: data.slug,
+      phone: data.phone,
     })
   );
 };

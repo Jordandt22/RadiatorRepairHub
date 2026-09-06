@@ -51,9 +51,14 @@ export default function ClaimRequestsTableSkeleton({ rows = 8 }) {
             </TableHead>
             <TableHead>Business</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Channel</TableHead>
+            <TableHead>Contact</TableHead>
             <TableHead>Attempts</TableHead>
             <TableHead>Last Attempted</TableHead>
             <TableHead>Created</TableHead>
+            <TableHead className="w-24 text-right">
+              <span className="sr-only">Actions</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -69,6 +74,12 @@ export default function ClaimRequestsTableSkeleton({ rows = 8 }) {
                 <Skeleton className="h-5 w-20 rounded-full" />
               </TableCell>
               <TableCell>
+                <Skeleton className="h-4 w-16" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-28" />
+              </TableCell>
+              <TableCell>
                 <Skeleton className="h-4 w-8" />
               </TableCell>
               <TableCell>
@@ -76,6 +87,9 @@ export default function ClaimRequestsTableSkeleton({ rows = 8 }) {
               </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-24" />
+              </TableCell>
+              <TableCell className="text-right">
+                <Skeleton className="ml-auto h-8 w-16 rounded-md" />
               </TableCell>
             </TableRow>
           ))}

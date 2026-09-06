@@ -81,7 +81,7 @@ test("featured digest keeps full stats", () => {
 test("evaluateDigestEligibility skips zero-activity unclaimed and missing recipients", () => {
   const unclaimed = {
     is_claimed: false,
-    claim_eligibility: "able",
+    claim_eligibility: "both_able",
     email: "shop@example.com",
   };
   assert.equal(

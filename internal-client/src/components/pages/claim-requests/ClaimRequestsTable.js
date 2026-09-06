@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { EyeIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -15,6 +18,19 @@ import ClaimRequestsEmptyState from "@/components/pages/claim-requests/ClaimRequ
 function shortId(value) {
   if (!value || typeof value !== "string") return "—";
   return value.length > 8 ? `${value.slice(0, 8)}…` : value;
+}
+
+function channelLabel(channel) {
+  if (channel === "phone") return "Phone call";
+  if (channel === "email") return "Email";
+  return "—";
+}
+
+function contactUsed(row) {
+  if (row.contact) return row.contact;
+  if (row.channel === "email") return row.business?.email || "—";
+  if (row.channel === "phone") return row.business?.phone || "—";
+  return "—";
 }
 
 function ClaimRequestsTableView({
@@ -46,28 +62,38 @@ function ClaimRequestsTableView({
                 aria-label="Select all claim requests"
               />
             </TableHead>
-            <TableHead className="w-[32%]">Business</TableHead>
-            <TableHead className="w-[14%]">Status</TableHead>
-            <TableHead className="w-[10%]">Attempts</TableHead>
+            <TableHead className="w-[20%]">Business</TableHead>
+            <TableHead className="w-[10%]">Status</TableHead>
+            <TableHead className="w-[10%]">Channel</TableHead>
+            <TableHead className="w-[16%]">Contact</TableHead>
+            <TableHead className="w-[8%]">Attempts</TableHead>
             {isSuccessTab ? (
               <>
-                <TableHead className="w-[16%]">Completed By</TableHead>
-                <TableHead className="w-[16%]">Completed At</TableHead>
+                <TableHead className="w-[12%]">Completed By</TableHead>
+                <TableHead className="w-[12%]">Completed At</TableHead>
               </>
             ) : (
               <>
-                <TableHead className="w-[16%]">Last Attempted</TableHead>
-                <TableHead className="w-[16%]">Created</TableHead>
+                <TableHead className="w-[12%]">Last Attempted</TableHead>
+                <TableHead className="w-[12%]">Created</TableHead>
               </>
             )}
+            <TableHead className="w-24 text-right">
+              <span className="sr-only">Actions</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {claimRequests.map((row) => {
             const id = row.claim_request_id;
             const checked = selectedIds.has(id);
+            const contact = contactUsed(row);
             return (
-              <TableRow key={id} data-state={checked ? "selected" : undefined}>
+              <TableRow
+                key={id}
+                className="group"
+                data-state={checked ? "selected" : undefined}
+              >
                 <TableCell>
                   <Checkbox
                     checked={checked}
@@ -84,6 +110,17 @@ function ClaimRequestsTableView({
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <ClaimRequestStatusBadge status={row.status} />
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {channelLabel(row.channel)}
+                </TableCell>
+                <TableCell className="max-w-0">
+                  <span
+                    className="block truncate text-sm"
+                    title={contact !== "—" ? contact : undefined}
+                  >
+                    {contact}
+                  </span>
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   {row.attempts ?? 0}
@@ -112,6 +149,20 @@ function ClaimRequestsTableView({
                     </TableCell>
                   </>
                 )}
+                <TableCell className="text-right whitespace-nowrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="cursor-pointer opacity-0 transition-all duration-200 group-hover:opacity-100 hover:scale-95 focus-visible:opacity-100 focus-visible:scale-95"
+                    nativeButton={false}
+                    render={
+                      <Link href={`/claim-requests/${row.claim_request_id}`} />
+                    }
+                  >
+                    <EyeIcon />
+                    View
+                  </Button>
+                </TableCell>
               </TableRow>
             );
           })}
@@ -154,6 +205,7 @@ function ClaimRequestsCardList({
       {claimRequests.map((row) => {
         const id = row.claim_request_id;
         const checked = selectedIds.has(id);
+        const contact = contactUsed(row);
         return (
           <div
             key={id}
@@ -178,6 +230,12 @@ function ClaimRequestsCardList({
               </div>
             </div>
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 pl-8 text-sm">
+              <dt className="text-muted-foreground">Channel</dt>
+              <dd>{channelLabel(row.channel)}</dd>
+              <dt className="text-muted-foreground">Contact</dt>
+              <dd className="truncate" title={contact !== "—" ? contact : undefined}>
+                {contact}
+              </dd>
               <dt className="text-muted-foreground">Attempts</dt>
               <dd>{row.attempts ?? 0}</dd>
               {isSuccessTab ? (
@@ -201,6 +259,20 @@ function ClaimRequestsCardList({
                 </>
               )}
             </dl>
+            <div className="pl-8">
+              <Button
+                variant="outline"
+                size="sm"
+                className="cursor-pointer"
+                nativeButton={false}
+                render={
+                  <Link href={`/claim-requests/${row.claim_request_id}`} />
+                }
+              >
+                <EyeIcon />
+                View
+              </Button>
+            </div>
           </div>
         );
       })}

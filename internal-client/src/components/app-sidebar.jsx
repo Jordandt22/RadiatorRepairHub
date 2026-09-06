@@ -23,6 +23,7 @@ import {
   UploadIcon,
   ImageIcon,
   MailXIcon,
+  PhoneOffIcon,
   MailSearchIcon,
   UsersIcon,
   FlaskConicalIcon,
@@ -157,6 +158,11 @@ const data = {
       title: "Weekly Digest",
       url: "/digest",
       icon: <BarChart3Icon />,
+    },
+    {
+      title: "Phone Cleaner",
+      url: "/phone-cleaner?tab=cleaner",
+      icon: <PhoneOffIcon />,
     },
     {
       title: "Email Cleaner",

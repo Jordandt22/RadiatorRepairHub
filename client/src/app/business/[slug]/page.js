@@ -53,7 +53,7 @@ import {
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { FEATURED_AFFILIATE_PRODUCT_ALIASES } from "@/lib/affiliateProducts";
 import { getBusinessDisplayImage, getBusinessHeroImage } from "@/lib/images";
-import { SHORT_CACHE } from "@/lib/cachePolicy";
+import { SHORT_CACHE, NO_STORE } from "@/lib/cachePolicy";
 import {
   getGoogleMapsDirectionsUrl,
   getGoogleMapsEmbedQuery,
@@ -149,7 +149,7 @@ async function Page({ params }) {
   try {
     const { data: business, error, status } = await fetchBusinessBySlug(
       slug,
-      SHORT_CACHE
+      NO_STORE
     );
 
     if (error) {
@@ -321,6 +321,10 @@ async function Page({ params }) {
                   emailStatus={business.email_status}
                   isClaimed={Boolean(business.is_claimed)}
                   hasDuplicateEmail={Boolean(business.has_duplicate_email)}
+                  phone={business.phone}
+                  phoneClaimEligible={Boolean(business.phone_claim_eligible)}
+                  phoneClaimBlockReason={business.phone_claim_block_reason}
+                  pendingClaim={business.pending_claim}
                 />
                 <AboutSection
                   businessId={business.id}
@@ -474,6 +478,10 @@ async function Page({ params }) {
                       isFeatured={Boolean(business.is_featured)}
                       hasDuplicateEmail={Boolean(business.has_duplicate_email)}
                       lastEditedAt={business.last_edited_at}
+                      phone={business.phone}
+                      phoneClaimEligible={Boolean(business.phone_claim_eligible)}
+                      phoneClaimBlockReason={business.phone_claim_block_reason}
+                      pendingClaim={business.pending_claim}
                     />
                   </div>
                 </div>
@@ -506,6 +514,10 @@ async function Page({ params }) {
                   emailStatus={business.email_status}
                   isClaimed={Boolean(business.is_claimed)}
                   hasDuplicateEmail={Boolean(business.has_duplicate_email)}
+                  phone={business.phone}
+                  phoneClaimEligible={Boolean(business.phone_claim_eligible)}
+                  phoneClaimBlockReason={business.phone_claim_block_reason}
+                  pendingClaim={business.pending_claim}
                 />
 
                 <AmenitiesSection

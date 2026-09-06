@@ -10,7 +10,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 
 const pageTitle = "How to Claim Your Business | RadiatorRepairHub";
 const pageDescription =
-  "Claim your radiator repair listing for free: eligibility, email verification, what you can edit, shop photos, listing analytics, and optional Featured upgrades for more visibility.";
+  "Claim your radiator repair listing for free: eligibility, email or phone call verification, what you can edit, shop photos, listing analytics, and optional Featured upgrades for more visibility.";
 
 export const metadata = buildPageMetadata({
   title: pageTitle,
@@ -69,9 +69,9 @@ const BENEFITS = [
 
 const CLAIM_STEPS = [
   "Open your business listing on RadiatorRepairHub.",
-  "Click Claim on the listing.",
-  "A verification code will be sent to that business's email.",
-  "Open the verification link sent in that same email.",
+  "Click Claim on the listing and pick Email or Phone call.",
+  "Email: we send a 6-character code to the business email (valid for 1 hour). Phone: we place an automated call that reads a 6-digit code (valid for about 10 minutes).",
+  "Stay on the verification page that opens, you'll need it to enter your code.",
   "Enter the code and create a password for your new account.",
   "Congrats, you've successfully claimed your listing!",
 ];
@@ -81,7 +81,17 @@ function buildClaimFaqs(supportEmail) {
     {
       question: "What if I don't receive the code?",
       answer:
-        "Check your spam or junk folder first. On the claim verification page, use Resend code to send a new verification email to the address on file for your listing.",
+        "For email claims, check your spam or junk folder first, then use Resend code on the verification page to send a new code to the address on file. Email codes are valid for 1 hour. For phone claims, use Call me again for one repeat call (phone codes expire in about 10 minutes), or switch to email if an automated phone menu or voicemail is answering. If you've used your repeat call and still don't have a code, wait for the claim request to expire (within one hour of the last attempt) and start again, or contact support.",
+    },
+    {
+      question: "How does phone verification work?",
+      answer:
+        "Choose the Phone call tab when you claim, confirm the consent checkbox (including that you agree to a prerecorded or artificial voice call), and we place an automated call to the phone number on your listing. Press a key when prompted, then enter the 6-digit code the call reads out. Phone codes expire in about 10 minutes. Calls are only placed during the shop's open hours between 9:00 AM and 5:00 PM local time, and the call never asks for personal, payment, or account information.",
+    },
+    {
+      question: "Which email does my account use after a phone claim?",
+      answer:
+        "You choose it. On the verification page for a phone claim, you enter the email address you want to sign in with and set a password. That email becomes your login and is not published on the listing.",
     },
     {
       question: "What if the email or phone on my listing is wrong?",
@@ -137,7 +147,7 @@ export default function HowToClaimPage() {
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         pageTitle="How to claim your business"
-        pageDescription="Check eligibility, follow the email claim steps, and see what you can edit and track after claiming."
+        pageDescription="Check eligibility, verify by email or automated phone call, and see what you can edit and track after claiming."
         headerLink={{
           href: "/search",
           label: "Search for your listing",
@@ -147,13 +157,68 @@ export default function HowToClaimPage() {
       <div className="mx-auto max-w-4xl space-y-12 px-4 py-12 sm:px-6 lg:px-8">
         <section className="rounded-lg border border-border bg-card p-6 md:p-8">
           <h2 className="mb-4 font-heading text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+            How to Claim (Step-by-Step)
+          </h2>
+          <ol className="space-y-4">
+            {CLAIM_STEPS.map((step, index) => (
+              <li key={step} className="flex gap-4">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                  {index + 1}
+                </span>
+                <p className="pt-1 leading-relaxed text-muted-foreground">
+                  {step}
+                </p>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-6 rounded-lg border border-border bg-muted p-4">
+            <h3 className="mb-1 font-semibold text-foreground">
+              About the verification call
+            </h3>
+            <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
+              <li>
+                Calls are only placed during the shop&apos;s open hours, between
+                9:00 AM and 5:00 PM local time.
+              </li>
+              <li>
+                You&apos;ll be asked to press a key so we know a person answered,
+                then the code is read aloud.
+              </li>
+              <li>
+                The call never asks for personal, payment, or account
+                information.
+              </li>
+              <li>
+                The code from the call is valid for about 10 minutes. The claim
+                request itself stays open for about one hour from the last
+                attempt, so you can wait and start again if needed.
+              </li>
+              <li>
+                Automated phone menus and voicemail can cut the call short, and
+                some carriers label automated calls as spam. Claim by email
+                instead if the call doesn&apos;t reach you.
+              </li>
+              <li>
+                Each listing allows up to 3 phone claim attempts per day, with one
+                repeat call per claim.
+              </li>
+            </ul>
+          </div>
+          <p className="mt-6 text-sm text-muted-foreground">
+            Coming soon: claiming when multiple businesses share the same email
+            or phone number.
+          </p>
+        </section>
+
+        <section className="rounded-lg border border-border bg-card p-6 md:p-8">
+          <h2 className="mb-4 font-heading text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
             Claim Eligibility
           </h2>
           <p className="mb-6 leading-relaxed text-muted-foreground">
-            A listing is claimable when it has a unique email on file that is
-            not shared with other businesses in our directory. We send a
-            verification code to that email to confirm you control the listing
-            contact.
+            A listing is claimable when it has a unique email or a unique phone
+            number on file that is not shared with other businesses in our
+            directory. We send a verification code to that email, or read one out
+            over an automated call, to confirm you control the listing contact.
           </p>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -176,7 +241,7 @@ export default function HowToClaimPage() {
                 that inbox for every location.
               </p>
             </div>
-            <div className="rounded-lg border border-border bg-muted p-4 md:col-span-2">
+            <div className="rounded-lg border border-border bg-muted p-4">
               <h3 className="mb-1 font-semibold text-foreground">
                 Unclaimable: Email Being Reviewed
               </h3>
@@ -184,6 +249,17 @@ export default function HowToClaimPage() {
                 Claiming is paused while we confirm the listing email is
                 correct. Use Report Info on the business page if the contact is
                 wrong.
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted p-4">
+              <h3 className="mb-1 font-semibold text-foreground">
+                Phone claim unavailable
+              </h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                The Phone call tab stays available so you can see why claiming by
+                phone is blocked—for example no phone on file, a toll-free or
+                shared number, or the shop is closed. Calls only go out during
+                open hours between 9:00 AM and 5:00 PM local time.
               </p>
             </div>
           </div>
@@ -220,28 +296,6 @@ export default function HowToClaimPage() {
               Get listed
             </Link>{" "}
             instead of claiming.
-          </p>
-        </section>
-
-        <section className="rounded-lg border border-border bg-card p-6 md:p-8">
-          <h2 className="mb-4 font-heading text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-            How to Claim (Step-by-Step)
-          </h2>
-          <ol className="space-y-4">
-            {CLAIM_STEPS.map((step, index) => (
-              <li key={step} className="flex gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                  {index + 1}
-                </span>
-                <p className="pt-1 leading-relaxed text-muted-foreground">
-                  {step}
-                </p>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-6 text-sm text-muted-foreground">
-            Coming soon: phone verification, and claiming when multiple
-            businesses share the same email.
           </p>
         </section>
 

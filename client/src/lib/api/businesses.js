@@ -77,11 +77,14 @@ export async function fetchBusinessesByCategory(
   );
 }
 
-export async function claimBusiness(businessId) {
+export async function claimBusiness(
+  businessId,
+  { channel = "email", consentAcknowledged = false } = {}
+) {
   return fetchApi("/businesses/claim/verify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ businessId }),
+    body: JSON.stringify({ businessId, channel, consentAcknowledged }),
     cache: "no-store",
   });
 }
@@ -99,11 +102,11 @@ export async function cancelClaimRequest(claimRequestId) {
   });
 }
 
-export async function resendClaimCode(claimRequestId) {
+export async function resendClaimCode(claimRequestId, consentAcknowledged = true) {
   return fetchApi("/businesses/claim/resend", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ claimRequestId }),
+    body: JSON.stringify({ claimRequestId, consentAcknowledged }),
     cache: "no-store",
   });
 }

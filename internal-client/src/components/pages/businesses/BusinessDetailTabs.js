@@ -5,6 +5,7 @@ import {
   ListIcon,
   MailIcon,
   MapPinIcon,
+  PhoneIcon,
   UsersIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export const BUSINESS_DETAIL_TABS = [
   { value: "listing", label: "Listing", Icon: ListIcon },
   { value: "email", label: "Email", Icon: MailIcon },
+  { value: "phone", label: "Phone", Icon: PhoneIcon },
   { value: "location", label: "Location", Icon: MapPinIcon },
   { value: "images", label: "Images", Icon: ImageIcon },
   { value: "analytics", label: "Analytics", Icon: BarChart3Icon },

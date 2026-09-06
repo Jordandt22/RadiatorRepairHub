@@ -23,10 +23,14 @@ export const OUTREACH_SENDER_TYPE_OPTIONS = OUTREACH_TYPE_OPTIONS.filter(
 );
 
 export const CLAIM_ELIGIBILITY_FILTERS = [
-  { id: "able", label: "Able" },
-  { id: "no_email", label: "No contact" },
+  { id: "both_able", label: "Both able" },
+  { id: "email_able", label: "Email able" },
+  { id: "phone_able", label: "Phone able" },
+  { id: "no_contact", label: "No contact" },
   { id: "email_review", label: "Email review" },
-  { id: "duplicate_email", label: "Duplicate contact" },
+  { id: "phone_review", label: "Phone review" },
+  { id: "duplicate_email", label: "Duplicate email" },
+  { id: "duplicate_phone", label: "Duplicate phone" },
   { id: "claimed", label: "Claimed" },
 ];
 
@@ -46,10 +50,14 @@ export const HISTORY_EMAIL_FILTERS = [
 ];
 
 export const CLAIM_ELIGIBILITY_LABELS = {
-  able: "Able",
-  no_email: "No contact",
+  both_able: "Both able",
+  email_able: "Email able",
+  phone_able: "Phone able",
+  no_contact: "No contact",
   email_review: "Email review",
-  duplicate_email: "Duplicate contact",
+  phone_review: "Phone review",
+  duplicate_email: "Duplicate email",
+  duplicate_phone: "Duplicate phone",
   claimed: "Claimed",
 };
 
@@ -71,3 +79,6 @@ export const CLAIM_INVITE_OUTREACH_TYPES = [
 
 export const isClaimInviteOutreachType = (outreachType) =>
   CLAIM_INVITE_OUTREACH_TYPES.includes(outreachType);
+
+export const isEmailChannelClaimEligible = (eligibility) =>
+  eligibility === "both_able" || eligibility === "email_able";

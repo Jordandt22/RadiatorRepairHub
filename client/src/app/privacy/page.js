@@ -70,7 +70,7 @@ function PrivacyPage() {
         },
         {
           label: "Business Claim Information:",
-          description:"When you claim a listing, we collect the business you selected, the listing email used for verification, verification codes and related claim-request records, and the email and password you create for your account. We send a verification email to the address on file for that listing so we can confirm access before completing the claim.",
+          description:"When you claim a listing, we collect the business you selected, the verification method you chose, the listing email or phone number used for verification, verification codes and related claim-request records, and the email and password you create for your account. For email claims we send a verification code to the address on file for that listing. For phone claims we place an automated call using a prerecorded or artificial voice to the phone number on that listing through Twilio that reads a one-time code, and we record your consent to that call, including the consent language version shown to you, the date and time, your IP address, your browser user-agent, the method (start or resend), and the destination phone number at the time of the request. We keep those consent records so we can show that an authorized representative requested each call.",
         },
         {
           label: "Listing Activity Stats:",
@@ -282,6 +282,27 @@ function PrivacyPage() {
       ],
     },
     {
+      title: "Twilio",
+      bulletPoints: [
+        {
+          label: "Provider:",
+          description: "Twilio Inc.",
+        },
+        {
+          label: "Purpose:",
+          description:"Place automated verification calls (using a prerecorded or artificial voice) that read a one-time code when a business owner chooses phone verification to claim a listing, generate and check those one-time codes, and check whether a listing phone number can receive a verification call before we place it.",
+        },
+        {
+          label: "Data Collected:",
+          description:"The listing phone number we call, the one-time verification code Twilio generates and validates, call and verification status and timestamps, and phone number intelligence such as line type and validity.",
+        },
+        {
+          label: "Privacy Policy:",
+          description: "https://www.twilio.com/en-us/legal/privacy",
+        },
+      ],
+    },
+    {
       title: "Abstract API",
       bulletPoints: [
         {
@@ -368,7 +389,7 @@ function PrivacyPage() {
         },
         {
           label: "Business Claims:",
-          description:"Verify listing email access, complete ownership claims, create and authenticate business owner accounts, process self-serve unclaims, and help resolve claim eligibility issues.",
+          description:"Verify listing email or phone access, place consented automated verification calls, complete ownership claims, create and authenticate business owner accounts, process self-serve unclaims, and help resolve claim eligibility issues.",
         },
         {
           label: "Listing Reports:",
@@ -464,6 +485,10 @@ function PrivacyPage() {
       label: "Email and phone verification (Abstract API)",
     },
     {
+      label:
+        "Automated verification calls and phone number checks for business claims (Twilio)",
+    },
+    {
       label: "Payment and subscription processing for Featured listings (Stripe)",
     },
     {
@@ -512,7 +537,7 @@ function PrivacyPage() {
     },
     {
       label: "Business Claims:",
-      description:"Claim-request records and related verification metadata are retained for up to 3 years after the claim is completed, expired, failed, cancelled, or otherwise closed.",
+      description:"Claim-request records and related verification metadata are retained for up to 3 years after the claim is completed, expired, failed, cancelled, or otherwise closed. Consent records for automated verification calls are retained for the same period so we can evidence that each call was requested.",
     },
     {
       label: "Listing Reports:",

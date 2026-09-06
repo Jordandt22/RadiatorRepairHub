@@ -41,6 +41,7 @@ import {
   ClaimBusinessSchema,
   ClaimRequestIdSchema,
   CancelClaimSchema,
+  ResendClaimSchema,
   CompleteClaimSchema,
   CompleteClaimAuthenticatedSchema,
   UpdateBusinessContactSchema,
@@ -265,7 +266,7 @@ businessesRouter.post(
 
 businessesRouter.post(
   "/claim/resend",
-  bodyValidator(CancelClaimSchema),
+  bodyValidator(ResendClaimSchema),
   serverErrorCatcherWrapper(resendClaim)
 );
 

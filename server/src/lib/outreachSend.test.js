@@ -16,7 +16,7 @@ test("outreach payload includes unsubscribe footer and List-Unsubscribe headers"
       title: "Acme Radiator",
       slug: "acme-radiator",
       email: "shop@example.com",
-      claim_eligibility: "able",
+      claim_eligibility: "both_able",
     },
     outreachType: OUTREACH_TYPES.CLAIM_FOLLOWUP,
     recipient: "shop@example.com",
@@ -34,6 +34,11 @@ test("outreach payload includes unsubscribe footer and List-Unsubscribe headers"
   );
   assert.match(payload.html, /\/email\/unsubscribe\?token=/);
   assert.match(payload.html, /claim invites, follow-ups, or weekly reports/i);
+  assert.match(payload.from, /^Jordan at RadiatorRepairHub </);
+  assert.equal(payload.replyTo, "hello@radiatorrepairhub.com");
+  assert.match(payload.html, /Jordan<br>RadiatorRepairHub/);
+  assert.doesNotMatch(payload.html, /competitor insights for your city/);
+  assert.doesNotMatch(payload.html, /By claiming your listing, you can/);
 });
 
 test("evaluateOutreachEligibility honors isSuppressed", () => {
@@ -41,7 +46,7 @@ test("evaluateOutreachEligibility honors isSuppressed", () => {
     {
       id: "11111111-1111-1111-1111-111111111111",
       email: "shop@example.com",
-      claim_eligibility: "able",
+      claim_eligibility: "both_able",
       claim_invite_sent_at: "2026-01-01T00:00:00.000Z",
       claim_followup_sent_at: null,
     },
