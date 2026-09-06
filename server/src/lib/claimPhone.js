@@ -96,7 +96,6 @@ export const getLocalClaimPhoneBlockReason = (phone) => {
  */
 export const getPhoneClaimEligibility = ({
   phone,
-  hours,
   timezone,
   isPhoneShared = false,
   isPhoneUnderReview = false,
@@ -124,12 +123,12 @@ export const getPhoneClaimEligibility = ({
     };
   }
 
-  // Dev: skip shop/call-hour gates so voice claims can be tested anytime.
+  // Dev: skip call-hour gates so voice claims can be tested anytime.
   if (process.env.NODE_ENV === "development") {
     return { eligible: true, reason: null, phoneE164 };
   }
 
-  const window = getClaimCallWindowStatus(hours, timezone);
+  const window = getClaimCallWindowStatus(timezone);
   if (!window.allowed) {
     return {
       eligible: false,
