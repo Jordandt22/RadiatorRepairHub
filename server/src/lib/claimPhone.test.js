@@ -11,19 +11,18 @@ import {
   resolveClaimCallTarget,
 } from "./claimPhone.js";
 
-const OPEN_ALL_DAY = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-].map((day) => ({
-  day_of_week: day,
-  is_closed: false,
-  hours: [{ open: "00:00", close: "23:45" }],
-}));
+/**
+ * Picks a fixed-offset timezone where the local hour right now is `hour`.
+ * Etc/GMT zones invert the sign and never observe DST.
+ */
+function zoneWithLocalHour(hour) {
+  let offset = hour - new Date().getUTCHours();
+  if (offset > 14) offset -= 24;
+  if (offset < -12) offset += 24;
+
+  if (offset === 0) return "Etc/GMT";
+  return offset > 0 ? `Etc/GMT-${offset}` : `Etc/GMT+${-offset}`;
+}
 
 test("normalizeClaimPhone accepts common listing formats", () => {
   assert.equal(normalizeClaimPhone("(559) 523-4567"), "+15595234567");
@@ -80,7 +79,6 @@ test("getPhoneClaimEligibility requires a timezone", (t) => {
 
   const result = getPhoneClaimEligibility({
     phone: "(559) 523-4567",
-    hours: OPEN_ALL_DAY,
     timezone: null,
   });
 
@@ -91,7 +89,6 @@ test("getPhoneClaimEligibility requires a timezone", (t) => {
 test("getPhoneClaimEligibility blocks shared phones before checking hours", () => {
   const result = getPhoneClaimEligibility({
     phone: "(559) 523-4567",
-    hours: OPEN_ALL_DAY,
     timezone: "America/Los_Angeles",
     isPhoneShared: true,
   });
@@ -104,7 +101,6 @@ test("getPhoneClaimEligibility blocks shared phones before checking hours", () =
 test("getPhoneClaimEligibility blocks phone under review", () => {
   const result = getPhoneClaimEligibility({
     phone: "(559) 523-4567",
-    hours: OPEN_ALL_DAY,
     timezone: "America/Los_Angeles",
     isPhoneUnderReview: true,
   });
@@ -114,23 +110,33 @@ test("getPhoneClaimEligibility blocks phone under review", () => {
   assert.equal(result.phoneE164, "+15595234567");
 });
 
-test("getPhoneClaimEligibility blocks closed days", (t) => {
+test("getPhoneClaimEligibility allows midday regardless of shop hours", (t) => {
   const originalEnv = process.env.NODE_ENV;
   t.after(() => {
     process.env.NODE_ENV = originalEnv;
   });
   process.env.NODE_ENV = "production";
 
-  const closed = OPEN_ALL_DAY.map((day) => ({
-    ...day,
-    is_closed: true,
-    hours: [],
-  }));
+  const result = getPhoneClaimEligibility({
+    phone: "(559) 523-4567",
+    timezone: zoneWithLocalHour(12),
+  });
+
+  assert.equal(result.eligible, true);
+  assert.equal(result.reason, null);
+  assert.equal(result.phoneE164, "+15595234567");
+});
+
+test("getPhoneClaimEligibility blocks outside 7am-9pm", (t) => {
+  const originalEnv = process.env.NODE_ENV;
+  t.after(() => {
+    process.env.NODE_ENV = originalEnv;
+  });
+  process.env.NODE_ENV = "production";
 
   const result = getPhoneClaimEligibility({
     phone: "(559) 523-4567",
-    hours: closed,
-    timezone: "America/Los_Angeles",
+    timezone: zoneWithLocalHour(22),
   });
 
   assert.equal(result.eligible, false);
@@ -144,15 +150,8 @@ test("getPhoneClaimEligibility skips hour checks in development", (t) => {
   });
   process.env.NODE_ENV = "development";
 
-  const closed = OPEN_ALL_DAY.map((day) => ({
-    ...day,
-    is_closed: true,
-    hours: [],
-  }));
-
   const result = getPhoneClaimEligibility({
     phone: "(559) 523-4567",
-    hours: closed,
     timezone: null,
   });
 

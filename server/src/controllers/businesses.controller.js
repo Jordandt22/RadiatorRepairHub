@@ -193,7 +193,7 @@ const PHONE_CLAIM_BLOCK_MESSAGES = {
     "This business cannot be claimed by phone because its phone number is being reviewed.",
   [CLAIM_PHONE_BLOCK_REASONS.NO_TIMEZONE]:
     "This business cannot be claimed by phone right now. Please claim it by email or contact support.",
-  [CLAIM_PHONE_BLOCK_REASONS.OUTSIDE_HOURS]: `Verification calls are only placed during business hours (${CALL_WINDOW_LABEL} local time). Please try again then.`,
+  [CLAIM_PHONE_BLOCK_REASONS.OUTSIDE_HOURS]: `Verification calls are only placed between ${CALL_WINDOW_LABEL} local time. Please try again then.`,
 };
 
 /** The IP we store on consent records, matching Express' trust proxy setup. */
@@ -522,7 +522,6 @@ const startPhoneClaim = async (req, res, business) => {
 
   const eligibility = getPhoneClaimEligibility({
     phone: business.phone,
-    hours: business.hours,
     timezone: business.timezone,
     isPhoneShared: isShared,
     isPhoneUnderReview: isPhoneUnderReview(business.phone_status),
@@ -1512,7 +1511,6 @@ const resendPhoneClaim = async (req, res, claim, business) => {
 
   const eligibility = getPhoneClaimEligibility({
     phone: business.phone,
-    hours: business.hours,
     timezone: business.timezone,
     isPhoneShared: isShared,
     isPhoneUnderReview: isPhoneUnderReview(business.phone_status),
@@ -2787,8 +2785,9 @@ export const getBusiness = async (req, res) => {
       );
   }
 
-  // Phone claim eligibility uses local filters, shared-phone, timezone, and
-  // hours only. Twilio Lookup runs when a claim actually starts.
+  // Phone claim eligibility uses local filters, shared-phone, phone review
+  // status, and the local call window only. Twilio Lookup runs when a claim
+  // actually starts.
   const { isShared: isPhoneShared, error: sharedPhoneError } =
     await isBusinessPhoneShared(phone);
 
@@ -2808,7 +2807,6 @@ export const getBusiness = async (req, res) => {
     ? { eligible: false, reason: null }
     : getPhoneClaimEligibility({
         phone,
-        hours: business?.hours,
         timezone: business?.timezone,
         isPhoneShared,
         isPhoneUnderReview: isPhoneUnderReview(phoneStatus),

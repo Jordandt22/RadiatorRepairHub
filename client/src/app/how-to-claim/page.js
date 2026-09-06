@@ -86,7 +86,7 @@ function buildClaimFaqs(supportEmail) {
     {
       question: "How does phone verification work?",
       answer:
-        "Choose the Phone call tab when you claim, confirm the consent checkbox (including that you agree to a prerecorded or artificial voice call), and we place an automated call to the phone number on your listing. Press a key when prompted, then enter the 6-digit code the call reads out. Phone codes expire in about 10 minutes. Calls are only placed during the shop's open hours between 9:00 AM and 5:00 PM local time, and the call never asks for personal, payment, or account information.",
+        "Choose the Phone call tab when you claim, confirm the consent checkbox (including that you agree to a prerecorded or artificial voice call), and we place an automated call to the phone number on your listing. Press a key when prompted, then enter the 6-digit code the call reads out. Phone codes expire in about 10 minutes. Calls are only placed between 7:00 AM and 9:00 PM local time, and the call never asks for personal, payment, or account information.",
     },
     {
       question: "Which email does my account use after a phone claim?",
@@ -177,8 +177,7 @@ export default function HowToClaimPage() {
             </h3>
             <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
               <li>
-                Calls are only placed during the shop&apos;s open hours, between
-                9:00 AM and 5:00 PM local time.
+                Calls are only placed between 7:00 AM and 9:00 PM local time.
               </li>
               <li>
                 You&apos;ll be asked to press a key so we know a person answered,
@@ -258,8 +257,8 @@ export default function HowToClaimPage() {
               <p className="text-sm leading-relaxed text-muted-foreground">
                 The Phone call tab stays available so you can see why claiming by
                 phone is blocked—for example no phone on file, a toll-free or
-                shared number, or the shop is closed. Calls only go out during
-                open hours between 9:00 AM and 5:00 PM local time.
+                shared number, or outside call hours. Calls only go out between
+                7:00 AM and 9:00 PM local time.
               </p>
             </div>
           </div>

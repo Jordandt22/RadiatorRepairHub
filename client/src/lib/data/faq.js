@@ -157,7 +157,7 @@ export const FAQ_ITEMS = [
     id: "cant-claim",
     question: "Why can't I claim my business?",
     answer:
-      "Self-serve claiming needs a unique email or a unique phone number on the listing. If there is no usable contact, the same email or phone is shared by multiple businesses, the phone is toll-free or otherwise filtered, or verification calls are outside shop hours, email or phone claim may be unavailable. Open Claim Business to see why each option is blocked. Use Report Info on the business page to send the correct contact details, or contact us for help. More detail is on How to Claim.",
+      "Self-serve claiming needs a unique email or a unique phone number on the listing. If there is no usable contact, the same email or phone is shared by multiple businesses, the phone is toll-free or otherwise filtered, or verification calls are outside 7:00 AM–9:00 PM local time, email or phone claim may be unavailable. Open Claim Business to see why each option is blocked. Use Report Info on the business page to send the correct contact details, or contact us for help. More detail is on How to Claim.",
   },
   {
     id: "featured-listing",

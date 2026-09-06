@@ -22,8 +22,8 @@ export function isClaimListingEligible({
 }
 
 /**
- * Phone eligibility is decided by the API (it needs the shop's timezone, hours,
- * and shared-phone status), so the client just reads the returned flags.
+ * Phone eligibility is decided by the API (it needs timezone, shared-phone
+ * status, and phone review status), so the client just reads the returned flags.
  * In development, call-hour / timezone gates are ignored to match the API.
  */
 export function isPhoneClaimListingEligible({
@@ -61,7 +61,7 @@ export const PHONE_CLAIM_BLOCK_REASONS = {
   phone_under_review: "This phone number is being reviewed.",
   no_timezone: "Phone verification isn't available for this listing.",
   outside_hours:
-    "Verification calls are only placed during business hours (9:00 AM to 5:00 PM local time).",
+    "Verification calls are only placed between 7:00 AM and 9:00 PM local time.",
 };
 
 export function getEmailClaimBlockReason({
@@ -97,7 +97,7 @@ export const UNCLAIMABLE_PHONE_REASON_LABELS = {
   shared_phone: "Multiple Businesses have this Phone",
   phone_under_review: "Phone under review",
   no_timezone: "Phone verification unavailable",
-  outside_hours: "Outside call hours (9 AM–5 PM local)",
+  outside_hours: "Outside call hours (7 AM–9 PM local)",
 };
 
 export function getUnclaimableListingReason({
