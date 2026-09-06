@@ -1,5 +1,6 @@
 import { gateOwnedBusinessStats } from "./gateOwnedBusinessStats.js";
 import { resolveNotificationRecipient } from "./notificationRecipient.js";
+import { isEmailChannelClaimEligible } from "./outreachSend.js";
 
 export const WEEKLY_DIGEST_DAYS = 7;
 export const WEEKLY_DIGEST_PERIOD_LABEL = "Last 7 days";
@@ -103,7 +104,10 @@ export function evaluateDigestEligibility(
     if (business?.is_claimed) {
       return { ok: false, reason: "already_claimed" };
     }
-    if (business?.claim_eligibility && business.claim_eligibility !== "able") {
+    if (
+      business?.claim_eligibility &&
+      !isEmailChannelClaimEligible(business.claim_eligibility)
+    ) {
       return { ok: false, reason: `eligibility_${business.claim_eligibility}` };
     }
     if (stats && !hasDigestActivity(stats)) {

@@ -16,7 +16,7 @@ test("outreach payload includes unsubscribe footer and List-Unsubscribe headers"
       title: "Acme Radiator",
       slug: "acme-radiator",
       email: "shop@example.com",
-      claim_eligibility: "able",
+      claim_eligibility: "both_able",
     },
     outreachType: OUTREACH_TYPES.CLAIM_FOLLOWUP,
     recipient: "shop@example.com",
@@ -46,7 +46,7 @@ test("evaluateOutreachEligibility honors isSuppressed", () => {
     {
       id: "11111111-1111-1111-1111-111111111111",
       email: "shop@example.com",
-      claim_eligibility: "able",
+      claim_eligibility: "both_able",
       claim_invite_sent_at: "2026-01-01T00:00:00.000Z",
       claim_followup_sent_at: null,
     },

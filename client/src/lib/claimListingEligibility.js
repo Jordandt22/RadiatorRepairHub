@@ -58,6 +58,7 @@ export const PHONE_CLAIM_BLOCK_REASONS = {
   invalid_phone: "This listing's phone number can't receive verification calls.",
   filtered_phone: "This listing's phone number can't receive verification calls.",
   shared_phone: "This phone number is shared with other listings.",
+  phone_under_review: "This phone number is being reviewed.",
   no_timezone: "Phone verification isn't available for this listing.",
   outside_hours:
     "Verification calls are only placed during business hours (9:00 AM to 5:00 PM local time).",
@@ -94,6 +95,7 @@ export const UNCLAIMABLE_PHONE_REASON_LABELS = {
   invalid_phone: "Phone can't receive verification calls",
   filtered_phone: "Phone can't receive verification calls",
   shared_phone: "Multiple Businesses have this Phone",
+  phone_under_review: "Phone under review",
   no_timezone: "Phone verification unavailable",
   outside_hours: "Outside call hours (9 AM–5 PM local)",
 };

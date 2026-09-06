@@ -39,6 +39,7 @@ import {
   incrementClaimResendCount,
   getBusinessLastEditedAt,
   getBusinessEmailStatus,
+  getBusinessPhoneStatus,
   getBusinessClaimFlags,
   insertClaimRequest,
   getPendingClaimRequest,
@@ -148,6 +149,7 @@ import {
   EMAIL_UNDER_REVIEW_MESSAGE,
   isEmailUnderReview,
 } from "../lib/emailStatus.js";
+import { isPhoneUnderReview } from "../lib/phoneStatus.js";
 import { verifyEmailReputation } from "../abstract/emailReputation.js";
 import { verifyPhoneNumber } from "../abstract/phoneValidation.js";
 import { verifyWebsiteReachable } from "../lib/websiteReachability.js";
@@ -187,6 +189,8 @@ const PHONE_CLAIM_BLOCK_MESSAGES = {
     "This business cannot be claimed by phone because its phone number cannot receive verification calls.",
   [CLAIM_PHONE_BLOCK_REASONS.SHARED_PHONE]:
     "This business cannot be claimed by phone because its phone number is shared with other listings.",
+  [CLAIM_PHONE_BLOCK_REASONS.PHONE_UNDER_REVIEW]:
+    "This business cannot be claimed by phone because its phone number is being reviewed.",
   [CLAIM_PHONE_BLOCK_REASONS.NO_TIMEZONE]:
     "This business cannot be claimed by phone right now. Please claim it by email or contact support.",
   [CLAIM_PHONE_BLOCK_REASONS.OUTSIDE_HOURS]: `Verification calls are only placed during business hours (${CALL_WINDOW_LABEL} local time). Please try again then.`,
@@ -521,6 +525,7 @@ const startPhoneClaim = async (req, res, business) => {
     hours: business.hours,
     timezone: business.timezone,
     isPhoneShared: isShared,
+    isPhoneUnderReview: isPhoneUnderReview(business.phone_status),
   });
 
   if (!eligibility.eligible) {
@@ -1510,6 +1515,7 @@ const resendPhoneClaim = async (req, res, claim, business) => {
     hours: business.hours,
     timezone: business.timezone,
     isPhoneShared: isShared,
+    isPhoneUnderReview: isPhoneUnderReview(business.phone_status),
   });
 
   if (!eligibility.eligible) {
@@ -2728,6 +2734,8 @@ export const getBusiness = async (req, res) => {
 
   let email = business?.email ?? null;
   let emailStatus = business?.email_status ?? null;
+  let phone = business?.phone ?? null;
+  let phoneStatus = business?.phone_status ?? null;
   let isClaimed = Boolean(business?.is_claimed);
   let isFeatured = Boolean(business?.is_featured);
   let ownerUid = business?.owner_uid ?? null;
@@ -2739,6 +2747,15 @@ export const getBusiness = async (req, res) => {
       email = liveEmail.email ?? null;
       if (liveEmail.email_status != null) {
         emailStatus = liveEmail.email_status;
+      }
+    }
+
+    const { data: livePhone, error: phoneStatusError } =
+      await getBusinessPhoneStatus(business.id);
+    if (!phoneStatusError && livePhone) {
+      phone = livePhone.phone ?? null;
+      if (livePhone.phone_status != null) {
+        phoneStatus = livePhone.phone_status;
       }
     }
 
@@ -2773,7 +2790,7 @@ export const getBusiness = async (req, res) => {
   // Phone claim eligibility uses local filters, shared-phone, timezone, and
   // hours only. Twilio Lookup runs when a claim actually starts.
   const { isShared: isPhoneShared, error: sharedPhoneError } =
-    await isBusinessPhoneShared(business?.phone);
+    await isBusinessPhoneShared(phone);
 
   if (sharedPhoneError) {
     return res
@@ -2790,10 +2807,11 @@ export const getBusiness = async (req, res) => {
   const phoneEligibility = isClaimed
     ? { eligible: false, reason: null }
     : getPhoneClaimEligibility({
-        phone: business?.phone,
+        phone,
         hours: business?.hours,
         timezone: business?.timezone,
         isPhoneShared,
+        isPhoneUnderReview: isPhoneUnderReview(phoneStatus),
       });
 
   let pendingClaim = null;
@@ -2837,8 +2855,10 @@ export const getBusiness = async (req, res) => {
     successHandler({
       ...business,
       email,
+      phone,
       last_edited_at: lastEditedAt,
       email_status: emailStatus,
+      phone_status: phoneStatus,
       is_claimed: isClaimed,
       is_featured: isFeatured,
       owner_uid: ownerUid,

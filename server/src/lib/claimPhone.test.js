@@ -101,6 +101,19 @@ test("getPhoneClaimEligibility blocks shared phones before checking hours", () =
   assert.equal(result.phoneE164, "+15595234567");
 });
 
+test("getPhoneClaimEligibility blocks phone under review", () => {
+  const result = getPhoneClaimEligibility({
+    phone: "(559) 523-4567",
+    hours: OPEN_ALL_DAY,
+    timezone: "America/Los_Angeles",
+    isPhoneUnderReview: true,
+  });
+
+  assert.equal(result.eligible, false);
+  assert.equal(result.reason, CLAIM_PHONE_BLOCK_REASONS.PHONE_UNDER_REVIEW);
+  assert.equal(result.phoneE164, "+15595234567");
+});
+
 test("getPhoneClaimEligibility blocks closed days", (t) => {
   const originalEnv = process.env.NODE_ENV;
   t.after(() => {

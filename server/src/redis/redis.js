@@ -275,8 +275,13 @@ export const getPhoneLookupKey = (phoneE164) => ({
   interval: 60 * 60 * 24,
 });
 
-export const getClaimRequestsKey = (page, limit, status = null) => ({
-  key: `CLAIM_REQUESTS?V:2&PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}`,
+export const getClaimRequestsKey = (
+  page,
+  limit,
+  status = null,
+  channel = null
+) => ({
+  key: `CLAIM_REQUESTS?V:3&PAGE:${page}&LIMIT:${limit}&STATUS:${status ?? "all"}&CHANNEL:${channel ?? "all"}`,
   interval: 60 * 5,
 });
 

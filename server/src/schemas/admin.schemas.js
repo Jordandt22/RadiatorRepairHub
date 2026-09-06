@@ -152,6 +152,17 @@ export const GetClaimRequestsQuerySchema = Yup.object({
     .nullable()
     .oneOf([...CLAIM_REQUEST_STATUSES, null], "Invalid status")
     .optional(),
+  channel: Yup.string()
+    .transform((value) => (value === "" || value == null ? null : value))
+    .nullable()
+    .oneOf(["email", "phone", null], "Invalid channel")
+    .optional(),
+});
+
+export const GetClaimRequestParamsSchema = Yup.object({
+  claim_request_id: Yup.string()
+    .uuid("Invalid claim request ID")
+    .required("Claim request ID is required"),
 });
 
 export const UpdateClaimRequestsStatusSchema = Yup.object({
@@ -481,6 +492,13 @@ export const BUSINESS_EMAIL_STATUSES = [
   "not_checked",
 ];
 
+export const BUSINESS_PHONE_STATUSES = [
+  "suspicious",
+  "checked",
+  "unable_to_find",
+  "not_checked",
+];
+
 export const GetAdminBusinessesWithEmailsQuerySchema = Yup.object({
   page: Yup.number().min(1).max(100).required(),
   limit: Yup.number().min(1).max(30).required(),
@@ -566,6 +584,93 @@ export const UpdateBusinessEmailSchema = Yup.object({
     .trim()
     .email("Please enter a valid email address")
     .required("Email is required"),
+});
+
+export const GetAdminBusinessesWithPhonesQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  limit: Yup.number().min(1).max(30).required(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  emails_sent: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return null;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .nullable()
+    .optional(),
+  suspicious: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return null;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .nullable()
+    .optional(),
+  phone_status: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...BUSINESS_PHONE_STATUSES, null], "Invalid status")
+    .optional(),
+  require_phone: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return true;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .default(true)
+    .optional(),
+  has_phone: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return null;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .nullable()
+    .optional(),
+});
+
+export const ClearBusinessPhonesSchema = Yup.object({
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(30, "At most 30 businesses can be cleared at once")
+    .required("Business IDs are required"),
+});
+
+export const MarkBusinessPhoneStatusSchema = Yup.object({
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(30, "At most 30 businesses can be marked at once")
+    .required("Business IDs are required"),
+  phone_status: Yup.string()
+    .oneOf(BUSINESS_PHONE_STATUSES, "Invalid phone status")
+    .required("Status is required"),
+});
+
+export const UpdateBusinessPhoneSchema = Yup.object({
+  business_id: Yup.string()
+    .uuid("Invalid business ID")
+    .required("Business ID is required"),
+  phone: Yup.string()
+    .trim()
+    .required("Phone is required")
+    .test("valid-phone", "Please enter a valid phone number", isValidPhone),
 });
 
 export const UpdateBusinessListingSchema = Yup.object({
@@ -1011,12 +1116,18 @@ export const OUTREACH_TYPES = [
 ];
 
 export const CLAIM_ELIGIBILITY_VALUES = [
-  "able",
-  "no_email",
+  "both_able",
+  "email_able",
+  "phone_able",
+  "no_contact",
   "email_review",
+  "phone_review",
   "duplicate_email",
+  "duplicate_phone",
   "claimed",
 ];
+
+export const CLAIM_REQUEST_CHANNELS = ["email", "phone"];
 
 const optionalBoolQuery = Yup.boolean()
   .transform((value, originalValue) => {

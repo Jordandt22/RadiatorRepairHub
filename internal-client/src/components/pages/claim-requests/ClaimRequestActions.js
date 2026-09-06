@@ -1,6 +1,12 @@
 import { RefreshCwIcon, TimerOffIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
+
+export const CLAIM_CHANNEL_FILTERS = [
+  { id: "email", label: "Email" },
+  { id: "phone", label: "Phone call" },
+];
 
 function ActionButton({
   label,
@@ -38,6 +44,8 @@ export default function ClaimRequestActions({
   onMarkExpired,
   onDelete,
   onClearSelection,
+  channelFilter = null,
+  onChannelFilterChange,
   onRefresh,
   refreshPending = false,
   deletePending = false,
@@ -50,6 +58,16 @@ export default function ClaimRequestActions({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-36 md:max-w-xs">
+          <BusinessTierCombobox
+            items={CLAIM_CHANNEL_FILTERS}
+            value={channelFilter}
+            onValueChange={onChannelFilterChange}
+            placeholder="All channels"
+            ariaLabel="Filter by channel"
+            inputName="rrh-claim-channel-filter"
+          />
+        </div>
         {showMarkExpired ? (
           <ActionButton
             label="Mark Expired"

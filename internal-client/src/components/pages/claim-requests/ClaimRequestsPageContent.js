@@ -18,7 +18,9 @@ import ClaimStatusFilterTabs, {
   TAB_STATUS,
   VALID_TABS,
 } from "@/components/pages/claim-requests/ClaimStatusFilterTabs";
-import ClaimRequestActions from "@/components/pages/claim-requests/ClaimRequestActions";
+import ClaimRequestActions, {
+  CLAIM_CHANNEL_FILTERS,
+} from "@/components/pages/claim-requests/ClaimRequestActions";
 import ClaimRequestDeleteConfirmDialog from "@/components/pages/claim-requests/ClaimRequestDeleteConfirmDialog";
 import ClaimRequestsTable from "@/components/pages/claim-requests/ClaimRequestsTable";
 import ClaimRequestsTableSkeleton from "@/components/pages/claim-requests/ClaimRequestsTableSkeleton";
@@ -36,8 +38,15 @@ export default function ClaimRequestsPageContent() {
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
   const { setLoading } = useLoading();
-  const { page, setField } = useUrlQueryState(
-    { page: { type: "page" } },
+  const { page, channel, setField } = useUrlQueryState(
+    {
+      page: { type: "page" },
+      channel: {
+        type: "option",
+        param: "channel",
+        options: CLAIM_CHANNEL_FILTERS,
+      },
+    },
     { pathname: "/claim-requests" },
   );
   const [activeTab, setActiveTab] = useState(() =>
@@ -74,7 +83,13 @@ export default function ClaimRequestsPageContent() {
     const nextTab = resolveTab(tab);
     if (nextTab === activeTab) return;
     setConfirmOpen(false);
+    setSelectedIds(new Set());
     replaceTab(nextTab, "/claim-requests");
+  };
+
+  const handleChannelFilterChange = (next) => {
+    setField("channel", next);
+    setSelectedIds(new Set());
   };
 
   const handlePreviousPage = () => {
@@ -87,14 +102,19 @@ export default function ClaimRequestsPageContent() {
     setSelectedIds(new Set());
   };
 
+  const channelFilterId = channel?.id ?? null;
+
   const { data, error, isLoading, isFetching, isPlaceholderData } = useQuery({
-    queryKey: ["claim-requests", page, statusFilter],
+    queryKey: ["claim-requests", page, statusFilter, channelFilterId],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
         limit: String(PAGE_LIMIT),
         status: statusFilter,
       });
+      if (channelFilterId) {
+        params.set("channel", channelFilterId);
+      }
 
       const result = await fetchApi(
         `/admin/claim-requests?${params.toString()}`,
@@ -294,6 +314,8 @@ export default function ClaimRequestsPageContent() {
           onMarkExpired={handleMarkExpired}
           onDelete={handleDeleteClick}
           onClearSelection={handleClearSelection}
+          channelFilter={channel}
+          onChannelFilterChange={handleChannelFilterChange}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
           deletePending={deleteMutation.isPending}

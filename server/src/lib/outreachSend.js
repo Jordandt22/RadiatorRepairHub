@@ -52,12 +52,21 @@ export function isClaimInviteOldEnoughForFollowup(
 }
 
 export const CLAIM_ELIGIBILITY = Object.freeze({
-  ABLE: "able",
-  NO_EMAIL: "no_email",
+  BOTH_ABLE: "both_able",
+  EMAIL_ABLE: "email_able",
+  PHONE_ABLE: "phone_able",
+  NO_CONTACT: "no_contact",
   EMAIL_REVIEW: "email_review",
+  PHONE_REVIEW: "phone_review",
   DUPLICATE_EMAIL: "duplicate_email",
+  DUPLICATE_PHONE: "duplicate_phone",
   CLAIMED: "claimed",
 });
+
+/** Outreach emails require an email-channel claimable listing. */
+export const isEmailChannelClaimEligible = (eligibility) =>
+  eligibility === CLAIM_ELIGIBILITY.BOTH_ABLE ||
+  eligibility === CLAIM_ELIGIBILITY.EMAIL_ABLE;
 
 export const isOutreachDevRedirect = () =>
   process.env.NODE_ENV === "development";
@@ -124,7 +133,7 @@ export const evaluateOutreachEligibility = (
   }
 
   if (isClaimInviteOutreachType(outreachType)) {
-    if (eligibility !== CLAIM_ELIGIBILITY.ABLE) {
+    if (!isEmailChannelClaimEligible(eligibility)) {
       return { ok: false, reason: `eligibility_${eligibility || "unknown"}` };
     }
     if (business?.claim_invite_sent_at) {
@@ -138,7 +147,7 @@ export const evaluateOutreachEligibility = (
   }
 
   if (outreachType === OUTREACH_TYPES.CLAIM_FOLLOWUP) {
-    if (eligibility !== CLAIM_ELIGIBILITY.ABLE) {
+    if (!isEmailChannelClaimEligible(eligibility)) {
       return { ok: false, reason: `eligibility_${eligibility || "unknown"}` };
     }
     if (!business?.claim_invite_sent_at) {
@@ -159,7 +168,7 @@ export const evaluateOutreachEligibility = (
 
   if (outreachType === OUTREACH_TYPES.WEBSITE_OFFER) {
     if (
-      eligibility !== CLAIM_ELIGIBILITY.ABLE &&
+      !isEmailChannelClaimEligible(eligibility) &&
       eligibility !== CLAIM_ELIGIBILITY.CLAIMED
     ) {
       return { ok: false, reason: `eligibility_${eligibility || "unknown"}` };

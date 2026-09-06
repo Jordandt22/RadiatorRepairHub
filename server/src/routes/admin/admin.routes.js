@@ -15,6 +15,7 @@ import {
   sendContactDeclined,
   sendContactNoResponse,
   getClaimRequests,
+  getClaimRequestById,
   updateClaimRequestsStatus,
   deleteClaimRequests,
   getListingReports,
@@ -42,6 +43,10 @@ import {
   clearBusinessEmails,
   markBusinessEmailStatus,
   updateBusinessEmail,
+  getBusinessesWithPhones,
+  clearBusinessPhones,
+  markBusinessPhoneStatus,
+  updateBusinessPhone,
   updateBusinessListing,
   updateBusinessCategories,
   unclaimBusinesses,
@@ -126,6 +131,7 @@ import {
   SendContactNoResponseSchema,
   GetContactMessagesQuerySchema,
   GetClaimRequestsQuerySchema,
+  GetClaimRequestParamsSchema,
   UpdateClaimRequestsStatusSchema,
   DeleteClaimRequestsSchema,
   DeleteListingReportsSchema,
@@ -142,6 +148,7 @@ import {
   UpdateListingRequestsStatusSchema,
   GetAdminBusinessesQuerySchema,
   GetAdminBusinessesWithEmailsQuerySchema,
+  GetAdminBusinessesWithPhonesQuerySchema,
   GetAdminBusinessParamsSchema,
   HideAdminBusinessImageSchema,
   DeleteAdminBusinessImageSchema,
@@ -153,6 +160,9 @@ import {
   ClearBusinessEmailsSchema,
   MarkBusinessEmailStatusSchema,
   UpdateBusinessEmailSchema,
+  ClearBusinessPhonesSchema,
+  MarkBusinessPhoneStatusSchema,
+  UpdateBusinessPhoneSchema,
   UpdateBusinessListingSchema,
   UpdateBusinessCategoriesSchema,
   UnclaimBusinessesSchema,
@@ -235,6 +245,12 @@ adminRouter.get(
   "/claim-requests",
   queryValidator(GetClaimRequestsQuerySchema),
   serverErrorCatcherWrapper(getClaimRequests)
+);
+
+adminRouter.get(
+  "/claim-requests/:claim_request_id",
+  paramsValidator(GetClaimRequestParamsSchema),
+  serverErrorCatcherWrapper(getClaimRequestById)
 );
 
 adminRouter.patch(
@@ -328,6 +344,12 @@ adminRouter.get(
 );
 
 adminRouter.get(
+  "/businesses/with-phones",
+  queryValidator(GetAdminBusinessesWithPhonesQuerySchema),
+  serverErrorCatcherWrapper(getBusinessesWithPhones)
+);
+
+adminRouter.get(
   "/businesses/stats/summary",
   queryValidator(GetAdminBusinessStatsSummaryQuerySchema),
   serverErrorCatcherWrapper(getBusinessStatsSummary)
@@ -399,6 +421,24 @@ adminRouter.patch(
   "/businesses/email",
   bodyValidator(UpdateBusinessEmailSchema),
   serverErrorCatcherWrapper(updateBusinessEmail)
+);
+
+adminRouter.patch(
+  "/businesses/clear-phones",
+  bodyValidator(ClearBusinessPhonesSchema),
+  serverErrorCatcherWrapper(clearBusinessPhones)
+);
+
+adminRouter.patch(
+  "/businesses/phone-status",
+  bodyValidator(MarkBusinessPhoneStatusSchema),
+  serverErrorCatcherWrapper(markBusinessPhoneStatus)
+);
+
+adminRouter.patch(
+  "/businesses/phone",
+  bodyValidator(UpdateBusinessPhoneSchema),
+  serverErrorCatcherWrapper(updateBusinessPhone)
 );
 
 adminRouter.patch(

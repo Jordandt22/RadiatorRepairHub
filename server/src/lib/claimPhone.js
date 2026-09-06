@@ -25,6 +25,7 @@ export const CLAIM_PHONE_BLOCK_REASONS = Object.freeze({
   INVALID_PHONE: "invalid_phone",
   FILTERED_PHONE: "filtered_phone",
   SHARED_PHONE: "shared_phone",
+  PHONE_UNDER_REVIEW: "phone_under_review",
   NO_TIMEZONE: "no_timezone",
   OUTSIDE_HOURS: "outside_hours",
 });
@@ -98,6 +99,7 @@ export const getPhoneClaimEligibility = ({
   hours,
   timezone,
   isPhoneShared = false,
+  isPhoneUnderReview = false,
 } = {}) => {
   const localReason = getLocalClaimPhoneBlockReason(phone);
   if (localReason) {
@@ -105,6 +107,14 @@ export const getPhoneClaimEligibility = ({
   }
 
   const phoneE164 = normalizeClaimPhone(phone);
+
+  if (isPhoneUnderReview) {
+    return {
+      eligible: false,
+      reason: CLAIM_PHONE_BLOCK_REASONS.PHONE_UNDER_REVIEW,
+      phoneE164,
+    };
+  }
 
   if (isPhoneShared) {
     return {
