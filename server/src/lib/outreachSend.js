@@ -5,6 +5,9 @@ import {
   CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE,
   CLAIM_FOLLOWUP_OUTREACH_MESSAGE,
   WEBSITE_OFFER_OUTREACH_MESSAGE,
+  CLAIM_INVITE_OUTREACH_SMS,
+  CLAIM_FOLLOWUP_OUTREACH_SMS,
+  CUSTOM_CLAIM_INVITE_OUTREACH_SMS,
   OUTREACH_SENDER_NAME,
   buildBusinessClaimLink,
   getWebBaseUrl,
@@ -24,6 +27,10 @@ export const OUTREACH_TYPES = Object.freeze({
   CUSTOM_CLAIM_INVITE: "custom_claim_invite",
   CLAIM_FOLLOWUP: "claim_followup",
   WEBSITE_OFFER: "website_offer",
+  SMS_CLAIM_INVITE: "sms_claim_invite",
+  SMS_CLAIM_FOLLOWUP: "sms_claim_followup",
+  SMS_CUSTOM_CLAIM_INVITE: "sms_custom_claim_invite",
+  SMS_DECLINED: "sms_declined",
 });
 
 /** Minimum days after claim invite before follow-up is eligible. */
@@ -39,6 +46,15 @@ export const CLAIM_INVITE_OUTREACH_TYPES = Object.freeze([
 
 export const isClaimInviteOutreachType = (outreachType) =>
   CLAIM_INVITE_OUTREACH_TYPES.includes(outreachType);
+
+/** SMS invite variants share one "already texted" slot (room for future A/B). */
+export const SMS_CLAIM_INVITE_OUTREACH_TYPES = Object.freeze([
+  OUTREACH_TYPES.SMS_CLAIM_INVITE,
+  OUTREACH_TYPES.SMS_CUSTOM_CLAIM_INVITE,
+]);
+
+export const isSmsClaimInviteOutreachType = (outreachType) =>
+  SMS_CLAIM_INVITE_OUTREACH_TYPES.includes(outreachType);
 
 export function isClaimInviteOldEnoughForFollowup(
   claimInviteSentAt,
@@ -67,6 +83,26 @@ export const CLAIM_ELIGIBILITY = Object.freeze({
 export const isEmailChannelClaimEligible = (eligibility) =>
   eligibility === CLAIM_ELIGIBILITY.BOTH_ABLE ||
   eligibility === CLAIM_ELIGIBILITY.EMAIL_ABLE;
+
+/** Outreach texts require a phone-channel claimable listing. */
+export const isPhoneChannelClaimEligible = (eligibility) =>
+  eligibility === CLAIM_ELIGIBILITY.BOTH_ABLE ||
+  eligibility === CLAIM_ELIGIBILITY.PHONE_ABLE;
+
+/** Manual SMS campaigns: invite, follow-up, and a free-form custom send. */
+export const SMS_OUTREACH_TYPES = Object.freeze([
+  OUTREACH_TYPES.SMS_CLAIM_INVITE,
+  OUTREACH_TYPES.SMS_CLAIM_FOLLOWUP,
+  OUTREACH_TYPES.SMS_CUSTOM_CLAIM_INVITE,
+]);
+
+export const isSmsOutreachType = (outreachType) =>
+  SMS_OUTREACH_TYPES.includes(outreachType);
+
+export const resolveOutreachSmsRecipient = (business) => {
+  const phone = typeof business?.phone === "string" ? business.phone.trim() : "";
+  return phone || null;
+};
 
 export const isOutreachDevRedirect = () =>
   process.env.NODE_ENV === "development";
@@ -187,6 +223,95 @@ export const evaluateOutreachEligibility = (
   }
 
   return { ok: false, reason: "invalid_outreach_type" };
+};
+
+/**
+ * Manual SMS eligibility. Tracked separately from email so a shop can get both
+ * an email invite and a text invite without either blocking the other.
+ */
+export const evaluateOutreachSmsEligibility = (business, outreachType) => {
+  if (!isSmsOutreachType(outreachType)) {
+    return { ok: false, reason: "invalid_outreach_type" };
+  }
+
+  if (business?.sms_declined_at) {
+    return { ok: false, reason: "declined" };
+  }
+
+  const eligibility = business?.claim_eligibility;
+  if (!isPhoneChannelClaimEligible(eligibility)) {
+    return { ok: false, reason: `eligibility_${eligibility || "unknown"}` };
+  }
+
+  const recipient = resolveOutreachSmsRecipient(business);
+  if (!recipient) {
+    return { ok: false, reason: "missing_recipient" };
+  }
+
+  if (outreachType === OUTREACH_TYPES.SMS_CLAIM_FOLLOWUP) {
+    if (!business?.sms_claim_invite_sent_at) {
+      return { ok: false, reason: "claim_invite_not_sent" };
+    }
+    if (!isClaimInviteOldEnoughForFollowup(business.sms_claim_invite_sent_at)) {
+      return { ok: false, reason: "claim_invite_too_recent" };
+    }
+    if (business?.sms_claim_followup_sent_at) {
+      return { ok: false, reason: "already_sent" };
+    }
+    return { ok: true, recipient };
+  }
+
+  // Invite variants (standard / custom / future A/B) share one texted slot.
+  if (business?.sms_claim_invite_sent_at) {
+    return { ok: false, reason: "already_sent" };
+  }
+
+  return { ok: true, recipient };
+};
+
+/** Record a shop that asked not to be texted again. */
+export const evaluateOutreachSmsDeclineEligibility = (business) => {
+  if (business?.sms_declined_at) {
+    return { ok: false, reason: "already_declined" };
+  }
+
+  const recipient = resolveOutreachSmsRecipient(business);
+  if (!recipient) {
+    return { ok: false, reason: "missing_recipient" };
+  }
+
+  return { ok: true, recipient };
+};
+
+export const buildOutreachSmsContent = (business, outreachType) => {
+  const businessName = business?.title ?? null;
+  const businessPageUrl = buildBusinessClaimLink(business?.slug);
+
+  if (outreachType === OUTREACH_TYPES.SMS_CLAIM_INVITE) {
+    return {
+      body: CLAIM_INVITE_OUTREACH_SMS.body(businessName, {
+        businessPageUrl,
+      }),
+    };
+  }
+
+  if (outreachType === OUTREACH_TYPES.SMS_CLAIM_FOLLOWUP) {
+    return {
+      body: CLAIM_FOLLOWUP_OUTREACH_SMS.body(businessName, {
+        businessPageUrl,
+      }),
+    };
+  }
+
+  if (outreachType === OUTREACH_TYPES.SMS_CUSTOM_CLAIM_INVITE) {
+    return {
+      body: CUSTOM_CLAIM_INVITE_OUTREACH_SMS.body(businessName, {
+        businessPageUrl,
+      }),
+    };
+  }
+
+  return null;
 };
 
 export const buildOutreachEmailContent = (business, outreachType) => {

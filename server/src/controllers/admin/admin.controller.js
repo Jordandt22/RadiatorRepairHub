@@ -123,14 +123,21 @@ import { isEmailUnderReview } from "../../lib/emailStatus.js";
 import {
   applyOutreachDevelopmentCap,
   buildOutreachEmailContent,
+  buildOutreachSmsContent,
+  evaluateOutreachSmsEligibility,
   isOutreachDevRedirect,
   resolveOutreachRecipientEmail,
+  OUTREACH_TYPES,
 } from "../../lib/outreachSend.js";
 import {
   OutreachSendError,
   planOutreachBatch,
   sendOutreachBatch,
 } from "../../outreach/sendOutreachBatch.js";
+import {
+  planOutreachSmsBatch,
+  planOutreachSmsDeclineBatch,
+} from "../../outreach/planOutreachSmsBatch.js";
 import {
   formatCitiesExportText,
   formatPostalCodesExportText,
@@ -3823,6 +3830,9 @@ const parseOutreachListFilters = (source = {}) => {
     claimInviteSent: parseBool(source.claim_invite_sent),
     websiteOfferSent: parseBool(source.website_offer_sent),
     claimFollowupSent: parseBool(source.claim_followup_sent),
+    smsClaimInviteSent: parseBool(source.sms_claim_invite_sent),
+    smsClaimFollowupSent: parseBool(source.sms_claim_followup_sent),
+    smsDeclined: parseBool(source.sms_declined),
   };
 };
 
@@ -3868,6 +3878,9 @@ export const getOutreachBusinesses = async (req, res) => {
       claim_invite_sent: filters.claimInviteSent,
       website_offer_sent: filters.websiteOfferSent,
       claim_followup_sent: filters.claimFollowupSent,
+      sms_claim_invite_sent: filters.smsClaimInviteSent,
+      sms_claim_followup_sent: filters.smsClaimFollowupSent,
+      sms_declined: filters.smsDeclined,
     })
   );
 };
@@ -4346,6 +4359,213 @@ export const markOutreachEmailsSent = async (req, res) => {
   );
 };
 
+/** Build the copy-paste text for one business without recording anything. */
+export const previewOutreachSms = async (req, res) => {
+  const { business_id, outreach_type } = req.body;
+
+  const { data: businesses, error } = await getOutreachBusinessesByIds([
+    business_id,
+  ]);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching the business for SMS preview.",
+          error
+        )
+      );
+  }
+
+  const business = (businesses ?? [])[0];
+  if (!business) {
+    return res
+      .status(404)
+      .json(customErrorHandler(SUPABASE_ERROR, "Business not found."));
+  }
+
+  const eligibility = evaluateOutreachSmsEligibility(business, outreach_type);
+  const content = buildOutreachSmsContent(business, outreach_type);
+
+  return res.status(200).json(
+    successHandler({
+      outreach_type,
+      business_id: business.id,
+      title: business.title ?? null,
+      slug: business.slug ?? null,
+      phone: business.phone ?? null,
+      city_name: business.city_name ?? null,
+      state_code: business.state_code ?? null,
+      claim_eligibility: business.claim_eligibility,
+      sms_claim_invite_sent_at: business.sms_claim_invite_sent_at ?? null,
+      sms_claim_followup_sent_at: business.sms_claim_followup_sent_at ?? null,
+      sms_declined_at: business.sms_declined_at ?? null,
+      body: content?.body ?? null,
+      eligible: eligibility.ok,
+      skip_reason: eligibility.ok ? null : eligibility.reason,
+    })
+  );
+};
+
+/** Record a manually sent text (Google Voice) as phone-channel outreach. */
+export const markOutreachSmsSent = async (req, res) => {
+  const { business_ids, outreach_type, body } = req.body;
+
+  const { data: businesses, error: fetchError } =
+    await getOutreachBusinessesByIds(business_ids);
+
+  if (fetchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching businesses.",
+          fetchError
+        )
+      );
+  }
+
+  const { skipped, eligible } = planOutreachSmsBatch(
+    business_ids,
+    businesses,
+    outreach_type
+  );
+
+  if (eligible.length === 0) {
+    return res.status(200).json(
+      successHandler({
+        marked: [],
+        skipped,
+      })
+    );
+  }
+
+  const sentAt = new Date().toISOString();
+  const trimmedBody = typeof body === "string" ? body.trim() : "";
+  const historyRows = eligible.map(({ business, recipient }) => {
+    const content = buildOutreachSmsContent(business, outreach_type);
+    return {
+      business_id: business.id,
+      message_type: "phone",
+      outreach_type,
+      recipient,
+      subject: null,
+      provider: "manual",
+      provider_message_id: null,
+      sent_at: sentAt,
+      sent_by: null,
+      metadata: {
+        marked_sent: true,
+        channel: "sms",
+        body: trimmedBody || content?.body || null,
+      },
+    };
+  });
+
+  const { data: inserted, error: insertError } =
+    await insertOutreachHistory(historyRows);
+
+  if (insertError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error saving outreach history.",
+          insertError
+        )
+      );
+  }
+
+  const markedIds = (inserted ?? []).map((row) => row.business_id);
+
+  return res.status(200).json(
+    successHandler({
+      marked: markedIds,
+      skipped,
+    })
+  );
+};
+
+/** Record that a shop asked not to receive further SMS outreach. */
+export const markOutreachSmsDeclined = async (req, res) => {
+  const { business_ids } = req.body;
+
+  const { data: businesses, error: fetchError } =
+    await getOutreachBusinessesByIds(business_ids);
+
+  if (fetchError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching businesses.",
+          fetchError
+        )
+      );
+  }
+
+  const { skipped, eligible } = planOutreachSmsDeclineBatch(
+    business_ids,
+    businesses
+  );
+
+  if (eligible.length === 0) {
+    return res.status(200).json(
+      successHandler({
+        marked: [],
+        skipped,
+      })
+    );
+  }
+
+  const sentAt = new Date().toISOString();
+  const historyRows = eligible.map(({ business, recipient }) => ({
+    business_id: business.id,
+    message_type: "phone",
+    outreach_type: OUTREACH_TYPES.SMS_DECLINED,
+    recipient,
+    subject: null,
+    provider: "manual",
+    provider_message_id: null,
+    sent_at: sentAt,
+    sent_by: null,
+    metadata: {
+      marked_sent: true,
+      channel: "sms",
+      declined: true,
+    },
+  }));
+
+  const { data: inserted, error: insertError } =
+    await insertOutreachHistory(historyRows);
+
+  if (insertError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error saving outreach history.",
+          insertError
+        )
+      );
+  }
+
+  const markedIds = (inserted ?? []).map((row) => row.business_id);
+
+  return res.status(200).json(
+    successHandler({
+      marked: markedIds,
+      skipped,
+    })
+  );
+};
+
 export const getOutreachHistoryList = async (req, res) => {
   let page = Number(req.query.page);
   const limit = Number(req.query.limit);
@@ -4370,12 +4590,17 @@ export const getOutreachHistoryList = async (req, res) => {
     typeof req.query.business_id === "string" && req.query.business_id.trim()
       ? req.query.business_id.trim()
       : null;
+  const messageType =
+    typeof req.query.message_type === "string" && req.query.message_type.trim()
+      ? req.query.message_type.trim()
+      : null;
 
   const { data, count, error } = await fetchOutreachHistory(page, limit, {
     outreachType,
     q,
     emailChangedOrMissing,
     businessId,
+    messageType,
   });
 
   if (error) {
@@ -4407,6 +4632,7 @@ export const getOutreachHistoryList = async (req, res) => {
       q,
       email_changed_or_missing: emailChangedOrMissing,
       business_id: businessId,
+      message_type: messageType,
     })
   );
 };
@@ -4426,12 +4652,17 @@ export const getOutreachHistoryMatchingIdsList = async (req, res) => {
       : req.body.email_changed_or_missing === false
         ? false
         : null;
+  const messageType =
+    typeof req.body.message_type === "string" && req.body.message_type.trim()
+      ? req.body.message_type.trim()
+      : null;
   const limit = Number(req.body.limit) || 100;
 
   const { data, error } = await fetchOutreachHistoryMatchingIds({
     outreachType,
     q,
     emailChangedOrMissing,
+    messageType,
     limit,
   });
 
@@ -4455,6 +4686,7 @@ export const getOutreachHistoryMatchingIdsList = async (req, res) => {
       outreach_type: outreachType,
       q,
       email_changed_or_missing: emailChangedOrMissing,
+      message_type: messageType,
     })
   );
 };

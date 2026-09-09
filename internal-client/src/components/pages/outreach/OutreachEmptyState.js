@@ -1,4 +1,10 @@
-import { HistoryIcon, MegaphoneIcon, SearchIcon, SendIcon } from "lucide-react";
+import {
+  HistoryIcon,
+  MegaphoneIcon,
+  MessageSquareTextIcon,
+  SearchIcon,
+  SendIcon,
+} from "lucide-react";
 
 const CONTENT = {
   browse: {
@@ -25,6 +31,15 @@ const CONTENT = {
     filteredTitle: "No matching history",
     filteredDescription:
       "Try adjusting the campaign type or search, or clear filters.",
+  },
+  sms: {
+    icon: MessageSquareTextIcon,
+    title: "No businesses to text",
+    description:
+      "Phone-able listings that have not been texted yet will queue up here.",
+    filteredTitle: "No matches",
+    filteredDescription:
+      "Try adjusting the campaign, search, or sent filter to find businesses.",
   },
 };
 

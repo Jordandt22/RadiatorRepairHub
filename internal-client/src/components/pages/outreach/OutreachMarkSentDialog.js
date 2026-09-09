@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
-import { OUTREACH_TYPE_OPTIONS } from "@/components/pages/outreach/outreachConstants";
+import { OUTREACH_EMAIL_TYPE_OPTIONS } from "@/components/pages/outreach/outreachConstants";
 
 export default function OutreachMarkSentDialog({
   open,
@@ -60,7 +60,7 @@ export default function OutreachMarkSentDialog({
         <div className="grid gap-2 py-1">
           <Label>Campaign type</Label>
           <BusinessTierCombobox
-            items={OUTREACH_TYPE_OPTIONS}
+            items={OUTREACH_EMAIL_TYPE_OPTIONS}
             value={outreachType}
             onValueChange={setOutreachType}
             placeholder="Select campaign type"

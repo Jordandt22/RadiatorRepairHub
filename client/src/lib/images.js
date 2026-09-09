@@ -6,6 +6,10 @@ export const bypassImageOptimizer = true;
 export const BUSINESS_CARD_IMAGE_SIZES =
   "(max-width: 768px) 100vw, 400px";
 
+/** Featured full-row listing card image. */
+export const BUSINESS_FEATURED_CARD_IMAGE_SIZES =
+  "(max-width: 768px) 100vw, 320px";
+
 /** About / secondary listing image. */
 export const BUSINESS_ABOUT_IMAGE_SIZES =
   "(max-width: 768px) 100vw, 480px";

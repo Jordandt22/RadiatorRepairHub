@@ -1,7 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { Label, Pie, PieChart } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Label,
+  Pie,
+  PieChart,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   Card,
   CardContent,
@@ -24,10 +34,32 @@ const CHART_COLORS = [
   "var(--chart-5)",
 ];
 
-function buildChartModel(chart, valueLabel = "Count") {
-  const slices = chart?.slices ?? [];
+/** Stable fills for outreach campaign types (aligned with History badges). */
+const OUTREACH_TYPE_COLORS = {
+  claim_invite: "#0ea5e9",
+  ownership_claim_invite: "#8b5cf6",
+  lead_claim_invite: "#10b981",
+  custom_claim_invite: "#d97706",
+  claim_followup: "#6366f1",
+  website_offer: "#e11d48",
+  sms_claim_invite: "#06b6d4",
+  sms_claim_followup: "#2563eb",
+  sms_custom_claim_invite: "#ea580c",
+  sms_declined: "#dc2626",
+};
+
+function colorForSlice(key, index) {
+  return OUTREACH_TYPE_COLORS[key] ?? CHART_COLORS[index % CHART_COLORS.length];
+}
+
+function buildChartModel(chart, valueLabel = "Count", { sortByValue = false } = {}) {
+  let slices = chart?.slices ?? [];
+  if (sortByValue) {
+    slices = [...slices].sort((a, b) => (b.count ?? 0) - (a.count ?? 0));
+  }
+
   const chartData = slices.map((slice, index) => {
-    const color = CHART_COLORS[index % CHART_COLORS.length];
+    const color = colorForSlice(slice.key, index);
     return {
       key: slice.key,
       label: slice.label,
@@ -163,33 +195,176 @@ function OverviewStatPieCard({
   );
 }
 
+function OverviewStatBarCard({
+  title,
+  description,
+  footer,
+  chart,
+  totalLabel,
+  valueLabel = "Count",
+  sortByValue = false,
+  className,
+}) {
+  const total = chart?.total ?? 0;
+  const { chartData, chartConfig } = React.useMemo(
+    () => buildChartModel(chart, valueLabel, { sortByValue }),
+    [chart, valueLabel, sortByValue],
+  );
+
+  const chartHeight = Math.max(200, chartData.length * 48 + 24);
+  const valueByLabel = React.useMemo(() => {
+    const map = new Map();
+    for (const slice of chartData) {
+      map.set(slice.label, slice.value);
+    }
+    return map;
+  }, [chartData]);
+
+  if (!chartData.length || total <= 0) {
+    return (
+      <Card className={className}>
+        <CardHeader className="pb-0">
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-1 items-center justify-center py-10">
+          <p className="text-sm text-muted-foreground">No data yet</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className={className}>
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="text-2xl font-semibold tabular-nums tracking-tight">
+              {total.toLocaleString()}
+            </p>
+            {totalLabel ? (
+              <p className="text-xs text-muted-foreground">{totalLabel}</p>
+            ) : null}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pb-2">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto w-full justify-start [&_.recharts-responsive-container]:!w-full"
+          style={{ height: chartHeight }}
+          initialDimension={{ width: 480, height: chartHeight }}
+        >
+          <BarChart
+            accessibilityLayer
+            data={chartData}
+            layout="vertical"
+            margin={{ left: 4, right: 12, top: 4, bottom: 4 }}
+          >
+            <CartesianGrid horizontal={false} />
+            <XAxis type="number" hide />
+            <YAxis
+              dataKey="label"
+              type="category"
+              tickLine={false}
+              axisLine={false}
+              width={148}
+              tick={(props) => (
+                <BarAxisTick {...props} valueByLabel={valueByLabel} />
+              )}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel nameKey="key" />}
+            />
+            <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={22}>
+              {chartData.map((entry) => (
+                <Cell key={entry.key} fill={entry.fill} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+      {footer ? (
+        <CardFooter className="pt-0 text-sm text-muted-foreground">
+          {footer}
+        </CardFooter>
+      ) : null}
+    </Card>
+  );
+}
+
+function BarAxisTick({ x, y, payload, valueByLabel }) {
+  const label = payload?.value ?? "";
+  const count = valueByLabel.get(label);
+  const countText =
+    count == null ? "" : Number(count).toLocaleString();
+
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={-6}
+        y={-4}
+        textAnchor="end"
+        className="fill-muted-foreground text-[11px]"
+      >
+        {label}
+      </text>
+      <text
+        x={-6}
+        y={10}
+        textAnchor="end"
+        className="fill-foreground text-[11px] font-medium tabular-nums"
+      >
+        {countText}
+      </text>
+    </g>
+  );
+}
+
 export default function OverviewDashboardCharts({ stats = null }) {
   return (
     <div className="flex flex-col gap-8">
       <ChartSection
         title="Outreach"
-        description="Email review status, claim eligibility, and sent outreach emails"
+        description="Email review, claim eligibility, and outreach volume by channel"
       >
-        <OverviewStatPieCard
+        <OverviewStatBarCard
           title="Email statuses"
           description="Checked and not checked require an email; unable to find includes listings without one"
-          centerLabel="Businesses"
+          totalLabel="Businesses"
           valueLabel="Businesses"
+          sortByValue
           chart={stats?.email_status}
         />
-        <OverviewStatPieCard
+        <OverviewStatBarCard
           title="Claim eligibility"
           description="Both able, email-only, phone-only, review/blocked, and claimed"
-          centerLabel="Businesses"
+          totalLabel="Businesses"
           valueLabel="Businesses"
+          sortByValue
+          className="md:col-span-2"
           chart={stats?.claim_eligibility}
         />
-        <OverviewStatPieCard
+        <OverviewStatBarCard
           title="Emails sent"
-          description="Outreach emails by type"
-          centerLabel="Emails"
+          description="Outreach emails by campaign type"
+          totalLabel="Emails"
           valueLabel="Emails"
+          sortByValue
           chart={stats?.emails_sent}
+        />
+        <OverviewStatBarCard
+          title="SMS outreach"
+          description="SMS invites, follow-ups, and declines"
+          totalLabel="Messages"
+          valueLabel="Messages"
+          sortByValue
+          chart={stats?.sms_sent}
         />
       </ChartSection>
 
@@ -244,17 +419,17 @@ export default function OverviewDashboardCharts({ stats = null }) {
         title="Listing quality"
         description="Google rating and review count distribution"
       >
-        <OverviewStatPieCard
+        <OverviewStatBarCard
           title="Rating tiers"
           description="Listings grouped by Google rating (total score)"
-          centerLabel="Businesses"
+          totalLabel="Businesses"
           valueLabel="Businesses"
           chart={stats?.score_tier}
         />
-        <OverviewStatPieCard
+        <OverviewStatBarCard
           title="Review count tiers"
           description="Listings grouped by number of Google reviews"
-          centerLabel="Businesses"
+          totalLabel="Businesses"
           valueLabel="Businesses"
           chart={stats?.reviews_tier}
         />
@@ -280,7 +455,7 @@ function ChartSection({ title, description, children }) {
 export function OverviewDashboardChartsSkeleton() {
   return (
     <div className="flex flex-col gap-8">
-      {[3, 3, 2].map((count, sectionIndex) => (
+      {[4, 2, 3, 2].map((count, sectionIndex) => (
         <div key={sectionIndex} className="flex flex-col gap-3">
           <div className="space-y-2">
             <div className="h-5 w-40 animate-pulse rounded bg-muted/60" />

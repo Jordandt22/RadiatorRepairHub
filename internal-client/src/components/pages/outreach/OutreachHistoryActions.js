@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
 import {
+  HISTORY_CHANNEL_FILTERS,
   HISTORY_EMAIL_FILTERS,
   OUTREACH_TYPE_OPTIONS,
 } from "@/components/pages/outreach/outreachConstants";
@@ -15,6 +16,8 @@ export default function OutreachHistoryActions({
   onOutreachTypeChange,
   emailFilter = null,
   onEmailFilterChange,
+  channelFilter = null,
+  onChannelFilterChange,
   onRefresh,
   refreshPending = false,
   refreshError = null,
@@ -46,6 +49,17 @@ export default function OutreachHistoryActions({
             placeholder="All statuses"
             ariaLabel="Filter history by recipient status"
             inputName="rrh-history-recipient-status"
+            disabled={refreshPending}
+          />
+        </div>
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-36 md:max-w-xs">
+          <BusinessTierCombobox
+            items={HISTORY_CHANNEL_FILTERS}
+            value={channelFilter}
+            onValueChange={onChannelFilterChange}
+            placeholder="All channels"
+            ariaLabel="Filter history by channel"
+            inputName="rrh-history-channel"
             disabled={refreshPending}
           />
         </div>

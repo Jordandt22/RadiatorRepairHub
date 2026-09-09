@@ -1113,6 +1113,27 @@ export const OUTREACH_TYPES = [
   "custom_claim_invite",
   "claim_followup",
   "website_offer",
+  "sms_claim_invite",
+  "sms_claim_followup",
+  "sms_custom_claim_invite",
+  "sms_declined",
+];
+
+/** Email Sender / Mark Sent campaigns only (no SMS types). */
+export const EMAIL_OUTREACH_TYPES = [
+  "claim_invite",
+  "ownership_claim_invite",
+  "lead_claim_invite",
+  "custom_claim_invite",
+  "claim_followup",
+  "website_offer",
+];
+
+/** Manual SMS campaigns (excluding decline, which is a separate action). */
+export const SMS_OUTREACH_TYPES = [
+  "sms_claim_invite",
+  "sms_claim_followup",
+  "sms_custom_claim_invite",
 ];
 
 export const CLAIM_ELIGIBILITY_VALUES = [
@@ -1128,6 +1149,9 @@ export const CLAIM_ELIGIBILITY_VALUES = [
 ];
 
 export const CLAIM_REQUEST_CHANNELS = ["email", "phone"];
+
+/** outreach_history.message_type: "phone" is the manual SMS channel. */
+export const OUTREACH_MESSAGE_TYPES = ["email", "phone"];
 
 const optionalBoolQuery = Yup.boolean()
   .transform((value, originalValue) => {
@@ -1171,11 +1195,14 @@ export const GetOutreachBusinessesQuerySchema = Yup.object({
   claim_invite_sent: optionalBoolQuery,
   website_offer_sent: optionalBoolQuery,
   claim_followup_sent: optionalBoolQuery,
+  sms_claim_invite_sent: optionalBoolQuery,
+  sms_claim_followup_sent: optionalBoolQuery,
+  sms_declined: optionalBoolQuery,
 });
 
 export const OutreachMatchingIdsSchema = Yup.object({
   outreach_type: Yup.string()
-    .oneOf(OUTREACH_TYPES, "Invalid outreach type")
+    .oneOf(EMAIL_OUTREACH_TYPES, "Invalid outreach type")
     .required("Outreach type is required"),
   limit: Yup.number().min(1).max(50).default(25).optional(),
   q: Yup.string()
@@ -1211,7 +1238,7 @@ export const OutreachMatchingIdsSchema = Yup.object({
 
 export const OutreachPreviewSchema = Yup.object({
   outreach_type: Yup.string()
-    .oneOf(OUTREACH_TYPES, "Invalid outreach type")
+    .oneOf(EMAIL_OUTREACH_TYPES, "Invalid outreach type")
     .required("Outreach type is required"),
   business_ids: Yup.array()
     .of(Yup.string().uuid("Invalid business ID").required())
@@ -1222,7 +1249,7 @@ export const OutreachPreviewSchema = Yup.object({
 
 export const OutreachSendSchema = Yup.object({
   outreach_type: Yup.string()
-    .oneOf(OUTREACH_TYPES, "Invalid outreach type")
+    .oneOf(EMAIL_OUTREACH_TYPES, "Invalid outreach type")
     .required("Outreach type is required"),
   business_ids: Yup.array()
     .of(Yup.string().uuid("Invalid business ID").required())
@@ -1350,12 +1377,51 @@ export const GetDigestSchedulerJobParamsSchema = Yup.object({
 
 export const OutreachMarkSentSchema = Yup.object({
   outreach_type: Yup.string()
-    .oneOf(OUTREACH_TYPES, "Invalid outreach type")
+    .oneOf(EMAIL_OUTREACH_TYPES, "Invalid outreach type")
     .required("Outreach type is required"),
   business_ids: Yup.array()
     .of(Yup.string().uuid("Invalid business ID").required())
     .min(1, "At least one business ID is required")
     .max(75, "At most 75 businesses can be marked at once")
+    .required("Business IDs are required"),
+});
+
+export const OUTREACH_SMS_BODY_MAX = 480;
+
+export const OutreachSmsPreviewSchema = Yup.object({
+  outreach_type: Yup.string()
+    .oneOf(SMS_OUTREACH_TYPES, "Invalid SMS outreach type")
+    .required("Outreach type is required"),
+  business_id: Yup.string()
+    .uuid("Invalid business ID")
+    .required("Business ID is required"),
+});
+
+export const OutreachSmsMarkSentSchema = Yup.object({
+  outreach_type: Yup.string()
+    .oneOf(SMS_OUTREACH_TYPES, "Invalid SMS outreach type")
+    .required("Outreach type is required"),
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(25, "At most 25 businesses can be marked at once")
+    .required("Business IDs are required"),
+  body: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .max(OUTREACH_SMS_BODY_MAX, "Message is too long")
+    .nullable()
+    .optional(),
+});
+
+export const OutreachSmsMarkDeclinedSchema = Yup.object({
+  business_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid business ID").required())
+    .min(1, "At least one business ID is required")
+    .max(25, "At most 25 businesses can be marked at once")
     .required("Business IDs are required"),
 });
 
@@ -1380,6 +1446,15 @@ export const GetOutreachHistoryQuerySchema = Yup.object({
     .nullable()
     .optional(),
   email_changed_or_missing: optionalBoolQuery,
+  message_type: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...OUTREACH_MESSAGE_TYPES, null], "Invalid message type")
+    .optional(),
   business_id: Yup.string()
     .transform((value) => {
       if (value == null) return null;
@@ -1410,6 +1485,15 @@ export const GetOutreachHistoryMatchingIdsSchema = Yup.object({
     .nullable()
     .optional(),
   email_changed_or_missing: optionalBoolQuery,
+  message_type: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...OUTREACH_MESSAGE_TYPES, null], "Invalid message type")
+    .optional(),
   limit: Yup.number().min(1).max(100).optional(),
 });
 

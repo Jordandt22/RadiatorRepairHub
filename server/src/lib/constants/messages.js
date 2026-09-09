@@ -1,5 +1,6 @@
 export const SENDER_NAME = "RadiatorRepairHub Team";
 export const OUTREACH_SENDER_NAME = "Jordan at RadiatorRepairHub";
+export const OUTREACH_SMS_SENDER_NAME = "Jordan";
 
 const outreachSignOffHtml = `
   <p>Thanks,<br>Jordan<br>RadiatorRepairHub</p>
@@ -181,15 +182,15 @@ export const FREE_LEAD_CLAIM_OFFER_MESSAGE = Object.freeze({
 
   <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
     ${buildContactInquiryDetailRows({
-      name,
-      phone,
-      email,
-      vehicle,
-      issue,
-      urgency,
-      additionalDetails,
-      contactType,
-    })}
+    name,
+    phone,
+    email,
+    vehicle,
+    issue,
+    urgency,
+    additionalDetails,
+    contactType,
+  })}
   </table>
 
   <p>We're passing this along for free, no strings attached.</p>
@@ -223,8 +224,7 @@ export const UNDER_REVIEW_MESSAGE = Object.freeze({
 // Admin notification when a new contact message is submitted
 export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
   subject: (businessName, { autoSent = false } = {}) =>
-    `${autoSent ? "[Auto-sent] " : "[Needs review] "}New contact message${
-      businessName ? ` for ${businessName}` : ""
+    `${autoSent ? "[Auto-sent] " : "[Needs review] "}New contact message${businessName ? ` for ${businessName}` : ""
     }`,
   html: (
     businessName,
@@ -240,11 +240,10 @@ export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
       autoSent = false,
     },
   ) => `
-  <p>A new contact message was submitted on RadiatorRepairHub${
-    autoSent
+  <p>A new contact message was submitted on RadiatorRepairHub${autoSent
       ? " and was <strong>auto-sent</strong> to the business."
       : " and <strong>needs review</strong> before sending."
-  }</p>
+    }</p>
 
   <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
     <tr>
@@ -253,9 +252,8 @@ export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
     </tr>
     <tr>
       <td style="padding: 8px 0; font-weight: bold;">Status:</td>
-      <td style="padding: 8px 0;">${
-        autoSent ? "Auto-sent" : "Needs review (Pending)"
-      }</td>
+      <td style="padding: 8px 0;">${autoSent ? "Auto-sent" : "Needs review (Pending)"
+    }</td>
     </tr>
     ${buildContactInquiryDetailRows(
       {
@@ -272,11 +270,10 @@ export const ADMIN_NEW_CONTACT_MESSAGE = Object.freeze({
     )}
   </table>
 
-  <p>${
-    autoSent
+  <p>${autoSent
       ? "View it in the admin dashboard under Sent → Auto Sent."
       : "Review it in the admin dashboard under Pending."
-  }</p>
+    }</p>
   `,
 });
 
@@ -401,19 +398,17 @@ export const ADMIN_NEW_LISTING_REPORT_MESSAGE = Object.freeze({
     </tr>
     <tr>
       <td style="padding: 8px 0; font-weight: bold;">Listing:</td>
-      <td style="padding: 8px 0;">${
-        businessPageUrl
-          ? `<a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a>`
-          : "N/A"
-      }</td>
+      <td style="padding: 8px 0;">${businessPageUrl
+      ? `<a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a>`
+      : "N/A"
+    }</td>
     </tr>
   </table>
 
-  <p>${
-    adminQueueUrl
+  <p>${adminQueueUrl
       ? `Review it in the <a href="${adminQueueUrl}" style="color: #1a73e8;">admin listing reports queue</a>.`
       : "Review it in the admin listing reports queue."
-  }</p>
+    }</p>
   `,
 });
 
@@ -485,11 +480,10 @@ export const ADMIN_NEW_CONTACT_INQUIRY_MESSAGE = Object.freeze({
     </tr>
   </table>
 
-  <p>${
-    adminQueueUrl
+  <p>${adminQueueUrl
       ? `Review it in the <a href="${adminQueueUrl}" style="color: #1a73e8;">admin inquiries queue</a>.`
       : "Review it in the admin inquiries queue."
-  }</p>
+    }</p>
   `,
 });
 
@@ -567,11 +561,10 @@ export const ADMIN_NEW_LISTING_REQUEST_MESSAGE = Object.freeze({
     </tr>
     <tr>
       <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Google listing:</td>
-      <td style="padding: 8px 0;">${
-        googleMapsUrl
-          ? `<a href="${googleMapsUrl}" style="color: #1a73e8;">${googleMapsUrl}</a>`
-          : "N/A"
-      }</td>
+      <td style="padding: 8px 0;">${googleMapsUrl
+      ? `<a href="${googleMapsUrl}" style="color: #1a73e8;">${googleMapsUrl}</a>`
+      : "N/A"
+    }</td>
     </tr>
     <tr>
       <td style="padding: 8px 0; font-weight: bold;">Place ID:</td>
@@ -583,11 +576,10 @@ export const ADMIN_NEW_LISTING_REQUEST_MESSAGE = Object.freeze({
     </tr>
   </table>
 
-  <p>${
-    adminQueueUrl
+  <p>${adminQueueUrl
       ? `Review it in the <a href="${adminQueueUrl}" style="color: #1a73e8;">admin get listed queue</a>.`
       : "Review it in the admin get listed queue."
-  }</p>
+    }</p>
   `,
 });
 
@@ -706,8 +698,7 @@ export const ADMIN_FEATURED_PURCHASED_MESSAGE = Object.freeze({
 // Thank-you email sent to the business owner after a Featured purchase
 export const OWNER_FEATURED_THANK_YOU_MESSAGE = Object.freeze({
   subject: (businessName) =>
-    `Thanks for upgrading to Featured${
-      businessName ? `: ${businessName}` : ""
+    `Thanks for upgrading to Featured${businessName ? `: ${businessName}` : ""
     }`,
   html: (
     businessName,
@@ -801,8 +792,7 @@ export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
 // Outreach: invite unclaimed businesses to claim their listing (A — control)
 export const CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   subject: (businessName) =>
-    `Claim your free listing on RadiatorRepairHub${
-      businessName ? `: ${businessName}` : ""
+    `Claim your free listing on RadiatorRepairHub${businessName ? `: ${businessName}` : ""
     }`,
   html: (businessName, { businessPageUrl, howToClaimUrl }) => {
     const pricingUrl = `${getWebBaseUrl()}/pricing`;
@@ -871,8 +861,7 @@ export const LEAD_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 // Outreach: claim-focused invite for manual/custom claim outreach
 export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
   subject: (businessName) =>
-    `Claim your listing on RadiatorRepairHub${
-      businessName ? `: ${businessName}` : ""
+    `Claim your listing on RadiatorRepairHub${businessName ? `: ${businessName}` : ""
     }`,
   html: (businessName, { businessPageUrl, howToClaimUrl }) => {
     const pricingUrl = `${getWebBaseUrl()}/pricing`;
@@ -895,8 +884,7 @@ export const CUSTOM_CLAIM_INVITE_OUTREACH_MESSAGE = Object.freeze({
 // Outreach: final follow-up after any claim-invite variant
 export const CLAIM_FOLLOWUP_OUTREACH_MESSAGE = Object.freeze({
   subject: (businessName) =>
-    `Follow-up: Claim your listing on RadiatorRepairHub${
-      businessName ? `: ${businessName}` : ""
+    `Follow-up: Claim your listing on RadiatorRepairHub${businessName ? `: ${businessName}` : ""
     }`,
   html: (businessName, { businessPageUrl, howToClaimUrl }) => `
   <p>Hi there,</p>
@@ -927,6 +915,28 @@ export const WEBSITE_OFFER_OUTREACH_MESSAGE = Object.freeze({
 
   ${outreachSignOffHtml}
   `,
+});
+
+// Outreach SMS: copy-paste bodies for manual sends (no auto-delivery)
+export const CLAIM_INVITE_OUTREACH_SMS = Object.freeze({
+  body: (businessName, { businessPageUrl }) =>
+    `Hi, this is ${OUTREACH_SMS_SENDER_NAME} with RadiatorRepairHub. We listed ${
+      businessName ?? "your shop"
+    } on our website, so customers can find radiator repair services near them.\n\nYou can claim the page for free to update your info and show as verified: ${businessPageUrl}.\n\nIf you have any questions, let me know!`,
+});
+
+export const CLAIM_FOLLOWUP_OUTREACH_SMS = Object.freeze({
+  body: (businessName, { businessPageUrl }) =>
+    `Hi, ${OUTREACH_SMS_SENDER_NAME} with RadiatorRepairHub following up. The free listing for ${
+      businessName ?? "your shop"
+    } is still unclaimed: ${businessPageUrl}`,
+});
+
+export const CUSTOM_CLAIM_INVITE_OUTREACH_SMS = Object.freeze({
+  body: (businessName, { businessPageUrl }) =>
+    `Hi, this is ${OUTREACH_SMS_SENDER_NAME} with RadiatorRepairHub about the free listing for ${
+      businessName ?? "your shop"
+    }: ${businessPageUrl}`,
 });
 
 // Confirmation: message forwarded to business
