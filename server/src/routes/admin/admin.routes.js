@@ -81,6 +81,9 @@ import {
   clearDigestSchedulerJobHistory,
   updateDigestScheduler,
   markOutreachEmailsSent,
+  previewOutreachSms,
+  markOutreachSmsSent,
+  markOutreachSmsDeclined,
   getOutreachHistoryList,
   getOutreachHistoryMatchingIdsList,
   deleteOutreachHistory,
@@ -184,6 +187,9 @@ import {
   UpdateDigestSchedulerSchema,
   GetDigestSchedulerJobParamsSchema,
   OutreachMarkSentSchema,
+  OutreachSmsPreviewSchema,
+  OutreachSmsMarkSentSchema,
+  OutreachSmsMarkDeclinedSchema,
   GetOutreachHistoryQuerySchema,
   GetOutreachHistoryMatchingIdsSchema,
   DeleteOutreachHistorySchema,
@@ -557,6 +563,24 @@ adminRouter.post(
   "/outreach/mark-sent",
   bodyValidator(OutreachMarkSentSchema),
   serverErrorCatcherWrapper(markOutreachEmailsSent)
+);
+
+adminRouter.post(
+  "/outreach/sms-preview",
+  bodyValidator(OutreachSmsPreviewSchema),
+  serverErrorCatcherWrapper(previewOutreachSms)
+);
+
+adminRouter.post(
+  "/outreach/mark-sms-sent",
+  bodyValidator(OutreachSmsMarkSentSchema),
+  serverErrorCatcherWrapper(markOutreachSmsSent)
+);
+
+adminRouter.post(
+  "/outreach/mark-sms-declined",
+  bodyValidator(OutreachSmsMarkDeclinedSchema),
+  serverErrorCatcherWrapper(markOutreachSmsDeclined)
 );
 
 adminRouter.get(

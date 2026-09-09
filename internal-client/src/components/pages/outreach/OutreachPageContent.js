@@ -28,12 +28,14 @@ import OutreachTableSkeleton from "@/components/pages/outreach/OutreachTableSkel
 import OutreachHistoryTable from "@/components/pages/outreach/OutreachHistoryTable";
 import OutreachHistoryTableSkeleton from "@/components/pages/outreach/OutreachHistoryTableSkeleton";
 import OutreachSchedulePanel from "@/components/pages/outreach/OutreachSchedulePanel";
+import OutreachSmsPanel from "@/components/pages/outreach/OutreachSmsPanel";
 import RemoveSentConfirmDialog from "@/components/pages/outreach/RemoveSentConfirmDialog";
 import OutreachPreviewSheet from "@/components/pages/outreach/OutreachPreviewSheet";
 import OutreachAddBusinessesSheet from "@/components/pages/outreach/OutreachAddBusinessesSheet";
 import Pagination from "@/components/pages/dashboard/Pagination";
 import {
   CLAIM_ELIGIBILITY_FILTERS,
+  HISTORY_CHANNEL_FILTERS,
   HISTORY_EMAIL_FILTERS,
   OUTREACH_LIMIT_OPTIONS,
   OUTREACH_SEND_SELECTION_CAP,
@@ -80,6 +82,7 @@ export default function OutreachPageContent() {
     hpage: historyPage,
     htype: historyType,
     hstatus: historyEmailFilter,
+    hchannel: historyChannelFilter,
     type: outreachTypeFromUrl,
     limit: matchLimitFromUrl,
     setField,
@@ -129,6 +132,12 @@ export default function OutreachPageContent() {
         type: "option",
         param: "hstatus",
         options: HISTORY_EMAIL_FILTERS,
+        resetPageOnChange: false,
+      },
+      hchannel: {
+        type: "option",
+        param: "hchannel",
+        options: HISTORY_CHANNEL_FILTERS,
         resetPageOnChange: false,
       },
       type: {
@@ -193,6 +202,7 @@ export default function OutreachPageContent() {
       : historyEmailFilter?.id === "same_email"
         ? false
         : null;
+  const historyChannelId = historyChannelFilter?.id ?? null;
 
   const setFieldRef = useRef(setField);
   setFieldRef.current = setField;
@@ -315,6 +325,7 @@ export default function OutreachPageContent() {
     historyTypeId,
     historySearchQuery,
     historyEmailFilterValue,
+    historyChannelId,
   ];
 
   const historyQuery = useQuery({
@@ -331,6 +342,7 @@ export default function OutreachPageContent() {
       } else if (historyEmailFilterValue === false) {
         params.set("email_changed_or_missing", "false");
       }
+      if (historyChannelId) params.set("message_type", historyChannelId);
 
       const result = await fetchApi(
         `/admin/outreach/history?${params.toString()}`,
@@ -773,6 +785,12 @@ export default function OutreachPageContent() {
     setHistoryActionError(null);
   };
 
+  const handleHistoryChannelFilterChange = (value) => {
+    setFields({ hchannel: value, hpage: 1 });
+    setHistorySelectedIds(new Set());
+    setHistoryActionError(null);
+  };
+
   const handleRemoveSentClick = () => {
     if (historySelectedIds.size === 0 || removeSentMutation.isPending) return;
     setHistoryActionError(null);
@@ -792,6 +810,7 @@ export default function OutreachPageContent() {
   const tabDescription = {
     all: "Browse businesses, select rows to mark campaigns sent, and filter eligibility or send status.",
     sender: `Match up to your chosen limit, then manually add more (total max ${OUTREACH_SEND_SELECTION_CAP}).`,
+    sms: "Copy each shop's phone and message, text it from Google Voice, then mark it sent.",
     history: "Review previously sent outreach emails.",
     schedule: "Configure daily campaign batches and review scheduled job activity.",
   }[activeTab];
@@ -951,6 +970,14 @@ export default function OutreachPageContent() {
         </>
       ) : null}
 
+      {activeTab === "sms" ? (
+        <OutreachSmsPanel
+          accessToken={accessToken}
+          isReady={isReady}
+          logout={logout}
+        />
+      ) : null}
+
       {activeTab === "history" ? (
         <>
           <OutreachHistoryActions
@@ -966,6 +993,8 @@ export default function OutreachPageContent() {
             }}
             emailFilter={historyEmailFilter}
             onEmailFilterChange={handleHistoryEmailFilterChange}
+            channelFilter={historyChannelFilter}
+            onChannelFilterChange={handleHistoryChannelFilterChange}
             onRefresh={() => refreshHistoryMutation.mutate()}
             refreshPending={
               refreshHistoryMutation.isPending || historyQuery.isFetching
@@ -988,7 +1017,8 @@ export default function OutreachPageContent() {
               hasFilters={Boolean(
                 historyTypeId ||
                   historySearchQuery ||
-                  historyEmailFilterValue !== null,
+                  historyEmailFilterValue !== null ||
+                  historyChannelId,
               )}
               selectedIds={historySelectedIds}
               onToggleId={handleHistoryToggleId}

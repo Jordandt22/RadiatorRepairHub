@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { BadgeCheck } from "lucide-react";
+import { ArrowRight, Check, CircleHelp } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import PricingHeader from "@/components/pages/pricing/PricingHeader";
@@ -11,7 +11,28 @@ import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
 import { createFeaturedCheckoutSession } from "@/lib/api/billing";
 import { useToast } from "@/contexts/ToastProvider";
-import { FEATURED_BENEFITS } from "@/lib/featuredBenefits";
+import { cn } from "@/lib/utils";
+
+const CLAIMED_FEATURES = [
+  "Verified owner badge on your listing",
+  "Edit hours, services, and contact details",
+  "Up to 3 shop photos",
+  "Basic analytics (page views and impressions)",
+  "Weekly activity reports",
+  "Quick Contact from drivers",
+  "Dashboard access for your listing",
+];
+
+const FEATURED_FEATURES = [
+  "Everything in Claimed Listing",
+  "Featured badge next to Verified",
+  "Priority placement in search and local listings",
+  "Listed on the Featured businesses page",
+  "Up to 10 shop photos",
+  "Full listing analytics (clicks, CTR, position, sources)",
+  "Competitor insights for shops in your city",
+  "Cancel anytime from billing settings",
+];
 
 function FeaturedCheckoutLegalNote() {
   return (
@@ -32,6 +53,22 @@ function FeaturedCheckoutLegalNote() {
       </Link>
       . Payment is processed by Stripe.
     </p>
+  );
+}
+
+function FeatureList({ features }) {
+  return (
+    <ul className="mt-6 space-y-3">
+      {features.map((feature) => (
+        <li key={feature} className="flex gap-3 text-sm text-foreground">
+          <Check
+            className="mt-0.5 size-4 shrink-0 text-primary"
+            aria-hidden="true"
+          />
+          <span className="leading-relaxed">{feature}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -146,159 +183,167 @@ export default function PricingPageContent() {
     <div className="min-h-screen bg-background pb-24">
       <PricingHeader />
 
-      <div className="mx-auto max-w-4xl space-y-12 px-4 py-12 sm:px-6 lg:px-8">
-        <section>
-          <div className="mb-8 text-center">
-            <h2 className="mb-3 font-heading text-3xl font-semibold tracking-tight text-foreground">
-              What Featured Includes
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              One monthly plan for a claimed listing you own.
+      <div className="mx-auto max-w-5xl space-y-10 px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="font-heading text-3xl font-semibold tracking-tight text-foreground">
+            Simple Pricing for Shop Owners
+          </h2>
+          <p className="mt-3 text-base text-muted-foreground md:text-lg">
+            Claim your listing for free. Upgrade to Featured when you want more
+            visibility, photos, and analytics.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
+          <article className="rounded-lg border border-border bg-card p-6 md:p-8">
+            <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              Claimed Listing
             </p>
-          </div>
+            <p className="mt-2 font-heading text-4xl font-bold text-foreground">
+              Free
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              For owners who want to manage their listing and appear as
+              verified.
+            </p>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {FEATURED_BENEFITS.map(({ title, description, icon: Icon }) => (
-              <div
-                key={title}
-                className="rounded-lg border border-border p-6"
-              >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-tint">
-                  <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
-                </div>
-                <h3 className="mb-2 font-heading text-lg font-semibold text-foreground">
-                  {title}
-                </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-lg border border-border bg-card p-6 md:p-8">
-          <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-            Featured listing
-          </p>
-          <p className="mt-2 font-heading text-4xl font-bold text-foreground">
-            $49
-            <span className="text-lg font-medium text-muted-foreground">
-              /month
-            </span>
-          </p>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground bg-primary/5 p-4 rounded-sm border border-primary/20">
-            <li className="border-l-2 border-primary pl-2">Tax is not included and may be added at checkout.</li>
-            <li className="border-l-2 border-primary pl-2">Cancel anytime from your billing portal.</li>
-            <li className="border-l-2 border-primary pl-2">
-              Your listing must be claimed before you can upgrade.{" "}
-              <Link
-                href="/how-to-claim"
-                className="font-medium text-interactive underline hover:text-primary"
-              >
-                How to claim
-              </Link>
-            </li>
-          </ul>
-
-          {authLoading || (isSignedIn && loadingBusinesses) ? (
-            <p className="mt-6 text-sm text-muted-foreground">Loading…</p>
-          ) : showAuthGate ? (
-            <div className="mt-6 space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Sign in with a claimed listing to upgrade to Featured.
-              </p>
-              <Link
-                href="/signin?redirect=%2Fpricing"
-                className={buttonVariants({ className: "rounded-full" })}
-              >
-                Sign in to upgrade
-              </Link>
-            </div>
-          ) : showNoEligible ? (
-            <div className="mt-6 space-y-3">
-              <p className="text-sm text-muted-foreground">
-                {businesses.length > 0
-                  ? "All of your listings are already Featured."
-                  : "You don't have a claimed listing yet. Claim a business first, then come back to upgrade."}
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/how-to-claim"
-                  className={buttonVariants({
-                    variant: "outline",
-                    className: "rounded-full",
-                  })}
-                >
-                  How to claim
-                </Link>
-                {businesses.length > 0 ? (
-                  <Link
-                    href="/dashboard"
-                    className={buttonVariants({ className: "rounded-full" })}
-                  >
-                    My businesses
-                  </Link>
-                ) : null}
-              </div>
-            </div>
-          ) : (
-            <div className="mt-6 space-y-4">
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="featured-business"
-                  className="text-sm font-medium text-foreground"
-                >
-                  Choose one of your claimed businesses
-                </label>
-                <select
-                  id="featured-business"
-                  value={selectedId}
-                  onChange={(e) => setSelectedId(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                >
-                  {eligible.map((business) => (
-                    <option key={business.id} value={business.id}>
-                      {business.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <Button
-                type="button"
-                className="rounded-full"
-                disabled={!canUpgrade}
-                onClick={handleUpgrade}
-              >
-                {isSubmitting ? "Redirecting…" : "Upgrade to Featured"}
-              </Button>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                Billed monthly through Stripe. Cancel anytime to stop future
-                renewals. Featured fees are non-refundable for the current
-                billing period.
-              </p>
-            </div>
-          )}
-
-          <div className="mt-6 space-y-2">
-            <FeaturedCheckoutLegalNote />
-            <p className="text-xs font-medium text-[#635BFF]">Powered by Stripe</p>
-          </div>
-        </section>
-
-        <section className="flex items-start gap-3 rounded-lg border border-border bg-card p-5">
-          <BadgeCheck className="mt-0.5 size-5 shrink-0 text-primary" />
-          <p className="text-sm leading-relaxed text-muted-foreground">
             <Link
               href="/how-to-claim"
-              className="font-medium text-interactive underline hover:text-primary"
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "mt-6 w-full rounded-full sm:w-auto"
+              )}
             >
-              Claiming your listing
-            </Link>{" "}
-            is free. A featured listing is an optional paid upgrade for shops
-            that want extra placement in the directory.
-          </p>
-        </section>
+              <CircleHelp className="size-4 shrink-0" aria-hidden="true" />
+              How to claim
+            </Link>
+
+            <FeatureList features={CLAIMED_FEATURES} />
+          </article>
+
+          <article className="rounded-lg border border-primary bg-card p-6 md:p-8">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                Featured Listing
+              </p>
+              <span className="rounded-full bg-tint px-2.5 py-0.5 text-xs font-medium text-primary">
+                Optional upgrade
+              </span>
+            </div>
+            <p className="mt-2 font-heading text-4xl font-bold text-foreground">
+              $49
+              <span className="text-lg font-medium text-muted-foreground">
+                /month
+              </span>
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              For claimed shops that want higher placement and fuller listing
+              tools. Tax may be added at checkout.
+            </p>
+
+            <div className="mt-6 space-y-4">
+              {authLoading || (isSignedIn && loadingBusinesses) ? (
+                <p className="text-sm text-muted-foreground">Loading…</p>
+              ) : showAuthGate ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Sign in with a claimed listing to upgrade to Featured.
+                  </p>
+                  <Link
+                    href="/signin?redirect=%2Fpricing"
+                    className={cn(
+                      buttonVariants(),
+                      "w-full rounded-full sm:w-auto"
+                    )}
+                  >
+                    Sign in to upgrade
+                  </Link>
+                </div>
+              ) : showNoEligible ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    {businesses.length > 0
+                      ? "All of your listings are already Featured."
+                      : "You don't have a claimed listing yet. Claim a business first, then come back to upgrade."}
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <Link
+                      href="/how-to-claim"
+                      className={cn(
+                        buttonVariants({ variant: "outline" }),
+                        "rounded-full"
+                      )}
+                    >
+                      <CircleHelp className="size-4 shrink-0" aria-hidden="true" />
+                      How to claim
+                    </Link>
+                    {businesses.length > 0 ? (
+                      <Link
+                        href="/dashboard"
+                        className={cn(buttonVariants(), "rounded-full")}
+                      >
+                        My businesses
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="featured-business"
+                      className="text-sm font-medium text-foreground"
+                    >
+                      Choose one of your claimed businesses
+                    </label>
+                    <select
+                      id="featured-business"
+                      value={selectedId}
+                      onChange={(e) => setSelectedId(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                    >
+                      {eligible.map((business) => (
+                        <option key={business.id} value={business.id}>
+                          {business.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button
+                    type="button"
+                    className="w-full rounded-full sm:w-auto"
+                    disabled={!canUpgrade}
+                    onClick={handleUpgrade}
+                  >
+                    {isSubmitting ? "Redirecting…" : "Upgrade to Featured"}
+                    {!isSubmitting ? (
+                      <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+                    ) : null}
+                  </Button>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    Billed monthly through Stripe. Cancel anytime to stop future
+                    renewals. Featured fees are non-refundable for the current
+                    billing period.
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-2 border-t border-border pt-4">
+                <FeaturedCheckoutLegalNote />
+                <p className="text-xs font-medium text-[#635BFF]">
+                  Powered by Stripe
+                </p>
+              </div>
+            </div>
+
+            <FeatureList features={FEATURED_FEATURES} />
+          </article>
+        </div>
+
+        <p className="text-center text-sm text-muted-foreground">
+          Claiming is free. Featured is an optional paid upgrade for shops that
+          want extra placement in the directory.
+        </p>
       </div>
     </div>
   );

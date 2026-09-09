@@ -2014,6 +2014,10 @@ const OUTREACH_TYPE_STAT_LABELS = {
   custom_claim_invite: "Claim invite (custom)",
   claim_followup: "Claim follow-up",
   website_offer: "Website offer",
+  sms_claim_invite: "SMS claim invite",
+  sms_claim_followup: "SMS claim follow-up",
+  sms_custom_claim_invite: "SMS claim invite (custom)",
+  sms_declined: "SMS declined",
 };
 
 const CLAIM_ELIGIBILITY_STAT_LABELS = {
@@ -2043,9 +2047,8 @@ const EMAIL_STATUS_STAT_LABELS = {
 };
 
 /**
- * Overview dashboard pie-chart stats: email/website coverage, CDN storage,
- * listing quality tiers, email review status, claim eligibility, Featured
- * coverage, and outreach emails by type.
+ * Overview dashboard chart stats: coverage pies, quality/eligibility bars,
+ * and outreach email + SMS volume by campaign type.
  */
 export const getAdminDashboardStats = async () => {
   const scoreTierCountPromises = SCORE_TIERS.map((tier) =>
@@ -2160,37 +2163,71 @@ export const getAdminDashboardStats = async () => {
       supabase
         .from("outreach_history")
         .select("outreach_history_id", { count: "exact", head: true })
+        .eq("message_type", "email")
         .eq("outreach_type", "claim_invite")
     ),
     countExact(
       supabase
         .from("outreach_history")
         .select("outreach_history_id", { count: "exact", head: true })
+        .eq("message_type", "email")
         .eq("outreach_type", "ownership_claim_invite")
     ),
     countExact(
       supabase
         .from("outreach_history")
         .select("outreach_history_id", { count: "exact", head: true })
+        .eq("message_type", "email")
         .eq("outreach_type", "lead_claim_invite")
     ),
     countExact(
       supabase
         .from("outreach_history")
         .select("outreach_history_id", { count: "exact", head: true })
+        .eq("message_type", "email")
         .eq("outreach_type", "custom_claim_invite")
     ),
     countExact(
       supabase
         .from("outreach_history")
         .select("outreach_history_id", { count: "exact", head: true })
+        .eq("message_type", "email")
         .eq("outreach_type", "claim_followup")
     ),
     countExact(
       supabase
         .from("outreach_history")
         .select("outreach_history_id", { count: "exact", head: true })
+        .eq("message_type", "email")
         .eq("outreach_type", "website_offer")
+    ),
+    countExact(
+      supabase
+        .from("outreach_history")
+        .select("outreach_history_id", { count: "exact", head: true })
+        .eq("message_type", "phone")
+        .eq("outreach_type", "sms_claim_invite")
+    ),
+    countExact(
+      supabase
+        .from("outreach_history")
+        .select("outreach_history_id", { count: "exact", head: true })
+        .eq("message_type", "phone")
+        .eq("outreach_type", "sms_claim_followup")
+    ),
+    countExact(
+      supabase
+        .from("outreach_history")
+        .select("outreach_history_id", { count: "exact", head: true })
+        .eq("message_type", "phone")
+        .eq("outreach_type", "sms_custom_claim_invite")
+    ),
+    countExact(
+      supabase
+        .from("outreach_history")
+        .select("outreach_history_id", { count: "exact", head: true })
+        .eq("message_type", "phone")
+        .eq("outreach_type", "sms_declined")
     ),
     countExact(
       supabase
@@ -2236,6 +2273,10 @@ export const getAdminDashboardStats = async () => {
     customClaimRes,
     claimFollowupRes,
     websiteOfferRes,
+    smsClaimInviteRes,
+    smsClaimFollowupRes,
+    smsCustomClaimRes,
+    smsDeclinedRes,
     featuredRes,
     claimedBusinessesRes,
   ] = mainResults;
@@ -2408,6 +2449,34 @@ export const getAdminDashboardStats = async () => {
     0
   );
 
+  const smsSentSlices = [
+    {
+      key: "sms_claim_invite",
+      label: OUTREACH_TYPE_STAT_LABELS.sms_claim_invite,
+      count: smsClaimInviteRes.count,
+    },
+    {
+      key: "sms_claim_followup",
+      label: OUTREACH_TYPE_STAT_LABELS.sms_claim_followup,
+      count: smsClaimFollowupRes.count,
+    },
+    {
+      key: "sms_custom_claim_invite",
+      label: OUTREACH_TYPE_STAT_LABELS.sms_custom_claim_invite,
+      count: smsCustomClaimRes.count,
+    },
+    {
+      key: "sms_declined",
+      label: OUTREACH_TYPE_STAT_LABELS.sms_declined,
+      count: smsDeclinedRes.count,
+    },
+  ].filter((slice) => slice.count > 0);
+
+  const smsSentTotal = smsSentSlices.reduce(
+    (sum, slice) => sum + slice.count,
+    0
+  );
+
   const featuredCount = featuredRes.count ?? 0;
   const claimedBusinessesCount = claimedBusinessesRes.count ?? 0;
   const notFeaturedCount = Math.max(0, (totalRes.count ?? 0) - featuredCount);
@@ -2475,6 +2544,10 @@ export const getAdminDashboardStats = async () => {
       emails_sent: {
         total: emailsSentTotal,
         slices: emailsSentSlices,
+      },
+      sms_sent: {
+        total: smsSentTotal,
+        slices: smsSentSlices,
       },
       featured: {
         total: totalRes.count,
@@ -5284,7 +5357,7 @@ export const markContactMessagesSentAndConfirmed = async (ids) => {
 };
 
 const OUTREACH_LIST_SELECT =
-  "id, title, slug, email, phone, website, is_claimed, owner_uid, total_score, reviews_count, created_at, claim_eligibility, claim_invite_sent_at, website_offer_sent_at, claim_followup_sent_at";
+  "id, title, slug, email, phone, website, is_claimed, owner_uid, total_score, reviews_count, created_at, claim_eligibility, claim_invite_sent_at, website_offer_sent_at, claim_followup_sent_at, phone_status, city_name, state_code, sms_claim_invite_sent_at, sms_claim_followup_sent_at, sms_declined_at";
 
 const applyOutreachBusinessFilters = (
   query,
@@ -5295,6 +5368,9 @@ const applyOutreachBusinessFilters = (
     claimInviteSent = null,
     websiteOfferSent = null,
     claimFollowupSent = null,
+    smsClaimInviteSent = null,
+    smsClaimFollowupSent = null,
+    smsDeclined = null,
   } = {}
 ) => {
   let next = query;
@@ -5331,6 +5407,24 @@ const applyOutreachBusinessFilters = (
     next = next.is("claim_followup_sent_at", null);
   }
 
+  if (smsClaimInviteSent === true) {
+    next = next.not("sms_claim_invite_sent_at", "is", null);
+  } else if (smsClaimInviteSent === false) {
+    next = next.is("sms_claim_invite_sent_at", null);
+  }
+
+  if (smsClaimFollowupSent === true) {
+    next = next.not("sms_claim_followup_sent_at", "is", null);
+  } else if (smsClaimFollowupSent === false) {
+    next = next.is("sms_claim_followup_sent_at", null);
+  }
+
+  if (smsDeclined === true) {
+    next = next.not("sms_declined_at", "is", null);
+  } else if (smsDeclined === false) {
+    next = next.is("sms_declined_at", null);
+  }
+
   const sanitized = sanitizeAdminBusinessSearch(q);
   if (sanitized) {
     next = next.or(
@@ -5351,6 +5445,9 @@ export const getOutreachBusinesses = async (
     claimInviteSent = null,
     websiteOfferSent = null,
     claimFollowupSent = null,
+    smsClaimInviteSent = null,
+    smsClaimFollowupSent = null,
+    smsDeclined = null,
   } = {}
 ) => {
   let query = supabase
@@ -5366,6 +5463,9 @@ export const getOutreachBusinesses = async (
     claimInviteSent,
     websiteOfferSent,
     claimFollowupSent,
+    smsClaimInviteSent,
+    smsClaimFollowupSent,
+    smsDeclined,
   });
 
   const { data, count, error } = await query.range(
@@ -5550,7 +5650,7 @@ export const deleteOutreachHistoryByIds = async (ids) => {
 };
 
 const OUTREACH_HISTORY_LIST_SELECT =
-  "outreach_history_id, business_id, message_type, outreach_type, recipient, subject, provider, provider_message_id, sent_at, metadata, created_at, title, slug, email, email_changed_or_missing";
+  "outreach_history_id, business_id, message_type, outreach_type, recipient, subject, provider, provider_message_id, sent_at, metadata, created_at, title, slug, email, phone, email_changed_or_missing";
 
 const mapOutreachHistoryListRow = (row) => {
   if (!row) return row;
@@ -5558,6 +5658,7 @@ const mapOutreachHistoryListRow = (row) => {
     title,
     slug,
     email,
+    phone,
     business_id,
     email_changed_or_missing,
     ...rest
@@ -5571,6 +5672,7 @@ const mapOutreachHistoryListRow = (row) => {
       title: title ?? null,
       slug: slug ?? null,
       email: email ?? null,
+      phone: phone ?? null,
     },
   };
 };
@@ -5583,6 +5685,7 @@ export const getOutreachHistory = async (
     q = null,
     emailChangedOrMissing = null,
     businessId = null,
+    messageType = null,
   } = {}
 ) => {
   let query = supabase
@@ -5596,6 +5699,10 @@ export const getOutreachHistory = async (
 
   if (outreachType) {
     query = query.eq("outreach_type", outreachType);
+  }
+
+  if (messageType) {
+    query = query.eq("message_type", messageType);
   }
 
   if (emailChangedOrMissing === true) {
@@ -5635,6 +5742,7 @@ export const getOutreachHistoryMatchingIds = async ({
   outreachType = null,
   q = null,
   emailChangedOrMissing = null,
+  messageType = null,
   limit = 30,
 } = {}) => {
   let query = supabase
@@ -5645,6 +5753,10 @@ export const getOutreachHistoryMatchingIds = async ({
 
   if (outreachType) {
     query = query.eq("outreach_type", outreachType);
+  }
+
+  if (messageType) {
+    query = query.eq("message_type", messageType);
   }
 
   if (emailChangedOrMissing === true) {

@@ -3,6 +3,7 @@ import {
   ChevronDownIcon,
   HistoryIcon,
   ListIcon,
+  MessageSquareTextIcon,
   SendIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,11 +16,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export const VALID_OUTREACH_TABS = ["all", "sender", "history", "schedule"];
+export const VALID_OUTREACH_TABS = [
+  "all",
+  "sender",
+  "sms",
+  "history",
+  "schedule",
+];
 
 const TAB_OPTIONS = [
   { value: "all", label: "All", Icon: ListIcon },
   { value: "sender", label: "Sender", Icon: SendIcon },
+  { value: "sms", label: "SMS", Icon: MessageSquareTextIcon },
   { value: "history", label: "History", Icon: HistoryIcon },
   { value: "schedule", label: "Schedule", Icon: CalendarClockIcon },
 ];

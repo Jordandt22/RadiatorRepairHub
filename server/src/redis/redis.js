@@ -352,7 +352,7 @@ export const getAdminLocationsKey = (
 });
 
 export const getAdminDashboardStatsKey = () => ({
-  key: "ADMIN_DASHBOARD_STATS?V:4",
+  key: "ADMIN_DASHBOARD_STATS?V:5",
   interval: 60 * 5,
 });
 

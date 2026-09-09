@@ -15,12 +15,43 @@ export const OUTREACH_TYPE_OPTIONS = [
   { id: "custom_claim_invite", label: "Claim invite (custom)" },
   { id: "claim_followup", label: "Claim follow-up" },
   { id: "website_offer", label: "Website offer" },
+  { id: "sms_claim_invite", label: "SMS claim invite" },
+  { id: "sms_claim_followup", label: "SMS claim follow-up" },
+  { id: "sms_custom_claim_invite", label: "SMS claim invite (custom)" },
+  { id: "sms_declined", label: "SMS declined" },
 ];
 
 /** Sender campaigns only — custom is recorded via Mark Sent on All. */
 export const OUTREACH_SENDER_TYPE_OPTIONS = OUTREACH_TYPE_OPTIONS.filter(
-  (option) => option.id !== "custom_claim_invite",
+  (option) =>
+    option.id !== "custom_claim_invite" && !option.id.startsWith("sms_"),
 );
+
+/** Email Mark Sent dialog — exclude SMS history types. */
+export const OUTREACH_EMAIL_TYPE_OPTIONS = OUTREACH_TYPE_OPTIONS.filter(
+  (option) => !option.id.startsWith("sms_"),
+);
+
+/** Manual SMS campaigns, texted by hand from Google Voice. */
+export const OUTREACH_SMS_TYPE_OPTIONS = [
+  { id: "sms_claim_invite", label: "SMS claim invite" },
+  { id: "sms_claim_followup", label: "SMS claim follow-up" },
+  { id: "sms_custom_claim_invite", label: "Custom" },
+];
+
+/** Matches OUTREACH_SMS_BODY_MAX on the server. */
+export const OUTREACH_SMS_BODY_MAX = 480;
+
+/** Texts can only reach listings with a usable phone number. */
+export const SMS_ELIGIBILITY_FILTERS = [
+  { id: "phone_able", label: "Phone able" },
+  { id: "both_able", label: "Both able" },
+];
+
+export const SMS_DECLINED_FILTERS = [
+  { id: "false", label: "Not declined" },
+  { id: "true", label: "Declined" },
+];
 
 export const CLAIM_ELIGIBILITY_FILTERS = [
   { id: "both_able", label: "Both able" },
@@ -49,6 +80,11 @@ export const HISTORY_EMAIL_FILTERS = [
   { id: "same_email", label: "Same contact" },
 ];
 
+export const HISTORY_CHANNEL_FILTERS = [
+  { id: "email", label: "Email" },
+  { id: "phone", label: "SMS" },
+];
+
 export const CLAIM_ELIGIBILITY_LABELS = {
   both_able: "Both able",
   email_able: "Email able",
@@ -68,6 +104,10 @@ export const OUTREACH_TYPE_LABELS = {
   custom_claim_invite: "Claim invite (custom)",
   claim_followup: "Claim follow-up",
   website_offer: "Website offer",
+  sms_claim_invite: "SMS claim invite",
+  sms_claim_followup: "SMS claim follow-up",
+  sms_custom_claim_invite: "SMS claim invite (custom)",
+  sms_declined: "SMS declined",
 };
 
 export const CLAIM_INVITE_OUTREACH_TYPES = [

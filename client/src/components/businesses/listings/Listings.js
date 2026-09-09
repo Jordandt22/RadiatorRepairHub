@@ -10,6 +10,7 @@ import { DEFAULT_SORT_OPTION } from "@/lib/businesses/sortOptions";
 // Components
 import MobileBusinessCard from "../cards/MobileBusinessCard";
 import BusinessCard from "../cards/BusinessCard";
+import FeaturedBusinessCard from "../cards/FeaturedBusinessCard";
 import BusinessHours from "../cards/BusinessHours";
 import BusinessInfo from "../cards/BusinessInfo";
 import BusinessListingImpression from "@/components/businesses/stats/BusinessListingImpression";
@@ -101,66 +102,98 @@ function Listings({ businesses, data, page, stateData, cityData, categoryData })
             LISTINGS_PAGE_LIMIT,
             index
           );
-          return (
-          <div key={business.id} className="group relative h-[400px]">
-            <div
-              className="relative h-full w-full transform-gpu transition-transform duration-700 ease-in-out"
-              style={{
-                transformStyle: "preserve-3d",
-                transform:
-                  activeCard === business.id
-                    ? "rotateY(180deg)"
-                    : "rotateY(0deg)",
-              }}
-            >
+          const isFeatured = Boolean(business?.is_featured);
+          const isLastFeaturedBeforeRegular =
+            isFeatured &&
+            index < businesses.length - 1 &&
+            !businesses[index + 1]?.is_featured;
+
+          if (isFeatured) {
+            return (
               <div
-                className="absolute inset-0 h-full w-full backface-hidden"
-                style={{ backfaceVisibility: "hidden" }}
+                key={business.id}
+                className={
+                  isLastFeaturedBeforeRegular
+                    ? "col-span-full md:mb-8"
+                    : "col-span-full"
+                }
               >
                 <BusinessListingImpression
                   businessId={business.id}
                   source={listingSource}
                   position={position}
                 >
-                  <MobileBusinessCard
+                  <FeaturedBusinessCard
                     business={business}
-                    priority={index < 2}
-                    listingSource={listingSource}
-                    position={position}
-                  />
-                  <BusinessCard
-                    business={business}
-                    activeCard={activeCard}
-                    setActiveCard={setActiveCard}
-                    setActiveBackCard={setActiveBackCard}
                     priority={index < 2}
                     listingSource={listingSource}
                     position={position}
                   />
                 </BusinessListingImpression>
               </div>
+            );
+          }
 
+          return (
+            <div key={business.id} className="group relative h-[400px]">
               <div
-                className="absolute inset-0 h-full w-full rounded-lg border border-border bg-card backface-hidden"
+                className="relative h-full w-full transform-gpu transition-transform duration-700 ease-in-out"
                 style={{
-                  backfaceVisibility: "hidden",
-                  transform: "rotateY(180deg)",
+                  transformStyle: "preserve-3d",
+                  transform:
+                    activeCard === business.id
+                      ? "rotateY(180deg)"
+                      : "rotateY(0deg)",
                 }}
               >
-                {activeBackCard === 1 ? (
-                  <BusinessInfo
-                    business={business}
-                    setActiveCard={setActiveCard}
-                  />
-                ) : (
-                  <BusinessHours
-                    business={business}
-                    setActiveCard={setActiveCard}
-                  />
-                )}
+                <div
+                  className="absolute inset-0 h-full w-full backface-hidden"
+                  style={{ backfaceVisibility: "hidden" }}
+                >
+                  <BusinessListingImpression
+                    businessId={business.id}
+                    source={listingSource}
+                    position={position}
+                  >
+                    <MobileBusinessCard
+                      business={business}
+                      priority={index < 2}
+                      listingSource={listingSource}
+                      position={position}
+                    />
+                    <BusinessCard
+                      business={business}
+                      activeCard={activeCard}
+                      setActiveCard={setActiveCard}
+                      setActiveBackCard={setActiveBackCard}
+                      priority={index < 2}
+                      listingSource={listingSource}
+                      position={position}
+                    />
+                  </BusinessListingImpression>
+                </div>
+
+                <div
+                  className="absolute inset-0 h-full w-full rounded-lg border border-border bg-card backface-hidden"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    transform: "rotateY(180deg)",
+                  }}
+                >
+                  {activeBackCard === 1 ? (
+                    <BusinessInfo
+                      business={business}
+                      setActiveCard={setActiveCard}
+                    />
+                  ) : (
+                    <BusinessHours
+                      business={business}
+                      setActiveCard={setActiveCard}
+                    />
+                  )}
+                </div>
               </div>
             </div>
-          </div>
           );
         })}
       </div>
