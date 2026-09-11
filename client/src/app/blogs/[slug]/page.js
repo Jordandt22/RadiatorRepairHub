@@ -16,11 +16,12 @@ import {
   NOT_FOUND_METADATA,
   SITE_URL,
 } from "@/lib/seo/metadata";
+import { CONTENT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 const COVER_ABSOLUTE_URL = `https://radiatorrepairhub.com${BLOG_COVER_IMAGE}`;
 
 /** Refresh product availability (is_active) without a full redeploy. */
-export const revalidate = 60;
+export const revalidate = CONTENT_REVALIDATE_SECONDS;
 
 export async function generateStaticParams() {
   return getBlogSlugs().map((slug) => ({ slug }));

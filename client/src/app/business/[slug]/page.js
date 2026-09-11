@@ -53,7 +53,11 @@ import {
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { FEATURED_AFFILIATE_PRODUCT_ALIASES } from "@/lib/affiliateProducts";
 import { getBusinessDisplayImage, getBusinessHeroImage } from "@/lib/images";
-import { SHORT_CACHE, NO_STORE } from "@/lib/cachePolicy";
+import {
+  DIRECTORY_REVALIDATE_SECONDS,
+  SHORT_CACHE,
+  NO_STORE,
+} from "@/lib/cachePolicy";
 import {
   getGoogleMapsDirectionsUrl,
   getGoogleMapsEmbedQuery,
@@ -61,7 +65,7 @@ import {
 } from "@/lib/googleMaps";
 
 // Generate metadata for business pages
-export const revalidate = 120;
+export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;

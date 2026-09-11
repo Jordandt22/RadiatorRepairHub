@@ -23,6 +23,7 @@ import {
   fetchStateBusinessCountsByLimit,
 } from "@/lib/api/cachedReads";
 import { HOME_HERO_IMAGE_PATH } from "@/lib/images";
+import { DIRECTORY_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 const homeTitle = "Radiator Repair Near Me | Find Local Radiator Shops";
 const homeDescription =
@@ -35,7 +36,7 @@ export const metadata = buildPageMetadata({
   path: "/",
 });
 
-export const revalidate = 120;
+export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
 
 export default async function Home() {
   preload(HOME_HERO_IMAGE_PATH, {

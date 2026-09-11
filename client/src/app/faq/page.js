@@ -11,6 +11,7 @@ import {
   getAllFaqsFlat,
   getFaqSectionsWithItems,
 } from "@/lib/data/faq";
+import { CONTENT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 const faqTitle =
   "Frequently Asked Questions | Radiator Repair Help & Support - RadiatorRepairHub";
@@ -24,7 +25,7 @@ export const metadata = buildPageMetadata({
   path: "/faq",
 });
 
-export const revalidate = 60;
+export const revalidate = CONTENT_REVALIDATE_SECONDS;
 
 const RELATED_TOPICS = [
   {

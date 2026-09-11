@@ -10,6 +10,7 @@ import {
   SITE_URL,
 } from "@/lib/seo/metadata";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
+import { DIRECTORY_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 // Kept distinct from the homepage headline so the two pages do not compete for
 // the same "radiator repair near me" query.
@@ -39,7 +40,7 @@ export async function generateMetadata({ searchParams }) {
   return { ...baseSearchMetadata, robots: NOINDEX_ROBOTS };
 }
 
-export const revalidate = 120;
+export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
 
 async function Page({ searchParams }) {
   const searchParamsData = await searchParams;
