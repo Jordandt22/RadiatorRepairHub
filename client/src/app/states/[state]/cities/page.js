@@ -15,9 +15,9 @@ import {
   SITE_URL,
   buildOpenGraph,
 } from "@/lib/seo/metadata";
-import { DIRECTORY_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
+// Must be a literal — Next.js rejects imported segment config values.
+export const revalidate = 3600;
 
 // Generate metadata for cities page
 export async function generateMetadata({ params }) {

@@ -53,19 +53,15 @@ import {
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { FEATURED_AFFILIATE_PRODUCT_ALIASES } from "@/lib/affiliateProducts";
 import { getBusinessDisplayImage, getBusinessHeroImage } from "@/lib/images";
-import {
-  DIRECTORY_REVALIDATE_SECONDS,
-  SHORT_CACHE,
-  NO_STORE,
-} from "@/lib/cachePolicy";
+import { SHORT_CACHE, NO_STORE } from "@/lib/cachePolicy";
 import {
   getGoogleMapsDirectionsUrl,
   getGoogleMapsEmbedQuery,
   getGoogleMapsPlaceUrl,
 } from "@/lib/googleMaps";
 
-// Generate metadata for business pages
-export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
+// Must be a literal — Next.js rejects imported segment config values.
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;

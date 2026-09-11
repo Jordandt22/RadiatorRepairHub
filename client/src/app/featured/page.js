@@ -1,7 +1,6 @@
 import React from "react";
 import FeaturedBusinessesPage from "@/components/pages/featured/FeaturedBusinessesPage";
 import { buildPageMetadata, composeDescription, composeTitle, SITE_URL } from "@/lib/seo/metadata";
-import { DIRECTORY_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 export const metadata = buildPageMetadata({
   title: composeTitle("Featured Radiator Repair Shops"),
@@ -14,7 +13,8 @@ export const metadata = buildPageMetadata({
   path: "/featured",
 });
 
-export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
+// Must be a literal — Next.js rejects imported segment config values.
+export const revalidate = 3600;
 
 async function Page({ searchParams }) {
   const searchParamsData = await searchParams;
