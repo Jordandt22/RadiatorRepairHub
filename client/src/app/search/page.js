@@ -10,7 +10,6 @@ import {
   SITE_URL,
 } from "@/lib/seo/metadata";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
-import { DIRECTORY_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 // Kept distinct from the homepage headline so the two pages do not compete for
 // the same "radiator repair near me" query.
@@ -40,7 +39,8 @@ export async function generateMetadata({ searchParams }) {
   return { ...baseSearchMetadata, robots: NOINDEX_ROBOTS };
 }
 
-export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
+// Must be a literal — Next.js rejects imported segment config values.
+export const revalidate = 3600;
 
 async function Page({ searchParams }) {
   const searchParamsData = await searchParams;

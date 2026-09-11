@@ -2,18 +2,14 @@
 export const NO_STORE = { cache: "no-store" };
 
 /**
- * Public directory pages (business, city, state, category, search, home).
- * Owner/admin edits still refresh via on-demand /api/revalidate.
+ * Fetch Data Cache TTL for slowly changing public directory data.
+ * Page `export const revalidate` must stay a numeric literal (Next.js segment
+ * config); keep those in sync: directory pages = 3600, content pages = 21600.
+ * Owner edits still refresh via on-demand /api/revalidate.
  */
-export const DIRECTORY_REVALIDATE_SECONDS = 60 * 60; // 1 hour
+export const SHORT_REVALIDATE_SECONDS = 3600; // 1 hour
 
-/** Rarely changing content (FAQ, blogs, shop). */
-export const CONTENT_REVALIDATE_SECONDS = 60 * 60 * 6; // 6 hours
-
-/** @deprecated Prefer DIRECTORY_REVALIDATE_SECONDS — kept for existing fetch helpers. */
-export const SHORT_REVALIDATE_SECONDS = DIRECTORY_REVALIDATE_SECONDS;
-
-export const SHORT_CACHE = { revalidate: DIRECTORY_REVALIDATE_SECONDS };
+export const SHORT_CACHE = { revalidate: SHORT_REVALIDATE_SECONDS };
 
 export const SITEMAP_REVALIDATE_SECONDS = 60 * 60 * 24;
 

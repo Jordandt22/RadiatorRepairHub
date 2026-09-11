@@ -5,9 +5,9 @@ import PageHeader from "@/components/layout/Header/PageHeader";
 import ShopProductsList from "@/components/pages/shop/ShopProductsList";
 import { fetchActiveAffiliateProducts } from "@/lib/api/affiliate-products";
 import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
-import { CONTENT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = CONTENT_REVALIDATE_SECONDS;
+// Must be a literal — Next.js rejects imported segment config values.
+export const revalidate = 21600;
 
 export const metadata = buildPageMetadata({
   title: "Shop | Cooling System Tools & Supplies - RadiatorRepairHub",

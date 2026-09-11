@@ -16,12 +16,12 @@ import {
   NOT_FOUND_METADATA,
   SITE_URL,
 } from "@/lib/seo/metadata";
-import { CONTENT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 const COVER_ABSOLUTE_URL = `https://radiatorrepairhub.com${BLOG_COVER_IMAGE}`;
 
-/** Refresh product availability (is_active) without a full redeploy. */
-export const revalidate = CONTENT_REVALIDATE_SECONDS;
+/** Refresh product availability (is_active) without a full redeploy.
+ * Must be a literal — Next.js rejects imported segment config values. */
+export const revalidate = 21600;
 
 export async function generateStaticParams() {
   return getBlogSlugs().map((slug) => ({ slug }));
