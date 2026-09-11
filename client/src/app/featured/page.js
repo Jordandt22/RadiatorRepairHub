@@ -1,6 +1,7 @@
 import React from "react";
 import FeaturedBusinessesPage from "@/components/pages/featured/FeaturedBusinessesPage";
 import { buildPageMetadata, composeDescription, composeTitle, SITE_URL } from "@/lib/seo/metadata";
+import { DIRECTORY_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 export const metadata = buildPageMetadata({
   title: composeTitle("Featured Radiator Repair Shops"),
@@ -13,7 +14,7 @@ export const metadata = buildPageMetadata({
   path: "/featured",
 });
 
-export const revalidate = 120;
+export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
 
 async function Page({ searchParams }) {
   const searchParamsData = await searchParams;

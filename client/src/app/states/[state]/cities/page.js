@@ -15,8 +15,9 @@ import {
   SITE_URL,
   buildOpenGraph,
 } from "@/lib/seo/metadata";
+import { DIRECTORY_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = 120;
+export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
 
 // Generate metadata for cities page
 export async function generateMetadata({ params }) {

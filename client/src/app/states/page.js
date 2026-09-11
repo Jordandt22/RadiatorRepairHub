@@ -10,8 +10,9 @@ import {
   composeTitle,
   SITE_URL,
 } from "@/lib/seo/metadata";
+import { DIRECTORY_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = 120;
+export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
 
 export const metadata = buildPageMetadata({
   title: composeTitle("Radiator Repair by State"),

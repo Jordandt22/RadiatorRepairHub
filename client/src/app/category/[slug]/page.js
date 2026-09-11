@@ -17,8 +17,9 @@ import {
 } from "@/lib/seo/metadata";
 import { buildDirectoryCollectionSchema } from "@/lib/seo/structuredData";
 import { getListingsPage } from "@/lib/businesses/listingsSearch";
+import { DIRECTORY_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = 120;
+export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
 
 const TOP_STATE_LINKS = 12;
 const SIBLING_CATEGORY_LINKS = 8;

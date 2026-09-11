@@ -16,8 +16,9 @@ import {
   fetchStateListingCount,
 } from "@/lib/api/cachedReads";
 import { getListingsPage } from "@/lib/businesses/listingsSearch";
+import { DIRECTORY_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = 120;
+export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
 export const dynamicParams = true;
 
 const TOP_CITY_LINKS = 24;

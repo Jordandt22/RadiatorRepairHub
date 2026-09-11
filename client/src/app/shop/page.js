@@ -5,8 +5,9 @@ import PageHeader from "@/components/layout/Header/PageHeader";
 import ShopProductsList from "@/components/pages/shop/ShopProductsList";
 import { fetchActiveAffiliateProducts } from "@/lib/api/affiliate-products";
 import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
+import { CONTENT_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
-export const revalidate = 60;
+export const revalidate = CONTENT_REVALIDATE_SECONDS;
 
 export const metadata = buildPageMetadata({
   title: "Shop | Cooling System Tools & Supplies - RadiatorRepairHub",

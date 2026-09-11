@@ -19,10 +19,11 @@ import {
   fetchCityBusinessCounts,
 } from "@/lib/api/cachedReads";
 import { getListingsPage } from "@/lib/businesses/listingsSearch";
+import { DIRECTORY_REVALIDATE_SECONDS } from "@/lib/cachePolicy";
 
 // ISR for city listings. Do not pair revalidate with a non-empty
 // generateStaticParams subset — Next 16 then 404s cities outside that list.
-export const revalidate = 120;
+export const revalidate = DIRECTORY_REVALIDATE_SECONDS;
 export const dynamicParams = true;
 
 const NEARBY_CITY_LINKS = 12;
