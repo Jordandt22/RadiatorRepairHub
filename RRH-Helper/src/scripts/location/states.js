@@ -17,6 +17,7 @@ const states = [
   { name: "Colorado", code: "CO" },
   { name: "Connecticut", code: "CT" },
   { name: "Delaware", code: "DE" },
+  { name: "District of Columbia", code: "DC" },
   { name: "Florida", code: "FL" },
   { name: "Georgia", code: "GA" },
   { name: "Hawaii", code: "HI" },
