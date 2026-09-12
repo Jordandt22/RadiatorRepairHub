@@ -48,6 +48,12 @@
     "country_code": "US"
   },
   {
+    "id": "5e429c18-64b8-41c1-acd0-a6b543a59648",
+    "name": "District of Columbia",
+    "code": "DC",
+    "country_code": "US"
+  },
+  {
     "id": "1363f25f-dbf4-4dc2-80bb-6511c26e1315",
     "name": "Florida",
     "code": "FL",
