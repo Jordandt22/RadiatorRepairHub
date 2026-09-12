@@ -10,14 +10,29 @@ const redisPassword = isDev
   ? process.env.DEV_REDIS_PASSWORD
   : process.env.REDIS_PASSWORD;
 
+/** Logical Redis DB — used in development when RRH and Diesel share one instance. */
+function getRedisDb() {
+  if (!isDev) return undefined;
+  const raw = process.env.DEV_REDIS_DB;
+  if (raw === undefined || String(raw).trim() === "") return 0;
+  const db = Number(raw);
+  return Number.isInteger(db) && db >= 0 ? db : 0;
+}
+
+const redisDb = getRedisDb();
+
 if (process.env.NODE_ENV !== "production") {
-  console.log(`Redis: using ${isDev ? "DEV" : "PROD"} (${redisHost}:${redisPort})`);
+  const dbLabel = redisDb === undefined ? "" : ` db=${redisDb}`;
+  console.log(
+    `Redis: using ${isDev ? "DEV" : "PROD"} (${redisHost}:${redisPort}${dbLabel})`,
+  );
 }
 
 export const redisClient = new Redis({
   host: redisHost,
   port: redisPort,
   password: redisPassword,
+  ...(redisDb === undefined ? {} : { db: redisDb }),
 });
 
 // Check Key for Development
