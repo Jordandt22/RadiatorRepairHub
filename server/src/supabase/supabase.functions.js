@@ -660,22 +660,54 @@ export const getAllStates = async () => {
 };
 
 export const getAllCities = async (state_id) => {
-  const { data, error } = await supabase
-    .from("cities")
-    .select("*")
-    .order("name", { ascending: true })
-    .eq("state_id", state_id);
+  const pageSize = 1000;
+  let start = 0;
+  const rows = [];
 
-  return { data, error };
+  for (;;) {
+    const { data, error } = await supabase
+      .from("cities")
+      .select("*")
+      .order("name", { ascending: true })
+      .eq("state_id", state_id)
+      .range(start, start + pageSize - 1);
+
+    if (error) return { data: null, error };
+    rows.push(...(data ?? []));
+    if (!data || data.length < pageSize) break;
+    start += pageSize;
+  }
+
+  return { data: rows, error: null };
 };
 
 export const getAllCitiesList = async () => {
-  const { data, error } = await supabase
-    .from("cities")
-    .select("*")
-    .order("name", { ascending: true });
+  const pageSize = 1000;
+  let start = 0;
+  const rows = [];
 
-  return { data, error };
+  for (;;) {
+    const { data, error } = await supabase
+      .from("cities")
+      .select("*")
+      .order("name", { ascending: true })
+      .range(start, start + pageSize - 1);
+
+    if (error) return { data: null, error };
+    rows.push(...(data ?? []));
+    if (!data || data.length < pageSize) break;
+    start += pageSize;
+  }
+
+  return { data: rows, error: null };
+};
+
+export const getCitiesCount = async () => {
+  const { count, error } = await supabase
+    .from("cities")
+    .select("id", { count: "exact", head: true });
+
+  return { count: count ?? 0, error };
 };
 
 export const getAllPostalCodes = async (city_id) => {

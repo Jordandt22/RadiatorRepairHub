@@ -10,6 +10,7 @@ import {
   getCitiesKey,
   getPostalCodesKey,
   getAllCitiesKey,
+  getCitiesCountKey,
   getCitiesForSitemapKey,
   getCityBySlugKey,
   getPostalCodesByStateKey,
@@ -20,6 +21,7 @@ import {
   getAllStates,
   getAllCities,
   getAllCitiesList,
+  getCitiesCount,
   getAllPostalCodes,
   getPostalCodesByState,
   getCityBySlug,
@@ -146,6 +148,31 @@ export const getAllCitiesHandler = async (req, res) => {
 
   if (data.length > 0) await cacheData(key, interval, data);
   res.status(200).json(successHandler(data));
+};
+
+export const getCitiesCountHandler = async (req, res) => {
+  const { key, interval } = getCitiesCountKey();
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { count, error } = await getCitiesCount();
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching cities count.",
+          error
+        )
+      );
+  }
+
+  const payload = { count };
+  await cacheData(key, interval, payload);
+  res.status(200).json(successHandler(payload));
 };
 
 export const getCitiesForSitemapHandler = async (req, res) => {

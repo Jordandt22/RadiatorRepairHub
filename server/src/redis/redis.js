@@ -215,6 +215,11 @@ export const getAllCitiesKey = () => ({
   interval: 60 * 60,
 });
 
+export const getCitiesCountKey = () => ({
+  key: `CITIES_COUNT`,
+  interval: 60 * 60,
+});
+
 export const getCitiesForSitemapKey = () => ({
   key: "CITIES_SITEMAP",
   interval: 60 * 60,
