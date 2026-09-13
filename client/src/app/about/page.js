@@ -186,6 +186,26 @@ function AboutPage() {
             </p>
           </section>
 
+          <section className="rounded-lg border border-border bg-card p-6 md:p-8">
+            <h2 className="mb-4 font-heading text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+              Related Directory
+            </h2>
+            <p className="leading-relaxed text-muted-foreground">
+              RadiatorRepairHub focuses on radiator and cooling-system repair.
+              The same team also runs{" "}
+              <a
+                href="https://dieselrepairhub.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-interactive underline hover:text-primary"
+              >
+                DieselRepairHub
+              </a>
+              , a directory for diesel engine and truck repair shops when
+              that&apos;s the job you need.
+            </p>
+          </section>
+
           <section>
             <h2 className="mb-6 font-heading text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
               What You Can Do

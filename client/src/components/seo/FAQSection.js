@@ -72,17 +72,30 @@ export function FAQItem({ faq, itemKey, isOpen, onToggle, reduceMotion }) {
                   <span>
                     {relatedBlogs.length === 1 ? "Related guide: " : "Related guides: "}
                   </span>
-                  {relatedBlogs.map((blog, index) => (
-                    <span key={blog.href}>
-                      {index > 0 ? ", " : null}
-                      <Link
-                        href={blog.href}
-                        className="font-medium text-interactive underline hover:text-primary"
-                      >
-                        {blog.title}
-                      </Link>
-                    </span>
-                  ))}
+                  {relatedBlogs.map((blog, index) => {
+                    const isExternal = /^https?:\/\//i.test(blog.href);
+                    const linkClassName =
+                      "font-medium text-interactive underline hover:text-primary";
+                    return (
+                      <span key={blog.href}>
+                        {index > 0 ? ", " : null}
+                        {isExternal ? (
+                          <a
+                            href={blog.href}
+                            className={linkClassName}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {blog.title}
+                          </a>
+                        ) : (
+                          <Link href={blog.href} className={linkClassName}>
+                            {blog.title}
+                          </Link>
+                        )}
+                      </span>
+                    );
+                  })}
                 </div>
               ) : null}
             </div>

@@ -15,11 +15,15 @@ export const FAQ_ITEMS = [
     id: "choose-shop",
     question: "What should I look for in a radiator repair shop?",
     answer:
-      "Look for shops with certified technicians, good customer reviews, proper licensing, and experience with your vehicle type. Check if they offer warranties on their work and use quality parts. For more information, you can visit their business page and give them a call.",
+      "Look for shops with certified technicians, good customer reviews, proper licensing, and experience with your vehicle type. Check if they offer warranties on their work and use quality parts. For more information, you can visit their business page and give them a call. Need diesel engine or heavy-duty truck repair instead of cooling work? See our sister site DieselRepairHub.",
     relatedBlogs: [
       {
         title: "How to Choose a Radiator Shop",
         href: "/blogs/how-to-choose-a-radiator-shop",
+      },
+      {
+        title: "DieselRepairHub",
+        href: "https://dieselrepairhub.com",
       },
     ],
   },
@@ -111,11 +115,15 @@ export const FAQ_ITEMS = [
     id: "coolant-types",
     question: "What types of coolant should I use?",
     answer:
-      "Always use the coolant type specified in your vehicle's owner manual. Different vehicles require different formulations (conventional green, extended-life OAT/HOAT, or OEM-specific coolants). Mixing incompatible types or using the wrong formula can cause corrosion, sludge, or cooling system damage.",
+      "Always use the coolant type specified in your vehicle's owner manual. Different vehicles require different formulations (conventional green, extended-life OAT/HOAT, or OEM-specific coolants). Mixing incompatible types or using the wrong formula can cause corrosion, sludge, or cooling system damage. For diesel trucks that need heavy-duty coolant service or broader diesel repair, see our sister site DieselRepairHub.",
     relatedBlogs: [
       {
         title: "Radiator Flush: What to Expect & Cost",
         href: "/blogs/radiator-flush-what-to-expect-and-cost",
+      },
+      {
+        title: "DieselRepairHub",
+        href: "https://dieselrepairhub.com",
       },
     ],
   },
