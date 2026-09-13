@@ -9,6 +9,7 @@ import HomeSnapCarousel from "@/components/pages/home/HomeSnapCarousel";
 import BusinessListingImpression from "@/components/businesses/stats/BusinessListingImpression";
 import { fadeIn, useHomeSectionInView } from "@/components/ui/homeSectionMotion";
 import { LISTING_SOURCES } from "@/lib/businessStats/listingSurface";
+import { HOME_CAROUSEL_CARD_IMAGE_SIZES } from "@/lib/images";
 
 export default function TopVerifiedBusinessesContent({ businesses = [] }) {
   const { ref, inView, reduceMotion } = useHomeSectionInView();
@@ -46,6 +47,7 @@ export default function TopVerifiedBusinessesContent({ businesses = [] }) {
                     business={business}
                     listingSource={LISTING_SOURCES.TOP_VERIFIED}
                     position={index + 1}
+                    imageSizes={HOME_CAROUSEL_CARD_IMAGE_SIZES}
                   />
                 </BusinessListingImpression>
               </div>

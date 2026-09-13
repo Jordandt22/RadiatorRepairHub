@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 
@@ -10,7 +9,11 @@ import HeroStatBox from "./HeroStatBox";
 import StrokeText from "@/components/ui/StrokeText";
 import FoldText from "@/components/ui/FoldText";
 import { STICKY_NAVBAR_OFFSET_CLASS } from "@/lib/layout/siteHeader";
-import { HOME_HERO_IMAGE_PATH } from "@/lib/images";
+import {
+  HOME_HERO_IMAGE_PATH,
+  HOME_HERO_IMAGE_SIZES,
+  HOME_HERO_IMAGE_SRCSET,
+} from "@/lib/images";
 
 function HeroContent({
   popularStates = [],
@@ -39,14 +42,14 @@ function HeroContent({
       ref={heroRef}
       className={`relative isolate ${headerPullClass} flex min-h-[80svh] items-center overflow-hidden border-b border-border`}
     >
-      <Image
+      <img
         src={HOME_HERO_IMAGE_PATH}
+        srcSet={HOME_HERO_IMAGE_SRCSET}
+        sizes={HOME_HERO_IMAGE_SIZES}
         alt=""
-        fill
-        priority
-        unoptimized
-        sizes="100vw"
-        className="object-cover object-[70%_center]"
+        fetchPriority="high"
+        decoding="async"
+        className="absolute inset-0 h-full w-full object-cover object-[70%_center]"
         aria-hidden="true"
       />
       <div
