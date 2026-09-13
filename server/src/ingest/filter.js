@@ -1,4 +1,17 @@
 import { find } from "geo-tz";
+import {
+  CATEGORY_BLOCKLIST,
+  BLOCKED_EXACT_CATEGORIES,
+  BLOCKED_PRIMARY_CATEGORIES,
+  isBlockedExactCategory,
+  findBlockedCategorySubstring,
+} from "./categoryBlocklist.js";
+
+export {
+  CATEGORY_BLOCKLIST,
+  BLOCKED_EXACT_CATEGORIES,
+  BLOCKED_PRIMARY_CATEGORIES,
+};
 
 const FIELDS_TO_KEEP = [
   "title",
@@ -53,25 +66,6 @@ function isClosed(value) {
   return value === true || value === "true";
 }
 
-/**
- * Category substrings that indicate home / HVAC / plumbing radiators
- * (not auto radiator shops). Matched case-insensitively against
- * categoryName + categories.
- */
-export const CATEGORY_BLOCKLIST = [
-  "hvac",
-  "heating contractor",
-  "furnace",
-  "boiler",
-  "plumber",
-  "plumbing",
-  "hydronic",
-  "home heating",
-  "residential heating",
-  "radiator installation",
-  "water heater",
-];
-
 function buildCategoryText(item) {
   const parts = [];
   if (item.categoryName) parts.push(String(item.categoryName));
@@ -84,18 +78,20 @@ function buildCategoryText(item) {
 }
 
 /**
+ * Blocks when primary categoryName is an exact blocked label, or when
+ * HVAC/plumbing substrings appear in category text (primary + secondary).
+ * Exact secondary junk is not enough to reject a listing on ingest —
+ * those links are cleaned in DB instead.
  * @returns {string|null} matched block term, or null if allowed
  */
 export function findBlockedCategoryMatch(item) {
-  const text = buildCategoryText(item);
-  if (!text.trim()) return null;
-
-  for (const term of CATEGORY_BLOCKLIST) {
-    if (text.includes(term.toLowerCase())) {
-      return term;
-    }
+  const primary =
+    item?.categoryName != null ? String(item.categoryName).trim() : "";
+  if (primary && isBlockedExactCategory(primary)) {
+    return primary;
   }
-  return null;
+
+  return findBlockedCategorySubstring(buildCategoryText(item));
 }
 
 function hasText(value) {
