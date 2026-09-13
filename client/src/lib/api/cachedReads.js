@@ -8,6 +8,7 @@ import { SHORT_CACHE } from "@/lib/cachePolicy";
 import { fetchPrimaryCategoryBySlug as fetchPrimaryCategoryBySlugRequest } from "@/lib/api/categories";
 import {
   fetchAllCities as fetchAllCitiesRequest,
+  fetchCitiesCount as fetchCitiesCountRequest,
   fetchCityBySlug as fetchCityBySlugRequest,
   fetchCityBusinessCounts as fetchCityBusinessCountsRequest,
   fetchStateBusinessCounts as fetchStateBusinessCountsRequest,
@@ -19,18 +20,25 @@ export const DIRECTORY_STATE_COUNTS_LIMIT = 6;
 export const FOOTER_STATE_COUNTS_LIMIT = 5;
 
 export const fetchDirectoryTotals = cache(async () => {
-  const [statesRes, citiesRes] = await Promise.all([
+  const [statesRes, countRes] = await Promise.all([
     fetchStateBusinessCountsRequest({
       codes: STATES.map((state) => state.code),
     }),
-    fetchAllCitiesRequest(),
+    fetchCitiesCountRequest().catch(() => null),
   ]);
 
   const totalBusinesses = (statesRes.data?.states ?? []).reduce(
     (sum, state) => sum + Number(state.business_count || 0),
     0,
   );
-  const totalCities = Array.isArray(citiesRes.data) ? citiesRes.data.length : 0;
+
+  let totalCities = 0;
+  if (typeof countRes?.data?.count === "number") {
+    totalCities = countRes.data.count;
+  } else {
+    const citiesRes = await fetchAllCitiesRequest().catch(() => null);
+    totalCities = Array.isArray(citiesRes?.data) ? citiesRes.data.length : 0;
+  }
 
   return { totalBusinesses, totalCities };
 });

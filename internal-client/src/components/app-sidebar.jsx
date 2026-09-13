@@ -50,13 +50,6 @@ import {
 } from "@/components/ui/sidebar";
 
 const data = {
-  teams: [
-    {
-      name: "RRH",
-      logo: <Wrench />,
-      plan: "RadiatorRepairHub",
-    },
-  ],
   navMain: [
     {
       title: "Dashboard",
@@ -395,12 +388,12 @@ const data = {
     },
     {
       title: "Clients",
-      url: "/systems/clients/radiatorrepairhub",
+      url: "/systems/clients/website",
       icon: <GlobeIcon />,
       items: [
         {
-          title: "RadiatorRepairHub",
-          url: "/systems/clients/radiatorrepairhub",
+          title: "Public Website",
+          url: "/systems/clients/website",
           icon: <Wrench />,
         },
       ],
@@ -412,7 +405,7 @@ export function AppSidebar({ ...props }) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <Suspense fallback={null}>

@@ -1,16 +1,19 @@
+import { getActiveSite, getSiteApiUri } from "@/lib/sites";
+
+/** API base for the active site, so every admin call follows the site switcher. */
 export function getApiUri() {
-  const base = process.env.NEXT_PUBLIC_API_URL;
-  const version = process.env.NEXT_PUBLIC_API_VERSION;
-  if (!base || !version) return null;
-  return `${base}/v${version}/api`;
+  return getSiteApiUri(getActiveSite());
 }
 
 export async function fetchApi(path, options = {}) {
-  const apiUri = getApiUri();
+  const site = getActiveSite();
+  const apiUri = getSiteApiUri(site);
   if (!apiUri) {
     return {
       data: null,
-      error: { message: "Missing NEXT_PUBLIC_API_URL or NEXT_PUBLIC_API_VERSION" },
+      error: {
+        message: `Missing API URL for ${site?.name || "the active site"}`,
+      },
       status: 0,
     };
   }

@@ -1,6 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
+import { useRouter } from "next/navigation";
 
 import {
   DropdownMenu,
@@ -8,26 +9,41 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { ChevronsUpDownIcon, PlusIcon } from "lucide-react"
+} from "@/components/ui/sidebar";
+import { CheckIcon, ChevronsUpDownIcon, TruckIcon, Wrench } from "lucide-react";
+import { useSite } from "@/contexts/Site.context";
 
-export function TeamSwitcher({
-  teams
-}) {
-  const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
-  if (!activeTeam) {
-    return null
+const SITE_ICONS = {
+  rrh: <Wrench className="size-4" />,
+  drh: <TruckIcon className="size-4" />,
+};
+
+/** Landing route after a site switch: ids from the previous site do not resolve. */
+const POST_SWITCH_PATH = "/dashboard?tab=inbox";
+
+export function TeamSwitcher() {
+  const { isMobile } = useSidebar();
+  const router = useRouter();
+  const { sites, activeSite, activeSiteId, setActiveSiteId } = useSite();
+
+  if (!activeSite) {
+    return null;
   }
+
+  const handleSelect = (siteId) => {
+    if (siteId === activeSiteId) return;
+
+    setActiveSiteId(siteId);
+    router.replace(POST_SWITCH_PATH);
+  };
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -36,48 +52,51 @@ export function TeamSwitcher({
             render={
               <SidebarMenuButton
                 size="lg"
-                className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground" />
-            }>
-            <div
-              className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-              {activeTeam.logo}
+                className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
+              />
+            }
+          >
+            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              {SITE_ICONS[activeSite.id] ?? <Wrench className="size-4" />}
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">{activeTeam.name}</span>
-              <span className="truncate text-xs">{activeTeam.plan}</span>
+              <span className="truncate font-medium">
+                {activeSite.shortName}
+              </span>
+              <span className="truncate text-xs">{activeSite.name}</span>
             </div>
             <ChevronsUpDownIcon className="ml-auto" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-fit"
+            className="w-56"
             align="start"
             side={isMobile ? "bottom" : "right"}
-            sideOffset={4}>
+            sideOffset={4}
+          >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Teams
+                Sites
               </DropdownMenuLabel>
-              {teams.map((team, index) => (
-                <DropdownMenuItem key={team.name} onClick={() => setActiveTeam(team)} className="gap-2 p-2">
+              {sites.map((site) => (
+                <DropdownMenuItem
+                  key={site.id}
+                  onClick={() => handleSelect(site.id)}
+                  className="gap-2 p-2"
+                >
                   <div className="flex size-6 items-center justify-center rounded-md border">
-                    {team.logo}
+                    {SITE_ICONS[site.id] ?? <Wrench className="size-4" />}
                   </div>
-                  {team.name}
-                  <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
+                  <div className="grid flex-1 leading-tight">
+                    <span className="truncate text-sm">{site.name}</span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      {site.tagline}
+                    </span>
+                  </div>
+                  {site.id === activeSiteId ? (
+                    <CheckIcon className="size-4 shrink-0" />
+                  ) : null}
                 </DropdownMenuItem>
               ))}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem className="gap-2 p-2">
-                <div
-                  className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                  <PlusIcon className="size-4" />
-                </div>
-                <div className="font-medium text-muted-foreground">
-                  Add team
-                </div>
-              </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>

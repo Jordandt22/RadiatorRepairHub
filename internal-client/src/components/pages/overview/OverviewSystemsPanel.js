@@ -4,31 +4,33 @@ import Link from "next/link";
 import { ExternalLinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SystemsHealthCheckSection from "@/components/pages/systems/SystemsHealthCheckSection";
-
-const SYSTEM_LINKS = [
-  {
-    href: "/systems/cache/redis",
-    label: "Redis cache",
-  },
-  {
-    href: "/systems/database/supabase",
-    label: "Supabase",
-  },
-  {
-    href: "/systems/clients/radiatorrepairhub",
-    label: "RadiatorRepairHub",
-  },
-];
+import { useSite } from "@/contexts/Site.context";
 
 export default function OverviewSystemsPanel({ enabled = true }) {
-  const webUrl = process.env.NEXT_PUBLIC_WEB_URL || null;
+  const { activeSite } = useSite();
+  const webUrl = activeSite?.webUrl || null;
+
+  const systemLinks = [
+    {
+      href: "/systems/cache/redis",
+      label: "Redis cache",
+    },
+    {
+      href: "/systems/database/supabase",
+      label: "Supabase",
+    },
+    {
+      href: "/systems/clients/website",
+      label: activeSite?.name || "Public website",
+    },
+  ];
 
   if (!enabled) return null;
 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap gap-2">
-        {SYSTEM_LINKS.map((link) => (
+        {systemLinks.map((link) => (
           <Button
             key={link.href}
             variant="outline"
@@ -57,7 +59,7 @@ export default function OverviewSystemsPanel({ enabled = true }) {
       />
       <SystemsHealthCheckSection
         checkId="website"
-        title="RadiatorRepairHub"
+        title={activeSite?.name || "Public website"}
         description="Public website availability."
         externalUrl={webUrl}
         externalLabel="Open site"

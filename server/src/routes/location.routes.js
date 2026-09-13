@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   getStates,
   getAllCitiesHandler,
+  getCitiesCountHandler,
   getCities,
   getCityBySlugHandler,
   getPostalCodes,
@@ -30,6 +31,11 @@ locationRouter.get(
 
 // Get All Cities
 locationRouter.get("/cities", serverErrorCatcherWrapper(getAllCitiesHandler));
+
+locationRouter.get(
+  "/cities/count",
+  serverErrorCatcherWrapper(getCitiesCountHandler)
+);
 
 locationRouter.get(
   "/cities/sitemap",
