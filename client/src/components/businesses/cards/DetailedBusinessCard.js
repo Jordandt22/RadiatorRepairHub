@@ -14,6 +14,7 @@ function DetailedBusinessCard({
   priority = false,
   listingSource,
   position,
+  imageSizes = BUSINESS_CARD_IMAGE_SIZES,
 }) {
   const trackListingClick = () => {
     if (!business?.id || !listingSource) return;
@@ -34,7 +35,7 @@ function DetailedBusinessCard({
           imageId={business.primary_image_id}
           cdnStored={Boolean(business.cdn_stored)}
           alt={business.title}
-          sizes={BUSINESS_CARD_IMAGE_SIZES}
+          sizes={imageSizes}
           priority={priority}
         />
         <ListingBadges

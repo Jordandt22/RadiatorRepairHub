@@ -22,7 +22,11 @@ import {
   fetchDirectoryTotals,
   fetchStateBusinessCountsByLimit,
 } from "@/lib/api/cachedReads";
-import { HOME_HERO_IMAGE_PATH } from "@/lib/images";
+import {
+  HOME_HERO_IMAGE_PATH,
+  HOME_HERO_IMAGE_SIZES,
+  HOME_HERO_IMAGE_SRCSET,
+} from "@/lib/images";
 
 const homeTitle = "Radiator Repair Near Me | Find Local Radiator Shops";
 const homeDescription =
@@ -42,6 +46,8 @@ export default async function Home() {
   preload(HOME_HERO_IMAGE_PATH, {
     as: "image",
     fetchPriority: "high",
+    imageSrcSet: HOME_HERO_IMAGE_SRCSET,
+    imageSizes: HOME_HERO_IMAGE_SIZES,
   });
 
   const [affiliateRes, categoriesRes, statesRes, directoryTotalsRes] =

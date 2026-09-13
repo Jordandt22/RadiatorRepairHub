@@ -1,7 +1,7 @@
 import fs from "fs";
-import path from "path";
 import { find } from "geo-tz";
 import { FLOW_PATHS, ensureFlowDirs } from "../flowPaths.js";
+import { findBlockedCategoryMatch } from "../../../../server/src/ingest/filter.js";
 
 ensureFlowDirs();
 
@@ -59,48 +59,6 @@ const outputPath = FLOW_PATHS.filtered;
 
 function isClosed(value) {
   return value === true || value === "true";
-}
-
-/**
- * Category substrings that indicate home / HVAC / plumbing radiators
- * (not auto radiator shops). Matched case-insensitively against
- * categoryName + categories.
- */
-const CATEGORY_BLOCKLIST = [
-  "hvac",
-  "heating contractor",
-  "furnace",
-  "boiler",
-  "plumber",
-  "plumbing",
-  "hydronic",
-  "home heating",
-  "residential heating",
-  "radiator installation",
-  "water heater",
-];
-
-function buildCategoryText(item) {
-  const parts = [];
-  if (item.categoryName) parts.push(String(item.categoryName));
-  if (Array.isArray(item.categories)) {
-    for (const category of item.categories) {
-      if (category) parts.push(String(category));
-    }
-  }
-  return parts.join(" ").toLowerCase();
-}
-
-function findBlockedCategoryMatch(item) {
-  const text = buildCategoryText(item);
-  if (!text.trim()) return null;
-
-  for (const term of CATEGORY_BLOCKLIST) {
-    if (text.includes(term.toLowerCase())) {
-      return term;
-    }
-  }
-  return null;
 }
 
 if (!fs.existsSync(inputPath)) {

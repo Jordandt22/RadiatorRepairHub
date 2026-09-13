@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CircleAlert } from "lucide-react";
 import {
   bypassImageOptimizer,
+  buildCfCardSrcSet,
   buildCfImageUrl,
   CF_IMAGE_VARIANT,
   getBusinessImageId,
@@ -37,6 +38,13 @@ function BusinessImage({
     cdnStored,
   });
   const cdnSrc = usableImageSrc(buildCfImageUrl(cfImageId, variant));
+  const cdnSrcSet =
+    variant === CF_IMAGE_VARIANT.card ||
+    variant === CF_IMAGE_VARIANT.card240 ||
+    variant === CF_IMAGE_VARIANT.card320 ||
+    variant === CF_IMAGE_VARIANT.card480
+      ? buildCfCardSrcSet(cfImageId)
+      : null;
   const remoteSrc = usableImageSrc(src);
   const canUseCdn = Boolean(cdnSrc);
   const hasRemote = Boolean(remoteSrc);
@@ -109,6 +117,24 @@ function BusinessImage({
     );
   }
 
+  // CDN URLs are already optimized; use a native img so srcset is honored
+  // (next/image ignores sizes/srcset when unoptimized).
+  if (source === "cdn") {
+    return (
+      <img
+        src={resolvedSrc}
+        srcSet={cdnSrcSet || undefined}
+        sizes={cdnSrcSet ? sizes : undefined}
+        alt={alt}
+        className={`absolute inset-0 h-full w-full ${className}`}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding="async"
+        onError={() => setSource(hasRemote ? "remote" : "none")}
+      />
+    );
+  }
+
   return (
     <Image
       src={resolvedSrc}
@@ -117,15 +143,9 @@ function BusinessImage({
       sizes={sizes}
       className={className}
       priority={priority}
-      unoptimized={source === "cdn" || bypassImageOptimizer}
-      referrerPolicy={source === "remote" ? "no-referrer" : undefined}
-      onError={() =>
-        setSource(
-          source === "cdn" && hasRemote
-            ? "remote"
-            : "none"
-        )
-      }
+      unoptimized={bypassImageOptimizer}
+      referrerPolicy="no-referrer"
+      onError={() => setSource("none")}
     />
   );
 }

@@ -2,13 +2,20 @@
 // Cloudflare Images URLs (already optimized at the edge).
 export const bypassImageOptimizer = true;
 
-/** Listing card thumbs. */
+/** Listing card thumbs — search/grid (1→2→3→4 cols). */
 export const BUSINESS_CARD_IMAGE_SIZES =
-  "(max-width: 768px) 100vw, 400px";
+  "(max-width: 767px) 100vw, (max-width: 1023px) 50vw, (max-width: 1279px) 33vw, 25vw";
+
+/**
+ * Home / featured carousels: full-bleed on small screens, ~1/3 width in the
+ * desktop 3-up track (often ~220px). Oversized `sizes` made browsers pick 640w.
+ */
+export const HOME_CAROUSEL_CARD_IMAGE_SIZES =
+  "(max-width: 767px) 100vw, 33vw";
 
 /** Featured full-row listing card image. */
 export const BUSINESS_FEATURED_CARD_IMAGE_SIZES =
-  "(max-width: 768px) 100vw, 320px";
+  "(max-width: 767px) 100vw, 320px";
 
 /** About / secondary listing image. */
 export const BUSINESS_ABOUT_IMAGE_SIZES =
@@ -25,22 +32,43 @@ export const BUSINESS_LIGHTBOX_IMAGE_SIZES = "100vw";
 export const BUSINESS_HERO_IMAGE_SIZES =
   "(max-width: 768px) 100vw, 1200px";
 
-/** Homepage hero (pre-optimized static asset). */
+/** Homepage hero (pre-optimized static assets — responsive srcset). */
 export const HOME_HERO_IMAGE_PATH = "/assets/images/rrh-hero-image.webp";
+export const HOME_HERO_IMAGE_SIZES = "100vw";
+export const HOME_HERO_IMAGE_SRCSET = [
+  "/assets/images/rrh-hero-image-640.webp 640w",
+  "/assets/images/rrh-hero-image-750.webp 750w",
+  "/assets/images/rrh-hero-image.webp 1280w",
+].join(", ");
 
 /** Responsive hero widths for Cloudflare Images srcset. */
 export const CF_IMAGE_HERO_WIDTHS = [640, 828, 1080, 1200];
 
+/**
+ * Card thumb widths. Cap at 480 — home 3-up slots are ~220 CSS px; 640w was
+ * routinely selected and flagged by Lighthouse (~125 KiB wasted).
+ */
+export const CF_IMAGE_CARD_WIDTHS = [240, 320, 480];
+
 function buildHeroVariant(width) {
-  const quality = width <= 640 ? 75 : 80;
+  const quality = width <= 640 ? 70 : 75;
+  return `w=${width},fit=cover,f=auto,q=${quality}`;
+}
+
+function buildCardVariant(width) {
+  // Aggressive quality — listing thumbs are small and sit under UI chrome.
+  const quality = width <= 240 ? 55 : width <= 320 ? 58 : 60;
   return `w=${width},fit=cover,f=auto,q=${quality}`;
 }
 
 /** Flexible variants for Cloudflare Images delivery. */
 export const CF_IMAGE_VARIANT = {
-  card: "w=400,fit=cover,f=auto,q=75",
-  about: "w=480,fit=cover,f=auto,q=75",
-  gallery: "w=800,fit=cover,f=auto,q=80",
+  card: buildCardVariant(320),
+  card240: buildCardVariant(240),
+  card320: buildCardVariant(320),
+  card480: buildCardVariant(480),
+  about: "w=480,fit=cover,f=auto,q=65",
+  gallery: "w=800,fit=cover,f=auto,q=75",
   hero: buildHeroVariant(1200),
   hero640: buildHeroVariant(640),
   hero828: buildHeroVariant(828),
@@ -92,7 +120,7 @@ export function getBusinessImageId({
 
 /**
  * Absolute Cloudflare Images delivery URL via custom domain rewrite.
- * Example: https://images.radiatorrepairhub.com/images/{id}/w=400,fit=cover,f=auto,q=75
+ * Example: https://images.radiatorrepairhub.com/images/{id}/w=320,fit=cover,f=auto,q=58
  */
 export function buildCfImageUrl(imageId, variant = CF_IMAGE_VARIANT.card) {
   const base = getCfImagesBaseUrl();
@@ -112,6 +140,26 @@ export function buildCfHeroSrcSet(
   const entries = widths
     .map((width) => {
       const url = buildCfImageUrl(imageId, buildHeroVariant(width));
+      return url ? `${url} ${width}w` : null;
+    })
+    .filter(Boolean);
+
+  return entries.length > 0 ? entries.join(", ") : null;
+}
+
+/**
+ * Builds a responsive srcset for listing card thumbs on Cloudflare Images.
+ * `sizes` on the img picks among these so ~216px slots don't download 400w.
+ */
+export function buildCfCardSrcSet(
+  imageId,
+  widths = CF_IMAGE_CARD_WIDTHS
+) {
+  if (!imageId) return null;
+
+  const entries = widths
+    .map((width) => {
+      const url = buildCfImageUrl(imageId, buildCardVariant(width));
       return url ? `${url} ${width}w` : null;
     })
     .filter(Boolean);
