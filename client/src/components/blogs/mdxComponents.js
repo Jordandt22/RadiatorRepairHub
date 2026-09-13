@@ -43,14 +43,31 @@ export const mdxComponents = {
   strong: (props) => (
     <strong className="font-semibold text-foreground" {...props} />
   ),
-  a: (props) => (
-    <Link
-      href={props.href || "#"}
-      className="font-medium text-interactive underline decoration-interactive/30 underline-offset-2 transition-colors hover:text-primary hover:decoration-primary/50"
-    >
-      {props.children}
-    </Link>
-  ),
+  a: ({ href = "#", children, ...props }) => {
+    const isExternal = /^https?:\/\//i.test(href);
+    const className =
+      "font-medium text-interactive underline decoration-interactive/30 underline-offset-2 transition-colors hover:text-primary hover:decoration-primary/50";
+
+    if (isExternal) {
+      return (
+        <a
+          href={href}
+          className={className}
+          target="_blank"
+          rel="noopener noreferrer"
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    }
+
+    return (
+      <Link href={href} className={className} {...props}>
+        {children}
+      </Link>
+    );
+  },
   blockquote: (props) => (
     <blockquote
       className="my-8 rounded-lg border border-border bg-tint px-5 py-4 text-lg italic leading-relaxed text-muted-foreground"
