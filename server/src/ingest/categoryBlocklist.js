@@ -22,12 +22,12 @@ export const CATEGORY_BLOCKLIST = [
  * Exact names that are clearly not auto radiator / cooling repair.
  * Used to:
  * - reject ingest when primary categoryName matches
- * - delete unclaimed businesses when primary matches
+ * - delete unclaimed businesses when primary matches (title safeguard applies)
  * - unlink when used as a secondary category
  *
- * Intentionally excludes labels Google often puts on real radiator /
- * parts companies as primary: Manufacturer, Corporate office,
- * Distribution service, Store, Warehouse, Wholesaler.
+ * Intentionally excludes labels that often belong on real radiator /
+ * parts companies as primary — those stay in SECONDARY_UNLINK_EXTRA only:
+ * Manufacturer, Corporate office, Distribution service, Warehouse, Wholesaler.
  */
 export const BLOCKED_EXACT_CATEGORIES = [
   // Food / leisure / attractions
@@ -49,6 +49,7 @@ export const BLOCKED_EXACT_CATEGORIES = [
 
   // Medical / people / civic / education
   "Appraiser",
+  "Chauffeur service",
   "Community college",
   "Department of motor vehicles",
   "Department of Transportation",
@@ -63,13 +64,22 @@ export const BLOCKED_EXACT_CATEGORIES = [
   "Technical school",
   "University",
 
-  // Insurance / finance
+  // Insurance / finance / professional
   "Auto insurance agency",
+  "Automation company",
+  "Business to business service",
   "Car finance and loan company",
+  "Consultant",
+  "Electrical engineer",
+  "Engineer",
+  "Engineering consultant",
+  "Fabrication engineer",
   "Financial institution",
   "Home insurance agency",
   "Insurance agency",
   "Insurance company",
+  "Mechanical engineer",
+  "Professional services",
   "Superannuation consultant",
   "Title company",
   "Transcription service",
@@ -131,9 +141,112 @@ export const BLOCKED_EXACT_CATEGORIES = [
   "Gas engineer",
   "Gas installation service",
   "Heating contractor",
+  "Heating equipment supplier",
   "HVAC contractor",
   "Mechanical contractor",
   "Mechanical plant",
+
+  // Ag / farm chemicals (not equipment cooling)
+  "Agrochemicals supplier",
+  "Agricultural service",
+  "Agricultural machinery manufacturer",
+
+  // Sales / logistics / storage (not repair)
+  "Auto auction",
+  "Auto broker",
+  "Auto tag agency",
+  "Automobile storage facility",
+  "Car factory",
+  "Car leasing service",
+  "Car manufacturer",
+  "Car rental agency",
+  "Cars",
+  "Forklift rental service",
+  "Leasing service",
+  "Motorcycle rental agency",
+  "Recreational vehicle rental agency",
+  "Showroom",
+  "Tesla showroom",
+  "Trailer rental service",
+  "Truck rental agency",
+  "Truck stop",
+  "Trucking company",
+  "Van rental agency",
+
+  // Lifestyle / detailing / wrapping
+  "Boat detailing service",
+  "Pressure washing service",
+  "RV detailing service",
+  "Self service car wash",
+  "Vehicle wrapping service",
+  "Vinyl sign shop",
+
+  // RV lifestyle (not repair shops)
+  "RV park",
+  "RV storage facility",
+
+  // Marine / powersports lifestyle (not cooling repair)
+  "Lawn mower store",
+  "Marine supply store",
+  "Mobile home supply store",
+  "Outboard motor store",
+  "Personal watercraft dealer",
+  "Propeller shop",
+  "Water ski shop",
+  "Water sports equipment rental service",
+
+  // Outdoor retail
+  "Camping store",
+  "Outdoor clothing and equipment shop",
+  "Outdoor sports store",
+
+  // Home/commercial electrical (not auto electrical)
+  "Electrical installation service",
+  "Electrical supply store",
+  "Electrician",
+
+  // Non-auto glass
+  "Glass cutting service",
+  "Glass industry",
+
+  // Transport / shipping
+  "Refrigerated transport service",
+  "Transportation service",
+  "Vehicle shipping agent",
+
+  // Schools / misc services
+  "Motorcycle driving school",
+  "Electric vehicle charging station",
+  "Junk removal service",
+
+  // Industrial / misc suppliers unrelated to auto cooling
+  "Audio visual equipment supplier",
+  "Barrel supplier",
+  "Construction equipment supplier",
+  "Crane service",
+  "Diesel fuel supplier",
+  "Do-it-yourself shop",
+  "Dry ice supplier",
+  "E-commerce service",
+  "Fire department equipment supplier",
+  "Hardware store",
+  "Industrial equipment supplier",
+  "Industrial gas supplier",
+  "Irrigation equipment supplier",
+  "Kerosene supplier",
+  "Metallurgy company",
+  "Metalware dealer",
+  "Mining equipment",
+  "Oil field equipment supplier",
+  "Plastic fabrication company",
+  "Power plant equipment supplier",
+  "Propane supplier",
+  "Rubber products supplier",
+  "Safety equipment supplier",
+  "Store",
+  "Tool rental service",
+  "Tool store",
+  "Tune up supplier",
 
   // Unrelated retail / services
   "ATM",
@@ -144,6 +257,7 @@ export const BLOCKED_EXACT_CATEGORIES = [
   "Computer service",
   "Consignment shop",
   "Convenience store",
+  "Delivery service",
   "Electronics company",
   "Electronics repair shop",
   "Electronics store",
@@ -195,28 +309,13 @@ export const BLOCKED_EXACT_CATEGORIES = [
 ];
 
 /**
- * Extra labels to unlink as secondaries only (never delete a business for these).
- * Includes Google labels that often land on real auto / radiator shops as primary.
+ * Unlink as secondaries only — do NOT auto-delete businesses with these as primary.
+ * Often real radiator / parts companies. Review with the operator before deleting.
  */
 export const SECONDARY_UNLINK_EXTRA_CATEGORIES = [
-  "Automation company",
-  "Business to business service",
-  "Chauffeur service",
-  "Consultant",
   "Corporate office",
-  "Delivery service",
   "Distribution service",
-  "Do-it-yourself shop",
-  "E-commerce service",
-  "Electrical engineer",
-  "Engineer",
-  "Engineering consultant",
-  "Fabrication engineer",
-  "Hardware store",
   "Manufacturer",
-  "Mechanical engineer",
-  "Professional services",
-  "Store",
   "Warehouse",
   "Wholesaler",
 ];
@@ -271,7 +370,11 @@ export function isDeletePrimaryCategory(name) {
 
 /** Titles that look like real auto / radiator shops even with a junk primary. */
 const KEEP_TITLE_RE =
-  /\b(radiators?|auto\s*repairs?|auto\s*services?|auto\s*body|mechanics?|mufflers?|transmissions?|cooling\s*systems?|truck\s*repairs?|diesels?)\b/i;
+  /\b(radiators?|auto\s*repairs?|auto\s*services?|auto\s*shops?|auto\s*care|auto\s*body|automotives?|mechanics?|mufflers?|transmissions?|cooling(?:\s*systems?)?|truck\s*repairs?|truck\s*centers?|diesels?|mobile\s+repairs?|ford|chevrolet|chevy|toyota|honda|nissan|gmc)\b/i;
+
+/** Home / building radiators — do not keep just because title says "radiator". */
+const HOME_RADIATOR_TITLE_RE =
+  /\b(cast\s*iron|enclosures?|hydronic|boiler|furnace|soho)\b/i;
 
 /**
  * @param {{ title?: string|null, categoryName?: string|null }} biz
@@ -281,6 +384,7 @@ export function shouldDeleteBusinessForPrimaryCategory(biz) {
   const categoryName = biz?.categoryName ?? biz?.primary_category_name ?? null;
   if (!isDeletePrimaryCategory(categoryName)) return false;
   const title = biz?.title != null ? String(biz.title) : "";
+  if (title && HOME_RADIATOR_TITLE_RE.test(title)) return true;
   if (title && KEEP_TITLE_RE.test(title)) return false;
   return true;
 }

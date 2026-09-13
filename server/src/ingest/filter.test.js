@@ -82,10 +82,13 @@ describe("findBlockedCategoryMatch", () => {
     assert.ok(BLOCKED_EXACT_CATEGORIES.includes("Bar"));
     assert.ok(BLOCKED_EXACT_CATEGORIES.includes("Cafe"));
     assert.ok(isDeletePrimaryCategory("Remodeler"));
+    assert.ok(isDeletePrimaryCategory("Agrochemicals supplier"));
+    assert.ok(isDeletePrimaryCategory("Chauffeur service"));
+    assert.ok(isDeletePrimaryCategory("Store"));
     assert.equal(isDeletePrimaryCategory("Manufacturer"), false);
-    assert.equal(isDeletePrimaryCategory("Mechanical engineer"), false);
+    assert.equal(isDeletePrimaryCategory("Corporate office"), false);
     assert.ok(isSecondaryUnlinkCategory("Manufacturer"));
     assert.ok(isSecondaryUnlinkCategory("Chauffeur service"));
-    assert.ok(isSecondaryUnlinkCategory("Mechanical engineer"));
+    assert.ok(isSecondaryUnlinkCategory("Agrochemicals supplier"));
   });
 });
