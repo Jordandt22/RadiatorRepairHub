@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useSite } from "@/contexts/Site.context";
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 
@@ -27,6 +28,7 @@ export default function MarkListedDialog({
 }) {
   const [businessSlug, setBusinessSlug] = useState("");
   const [error, setError] = useState(null);
+  const { activeSite } = useSite();
 
   useEffect(() => {
     if (!open) {
@@ -38,7 +40,7 @@ export default function MarkListedDialog({
   const displayError = error || submitError;
 
   const previewUrl = businessSlug.trim()
-    ? `https://radiatorrepairhub.com/business/${businessSlug.trim()}`
+    ? `${activeSite?.webUrl || ""}/business/${businessSlug.trim()}`
     : null;
 
   const clearErrors = () => {

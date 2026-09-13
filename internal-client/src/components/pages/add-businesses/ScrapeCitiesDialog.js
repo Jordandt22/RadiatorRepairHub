@@ -20,6 +20,7 @@ import {
   isScrapeCityRowValid,
   parseScrapeCities,
 } from "@/components/pages/add-businesses/scrapeCities";
+import { useSite } from "@/contexts/Site.context";
 
 const DEFAULT_KEYWORD = "radiator repair";
 const MIN_PLACES = 10;
@@ -38,10 +39,12 @@ export default function ScrapeCitiesDialog({
   submitPending = false,
   submitError = null,
 }) {
+  const { activeSite } = useSite();
+  const defaultKeyword = activeSite?.defaultKeyword || DEFAULT_KEYWORD;
   const [step, setStep] = useState("paste");
   const [text, setText] = useState("");
   const [rows, setRows] = useState([]);
-  const [searchKeyword, setSearchKeyword] = useState(DEFAULT_KEYWORD);
+  const [searchKeyword, setSearchKeyword] = useState(defaultKeyword);
   const [maxPlaces, setMaxPlaces] = useState(DEFAULT_PLACES);
   const [parseError, setParseError] = useState(null);
 
@@ -61,14 +64,17 @@ export default function ScrapeCitiesDialog({
   const states = useMemo(() => statesQuery.data ?? [], [statesQuery.data]);
 
   useEffect(() => {
-    if (open) return;
-    setStep("paste");
-    setText("");
-    setRows([]);
-    setSearchKeyword(DEFAULT_KEYWORD);
-    setMaxPlaces(DEFAULT_PLACES);
-    setParseError(null);
-  }, [open]);
+    if (!open) {
+      setStep("paste");
+      setText("");
+      setRows([]);
+      setSearchKeyword(defaultKeyword);
+      setMaxPlaces(DEFAULT_PLACES);
+      setParseError(null);
+      return;
+    }
+    setSearchKeyword(defaultKeyword);
+  }, [open, defaultKeyword]);
 
   const lineCount = text
     .split("\n")

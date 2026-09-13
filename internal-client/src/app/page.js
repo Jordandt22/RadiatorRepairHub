@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/Auth.context";
 import { useLoading } from "@/contexts/Loading.context";
+import { useSite } from "@/contexts/Site.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { consumeLastPath } from "@/lib/lastPath";
 import PageFadeIn from "@/components/PageFadeIn";
@@ -27,6 +28,7 @@ export default function Home() {
   const router = useRouter();
   const { accessToken, setAccessToken, isReady } = useAuth();
   const { showLoading, hideLoading } = useLoading();
+  const { sites, activeSite, activeSiteId, setActiveSiteId } = useSite();
 
   useEffect(() => {
     if (isReady && accessToken) {
@@ -72,7 +74,32 @@ export default function Home() {
         onSubmit={formik.handleSubmit}
         className="flex w-full max-w-sm flex-col gap-4"
       >
-        <h1 className="text-xl font-semibold tracking-tight">Admin Login</h1>
+        <div className="flex flex-col gap-1">
+          <h1 className="text-xl font-semibold tracking-tight">Admin Login</h1>
+          <p className="text-sm text-muted-foreground">
+            Signing in to {activeSite?.name}
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label>Site</Label>
+          <div className="flex flex-wrap gap-2">
+            {sites.map((site) => (
+              <Button
+                key={site.id}
+                type="button"
+                size="sm"
+                variant={site.id === activeSiteId ? "default" : "outline"}
+                onClick={() => {
+                  setActiveSiteId(site.id);
+                  formik.setStatus(undefined);
+                }}
+              >
+                {site.shortName}
+              </Button>
+            ))}
+          </div>
+        </div>
 
         <div className="flex flex-col gap-2">
           <Label htmlFor="password">Password</Label>

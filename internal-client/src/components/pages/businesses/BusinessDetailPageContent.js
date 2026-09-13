@@ -6,6 +6,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftIcon, ExternalLinkIcon } from "lucide-react";
 import { useAuth } from "@/contexts/Auth.context";
+import { useSite } from "@/contexts/Site.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
@@ -44,6 +45,7 @@ export default function BusinessDetailPageContent() {
   const id = params?.id;
   const queryClient = useQueryClient();
   const { accessToken, isReady, logout } = useAuth();
+  const { activeSite } = useSite();
   const [editOpen, setEditOpen] = useState(false);
   const [editError, setEditError] = useState(null);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
@@ -259,8 +261,8 @@ export default function BusinessDetailPageContent() {
   }
 
   const publicUrl =
-    data.slug && process.env.NEXT_PUBLIC_WEB_URL
-      ? `${process.env.NEXT_PUBLIC_WEB_URL}/business/${data.slug}`
+    data.slug && activeSite?.webUrl
+      ? `${activeSite.webUrl}/business/${data.slug}`
       : null;
   const isClaimed = Boolean(data.is_claimed);
   const isFeatured = Boolean(data.is_featured);

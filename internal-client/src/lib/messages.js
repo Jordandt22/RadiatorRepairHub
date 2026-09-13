@@ -3,6 +3,7 @@ import {
   formatIssueLabel,
   formatUrgencyLabel,
 } from "@/lib/contact-messages";
+import { getActiveSite } from "@/lib/sites";
 
 function escapeHtml(value) {
   if (value == null || value === "") return "";
@@ -68,13 +69,7 @@ function buildContactInquiryDetailRows({
 }
 
 function getWebBaseUrl() {
-  if (process.env.NODE_ENV === "development") {
-    return (process.env.NEXT_PUBLIC_WEB_URL || "http://localhost:3000").replace(
-      /\/$/,
-      "",
-    );
-  }
-  return "https://radiatorrepairhub.com";
+  return (getActiveSite()?.webUrl || "http://localhost:3000").replace(/\/$/, "");
 }
 
 function buildBusinessClaimLink(businessSlug) {

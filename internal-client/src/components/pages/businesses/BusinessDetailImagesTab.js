@@ -15,12 +15,13 @@ import {
 } from "@/components/ui/dialog";
 import BusinessDetailCard from "@/components/pages/businesses/BusinessDetailCard";
 import { formatFullDate } from "@/components/pages/dashboard/formatDate";
+import { useSite } from "@/contexts/Site.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 
 const GALLERY_VARIANT = "w=800,fit=cover,f=auto,q=80";
 const BUSINESS_COVER_PLACEHOLDER =
   "/assets/images/business-cover-placeholder.svg";
-const CF_IMAGES_BASE =
+const FALLBACK_CF_IMAGES_BASE =
   process.env.NEXT_PUBLIC_CF_IMAGES_BASE_URL?.replace(/\/+$/, "") ||
   "https://images.radiatorrepairhub.com/images";
 
@@ -43,7 +44,7 @@ function isUsableRemoteUrl(value) {
   }
 }
 
-function gallerySrc(image, businessId) {
+function gallerySrc(image, businessId, cfImagesBase = FALLBACK_CF_IMAGES_BASE) {
   const isDefault =
     Boolean(image?.is_default) || image?.image_id === "listing-default";
 
@@ -52,7 +53,7 @@ function gallerySrc(image, businessId) {
   }
 
   if (!image?.image_id || !businessId) return null;
-  return `${CF_IMAGES_BASE}/${getCdnEnvFolder()}/business/${businessId}/${image.image_id}/${GALLERY_VARIANT}`;
+  return `${cfImagesBase}/${getCdnEnvFolder()}/business/${businessId}/${image.image_id}/${GALLERY_VARIANT}`;
 }
 
 function GalleryPhoto({ src, className }) {
@@ -118,6 +119,8 @@ export default function BusinessDetailImagesTab({
   logout,
 }) {
   const queryClient = useQueryClient();
+  const { activeSite } = useSite();
+  const cfImagesBase = activeSite?.cfImagesBaseUrl || FALLBACK_CF_IMAGES_BASE;
   const businessId = data.id;
   const images = (
     Array.isArray(data.gallery_images)
@@ -226,7 +229,7 @@ export default function BusinessDetailImagesTab({
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {images.map((image) => {
-              const src = gallerySrc(image, businessId);
+              const src = gallerySrc(image, businessId, cfImagesBase);
               const canHide = !image.is_primary;
               const canDelete = !image.is_default && image.image_id !== "listing-default";
               return (
@@ -347,7 +350,7 @@ export default function BusinessDetailImagesTab({
           {previewImage ? (
             <div className="overflow-hidden rounded-lg border border-border bg-muted/30">
               <GalleryPhoto
-                src={gallerySrc(previewImage, businessId)}
+                src={gallerySrc(previewImage, businessId, cfImagesBase)}
                 className="max-h-[70vh] w-full object-contain"
               />
             </div>

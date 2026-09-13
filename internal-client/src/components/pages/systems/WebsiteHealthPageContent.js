@@ -3,12 +3,14 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/Auth.context";
+import { useSite } from "@/contexts/Site.context";
 import SystemsHealthCheckSection from "@/components/pages/systems/SystemsHealthCheckSection";
 
 export default function WebsiteHealthPageContent() {
   const router = useRouter();
   const { accessToken, isReady } = useAuth();
-  const webUrl = process.env.NEXT_PUBLIC_WEB_URL || null;
+  const { activeSite } = useSite();
+  const webUrl = activeSite?.webUrl || null;
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -24,7 +26,7 @@ export default function WebsiteHealthPageContent() {
     <div className="mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-4 md:gap-10 md:px-8 md:py-6">
       <div className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold tracking-tight">
-          RadiatorRepairHub
+          {activeSite?.name}
         </h1>
         <p className="text-sm text-muted-foreground">
           Check that the main public website is responding.
