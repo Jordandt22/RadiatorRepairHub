@@ -26,6 +26,7 @@ import {
   BUSINESS_STATS_TIMEZONE,
   businessStatDateKey,
   dateKeyOffset,
+  dateKeyStartIso,
 } from "../lib/businessStatsDate.js";
 import { selectPublicGalleryImages, applyPublicCoverImage } from "../lib/businessImages.js";
 
@@ -4341,6 +4342,37 @@ function buildComparison(current, previous, days) {
   };
 }
 
+const PHONE_CLICK_EVENTS_LIMIT = 100;
+
+async function fetchPhoneClickEvents(client, businessId, currentStart, today) {
+  const endExclusive = dateKeyOffset(today, 1);
+  const endIso = dateKeyStartIso(endExclusive);
+
+  let eventsQuery = client
+    .from("business_phone_click_events")
+    .select("id, created_at")
+    .eq("business_id", businessId)
+    .lt("created_at", endIso)
+    .order("created_at", { ascending: false })
+    .limit(PHONE_CLICK_EVENTS_LIMIT);
+
+  if (currentStart) {
+    eventsQuery = eventsQuery.gte("created_at", dateKeyStartIso(currentStart));
+  }
+
+  const { data, error } = await eventsQuery;
+  if (error) {
+    return { data: null, error };
+  }
+
+  const phoneClickEvents = (data ?? []).map((row) => ({
+    id: row.id,
+    createdAt: row.created_at,
+  }));
+
+  return { data: phoneClickEvents, error: null };
+}
+
 export const fetchBusinessStats = async (client, businessId, days) => {
   const today = businessStatDateKey();
   const allTime = days === "all";
@@ -4363,13 +4395,20 @@ export const fetchBusinessStats = async (client, businessId, days) => {
     query = query.gte("stat_date", queryStart);
   }
 
-  const { data, error } = await query;
+  const [statsResult, phoneEventsResult] = await Promise.all([
+    query,
+    fetchPhoneClickEvents(client, businessId, currentStart, today),
+  ]);
 
-  if (error) {
-    return { data: null, error };
+  if (statsResult.error) {
+    return { data: null, error: statsResult.error };
   }
 
-  const rows = data ?? [];
+  if (phoneEventsResult.error) {
+    return { data: null, error: phoneEventsResult.error };
+  }
+
+  const rows = statsResult.data ?? [];
   const daily = allTime
     ? rows
     : rows.filter((row) => rowDateKey(row) >= currentStart);
@@ -4400,6 +4439,7 @@ export const fetchBusinessStats = async (client, businessId, days) => {
       avgPositionBySource: current.avgPositionBySource,
       avgPosition: current.avgPosition,
       comparison: allTime ? null : buildComparison(current, previous, days),
+      phoneClickEvents: phoneEventsResult.data,
     },
     error: null,
   };

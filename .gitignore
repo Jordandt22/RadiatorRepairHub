@@ -9,3 +9,5 @@ skills-lock.json
 .env
 
 /node_modules
+
+/Stats

@@ -64,6 +64,7 @@ export function gateOwnedBusinessStats(stats, isFeatured) {
     clicksBySource: null,
     ctrBySource: null,
     avgPositionBySource: null,
+    phoneClickEvents: null,
     comparison,
   };
 }
