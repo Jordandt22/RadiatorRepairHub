@@ -6,6 +6,7 @@ import {
   BadgeCheck,
   Map as MapIcon,
   MapPin,
+  Phone,
   RefreshCw,
   Search,
   Star,
@@ -20,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { formatPhoneClickTimestamp } from "@/lib/businessStats/formatStats";
 
 const SOURCE_META = {
   search: {
@@ -203,6 +205,60 @@ function StatCard({
         vsLabel={vsLabel}
         unit={deltaUnit}
       />
+    </div>
+  );
+}
+
+function PhoneClickActivity({ events }) {
+  const items = Array.isArray(events) ? events : [];
+
+  return (
+    <div className="rounded-lg border border-border bg-card px-4 py-4">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-sm font-medium text-foreground">
+            Phone click activity
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            When someone tapped Call or this listing&apos;s phone number in this
+            date range.
+          </p>
+        </div>
+        <StatInfo
+          label="Phone click activity"
+          description="Each row is a single tap on Call or the listing phone number. Timestamps use your local time."
+        />
+      </div>
+
+      {items.length === 0 ? (
+        <p className="mt-4 text-sm text-muted-foreground">
+          No phone clicks in this date range yet.
+        </p>
+      ) : (
+        <ul className="mt-4 divide-y divide-border">
+          {items.map((event) => (
+            <li
+              key={event.id}
+              className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0"
+            >
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <Phone className="size-3.5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground">
+                  Phone click
+                </p>
+                <time
+                  dateTime={event.createdAt}
+                  className="block text-xs text-muted-foreground"
+                >
+                  {formatPhoneClickTimestamp(event.createdAt)}
+                </time>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -488,6 +544,8 @@ export default function BusinessDetailAnalyticsTab({
                 description="How many times customers tapped the email on this business page."
               />
             </div>
+
+            <PhoneClickActivity events={stats?.phoneClickEvents} />
 
             <div className="overflow-x-auto rounded-lg border border-border bg-card">
               <table className="w-full min-w-[36rem] text-left text-sm">

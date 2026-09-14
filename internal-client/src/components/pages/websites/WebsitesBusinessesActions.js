@@ -1,4 +1,4 @@
-import { RefreshCwIcon, SearchIcon } from "lucide-react";
+import { ClipboardListIcon, RefreshCwIcon, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -36,6 +36,7 @@ export default function WebsitesBusinessesActions({
   onSearchChange,
   websiteFilter = null,
   onWebsiteFilterChange,
+  onExportClick,
   onRefresh,
   refreshPending = false,
   refreshError = null,
@@ -67,6 +68,13 @@ export default function WebsitesBusinessesActions({
             className="rounded-full pl-9"
           />
         </div>
+        <ActionButton
+          label="Export"
+          icon={ClipboardListIcon}
+          disabled={false}
+          onClick={onExportClick}
+          className="hover:bg-gray-100"
+        />
         <ActionButton
           label="Refresh"
           icon={RefreshCwIcon}

@@ -28,6 +28,7 @@ import Pagination from "@/components/pages/dashboard/Pagination";
 import LocationDetailTabs, {
   LOCATION_DETAIL_TABS,
 } from "@/components/pages/locations/LocationDetailTabs";
+import LocationExportDialog from "@/components/pages/locations/LocationExportDialog";
 import LocationSearchDemandPanel from "@/components/pages/locations/LocationSearchDemandPanel";
 import LocationAnalyticsPanel from "@/components/pages/locations/LocationAnalyticsPanel";
 
@@ -171,6 +172,7 @@ export default function LocationBusinessesPageContent({ kind, param }) {
   const activity = activityOption?.id || "all";
   const [searchInput, setSearchInput] = useState(() => q || "");
   const [refreshError, setRefreshError] = useState(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const [refreshLocked, setRefreshLocked] = useState(false);
   const refreshLockedRef = useRef(false);
   const refreshUnlockTimeoutRef = useRef(null);
@@ -370,6 +372,21 @@ export default function LocationBusinessesPageContent({ kind, param }) {
   const total = data?.total ?? locationTotal;
   const showStatsControls = showDetailTabs && tab !== "listings";
   const locationError = locationQuery.error?.message || null;
+  const showLocationExport = kind === "state" || kind === "city";
+  const locationExportMode = kind === "state" ? "cities" : "postal-codes";
+  const locationExportStateId =
+    kind === "state" ? location?.id ?? null : null;
+  const locationExportCityId = kind === "city" ? location?.id ?? null : null;
+  const locationExportStateLabel =
+    kind === "state" && location
+      ? `${location.name}${location.code ? ` (${location.code})` : ""}`
+      : null;
+  const locationExportCityLabel =
+    kind === "city" && location
+      ? `${location.name}${
+          location.state_code ? ` (${location.state_code})` : ""
+        }`
+      : null;
 
   let subtitle = "Businesses in this location";
   if (tab === "search-demand") {
@@ -459,6 +476,11 @@ export default function LocationBusinessesPageContent({ kind, param }) {
             <BusinessActions
               searchValue={searchInput}
               onSearchChange={handleSearchChange}
+              showExport={showLocationExport}
+              onExportClick={() => setExportOpen(true)}
+              exportDisabled={
+                kind === "state" ? !locationExportStateId : !locationExportCityId
+              }
               onRefresh={() => refreshMutation.mutate()}
               refreshPending={refreshMutation.isPending || isFetching}
               refreshError={refreshError}
@@ -487,6 +509,18 @@ export default function LocationBusinessesPageContent({ kind, param }) {
               onPrevious={() => setField("page", Math.max(1, page - 1))}
               onNext={() => setField("page", page + 1)}
             />
+
+            {showLocationExport ? (
+              <LocationExportDialog
+                open={exportOpen}
+                onOpenChange={setExportOpen}
+                mode={locationExportMode}
+                stateId={locationExportStateId}
+                stateLabel={locationExportStateLabel}
+                cityId={locationExportCityId}
+                cityLabel={locationExportCityLabel}
+              />
+            ) : null}
           </>
         ) : null}
 

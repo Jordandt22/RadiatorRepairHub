@@ -8,6 +8,7 @@ import {
   Lock,
   Map as MapIcon,
   MapPin,
+  Phone,
   RefreshCw,
   Search,
   Star,
@@ -33,6 +34,7 @@ import {
   ctrColorClass,
   formatCtr,
   formatNumber,
+  formatPhoneClickTimestamp,
   formatPosition,
   positionColorClass,
 } from "@/lib/businessStats/formatStats";
@@ -248,6 +250,121 @@ function GatedStatCard({ label, description = GATED_STAT_DESCRIPTION, business }
           <ArrowRight className="size-3.5" aria-hidden="true" />
         </Link>
       ) : null}
+    </div>
+  );
+}
+
+function PhoneClickActivity({ events, isGated = false, business = null }) {
+  const items = Array.isArray(events) ? events : [];
+  const gatedPreview = [
+    "Today 2:14 PM",
+    "Yesterday 11:02 AM",
+    "Sep 10, 4:38 PM",
+  ];
+
+  return (
+    <div
+      className={
+        isGated
+          ? "rounded-lg border border-dashed border-amber-400/50 bg-amber-50/60 px-4 py-4 dark:border-amber-500/25 dark:bg-amber-500/10"
+          : "rounded-lg border border-border bg-card px-4 py-4"
+      }
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+            Phone Click Activity
+            {isGated ? (
+              <Lock
+                className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400"
+                aria-hidden="true"
+              />
+            ) : null}
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            When someone clicked the Call button or your phone number in this
+            date range.
+          </p>
+        </div>
+        <StatInfo
+          label="Phone click activity"
+          description={
+            isGated
+              ? GATED_STAT_DESCRIPTION
+              : "Each row is a single tap on Call or your listing phone number. Timestamps use your local time."
+          }
+        />
+      </div>
+
+      {isGated ? (
+        <div className="mt-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Lock
+              className="size-4 shrink-0 text-amber-600 dark:text-amber-400"
+              aria-hidden="true"
+            />
+            <span className="font-heading text-lg font-semibold text-foreground">
+              Featured Only
+            </span>
+          </div>
+          <ul className="divide-y divide-amber-400/20 dark:divide-amber-500/15" aria-hidden="true">
+            {gatedPreview.map((label) => (
+              <li key={label} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                  <Phone className="size-3.5" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <p className="select-none text-sm font-medium text-muted-foreground/80 blur-[4px]">
+                    Phone click
+                  </p>
+                  <p className="select-none text-xs text-muted-foreground/80 blur-[4px]">
+                    {label}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <span className="sr-only">Featured Only</span>
+          {business?.id ? (
+            <Link
+              href={`/pricing?business=${encodeURIComponent(business.id)}`}
+              className="inline-flex items-center gap-1 text-xs font-medium text-interactive hover:text-primary"
+              prefetch={false}
+            >
+              Upgrade to unlock
+              <ArrowRight className="size-3.5" aria-hidden="true" />
+            </Link>
+          ) : null}
+        </div>
+      ) : items.length === 0 ? (
+        <p className="mt-4 text-sm text-muted-foreground">
+          No phone clicks in this date range yet.
+        </p>
+      ) : (
+        <ul className="mt-4 divide-y divide-border">
+          {items.map((event) => (
+            <li
+              key={event.id}
+              className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0"
+            >
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <Phone className="size-3.5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground">
+                  Phone click
+                </p>
+                <time
+                  dateTime={event.createdAt}
+                  className="block text-xs text-muted-foreground"
+                >
+                  {formatPhoneClickTimestamp(event.createdAt)}
+                </time>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -988,6 +1105,12 @@ export default function BusinessAnalyticsPanel({
                 </>
               )}
             </div>
+
+            <PhoneClickActivity
+              events={stats?.phoneClickEvents}
+              isGated={isGated}
+              business={selectedBusiness}
+            />
 
             <SourceBreakdownTable
               sourceKeys={sourceKeys}

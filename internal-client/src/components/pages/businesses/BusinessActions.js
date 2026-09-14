@@ -1,4 +1,4 @@
-import { RefreshCwIcon, SearchIcon, Undo2Icon } from "lucide-react";
+import { ClipboardListIcon, RefreshCwIcon, SearchIcon, Undo2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,9 @@ export default function BusinessActions({
   onReverseClaim,
   reverseClaimPending = false,
   actionError = null,
+  showExport = true,
+  onExportClick,
+  exportDisabled = false,
   onRefresh,
   refreshPending = false,
   refreshError = null,
@@ -109,6 +112,22 @@ export default function BusinessActions({
             className="rounded-full pl-9"
           />
         </div>
+        {showExport ? (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={exportDisabled}
+            onClick={onExportClick}
+            aria-label="Export"
+            className={cn(
+              "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
+              !showReverseClaim && "md:ml-auto",
+            )}
+          >
+            <ClipboardListIcon />
+            <span className="hidden md:inline">Export</span>
+          </Button>
+        ) : null}
         <Button
           variant="outline"
           size="sm"
@@ -117,7 +136,7 @@ export default function BusinessActions({
           aria-label="Refresh"
           className={cn(
             "shrink-0 cursor-pointer rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-100 max-md:size-10 max-md:p-0 max-md:[&_svg]:size-5 md:px-6",
-            !showReverseClaim && "md:ml-auto",
+            !showExport && !showReverseClaim && "md:ml-auto",
           )}
         >
           <RefreshCwIcon

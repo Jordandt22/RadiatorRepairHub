@@ -2,6 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { gateOwnedBusinessStats } from "./gateOwnedBusinessStats.js";
 
+const phoneClickEvents = [
+  { id: "evt-1", createdAt: "2026-09-01T19:14:00.000Z" },
+  { id: "evt-2", createdAt: "2026-09-02T15:02:00.000Z" },
+];
+
 const fullStats = {
   days: 7,
   daily: [
@@ -27,6 +32,7 @@ const fullStats = {
   clicksBySource: { search: 5 },
   ctrBySource: { search: 25 },
   avgPositionBySource: { search: 4.5 },
+  phoneClickEvents,
   comparison: {
     label: "previous 7 days",
     totals: {
@@ -47,6 +53,7 @@ test("gateOwnedBusinessStats returns full access for featured listings", () => {
   assert.equal(result.ctr, 25);
   assert.deepEqual(result.impressionsBySource, { search: 20 });
   assert.equal(result.daily[0].listing_clicks, 2);
+  assert.deepEqual(result.phoneClickEvents, phoneClickEvents);
 });
 
 test("gateOwnedBusinessStats strips gated metrics for basic access", () => {
@@ -62,6 +69,7 @@ test("gateOwnedBusinessStats strips gated metrics for basic access", () => {
   assert.equal(result.clicksBySource, null);
   assert.equal(result.ctrBySource, null);
   assert.equal(result.avgPositionBySource, null);
+  assert.equal(result.phoneClickEvents, null);
   assert.equal(result.daily[0].listing_clicks, 0);
   assert.equal(result.comparison.totals.phone_clicks, undefined);
   assert.equal(result.comparison.totals.listing_clicks, undefined);

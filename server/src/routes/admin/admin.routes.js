@@ -30,6 +30,7 @@ import {
   updateListingRequestsStatus,
   deleteListingRequests,
   getBusinesses,
+  exportBusinesses,
   getBusinessById,
   hideBusinessImage,
   deleteBusinessImage,
@@ -150,6 +151,7 @@ import {
   GetListingRequestsQuerySchema,
   UpdateListingRequestsStatusSchema,
   GetAdminBusinessesQuerySchema,
+  ExportAdminBusinessesSchema,
   GetAdminBusinessesWithEmailsQuerySchema,
   GetAdminBusinessesWithPhonesQuerySchema,
   GetAdminBusinessParamsSchema,
@@ -341,6 +343,12 @@ adminRouter.get(
   "/businesses",
   queryValidator(GetAdminBusinessesQuerySchema),
   serverErrorCatcherWrapper(getBusinesses)
+);
+
+adminRouter.post(
+  "/businesses/export",
+  bodyValidator(ExportAdminBusinessesSchema),
+  serverErrorCatcherWrapper(exportBusinesses)
 );
 
 adminRouter.get(

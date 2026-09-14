@@ -34,6 +34,8 @@ import {
   markListingRequestsLiveEmailSent,
   getBusinessExistsBySlug,
   getAdminBusinesses as fetchAdminBusinesses,
+  exportAdminBusinesses as fetchExportAdminBusinesses,
+  getAdminExportBusinessStats as fetchAdminExportBusinessStats,
   getAdminBusinessById as fetchAdminBusinessById,
   getAdminBusinessExists as fetchAdminBusinessExists,
   getBusinessStatsForAdmin as fetchBusinessStatsForAdmin,
@@ -144,6 +146,13 @@ import {
   formatStatesExportText,
   locationSortLabel,
 } from "../../lib/locationExport.js";
+import {
+  buildBusinessExportCsv,
+  fieldsIncludeStats,
+  normalizeExportStatsRows,
+  resolveExportStatsDateRange,
+  sanitizeExportFilename,
+} from "../../lib/businessExport.js";
 import { resendClient } from "../../resend/resend.js";
 import {
   BUSINESS_STATS_TIMEZONE,
@@ -2215,6 +2224,121 @@ export const getBusinesses = async (req, res) => {
 
   await cacheData(key, interval, compiledData);
   return res.status(200).json(successHandler(compiledData));
+};
+
+export const exportBusinesses = async (req, res) => {
+  const body = req.body ?? {};
+  const recent =
+    body.recent === true || body.recent === "true" ? true : null;
+  const claimed =
+    recent === true || body.claimed === true || body.claimed === "true"
+      ? true
+      : null;
+  const featured =
+    body.featured === true || body.featured === "true" ? true : null;
+  const rawQ = typeof body.q === "string" ? body.q.trim() : "";
+  const q = rawQ ? rawQ.slice(0, 100) : null;
+  const stateCode =
+    typeof body.state_code === "string" && body.state_code.trim()
+      ? body.state_code.trim().toUpperCase()
+      : null;
+  const citySlug =
+    typeof body.city_slug === "string" && body.city_slug.trim()
+      ? body.city_slug.trim().toLowerCase()
+      : null;
+  const postalCode =
+    typeof body.postal_code === "string" && body.postal_code.trim()
+      ? body.postal_code.trim()
+      : null;
+  const scoreTier =
+    typeof body.score_tier === "string" && body.score_tier.trim()
+      ? body.score_tier.trim()
+      : null;
+  const reviewsTier =
+    typeof body.reviews_tier === "string" && body.reviews_tier.trim()
+      ? body.reviews_tier.trim()
+      : null;
+  const emailFilter =
+    typeof body.email_filter === "string" && body.email_filter.trim()
+      ? body.email_filter.trim()
+      : null;
+  const websiteFilter =
+    typeof body.website_filter === "string" && body.website_filter.trim()
+      ? body.website_filter.trim()
+      : null;
+  const fields = Array.isArray(body.fields) ? body.fields : [];
+  const statsRange =
+    typeof body.stats_range === "string" && body.stats_range.trim()
+      ? body.stats_range.trim()
+      : null;
+  const filename = sanitizeExportFilename(body.filename, "businesses.csv");
+
+  const { data, error } = await fetchExportAdminBusinesses({
+    claimed,
+    featured,
+    recent,
+    q,
+    stateCode,
+    citySlug,
+    postalCode,
+    scoreTier,
+    reviewsTier,
+    emailFilter,
+    websiteFilter,
+  });
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            error.message || "Location not found.",
+            error
+          )
+        );
+    }
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error exporting businesses.",
+          error
+        )
+      );
+  }
+
+  let statsById = null;
+  if (fieldsIncludeStats(fields)) {
+    const { startDate, endDate } = resolveExportStatsDateRange(statsRange);
+    const { data: statsRows, error: statsError } =
+      await fetchAdminExportBusinessStats({ startDate, endDate });
+
+    if (statsError) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            "There was an error exporting business stats.",
+            statsError
+          )
+        );
+    }
+
+    statsById = normalizeExportStatsRows(statsRows);
+  }
+
+  const csv = buildBusinessExportCsv(data ?? [], fields, statsById);
+
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="${filename.replace(/"/g, "")}"`
+  );
+  return res.status(200).send(csv);
 };
 
 export const getBusinessById = async (req, res) => {
