@@ -977,6 +977,11 @@ const ADMIN_BUSINESS_SELECT =
 
 const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, phone_status, phone_status_marked_at, cdn_stored, cdn_stored_attempts, hide_default_image, default_image_sort_order, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at, sort_order)`;
 
+const ADMIN_BUSINESS_EXPORT_SELECT =
+  "id, title, slug, email, phone, address, website, is_claimed, is_featured, total_score, reviews_count, last_edited_at, created_at, place_id, description, latitude, longitude, email_status, phone_status, city:cities(name, slug), state:states(name, code), postal_code:postal_codes(code), primary_category:primary_categories(name, slug)";
+
+const ADMIN_BUSINESS_EXPORT_PAGE_SIZE = 1000;
+
 const flattenAdminSecondaryCategories = (rows) =>
   (rows ?? [])
     .map((item) => item?.secondary_categories)
@@ -1252,6 +1257,180 @@ export const getAdminBusinesses = async (
       : withOwners;
 
   return { data: businesses, count, location, error: null };
+};
+
+/**
+ * All businesses matching admin list filters (chunked), with location embeds for CSV export.
+ */
+export const exportAdminBusinesses = async ({
+  claimed = null,
+  featured = null,
+  recent = null,
+  q = null,
+  stateCode = null,
+  citySlug = null,
+  postalCode = null,
+  scoreTier = null,
+  reviewsTier = null,
+  emailFilter = null,
+  websiteFilter = null,
+} = {}) => {
+  let location = null;
+
+  if (stateCode) {
+    const { data: state, error: stateError } = await supabase
+      .from("states")
+      .select("id, name, code")
+      .ilike("code", stateCode)
+      .maybeSingle();
+
+    if (stateError) return { data: null, error: stateError };
+    if (!state) {
+      return {
+        data: [],
+        error: { code: "PGRST116", message: "State not found" },
+      };
+    }
+    location = { type: "state", id: state.id };
+  } else if (citySlug) {
+    const { data: city, error: cityError } = await supabase
+      .from("cities")
+      .select("id, name, slug, state_id")
+      .eq("slug", citySlug)
+      .maybeSingle();
+
+    if (cityError) return { data: null, error: cityError };
+    if (!city) {
+      return {
+        data: [],
+        error: { code: "PGRST116", message: "City not found" },
+      };
+    }
+    location = { type: "city", id: city.id };
+  } else if (postalCode) {
+    const { data: postals, error: postalError } = await supabase
+      .from("postal_codes")
+      .select("id, code")
+      .eq("code", postalCode);
+
+    if (postalError) return { data: null, error: postalError };
+    if (!postals?.length) {
+      return {
+        data: [],
+        error: { code: "PGRST116", message: "Postal code not found" },
+      };
+    }
+    location = { type: "postal-code", ids: postals.map((p) => p.id) };
+  }
+
+  const applyFilters = (query) => {
+    let next = query;
+
+    if (recent === true) {
+      next = next
+        .eq("is_claimed", true)
+        .gte("last_edited_at", recentlyEditedSinceIso())
+        .order("last_edited_at", { ascending: false, nullsFirst: false });
+    } else if (featured === true) {
+      next = next
+        .eq("is_featured", true)
+        .order("last_edited_at", { ascending: false, nullsFirst: false });
+    } else if (claimed === true) {
+      next = next
+        .eq("is_claimed", true)
+        .order("last_edited_at", { ascending: false, nullsFirst: false });
+    } else {
+      next = next
+        .order("total_score", { ascending: false })
+        .order("reviews_count", { ascending: false });
+    }
+
+    if (location?.type === "state") {
+      next = next.eq("state_id", location.id);
+    } else if (location?.type === "city") {
+      next = next.eq("city_id", location.id);
+    } else if (location?.type === "postal-code") {
+      next = next.in("postal_code_id", location.ids);
+    }
+
+    const scoreBounds = getScoreTier(scoreTier);
+    if (scoreBounds) {
+      if (scoreBounds.min != null) {
+        next = next.gte("total_score", scoreBounds.min);
+      }
+      if (scoreBounds.max != null) {
+        next = next.lt("total_score", scoreBounds.max);
+      }
+    }
+
+    const reviewsBounds = getReviewTier(reviewsTier);
+    if (reviewsBounds) {
+      if (reviewsBounds.min != null) {
+        next = next.gte("reviews_count", reviewsBounds.min);
+      }
+      if (reviewsBounds.max != null) {
+        next = next.lt("reviews_count", reviewsBounds.max);
+      }
+    }
+
+    if (emailFilter === "has") {
+      next = next.not("email", "is", null).neq("email", "");
+    } else if (emailFilter === "none") {
+      next = next.or("email.is.null,email.eq.");
+    }
+
+    if (websiteFilter === "has") {
+      next = next.not("website", "is", null).neq("website", "");
+    } else if (websiteFilter === "none") {
+      next = next.or("website.is.null,website.eq.");
+    }
+
+    const sanitized = sanitizeAdminBusinessSearch(q);
+    if (sanitized) {
+      next = next.or(
+        buildIlikeOrFilter(
+          ["title", "slug", "email", "phone", "website"],
+          sanitized
+        )
+      );
+    }
+
+    return next;
+  };
+
+  const rows = [];
+  let start = 0;
+
+  for (;;) {
+    let query = applyFilters(
+      supabase.from("businesses").select(ADMIN_BUSINESS_EXPORT_SELECT)
+    );
+    const { data, error } = await query.range(
+      start,
+      start + ADMIN_BUSINESS_EXPORT_PAGE_SIZE - 1
+    );
+
+    if (error) return { data: null, error };
+
+    rows.push(...(data ?? []));
+    if (!data || data.length < ADMIN_BUSINESS_EXPORT_PAGE_SIZE) break;
+    start += ADMIN_BUSINESS_EXPORT_PAGE_SIZE;
+  }
+
+  return { data: rows, error: null };
+};
+
+export const getAdminExportBusinessStats = async ({
+  startDate = null,
+  endDate = null,
+} = {}) => {
+  const { data, error } = await supabase.rpc("admin_export_business_stats", {
+    p_start_date: startDate || null,
+    p_end_date: endDate || null,
+  });
+
+  if (error) return { data: null, error };
+  return { data: Array.isArray(data) ? data : [], error: null };
 };
 
 /**

@@ -28,6 +28,7 @@ import BusinessFilterTabs, {
 import BusinessActions from "@/components/pages/businesses/BusinessActions";
 import BusinessesTable from "@/components/pages/businesses/BusinessesTable";
 import BusinessesTableSkeleton from "@/components/pages/businesses/BusinessesTableSkeleton";
+import BusinessExportDialog from "@/components/pages/businesses/BusinessExportDialog";
 import ReverseClaimConfirmDialog from "@/components/pages/businesses/ReverseClaimConfirmDialog";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
@@ -69,6 +70,7 @@ export default function BusinessesPageContent() {
   const [searchInput, setSearchInput] = useState(() => q || "");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [refreshError, setRefreshError] = useState(null);
 
@@ -372,6 +374,7 @@ export default function BusinessesPageContent() {
           onReverseClaim={handleReverseClaimClick}
           reverseClaimPending={unclaimMutation.isPending}
           actionError={actionError}
+          onExportClick={() => setExportOpen(true)}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
           refreshError={refreshError}
@@ -404,6 +407,21 @@ export default function BusinessesPageContent() {
           onNext={handleNextPage}
         />
       </div>
+
+      <BusinessExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        source="businesses"
+        filters={{
+          q: searchQuery || null,
+          claimed: claimedFilter === true,
+          featured: featuredFilter === true,
+          recent: recentFilter === true,
+          scoreTier: scoreTierId,
+          reviewsTier: reviewsTierId,
+          emailFilter: emailFilterId,
+        }}
+      />
 
       <ReverseClaimConfirmDialog
         open={confirmOpen}

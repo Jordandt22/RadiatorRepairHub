@@ -21,6 +21,7 @@ import WebsitesFilterTabs, {
 import WebsitesBusinessesActions from "@/components/pages/websites/WebsitesBusinessesActions";
 import WebsitesBusinessesTable from "@/components/pages/websites/WebsitesBusinessesTable";
 import WebsitesTableSkeleton from "@/components/pages/websites/WebsitesTableSkeleton";
+import BusinessExportDialog from "@/components/pages/businesses/BusinessExportDialog";
 import Pagination from "@/components/pages/dashboard/Pagination";
 
 const PAGE_LIMIT = 20;
@@ -39,6 +40,7 @@ export default function WebsitesPageContent() {
     resolveTab(searchParams.get("tab")),
   );
   const [refreshError, setRefreshError] = useState(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const {
     q,
     page,
@@ -216,6 +218,7 @@ export default function WebsitesPageContent() {
           onSearchChange={handleSearchChange}
           websiteFilter={websiteFilter}
           onWebsiteFilterChange={handleWebsiteFilterChange}
+          onExportClick={() => setExportOpen(true)}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
           refreshError={refreshError}
@@ -244,6 +247,16 @@ export default function WebsitesPageContent() {
           onNext={handleNextPage}
         />
       </div>
+
+      <BusinessExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        source="websites"
+        filters={{
+          q: searchQuery || null,
+          websiteFilter: websiteFilterId,
+        }}
+      />
     </div>
   );
 }

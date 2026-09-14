@@ -10,6 +10,11 @@ import {
   MIN_MAX_PLACES,
 } from "../apify-scrape/constants.js";
 import { DEFAULT_LISTING_IMAGE_ID } from "../lib/businessImages.js";
+import {
+  BUSINESS_EXPORT_FIELD_IDS,
+  BUSINESS_EXPORT_STATS_RANGES,
+  fieldsIncludeStats,
+} from "../lib/businessExport.js";
 
 const isValidPhone = (value) => {
   if (!value?.trim()) return false;
@@ -418,6 +423,126 @@ export const GetAdminBusinessesQuerySchema = Yup.object({
     })
     .nullable()
     .oneOf([...WEBSITE_FILTER_IDS, null], "Invalid website filter")
+    .optional(),
+});
+
+const optionalAdminBoolBody = Yup.boolean()
+  .transform((value, originalValue) => {
+    if (originalValue === "" || originalValue == null) return null;
+    if (originalValue === "true" || originalValue === true) return true;
+    if (originalValue === "false" || originalValue === false) return false;
+    return value;
+  })
+  .nullable()
+  .optional();
+
+export const ExportAdminBusinessesSchema = Yup.object({
+  claimed: optionalAdminBoolBody,
+  recent: optionalAdminBoolBody,
+  featured: optionalAdminBoolBody,
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  state_code: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim().toUpperCase();
+      return trimmed === "" ? null : trimmed.slice(0, 10);
+    })
+    .nullable()
+    .optional(),
+  city_slug: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim().toLowerCase();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  postal_code: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 20);
+    })
+    .nullable()
+    .optional(),
+  score_tier: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...SCORE_TIER_IDS, null], "Invalid score tier")
+    .optional(),
+  reviews_tier: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...REVIEW_TIER_IDS, null], "Invalid reviews tier")
+    .optional(),
+  email_filter: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...EMAIL_FILTER_IDS, null], "Invalid email filter")
+    .optional(),
+  website_filter: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...WEBSITE_FILTER_IDS, null], "Invalid website filter")
+    .optional(),
+  fields: Yup.array()
+    .of(
+      Yup.string()
+        .oneOf([...BUSINESS_EXPORT_FIELD_IDS], "Invalid export field")
+        .required()
+    )
+    .min(1, "Select at least one field")
+    .required("Fields are required"),
+  stats_range: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...BUSINESS_EXPORT_STATS_RANGES, null], "Invalid stats range")
+    .optional()
+    .when("fields", {
+      is: (fields) => Array.isArray(fields) && fieldsIncludeStats(fields),
+      then: (schema) =>
+        schema
+          .nullable(false)
+          .required("Stats range is required when exporting stats fields")
+          .oneOf(
+            [...BUSINESS_EXPORT_STATS_RANGES],
+            "Invalid stats range"
+          ),
+    }),
+  filename: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 180);
+    })
+    .nullable()
     .optional(),
 });
 
