@@ -42,6 +42,7 @@ import {
   getCompetitorInsightsForAdmin as fetchCompetitorInsightsForAdmin,
   getAdminBusinessStatsList as fetchAdminBusinessStatsList,
   getAdminBusinessStatsSummary as fetchAdminBusinessStatsSummary,
+  getAdminPhoneClickEvents as fetchAdminPhoneClickEvents,
   getAdminSearchStatsList as fetchAdminSearchStatsList,
   getAdminSearchStatsSummary as fetchAdminSearchStatsSummary,
   getAdminBusinessesWithEmails as fetchAdminBusinessesWithEmails,
@@ -2593,10 +2594,12 @@ export const getBusinessStatsList = async (req, res) => {
   const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+  const activityRaw = String(req.query.activity ?? "").toLowerCase();
   const activity =
-    String(req.query.activity ?? "").toLowerCase() === "has_stats" ||
-    String(req.query.activity ?? "").toLowerCase() === "no_stats"
-      ? String(req.query.activity).toLowerCase()
+    activityRaw === "has_stats" ||
+    activityRaw === "no_stats" ||
+    activityRaw === "has_phone"
+      ? activityRaw
       : "all";
   const sort =
     typeof req.query.sort === "string" && req.query.sort.trim()
@@ -2629,6 +2632,46 @@ export const getBusinessStatsList = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "There was an error fetching listing stats.",
+          error
+        )
+      );
+  }
+
+  return res.status(200).json(
+    successHandler({
+      ...data,
+      days,
+      timezone: BUSINESS_STATS_TIMEZONE,
+      startDate,
+      endDate,
+    })
+  );
+};
+
+export const getPhoneClickEvents = async (req, res) => {
+  const days = parseAdminStatsDays(req.query.days);
+  const { startDate, endDate } = adminStatsDateWindow(days);
+  const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 25));
+
+  const { data, error } = await fetchAdminPhoneClickEvents({
+    startDate,
+    endDate,
+    q: rawQ ? rawQ.slice(0, 100) : null,
+    claimed: parseAdminStatsFilterBool(req.query.claimed),
+    featured: parseAdminStatsFilterBool(req.query.featured),
+    page,
+    limit,
+  });
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching phone click activity.",
           error
         )
       );

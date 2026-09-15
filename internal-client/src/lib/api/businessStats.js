@@ -53,3 +53,16 @@ export async function fetchAdminBusinessStatsSummary(query = {}, accessToken) {
     accessToken,
   });
 }
+
+export async function fetchAdminPhoneClickEvents(query = {}, accessToken) {
+  const params = new URLSearchParams();
+  params.set("page", String(query.page || 1));
+  params.set("limit", String(query.limit || 25));
+  params.set("days", String(query.days ?? 7));
+  if (query.q) params.set("q", query.q);
+  if (query.claimed === true) params.set("claimed", "true");
+  if (query.featured === true) params.set("featured", "true");
+  return fetchApi(`/admin/businesses/phone-clicks?${params.toString()}`, {
+    accessToken,
+  });
+}

@@ -988,6 +988,8 @@ export const ADMIN_BUSINESS_STATS_SORTS = [
   "ctr_asc",
   "page_views_desc",
   "page_views_asc",
+  "phone_clicks_desc",
+  "phone_clicks_asc",
   "title_asc",
   "title_desc",
 ];
@@ -1030,7 +1032,10 @@ export const GetAdminBusinessStatsListQuerySchema = Yup.object({
       if (value == null || String(value).trim() === "") return undefined;
       return String(value).trim().toLowerCase();
     })
-    .oneOf(["all", "has_stats", "no_stats"], "Activity must be all, has_stats, or no_stats")
+    .oneOf(
+      ["all", "has_stats", "no_stats", "has_phone"],
+      "Activity must be all, has_stats, no_stats, or has_phone"
+    )
     .notRequired(),
   sort: Yup.string()
     .transform((value) => {
@@ -1055,6 +1060,35 @@ export const GetAdminBusinessStatsListQuerySchema = Yup.object({
     .nullable()
     .uuid("Invalid city ID")
     .optional(),
+});
+
+export const GetAdminPhoneClickEventsQuerySchema = Yup.object({
+  days: adminBusinessStatsDaysField,
+  page: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return 1;
+      return value;
+    })
+    .min(1)
+    .notRequired(),
+  limit: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return 25;
+      return value;
+    })
+    .min(1)
+    .max(100)
+    .notRequired(),
+  q: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed.slice(0, 100);
+    })
+    .nullable()
+    .optional(),
+  claimed: adminBusinessStatsBoolField,
+  featured: adminBusinessStatsBoolField,
 });
 
 export const GetAdminBusinessStatsSummaryQuerySchema = Yup.object({

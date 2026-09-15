@@ -38,6 +38,7 @@ import {
   getBusinessCompetitorInsights,
   getBusinessStatsList,
   getBusinessStatsSummary,
+  getPhoneClickEvents,
   getSearchStatsList,
   getSearchStatsSummary,
   getBusinessesWithEmails,
@@ -160,6 +161,7 @@ import {
   GetAdminBusinessStatsQuerySchema,
   GetAdminBusinessStatsListQuerySchema,
   GetAdminBusinessStatsSummaryQuerySchema,
+  GetAdminPhoneClickEventsQuerySchema,
   GetAdminSearchStatsListQuerySchema,
   GetAdminSearchStatsSummaryQuerySchema,
   ClearBusinessEmailsSchema,
@@ -373,6 +375,12 @@ adminRouter.get(
   "/businesses/stats",
   queryValidator(GetAdminBusinessStatsListQuerySchema),
   serverErrorCatcherWrapper(getBusinessStatsList)
+);
+
+adminRouter.get(
+  "/businesses/phone-clicks",
+  queryValidator(GetAdminPhoneClickEventsQuerySchema),
+  serverErrorCatcherWrapper(getPhoneClickEvents)
 );
 
 adminRouter.get(
