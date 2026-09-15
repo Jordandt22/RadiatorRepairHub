@@ -225,6 +225,42 @@ export const getCitiesForSitemapKey = () => ({
   interval: 60 * 60,
 });
 
+export const getCityCategoriesForSitemapKey = () => ({
+  key: "CITY_CATEGORIES_SITEMAP",
+  interval: 60 * 60,
+});
+
+export const getStateCategoriesForSitemapKey = () => ({
+  key: "STATE_CATEGORIES_SITEMAP",
+  interval: 60 * 60,
+});
+
+export const getCityCategoryCountsKey = (cityId) => ({
+  key: `CITY_CATEGORY_COUNTS?CITY:${cityId}`,
+  interval: 60 * 30,
+});
+
+export const getStateCategoryCountsKey = (stateId) => ({
+  key: `STATE_CATEGORY_COUNTS?STATE:${stateId}`,
+  interval: 60 * 30,
+});
+
+export const getCategoryCityCountsKey = (categoryId, limit, stateId = null) => ({
+  key: `CATEGORY_CITY_COUNTS?CATEGORY:${categoryId}&LIMIT:${limit ?? "all"}&STATE:${stateId ?? "all"}`,
+  interval: 60 * 30,
+});
+
+export const getCategoryStateCountsKey = (categoryId, limit) => ({
+  key: `CATEGORY_STATE_COUNTS?CATEGORY:${categoryId}&LIMIT:${limit ?? "all"}`,
+  interval: 60 * 30,
+});
+
+/** One listing-save email per recipient+shop per day. */
+export const getListingSaveCooldownKey = (email, businessId) => ({
+  key: `LISTING_SAVE_COOLDOWN?EMAIL:${email}&BUSINESS:${businessId}`,
+  interval: 60 * 60 * 24,
+});
+
 export const getCityBySlugKey = (state_id, city_slug) => ({
   key: `CITY?CITY-SLUG:${city_slug}&STATE-ID:${state_id}`,
   interval: 60 * 60,

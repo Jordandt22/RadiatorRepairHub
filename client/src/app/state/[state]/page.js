@@ -9,11 +9,13 @@ import {
   composeDescription,
   NOINDEX_ROBOTS,
   SITE_URL,
+  toTitleCase,
 } from "@/lib/seo/metadata";
 import { buildDirectoryCollectionSchema } from "@/lib/seo/structuredData";
 import {
   fetchCityBusinessCounts,
   fetchStateListingCount,
+  fetchStateCategoryCounts,
 } from "@/lib/api/cachedReads";
 import { getListingsPage } from "@/lib/businesses/listingsSearch";
 
@@ -22,6 +24,7 @@ export const revalidate = 3600;
 export const dynamicParams = true;
 
 const TOP_CITY_LINKS = 24;
+const STATE_CATEGORY_LINKS = 8;
 
 export async function generateStaticParams() {
   const topStates = ["CA", "TX", "FL", "NY", "WA"];
@@ -50,13 +53,13 @@ export async function generateMetadata({ params, searchParams }) {
   const listingCount = await fetchStateListingCount(stateData.id);
 
   return buildDirectoryMetadata({
-    headline: `Radiator Repair in ${stateData.name} | Shops Near You`,
+    headline: `Radiator Repair in ${stateData.name}`,
     description: composeDescription(
       listingCount > 0
-        ? `Compare ${listingCount.toLocaleString()} radiator repair shops in ${stateData.name}.`
+        ? `Browse ${listingCount.toLocaleString()} radiator repair shops across ${stateData.name}.`
         : `Find radiator repair near you in ${stateData.name}.`,
-      "Browse ratings, reviews, opening hours, and phone numbers by city.",
-      "Call or get directions today."
+      `Compare ratings and hours by city in ${stateData.code}.`,
+      "Call a local shop or get directions today."
     ),
     keywords: `radiator repair ${stateData.name}, radiator repair ${stateData.code}, radiator repair near me, auto repair shop ${stateData.name}, cooling system repair ${stateData.name}`,
     path: `/state/${stateData.code}`,
@@ -78,7 +81,12 @@ async function Page({ params, searchParams }) {
 
   const pageUrl = `${SITE_URL}/state/${stateData.code}`;
 
-  const { data: cityCounts } = await fetchCityBusinessCounts(stateData.id);
+  const [{ data: cityCounts }, { data: stateCategoryCounts }] =
+    await Promise.all([
+      fetchCityBusinessCounts(stateData.id),
+      fetchStateCategoryCounts(stateData.id),
+    ]);
+
   const topCities = [...(cityCounts?.cities ?? [])]
     .filter((city) => city?.slug && Number(city.business_count) > 0)
     .sort((a, b) => Number(b.business_count) - Number(a.business_count))
@@ -87,6 +95,15 @@ async function Page({ params, searchParams }) {
       name: `Radiator repair in ${city.name}`,
       href: `/state/${stateData.code}/city/${city.slug}`,
       count: city.business_count,
+    }));
+
+  const categoryLinks = (stateCategoryCounts?.categories ?? [])
+    .filter((entry) => entry?.slug && Number(entry.business_count) > 0)
+    .slice(0, STATE_CATEGORY_LINKS)
+    .map((entry) => ({
+      name: toTitleCase(entry.name),
+      href: `/state/${stateData.code}/category/${entry.slug}`,
+      count: entry.business_count,
     }));
 
   const totalBusinesses = (cityCounts?.cities ?? []).reduce(
@@ -133,6 +150,16 @@ async function Page({ params, searchParams }) {
               }. Compare ratings, reviews, and opening hours, then call a shop or get directions.`
             : null
         }
+      />
+
+      <LocationLinks
+        title={`Services in ${stateData.name}`}
+        description={`Browse shops in ${stateData.name} by service category.`}
+        links={categoryLinks}
+        footerLink={{
+          label: "View all categories",
+          href: "/categories",
+        }}
       />
 
       <LocationLinks

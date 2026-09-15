@@ -6,11 +6,17 @@ import FAQSection from "@/components/seo/FAQSection";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 import SitePhoneLinks from "@/components/contact/SitePhoneLinks";
 import { getBusinessEmail, getBusinessPhoneDigits } from "@/lib/businessContactInfo";
-import { buildPageMetadata } from "@/lib/seo/metadata";
+import {
+  buildPageMetadata,
+  composeDescription,
+  composeTitle,
+} from "@/lib/seo/metadata";
 
-const pageTitle = "How to Claim Your Business | RadiatorRepairHub";
-const pageDescription =
-  "Claim your radiator repair listing for free: eligibility, email or phone call verification, what you can edit, shop photos, listing analytics, and optional Featured upgrades for more visibility.";
+const pageTitle = composeTitle("How to Claim Your Business");
+const pageDescription = composeDescription(
+  "Claim your radiator repair listing for free.",
+  "Learn eligibility, email or phone verification, what you can edit, shop photos, analytics, and optional Featured upgrades."
+);
 
 export const metadata = buildPageMetadata({
   title: pageTitle,

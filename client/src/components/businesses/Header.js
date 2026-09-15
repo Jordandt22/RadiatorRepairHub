@@ -3,6 +3,67 @@ import PageHeader from "@/components/layout/Header/PageHeader";
 import { toTitleCase } from "@/lib/seo/metadata";
 
 function Header({ stateData, cityData, categoryData, pageDescription }) {
+  // Combined city × category landing pages
+  if (stateData && cityData && categoryData) {
+    const categoryName = toTitleCase(categoryData.name);
+    const lowerName = categoryData.name.toLowerCase();
+    const location = `${cityData.name}, ${stateData.code}`;
+    const categoryDescription =
+      pageDescription ??
+      `Find trusted ${lowerName} shops in ${location}. Compare ratings and reviews, check hours, and contact shops directly.`;
+
+    return (
+      <PageHeader
+        breadcrumbItems={[
+          { name: "Home", url: "/" },
+          { name: stateData.name, url: `/state/${stateData.code}` },
+          {
+            name: cityData.name,
+            url: `/state/${stateData.code}/city/${cityData.slug}`,
+          },
+          {
+            name: categoryName,
+            url: `/state/${stateData.code}/city/${cityData.slug}/category/${categoryData.slug}`,
+          },
+        ]}
+        pageTitle={`${categoryName} in ${location}`}
+        pageDescription={categoryDescription}
+        headerLink={{
+          label: `All shops in ${cityData.name}`,
+          href: `/state/${stateData.code}/city/${cityData.slug}`,
+        }}
+      />
+    );
+  }
+
+  // Combined state × category landing pages
+  if (stateData && categoryData && !cityData) {
+    const categoryName = toTitleCase(categoryData.name);
+    const lowerName = categoryData.name.toLowerCase();
+    const categoryDescription =
+      pageDescription ??
+      `Find trusted ${lowerName} shops in ${stateData.name}. Compare ratings and reviews, check hours, and contact shops directly.`;
+
+    return (
+      <PageHeader
+        breadcrumbItems={[
+          { name: "Home", url: "/" },
+          { name: stateData.name, url: `/state/${stateData.code}` },
+          {
+            name: categoryName,
+            url: `/state/${stateData.code}/category/${categoryData.slug}`,
+          },
+        ]}
+        pageTitle={`${categoryName} in ${stateData.name}`}
+        pageDescription={categoryDescription}
+        headerLink={{
+          label: `All shops in ${stateData.name}`,
+          href: `/state/${stateData.code}`,
+        }}
+      />
+    );
+  }
+
   if (categoryData) {
     const categoryDescription =
       pageDescription ??

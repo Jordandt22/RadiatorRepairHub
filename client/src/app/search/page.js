@@ -5,6 +5,8 @@ import BusinessesContainer from "@/components/businesses/BusinessesContainer";
 import { SEARCH_KEYWORDS } from "@/lib/seo/keywords";
 import {
   buildPageMetadata,
+  composeDescription,
+  composeTitle,
   isFilteredListingUrl,
   NOINDEX_ROBOTS,
   SITE_URL,
@@ -13,9 +15,11 @@ import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-produ
 
 // Kept distinct from the homepage headline so the two pages do not compete for
 // the same "radiator repair near me" query.
-const searchTitle = "Search Radiator Repair Shops by City & Rating";
-const searchDescription =
-  "Search radiator repair shops near you by city, rating, reviews, and opening hours. Filter the directory to find a cooling system specialist you can call today.";
+const searchTitle = composeTitle("Search Radiator Repair Shops");
+const searchDescription = composeDescription(
+  "Search radiator repair shops near you by city, rating, reviews, and opening hours.",
+  "Filter the directory to find a cooling system specialist you can call today."
+);
 
 const baseSearchMetadata = buildPageMetadata({
   title: searchTitle,

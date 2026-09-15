@@ -1,12 +1,17 @@
 import React from "react";
 import BlogsPage from "@/components/pages/blogs/BlogsPage";
 import { getAllBlogPosts } from "@/lib/blogs";
-import { buildPageMetadata } from "@/lib/seo/metadata";
+import {
+  buildPageMetadata,
+  composeDescription,
+  composeTitle,
+} from "@/lib/seo/metadata";
 
 export const metadata = buildPageMetadata({
-  title: "Blogs | Radiator Repair Tips & Guides - RadiatorRepairHub",
-  description:
-    "Read practical guides on radiator repair, cooling system maintenance, and how to find trusted shops near you.",
+  title: composeTitle("Radiator Repair Tips & Guides"),
+  description: composeDescription(
+    "Read practical guides on radiator repair, cooling system maintenance, and how to find trusted shops near you."
+  ),
   keywords:
     "radiator repair tips, cooling system guides, radiator leak, car overheating, radiator flush, radiator repair cost, radiator maintenance",
   path: "/blogs",

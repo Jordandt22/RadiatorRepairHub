@@ -2,29 +2,20 @@ import React from "react";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import SiteSupportContactLines from "@/components/contact/SiteSupportContactLines";
 import {
-  DEFAULT_OG_IMAGE,
-  INDEX_ROBOTS,
-  SITE_URL,
+  buildPageMetadata,
+  composeDescription,
+  composeTitle,
 } from "@/lib/seo/metadata";
 
-export const metadata = {
-  title: "Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
-  description:"RadiatorRepairHub terms of service: directory use, Quick Contact, business claims, listing photos, Featured listings, weekly activity reports, listing reports, accounts, Shop affiliate links, and user responsibilities.",
-  keywords:"terms of service, user agreement, legal terms, terms and conditions, service agreement, user rights",
-  openGraph: {
-    title:"Terms of Service | User Agreement & Legal Terms - RadiatorRepairHub",
-    description:"RadiatorRepairHub terms of service: directory use, Quick Contact, business claims, listing photos, Featured listings, weekly activity reports, listing reports, accounts, Shop affiliate links, and user responsibilities.",
-    type: "website",
-    locale: "en_US",
-    siteName: "RadiatorRepairHub",
-    url: `${SITE_URL}/terms`,
-    images: [DEFAULT_OG_IMAGE],
-  },
-  alternates: {
-    canonical: `${SITE_URL}/terms`,
-  },
-  robots: INDEX_ROBOTS,
-};
+export const metadata = buildPageMetadata({
+  title: composeTitle("Terms of Service"),
+  description: composeDescription(
+    "RadiatorRepairHub terms covering directory use, claims, Featured listings, listing saves, Share, ads, accounts, Shop affiliate links, and user responsibilities."
+  ),
+  keywords:
+    "terms of service, user agreement, legal terms, terms and conditions, service agreement, user rights",
+  path: "/terms",
+});
 
 function TermsPage() {
   const effectiveDate = new Date("2025-09-22").toLocaleDateString("en-US", {
@@ -32,16 +23,16 @@ function TermsPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date(2026, 8, 2).toLocaleDateString("en-US", {
+  const lastUpdated = new Date(2026, 8, 15).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
   });
 
-  const serviceDescriptionPoints = ["A searchable database of radiator repair shops and service providers","Business contact information, locations, hours, services, photos, and third-party review summaries","Owner-uploaded shop photo galleries on claimed listings, with higher photo limits for optional Featured upgrades","Search and filtering capabilities","Educational blog and FAQ content about radiator repair and using the directory","General contact forms for directory questions, listing help, and feedback","Quick Contact, a tool to submit service inquiries to claimed business listings","Business claiming, so eligible owners can verify listing email or phone access and create an account to manage their listing through a dashboard and account settings, including basic listing analytics, shop photos, and weekly activity report preferences","Optional weekly activity report emails summarizing recent listing stats for eligible listings, with unsubscribe options","Optional paid Featured listing upgrades for claimed businesses, including full listing analytics, billed through Stripe","Report Info, a tool to report incorrect claim contact details, incorrect or outdated listing info, or inappropriate listing content","An optional short site feedback survey that may appear after you submit certain forms","A Tools & Supplies Shop and related product recommendations, including Amazon Associate affiliate links",
+  const serviceDescriptionPoints = ["A searchable database of radiator repair shops and service providers","Business contact information, locations, hours, services, photos, and third-party review summaries","Owner-uploaded shop photo galleries on claimed listings, with higher photo limits for optional Featured upgrades","Search and filtering capabilities","Browse listings by service category, including category pages filtered by state or by city","Educational blog and FAQ content about radiator repair and using the directory","Related educational blog posts (Related Guides) on business listing pages","General contact forms for directory questions, listing help, and feedback","Get Listed, a form to request adding your business to the directory","Quick Contact, a tool to submit service inquiries to claimed business listings","Business claiming, so eligible owners can verify listing email or phone access and create an account to manage their listing through a dashboard and account settings, including basic listing analytics, shop photos, and weekly activity report preferences","Optional weekly activity report emails summarizing recent listing stats for eligible listings, with unsubscribe options","Optional paid Featured listing upgrades for claimed businesses, including full listing analytics, billed through Stripe","Report Info, a tool to report incorrect claim contact details, incorrect or outdated listing info, or inappropriate listing content","Save, a tool to email yourself a link and details for a business listing","Share on business listing pages to share or copy the listing link (client-side; analytics may record that Share was used)","Third-party display advertising (Google AdSense) on selected pages","An optional short site feedback survey that may appear after you submit certain forms","A Tools & Supplies Shop and related product recommendations, including Amazon Associate affiliate links",
   ];
 
-  const quickContactTermsPoints = ["You agree to provide accurate and complete information when submitting a contact form or Quick Contact message.","Submitting a form constitutes your consent to our Privacy Policy and the processing of the information you provide.","After a successful Contact, Get Listed, or Quick Contact submission, we may show an optional short site feedback survey. Responses are voluntary and described in our Privacy Policy.","Quick Contact is available only on claimed business listings. For unclaimed listings, use the phone number, email, or website shown on the listing.","Quick Contact messages are reviewed before they may be forwarded to a listed business; delivery is not guaranteed and may take additional time.","We may decline, flag, archive, or not forward messages that appear fraudulent, abusive, incomplete, undeliverable, or otherwise inappropriate.","We may verify the email address you provide before accepting Contact, Get Listed, Quick Contact, or listing report submissions.","We facilitate communication between you and listed businesses but do not guarantee a response, appointment, quote, or repair outcome.","Your repair or service relationship, if any, is solely between you and the listed business.",
+  const quickContactTermsPoints = ["You agree to provide accurate and complete information when submitting a contact form or Quick Contact message.","Submitting a form constitutes your consent to our Privacy Policy and the processing of the information you provide.","After a successful Contact, Get Listed, or Quick Contact submission, we may show an optional short site feedback survey. Responses are voluntary and described in our Privacy Policy.","Quick Contact is available only on claimed business listings. For unclaimed listings, use the phone number, email, or website shown on the listing.","Quick Contact messages are reviewed before they may be forwarded to a listed business; delivery is not guaranteed and may take additional time.","We may decline, flag, archive, or not forward messages that appear fraudulent, abusive, incomplete, undeliverable, or otherwise inappropriate.","We may verify the email address you provide before accepting Contact, Get Listed, Quick Contact, listing report, or email-yourself listing save submissions.","We facilitate communication between you and listed businesses but do not guarantee a response, appointment, quote, or repair outcome.","Your repair or service relationship, if any, is solely between you and the listed business.",
   ];
 
   const claimTermsPoints = ["Claiming is available only for eligible listings, typically those with a unique email address or unique phone number on file that can receive a verification message or call.","Claiming a listing is free. Featured listing upgrades are optional and paid separately.","By starting or completing a claim, you represent that you are an authorized owner or representative of the business and that the information you provide is accurate.","We may send a verification code or link to the email address associated with the listing. Access to that inbox is part of how we confirm eligibility.","If you choose phone verification, you expressly consent to receive an automated verification call using a prerecorded or artificial voice at the phone number on that listing, and you confirm you are authorized to receive calls at that number. The call reads a one-time code and never asks for personal, payment, or account information. We record your consent, including the consent language version, the date and time, your IP address, your browser user-agent, and the destination number.","Verification calls are placed only between 7:00 AM and 9:00 PM local time, and are limited to 3 phone claims per listing per day with one repeat call per claim. Automated phone menus, voicemail, and carrier spam labeling may prevent a call from reaching you; use email verification instead in that case.","If you complete a phone claim without an existing account, you supply the email address used for your account login. That email is used for your account and is not published on the listing.","We may deny, pause, expire, cancel, or reverse a claim if we cannot verify authorization, if eligibility requirements are not met, or if we suspect fraud or abuse.","Only one claim can be in progress per listing at a time, and a claim expires if it is not completed within one hour of the last attempt.","Self-serve claiming may be unavailable when a listing has no email or usable phone number on file, or when the same email or phone number is shared across multiple listings. In those cases, use Report Info or contact us for help.","After a successful claim, you may create or use an account to manage the claimed listing through the dashboard and account settings, including basic listing analytics (page views and impressions, plus impressions by source), shop photos, and weekly activity report preferences, subject to these Terms and our Privacy Policy.","After a successful claim, you may upload and manage shop photos for that listing, subject to current photo limits and the Listing Photos rules in these Terms. Claimed listings currently include up to 3 extra shop photos beyond the default listing photo.","You may set an optional notification email for RadiatorRepairHub reports, turn weekly activity reports on or off in Settings → Notifications, or unsubscribe using the link in those emails.","You may unclaim a listing you own through your account. Unclaiming removes your owner access; the public listing remains on RadiatorRepairHub and may be claimed again later. If the listing is Featured, unclaiming cancels the Featured subscription immediately as described in Featured Listings and Billing.","When you update listing contact details through your account, we may verify changed phone numbers or email addresses before saving them.","Claiming does not transfer ownership of our directory data or grant you rights beyond managing your listing through the Service.",
@@ -56,13 +47,16 @@ function TermsPage() {
   const listingReportTermsPoints = ["You agree to provide accurate information when submitting a Report Info form or reporting a listing problem through our contact form.","We may verify the email address you provide and review reports before making any listing changes.","Submitting a report does not guarantee that we will change the listing, approve a claim, or respond within a specific timeframe.","We may decline, archive, or take no action on reports that appear incomplete, abusive, fraudulent, or unsupported.","Suggested phone numbers or emails you provide may be used to update listing contact details after review, when appropriate.","After a successful Report Info submission, we may show an optional short site feedback survey. Responses are voluntary and described in our Privacy Policy.",
   ];
 
-  const affiliateTermsPoints = ["Our Shop page and certain blog, home, FAQ, and business listing pages may display Tools & Supplies or other product recommendations with links to third-party retailers such as Amazon.","As an Amazon Associate, RadiatorRepairHub may earn from qualifying purchases. Product sections include affiliate disclosures.","Affiliate product links open on third-party sites. Purchases, shipping, returns, warranties, and product quality are solely between you and the retailer.","We do not guarantee product availability, pricing, compatibility, or fitness for your vehicle or repair needs.","Affiliate recommendations are not endorsements of any listed radiator repair business, and listed businesses are not responsible for affiliate products shown near their listings.",
+  const listingSaveTermsPoints = ["Save lets you request a one-time email with a link and details for a business listing on RadiatorRepairHub.","By using Save, you agree to our Privacy Policy and the processing of the email address (and optional name) you provide for that transactional message.","We may verify that your email address appears deliverable (including through Abstract API) before sending the message through Resend.","We limit how often the same email address can request another Save email for the same listing (currently about once per 24 hours) using a short-lived cooldown record in Redis or an equivalent cache.","Save does not create an account, does not store a favorites list for you in our database, and does not send your email to the listed business.","Delivery is not guaranteed. Email providers may delay or filter messages, and we may decline requests that appear abusive, undeliverable, or otherwise inappropriate.",
+  ];
+
+  const affiliateTermsPoints = ["Our Shop page and certain blog, home, FAQ, and business listing pages may display Tools & Supplies or other product recommendations with links to third-party retailers such as Amazon.","As an Amazon Associate, RadiatorRepairHub may earn from qualifying purchases. Product sections include affiliate disclosures.","Affiliate product links open on third-party sites. Purchases, shipping, returns, warranties, and product quality are solely between you and the retailer.","We do not guarantee product availability, pricing, compatibility, or fitness for your vehicle or repair needs.","Affiliate recommendations are not endorsements of any listed radiator repair business, and listed businesses are not responsible for affiliate products shown near their listings.","Selected pages may also show third-party display ads served by Google AdSense. We do not control ad content or Google's ad personalization. Use Google's ad settings or browser controls to limit personalized ads where available.",
   ];
 
   const capacityRequirements = ["You have the legal capacity to enter into this Agreement","You are not prohibited from using the Service under applicable law","Your use of the Service will not violate any applicable law or regulation",
   ];
 
-  const permittedUses = ["Search for radiator repair businesses in your area","View business contact information and details","Contact businesses through provided information","Read blog, FAQ, and other educational content on the Service","Browse Tools & Supplies recommendations and follow affiliate product links","Submit general inquiries through our site contact forms","Submit service inquiries to claimed listings through Quick Contact, subject to review","Claim an eligible business listing you are authorized to represent, and manage that listing through your account","Upload and manage shop photos for a claimed business you own, subject to applicable photo limits and these Terms","View basic listing analytics for a claimed business you own (page views and impressions, plus impressions by source)","Manage notification email and weekly activity report preferences for a claimed business you own","Unclaim a listing you own, which may cancel an active Featured subscription as described in these Terms","Purchase or manage an optional Featured listing upgrade for a claimed business you own","Report incorrect claim contact information, incorrect or outdated listing info, or inappropriate listing content through Report Info","Optionally respond to a short site feedback survey after submitting certain forms","Access publicly available information about listed businesses",
+  const permittedUses = ["Search for radiator repair businesses in your area","Browse radiator repair listings by location and by service category (including category × state and category × city pages)","View business contact information and details","Contact businesses through provided information","Read blog, FAQ, and other educational content on the Service, including Related Guides on listing pages","Browse Tools & Supplies recommendations and follow affiliate product links","Submit general inquiries through our site contact forms","Submit a Get Listed request to ask that your business be added to the directory","Submit service inquiries to claimed listings through Quick Contact, subject to review","Claim an eligible business listing you are authorized to represent, and manage that listing through your account","Upload and manage shop photos for a claimed business you own, subject to applicable photo limits and these Terms","View basic listing analytics for a claimed business you own (page views and impressions, plus impressions by source)","Manage notification email and weekly activity report preferences for a claimed business you own","Unclaim a listing you own, which may cancel an active Featured subscription as described in these Terms","Purchase or manage an optional Featured listing upgrade for a claimed business you own","Report incorrect claim contact information, incorrect or outdated listing info, or inappropriate listing content through Report Info","Email yourself a business listing link through Save","Share or copy a public business listing link using Share","Optionally respond to a short site feedback survey after submitting certain forms","Access publicly available information about listed businesses",
   ];
 
   const dataMisusePoints = ["Scraping, harvesting, or systematically collecting data from the Website","Using automated tools, bots, or scripts to access or extract information","Copying, reproducing, or distributing substantial portions of our directory data","Creating derivative databases or competing services using our data",
@@ -71,7 +65,7 @@ function TermsPage() {
   const technicalInterferencePoints = ["Attempting to gain unauthorized access to our systems, servers, or networks","Interfering with or disrupting the Service or servers connected to the Service","Introducing viruses, malware, or other harmful code","Circumventing security measures or access controls",
   ];
 
-  const fraudulentActivitiesPoints = ["Providing false, misleading, or inaccurate information","Impersonating another person, business, or entity","Claiming a business listing you do not own or are not authorized to represent","Uploading listing photos you do not have the right to use, or photos that are misleading, infringing, or inappropriate","Submitting false, abusive, or repeated listing reports","Using the Service for spam, phishing, or other deceptive practices","Submitting fraudulent, abusive, or repetitive contact form or Quick Contact messages","Posting defamatory, abusive, or inappropriate content","Engaging in any illegal activities or encouraging others to do so",
+  const fraudulentActivitiesPoints = ["Providing false, misleading, or inaccurate information","Impersonating another person, business, or entity","Claiming a business listing you do not own or are not authorized to represent","Uploading listing photos you do not have the right to use, or photos that are misleading, infringing, or inappropriate","Submitting false, abusive, or repeated listing reports","Using the Service for spam, phishing, or other deceptive practices","Submitting fraudulent, abusive, or repetitive contact form, Quick Contact, or Save email requests","Posting defamatory, abusive, or inappropriate content","Engaging in any illegal activities or encouraging others to do so",
   ];
 
   const commercialMisusePoints = ["Using the Service for unauthorized advertising or promotional activities","Soliciting users for commercial purposes without permission","Competing directly with our Service using information obtained from our platform","Reselling or redistributing our directory information without authorization",
@@ -89,7 +83,7 @@ function TermsPage() {
   const disclaimersPoints = ["Implied warranties of merchantability and fitness for a particular purpose","Warranties of non-infringement","Warranties that the Service will be uninterrupted or error-free",
   ];
 
-  const noWarrantyPoints = ["The accuracy, completeness, or timeliness of business listings","The quality, reliability, or availability of listed businesses","The results you may obtain from using listed services","The safety or legality of interactions with listed businesses","That a business claim will succeed, remain approved, or resolve ownership disputes","That a listing report will result in a specific correction or outcome","That a Featured listing will produce a specific number of leads, calls, views, or sales","That weekly activity reports will be sent on a specific schedule, include every metric, or reflect real-time activity","The accuracy of third-party review scores or review counts displayed on listings","Affiliate product availability, pricing, compatibility, or purchase outcomes on Amazon or other retailers",
+  const noWarrantyPoints = ["The accuracy, completeness, or timeliness of business listings","The quality, reliability, or availability of listed businesses","The results you may obtain from using listed services","The safety or legality of interactions with listed businesses","That a business claim will succeed, remain approved, or resolve ownership disputes","That a listing report will result in a specific correction or outcome","That a Featured listing will produce a specific number of leads, calls, views, or sales","That weekly activity reports will be sent on a specific schedule, include every metric, or reflect real-time activity","The accuracy of third-party review scores or review counts displayed on listings","Affiliate product availability, pricing, compatibility, or purchase outcomes on Amazon or other retailers","The content, relevance, or personalization of third-party ads served by Google AdSense",
   ];
 
   const technicalLimitationsPoints = ["The Service will meet your specific requirements","The Service will be available at all times","All technical issues will be corrected promptly","The Service will be compatible with all devices or browsers",
@@ -553,6 +547,35 @@ function TermsPage() {
 
         <section className="mb-12">
           <h2 className="text-3xl font-heading font-bold mt-6">
+            Email Listing (Save)
+          </h2>
+          <p className="mt-4 text-foreground leading-relaxed">
+            Business listing pages may include a Save option that emails you a
+            link and details for that listing. By using Save, you agree to the
+            following:
+          </p>
+          <ul className="mt-4 text-foreground space-y-2">
+            {listingSaveTermsPoints.map((point, index) => (
+              <li key={index} className="mb-2 ml-6">
+                • {point}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-foreground leading-relaxed">
+            Details about the information collected and how it is used are
+            described in our{" "}
+            <a
+              href="/privacy"
+              className="text-interactive underline transition-colors hover:text-interactive/80"
+            >
+              Privacy Policy
+            </a>
+            .
+          </p>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="text-3xl font-heading font-bold mt-6">
             Tools &amp; Supplies and Affiliate Links
           </h2>
           <p className="mt-4 text-foreground leading-relaxed">
@@ -646,9 +669,13 @@ function TermsPage() {
               analytics
             </li>
             <li className="mb-2 ml-6">
+              • <strong>Google AdSense</strong> - display ads and ad measurement
+              on selected pages
+            </li>
+            <li className="mb-2 ml-6">
               • <strong>PostHog</strong> - product analytics and page
-              interaction tracking (including claims and Featured checkout /
-              billing events)
+              interaction tracking (including claims, Featured checkout /
+              billing events, listing Save, and Share actions)
             </li>
             <li className="mb-2 ml-6">
               • <strong>Cloudflare</strong> - content delivery, DNS, images,
@@ -659,10 +686,15 @@ function TermsPage() {
               rate limiting
             </li>
             <li className="mb-2 ml-6">
+              • <strong>Redis</strong> - caching and short-lived rate-limit /
+              cooldown records (including email-yourself listing Save cooldowns)
+            </li>
+            <li className="mb-2 ml-6">
               • <strong>Resend</strong> - transactional email for Contact, Get
               Listed, Quick Contact, claim verification, listing report
-              notifications, weekly listing activity reports, Featured purchase
-              admin notices, and related communications
+              notifications, email-yourself listing saves, weekly listing
+              activity reports, Featured purchase admin notices, and related
+              communications
             </li>
             <li className="mb-2 ml-6">
               • <strong>Supabase</strong> - database storage and authentication
@@ -672,6 +704,10 @@ function TermsPage() {
               reports, and feedback surveys
             </li>
             <li className="mb-2 ml-6">
+              • <strong>Twilio</strong> - automated verification calls and
+              phone-number checks for business claims
+            </li>
+            <li className="mb-2 ml-6">
               • <strong>Stripe</strong> - payment and subscription processing
               for optional Featured listing upgrades, including Checkout, tax
               calculation where enabled, webhooks, and the customer billing
@@ -679,9 +715,9 @@ function TermsPage() {
             </li>
             <li className="mb-2 ml-6">
               • <strong>Abstract API</strong> - email address verification for
-              Contact, Get Listed, Quick Contact, and listing report
-              submissions, and email/phone verification for claimed listing
-              contact updates
+              Contact, Get Listed, Quick Contact, listing report, and
+              email-yourself listing save submissions, and email/phone
+              verification for claimed listing contact updates
             </li>
             <li className="mb-2 ml-6">
               • <strong>Amazon Associates</strong> - affiliate product referrals

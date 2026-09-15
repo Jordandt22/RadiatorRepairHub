@@ -12,6 +12,10 @@ import {
 } from "@/lib/affiliateProducts";
 import { fetchActiveAffiliateProductsByIds } from "@/lib/api/affiliate-products";
 import {
+  buildOpenGraph,
+  buildTwitterCard,
+  composeDescription,
+  composeTitle,
   INDEX_ROBOTS,
   NOT_FOUND_METADATA,
   SITE_URL,
@@ -38,32 +42,39 @@ export async function generateMetadata({ params }) {
     };
   }
 
+  const title = composeTitle(post.metadata.title);
+  const description = composeDescription(post.metadata.description);
+  const path = `/blogs/${slug}`;
+  const images = [
+    {
+      url: COVER_ABSOLUTE_URL,
+      width: 1200,
+      height: 630,
+      alt: post.metadata.title,
+    },
+  ];
+  const openGraph = {
+    ...buildOpenGraph({
+      title,
+      description,
+      url: path,
+      images,
+    }),
+    type: "article",
+    ...(post.metadata.date && {
+      publishedTime: new Date(post.metadata.date).toISOString(),
+    }),
+  };
+
   return {
-    title: `${post.metadata.title} | RadiatorRepairHub Blogs`,
-    description: post.metadata.description,
+    title,
+    description,
     robots: INDEX_ROBOTS,
     alternates: {
-      canonical: `${SITE_URL}/blogs/${slug}`,
+      canonical: `${SITE_URL}${path}`,
     },
-    openGraph: {
-      title: post.metadata.title,
-      description: post.metadata.description,
-      type: "article",
-      locale: "en_US",
-      siteName: "RadiatorRepairHub",
-      url: `${SITE_URL}/blogs/${slug}`,
-      images: [
-        {
-          url: COVER_ABSOLUTE_URL,
-          width: 1200,
-          height: 675,
-          alt: post.metadata.title,
-        },
-      ],
-      ...(post.metadata.date && {
-        publishedTime: new Date(post.metadata.date).toISOString(),
-      }),
-    },
+    openGraph,
+    twitter: buildTwitterCard({ title, description, images }),
   };
 }
 

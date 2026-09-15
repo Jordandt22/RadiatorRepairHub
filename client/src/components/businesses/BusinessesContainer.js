@@ -41,8 +41,7 @@ async function BusinessesContainer({
   const { data: initialListings, error: initialError } =
     await fetchBusinessesSearch(searchBody, page, LISTINGS_PAGE_LIMIT);
 
-  const showLocationHeader = Boolean(stateData);
-  const showCategoryHeader = Boolean(categoryData) && !showLocationHeader;
+  const showDirectoryHeader = Boolean(stateData || categoryData);
 
   const listingsSchema =
     listingsListName && listingsListUrl
@@ -66,14 +65,10 @@ async function BusinessesContainer({
         />
       ) : null}
 
-      {showLocationHeader ? (
+      {showDirectoryHeader ? (
         <Header
           stateData={stateData}
           cityData={cityData}
-          pageDescription={pageDescription}
-        />
-      ) : showCategoryHeader ? (
-        <Header
           categoryData={categoryData}
           pageDescription={pageDescription}
         />

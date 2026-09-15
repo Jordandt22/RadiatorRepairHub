@@ -123,6 +123,16 @@ export function buildOpenGraph({ title, description, url, images }) {
   };
 }
 
+export function buildTwitterCard({ title, description, images }) {
+  const imageUrl = images?.[0]?.url ?? DEFAULT_OG_IMAGE.url;
+  return {
+    card: "summary_large_image",
+    title,
+    description,
+    images: [imageUrl],
+  };
+}
+
 /**
  * Query values that produce the same listings as the bare URL, so they should
  * not be treated as a distinct filtered view. `page` is excluded here because
@@ -183,6 +193,11 @@ export function buildDirectoryMetadata({
   );
   const canonicalPath =
     isPaged && !isFiltered ? `${path}?page=${page}` : path;
+  const openGraph = buildOpenGraph({
+    title,
+    description,
+    url: canonicalPath,
+  });
 
   return {
     title,
@@ -191,10 +206,11 @@ export function buildDirectoryMetadata({
     alternates: {
       canonical: `${SITE_URL}${canonicalPath}`,
     },
-    openGraph: buildOpenGraph({
+    openGraph,
+    twitter: buildTwitterCard({
       title,
       description,
-      url: canonicalPath,
+      images: openGraph.images,
     }),
     robots:
       !indexable || isPaged || isFiltered ? NOINDEX_ROBOTS : INDEX_ROBOTS,
@@ -209,6 +225,9 @@ export function buildPageMetadata({
   openGraph,
   robots = INDEX_ROBOTS,
 }) {
+  const resolvedOpenGraph =
+    openGraph ?? buildOpenGraph({ title, description, url: path });
+
   return {
     title,
     description,
@@ -216,7 +235,12 @@ export function buildPageMetadata({
     alternates: {
       canonical: path ? `${SITE_URL}${path}` : SITE_URL,
     },
-    openGraph: openGraph ?? buildOpenGraph({ title, description, url: path }),
+    openGraph: resolvedOpenGraph,
+    twitter: buildTwitterCard({
+      title,
+      description,
+      images: resolvedOpenGraph.images,
+    }),
     robots,
   };
 }

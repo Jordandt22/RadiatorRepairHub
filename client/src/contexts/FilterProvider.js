@@ -87,55 +87,72 @@ export function FilterProvider({ children }) {
     });
   };
 
-  // Filter URL
+  // Filter URL — omit default page/sort so clean paths stay crawl-friendly
   const getFilterURL = (stateData, cityData, page, filters, categoryData) => {
     const nextFilters = { ...filters };
-    const paginationAndSortQueryParams = `page=${page}&sort=${getSortOption(
+    const sortKey = getSortOption(
       nextFilters.sort_option || DEFAULT_SORT_OPTION
-    )}`;
+    );
     delete nextFilters.sort_option;
     if (stateData) delete nextFilters.state_id;
     if (cityData) delete nextFilters.city_id;
     if (categoryData) delete nextFilters.primary_category_id;
 
-    let filterQueryParams = "";
-    Object.keys(nextFilters).map((key) => {
+    const queryParts = [];
+    if (Number(page) > 1) {
+      queryParts.push(`page=${page}`);
+    }
+    if (sortKey !== getSortOption(DEFAULT_SORT_OPTION)) {
+      queryParts.push(`sort=${sortKey}`);
+    }
+
+    Object.keys(nextFilters).forEach((key) => {
       let val = nextFilters[key];
       const defaultVal = defaultFilters[key];
 
       if (typeof val === "string" && val !== defaultVal) {
-        filterQueryParams += `&${key}=${encodeURIComponent(val)}`;
+        queryParts.push(`${key}=${encodeURIComponent(val)}`);
       }
 
       if (Array.isArray(val) && val.length > 0) {
-        filterQueryParams += `&${key}=${encodeURIComponent(val.join(","))}`;
+        queryParts.push(`${key}=${encodeURIComponent(val.join(","))}`);
       }
 
       if (typeof val === "number" && val !== defaultVal) {
         if (val <= 0) val = 1;
-        filterQueryParams += `&${key}=${val}`;
+        queryParts.push(`${key}=${val}`);
       }
 
       if (key === "open") {
         if (val.weekdays) {
-          filterQueryParams += "&weekdays=true";
+          queryParts.push("weekdays=true");
         }
         if (val.weekends) {
-          filterQueryParams += "&weekends=true";
+          queryParts.push("weekends=true");
         }
       }
     });
 
+    const query = queryParts.length ? `?${queryParts.join("&")}` : "";
+
+    if (stateData && cityData && categoryData) {
+      return `/state/${stateData.code}/city/${cityData.slug}/category/${categoryData.slug}${query}`;
+    }
+
+    if (stateData && categoryData) {
+      return `/state/${stateData.code}/category/${categoryData.slug}${query}`;
+    }
+
     if (categoryData) {
-      return `/category/${categoryData.slug}?${paginationAndSortQueryParams}${filterQueryParams}`;
+      return `/category/${categoryData.slug}${query}`;
     }
 
     if (stateData)
       return `/state/${stateData.code}${
         cityData ? `/city/${cityData.slug}` : ""
-      }?${paginationAndSortQueryParams}${filterQueryParams}`;
+      }${query}`;
 
-    return `/search?${paginationAndSortQueryParams}${filterQueryParams}`;
+    return `/search${query || ""}`;
   };
 
   // Update URL

@@ -5,7 +5,8 @@ import { notFound } from "next/navigation";
 import {
   fetchPrimaryCategoryBySlug,
   fetchPrimaryCategoryBusinessCounts,
-  fetchStateBusinessCountsByLimit,
+  fetchCategoryCityCounts,
+  fetchCategoryStateCounts,
 } from "@/lib/api/cachedReads";
 import { CATEGORY_KEYWORDS } from "@/lib/seo/keywords";
 import {
@@ -23,6 +24,7 @@ export const revalidate = 3600;
 
 const TOP_STATE_LINKS = 12;
 const SIBLING_CATEGORY_LINKS = 8;
+const TOP_CITY_LINKS = 12;
 
 async function getCategoryListingCount(categoryId) {
   const { data } = await fetchPrimaryCategoryBusinessCounts();
@@ -51,13 +53,13 @@ export async function generateMetadata({ params, searchParams }) {
   const listingCount = await getCategoryListingCount(primaryCategory.id);
 
   return buildDirectoryMetadata({
-    headline: `${displayName} Near Me | Find Local Shops`,
+    headline: `${displayName} Near You`,
     description: composeDescription(
       listingCount > 0
-        ? `Compare ${listingCount.toLocaleString()} ${lowerName} listings near you.`
+        ? `Find ${listingCount.toLocaleString()} ${lowerName} listings across the U.S.`
         : `Find ${lowerName} listings near you.`,
-      "Browse ratings, reviews, and opening hours by city and state.",
-      "Call a shop directly today."
+      "Filter by city or state, then compare ratings, reviews, and hours.",
+      "Contact a shop directly when you are ready."
     ),
     keywords:
       CATEGORY_KEYWORDS[slug.toLowerCase()] ??
@@ -79,10 +81,12 @@ async function Page({ params, searchParams }) {
     return notFound();
   }
 
-  const [{ data: categoryCounts }, { data: stateCounts }] = await Promise.all([
-    fetchPrimaryCategoryBusinessCounts(),
-    fetchStateBusinessCountsByLimit(TOP_STATE_LINKS),
-  ]);
+  const [{ data: categoryCounts }, { data: cityCounts }, { data: stateCounts }] =
+    await Promise.all([
+      fetchPrimaryCategoryBusinessCounts(),
+      fetchCategoryCityCounts(primaryCategory.id, TOP_CITY_LINKS),
+      fetchCategoryStateCounts(primaryCategory.id, TOP_STATE_LINKS),
+    ]);
 
   const displayName = toTitleCase(primaryCategory.name);
   const lowerName = primaryCategory.name.toLowerCase();
@@ -99,8 +103,22 @@ async function Page({ params, searchParams }) {
     .slice(0, TOP_STATE_LINKS)
     .map((state) => ({
       name: state.name,
-      href: `/state/${state.code}`,
+      href: `/state/${state.code}/category/${slug}`,
       count: state.business_count,
+    }));
+
+  const cityLinks = (cityCounts?.cities ?? [])
+    .filter(
+      (entry) =>
+        entry?.slug &&
+        entry.state_code &&
+        Number(entry.business_count) > 0
+    )
+    .slice(0, TOP_CITY_LINKS)
+    .map((entry) => ({
+      name: `${entry.name}, ${entry.state_code}`,
+      href: `/state/${entry.state_code}/city/${entry.slug}/category/${slug}`,
+      count: entry.business_count,
     }));
 
   const siblingCategoryLinks = allCategories
@@ -150,8 +168,14 @@ async function Page({ params, searchParams }) {
       />
 
       <LocationLinks
+        title={`${displayName} by city`}
+        description={`These cities have the most ${lowerName} listings. Open a city page to compare local shops.`}
+        links={cityLinks}
+      />
+
+      <LocationLinks
         title={`${displayName} by state`}
-        description={`Browse ${lowerName} listings in the states with the most shops, then narrow down to your city.`}
+        description={`Browse ${lowerName} listings by state, then narrow down to your city.`}
         links={stateLinks}
         footerLink={{
           label: "View all states",

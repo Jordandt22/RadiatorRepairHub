@@ -3,29 +3,20 @@ import PageHeader from "@/components/layout/Header/PageHeader";
 import SiteSupportContactLines from "@/components/contact/SiteSupportContactLines";
 import { getBusinessEmail } from "@/lib/businessContactInfo";
 import {
-  DEFAULT_OG_IMAGE,
-  INDEX_ROBOTS,
-  SITE_URL,
+  buildPageMetadata,
+  composeDescription,
+  composeTitle,
 } from "@/lib/seo/metadata";
 
-export const metadata = {
-  title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
-  description:"How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing photos, Featured listing billing, weekly activity reports, listing reports, accounts, analytics, and affiliate product links.",
-  keywords:"privacy policy, data protection, personal information, GDPR, CCPA, privacy rights, data security",
-  openGraph: {
-    title: "Privacy Policy | How We Protect Your Data - RadiatorRepairHub",
-    description:"How RadiatorRepairHub collects and uses personal information for our directory, Quick Contact, business claims, listing photos, Featured listing billing, weekly activity reports, listing reports, accounts, analytics, and affiliate product links.",
-    type: "website",
-    locale: "en_US",
-    siteName: "RadiatorRepairHub",
-    url: `${SITE_URL}/privacy`,
-    images: [DEFAULT_OG_IMAGE],
-  },
-  alternates: {
-    canonical: `${SITE_URL}/privacy`,
-  },
-  robots: INDEX_ROBOTS,
-};
+export const metadata = buildPageMetadata({
+  title: composeTitle("Privacy Policy"),
+  description: composeDescription(
+    "How RadiatorRepairHub collects and uses personal information for our directory, forms, claims, Featured billing, listing saves, analytics, AdSense, and affiliate links."
+  ),
+  keywords:
+    "privacy policy, data protection, personal information, GDPR, CCPA, privacy rights, data security",
+  path: "/privacy",
+});
 
 function PrivacyPage() {
   const businessEmail = getBusinessEmail();
@@ -34,7 +25,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date(2026, 8, 2).toLocaleDateString("en-US", {
+  const lastUpdated = new Date(2026, 8, 15).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -85,12 +76,16 @@ function PrivacyPage() {
           description:"When you use Report Info on a business listing, we collect your name (optional), email address, report reason, details you provide, the business you selected, and (when reporting wrong claim contact info) any suggested phone number or email you submit so we can review and update listing contact details.",
         },
         {
+          label: "Email Listing (Save) Requests:",
+          description:"When you use Save on a business listing to email yourself that shop, we collect your email address, optional name, and the business you selected. We verify that the email appears deliverable, send you a one-time transactional email with the listing details and link through Resend, and temporarily store a rate-limit record (email address and business identifier) in Redis (or an equivalent cache) with about a 24-hour TTL so the same address cannot request another email for the same listing within about 24 hours. We do not create a favorites account from this request, we do not store a Save favorites list in our database, we do not email the listed business because of this feature, and we do not use this email for marketing.",
+        },
+        {
           label: "Site Feedback Survey:",
           description:"After you successfully submit a Contact, Get Listed, Quick Contact, or Report Info form, we may show an optional short survey. If you choose to respond, we collect how you found RadiatorRepairHub, whether you found what you were looking for, any optional free-text feedback you provide, the form type that triggered the survey, and (when applicable) the related business listing identifier. We do not require your name or email address for the survey itself. Survey answers are stored in our database.",
         },
         {
           label: "Communication Records:",
-          description:"Content of messages, emails, or other communications you send to us, including general contact form messages, Quick Contact inquiry details, claim-related emails, listing report details, and optional site feedback survey comments.",
+          description:"Content of messages, emails, or other communications you send to us, including general contact form messages, Quick Contact inquiry details, claim-related emails, listing report details, email-yourself listing save requests, and optional site feedback survey comments.",
         },
         {
           label: "Directory Ratings and Reviews:",
@@ -111,7 +106,7 @@ function PrivacyPage() {
       bulletPoints: [
         {
           label: "Usage Data:",
-          description:"Pages visited, time spent on pages, search queries, click patterns (including clicks on affiliate product links), and navigation paths.",
+          description:"Pages visited, time spent on pages, search queries, click patterns (including clicks on affiliate product links and Share actions on business listing pages), and navigation paths. When you use Share, sharing runs in your browser (native share sheet or copy link); we do not collect share recipients. We may record a product-analytics event such as that Share was used, whether it was native share or copy link, and the business identifier. We may also show related blog articles on listing pages based on category or topic matching; that does not require additional personal information from you.",
         },
         {
           label: "Device Information:",
@@ -136,7 +131,11 @@ function PrivacyPage() {
       bulletPoints: [
         {
           label: "Analytics Cookies:",
-          description:"Help us understand how visitors use our site. We use Google Analytics and PostHog to collect usage data such as pages visited, session duration, navigation patterns, and product-interaction events (including business claims, listing updates such as shop photos, Featured listing checkout and billing actions, and affiliate product clicks).",
+          description:"Help us understand how visitors use our site. We use Google Analytics and PostHog to collect usage data such as pages visited, session duration, navigation patterns, and product-interaction events (including business claims, listing updates such as shop photos, Featured listing checkout and billing actions, email-yourself listing Save submissions and failures, Share actions on listing pages, and affiliate product clicks).",
+        },
+        {
+          label: "Advertising Cookies:",
+          description:"Google AdSense may set cookies or use similar technologies to serve and measure ads on pages where we place AdSense units (for example blog, FAQ, and directory browse pages).",
         },
         {
           label: "Security and Performance Cookies:",
@@ -185,11 +184,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Product analytics, page view tracking, and understanding how users interact with our site (including search, forms, business claims, listing updates such as shop photos, Featured listing checkout and billing actions, and affiliate product clicks).",
+          description:"Product analytics, page view tracking, and understanding how users interact with our site (including search, forms, business claims, listing updates such as shop photos, Featured listing checkout and billing actions, email-yourself listing Save submissions and failures, Share actions on listing pages, and affiliate product clicks).",
         },
         {
           label: "Data Collected:",
-          description:"Page URLs, referrer, browser and device information, session identifiers, and interaction events (for example claim funnel steps, owner listing updates including photos, Featured checkout started/completed/canceled, billing portal opens, and Featured CTA clicks). Business identifiers such as listing ID, slug, or name may be included with those events when relevant. PostHog is configured to create user profiles only for identified users. We do not currently enable PostHog session recording on our site.",
+          description:"Page URLs, referrer, browser and device information, session identifiers, and interaction events (for example claim funnel steps, owner listing updates including photos, Featured checkout started/completed/canceled, billing portal opens, Featured CTA clicks, listing Save submissions/failures, and Share actions such as native share vs copy link). Business identifiers such as listing ID, slug, or name may be included with those events when relevant. PostHog is configured to create user profiles only for identified users. We do not currently enable PostHog session recording on our site.",
         },
         {
           label: "Privacy Policy:",
@@ -248,11 +247,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Send transactional emails, including general Contact and Get Listed confirmations and admin notifications, Quick Contact acknowledgments and status updates, forwarding inquiries to listed businesses, business claim verification emails and codes, listing-live notices, weekly listing activity digest emails, and internal admin notifications for listing reports, completed claims, and Featured listing purchases.",
+          description:"Send transactional emails, including general Contact and Get Listed confirmations and admin notifications, Quick Contact acknowledgments and status updates, forwarding inquiries to listed businesses, business claim verification emails and codes, listing-live notices, weekly listing activity digest emails, email-yourself listing save messages, and internal admin notifications for listing reports, completed claims, and Featured listing purchases.",
         },
         {
           label: "Data Collected:",
-          description:"Name, email address, phone number, inquiry subject, Google listing links, vehicle information, issue details, urgency, message content, claim verification details, listing request details, listing report details, optional owner/employee notification emails for weekly reports, aggregated listing activity used in weekly digest emails, unsubscribe requests, and Featured purchase notification details (such as business name, owner email, listing link, and Stripe subscription identifiers) needed to process and deliver those emails.",
+          description:"Name, email address, phone number, inquiry subject, Google listing links, vehicle information, issue details, urgency, message content, claim verification details, listing request details, listing report details, email-yourself listing save details (recipient email, optional name, and listing link), optional owner/employee notification emails for weekly reports, aggregated listing activity used in weekly digest emails, unsubscribe requests, and Featured purchase notification details (such as business name, owner email, listing link, and Stripe subscription identifiers) needed to process and deliver those emails.",
         },
         {
           label: "Privacy Policy:",
@@ -311,11 +310,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Verify that email addresses submitted through Contact, Get Listed, Quick Contact, and listing reports appear deliverable before we accept and store the submission. When a claimed business owner updates listing contact details, we may also verify a changed email address (Email Reputation) and a changed phone number (Phone Intelligence).",
+          description:"Verify that email addresses submitted through Contact, Get Listed, Quick Contact, listing reports, and email-yourself listing save requests appear deliverable before we accept and process the submission. When a claimed business owner updates listing contact details, we may also verify a changed email address (Email Reputation) and a changed phone number (Phone Intelligence).",
         },
         {
           label: "Data Collected:",
-          description:"The email address you submit on Contact, Get Listed, Quick Contact, or listing report forms, and any email address or phone number a claimed owner submits when updating listing contact information.",
+          description:"The email address you submit on Contact, Get Listed, Quick Contact, listing report, or email-yourself listing save forms, and any email address or phone number a claimed owner submits when updating listing contact information.",
         },
         {
           label: "Privacy Policy:",
@@ -365,6 +364,44 @@ function PrivacyPage() {
         },
       ],
     },
+    {
+      title: "Google AdSense",
+      bulletPoints: [
+        {
+          label: "Provider:",
+          description: "Google LLC",
+        },
+        {
+          label: "Purpose:",
+          description:"Display advertising and ad measurement on selected pages where we place AdSense units (for example blog, FAQ, and directory browse pages).",
+        },
+        {
+          label: "Data Collected:",
+          description:"May include IP address, cookies or similar device identifiers, page URLs, and approximate location used to serve and measure ads. Ad personalization and any data Google collects for advertising are governed by Google's policies.",
+        },
+        {
+          label: "Privacy Policy:",
+          description: "https://policies.google.com/privacy",
+        },
+      ],
+    },
+    {
+      title: "Redis",
+      bulletPoints: [
+        {
+          label: "Provider:",
+          description:"Infrastructure caching we operate (Redis or an equivalent cache service).",
+        },
+        {
+          label: "Purpose:",
+          description:"Cache directory and API data for performance, and store short-lived rate-limit / cooldown keys (including email-yourself listing Save cooldowns keyed by email address and business identifier).",
+        },
+        {
+          label: "Data Collected:",
+          description:"Cached response data and short-lived operational keys. Save cooldown keys may include an email address and business identifier and expire automatically after about 24 hours.",
+        },
+      ],
+    },
   ];
 
   const howWeUseYourInformationContent = [
@@ -377,7 +414,7 @@ function PrivacyPage() {
         },
         {
           label: "Communication:",
-          description:"Respond to inquiries, support requests, and feedback submitted through our contact forms or direct communications.",
+          description:"Respond to inquiries, support requests, and feedback submitted through our contact forms or direct communications, and send transactional emails you request such as emailing yourself a business listing link.",
         },
         {
           label: "Product Improvement:",
@@ -421,7 +458,7 @@ function PrivacyPage() {
         },
         {
           label: "Search Functionality:",
-          description:"Provide relevant search results based on location and preferences.",
+          description:"Provide relevant search and browse results based on location and preferences, including browsing by state, city, postal code, and service category combinations (such as category × state and category × city pages).",
         },
       ],
     },
@@ -455,7 +492,7 @@ function PrivacyPage() {
         },
         {
           label: "Security:",
-          description:"Protect against fraud, abuse, and security threats, including verifying email addresses submitted through Contact, Get Listed, Quick Contact, and listing reports; verifying changed listing phone numbers or emails on claimed listings; and reviewing disputed or fraudulent business claims.",
+          description:"Protect against fraud, abuse, and security threats, including verifying email addresses submitted through Contact, Get Listed, Quick Contact, listing reports, and email-yourself listing saves; limiting repeated listing-save emails for the same address and listing; verifying changed listing phone numbers or emails on claimed listings; and reviewing disputed or fraudulent business claims.",
         },
         {
           label: "Legal Proceedings:",
@@ -473,10 +510,16 @@ function PrivacyPage() {
       label: "Content delivery, DNS, images, and edge security (Cloudflare)",
     },
     {
+      label: "Caching and short-lived rate-limit / cooldown records (Redis)",
+    },
+    {
       label: "API bot protection and rate limiting (Arcjet)",
     },
     {
       label: "Website analytics (Google Analytics, PostHog)",
+    },
+    {
+      label: "Display advertising (Google AdSense)",
     },
     {
       label: "Transactional email delivery (Resend)",
@@ -546,6 +589,10 @@ function PrivacyPage() {
     {
       label: "Site Feedback Surveys:",
       description:"Optional post-submit survey responses are retained for up to 2 years for product improvement, after which they may be deleted or aggregated.",
+    },
+    {
+      label: "Email Listing Save Cooldowns:",
+      description:"Rate-limit keys (email address and business identifier) stored in Redis or an equivalent cache expire automatically after about 24 hours. We do not retain a long-term Save request history or favorites list in our database.",
     },
     {
       label: "Account Information:",
@@ -618,7 +665,7 @@ function PrivacyPage() {
           label: "Object to certain uses of your personal information",
         },
         {
-          label:"Limit analytics tracking through your browser's privacy settings, cookie controls, or ad-blocking extensions",
+          label:"Limit analytics tracking and personalized advertising through your browser's privacy settings, cookie controls, ad-blocking extensions, or Google Ads Settings",
         },
         {
           label:"Unsubscribe from listing emails (weekly reports, claim invites, and follow-ups) using the link in those emails, or (for claimed listings you own) turn weekly reports off in Settings → Notifications. Quick Contact messages are not stopped by unsubscribe.",
@@ -642,7 +689,7 @@ function PrivacyPage() {
     },
     {
       title: "Third-Party Links and Services",
-      content:"Our directory, blog, and Shop pages contain links to third-party websites, businesses, and retailers (including Amazon). This Privacy Policy does not apply to those third-party sites or services. We are not responsible for the privacy practices or content of third-party websites. We encourage you to review the privacy policies of any third-party sites you visit. For third-party services we use to operate our website (such as Google Analytics, PostHog, Cloudflare, Arcjet, Resend, Supabase, Abstract API, Stripe, and Amazon Associates), see the Third-Party Services section above.",
+      content:"Our directory, blog, and Shop pages contain links to third-party websites, businesses, and retailers (including Amazon). This Privacy Policy does not apply to those third-party sites or services. We are not responsible for the privacy practices or content of third-party websites. We encourage you to review the privacy policies of any third-party sites you visit. For third-party services we use to operate our website (such as Google Analytics, Google AdSense, PostHog, Cloudflare, Arcjet, Resend, Supabase, Twilio, Abstract API, Stripe, Redis, and Amazon Associates), see the Third-Party Services section above.",
     },
     {
       title: "International Data Transfers",
@@ -661,7 +708,7 @@ function PrivacyPage() {
     },
     {
       label: "Right to Opt-Out:",
-      description:"Opt-out of the sale of personal information (we do not sell personal information).",
+      description:"Opt-out of the sale of personal information. We do not sell personal information for money. Advertising partners such as Google AdSense may process data (for example cookies or device identifiers) to serve personalized ads, which may be considered a \"share\" under some privacy laws. You can limit personalized ads through Google Ads Settings, your browser controls, or by contacting us as described below.",
     },
     {
       label: "Right to Non-Discrimination:",

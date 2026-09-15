@@ -13,7 +13,11 @@ import ContactSection from "@/components/pages/home/ContactSection";
 import FAQSection from "@/components/seo/FAQSection";
 import { HOME_KEYWORDS } from "@/lib/seo/keywords";
 import { EXTRA_FAQS } from "@/lib/seo/faqs";
-import { buildPageMetadata } from "@/lib/seo/metadata";
+import {
+  buildPageMetadata,
+  composeDescription,
+  composeTitle,
+} from "@/lib/seo/metadata";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import { FEATURED_AFFILIATE_PRODUCT_ALIASES } from "@/lib/affiliateProducts";
 import { fetchTopPrimaryCategories } from "@/lib/api/categories";
@@ -28,9 +32,11 @@ import {
   HOME_HERO_IMAGE_SRCSET,
 } from "@/lib/images";
 
-const homeTitle = "Radiator Repair Near Me | Find Local Radiator Shops";
-const homeDescription =
-  "Find radiator repair near me. Compare verified radiator repair shops by city, read reviews and hours, and call a cooling system specialist near you today.";
+const homeTitle = composeTitle("Radiator Repair Near Me");
+const homeDescription = composeDescription(
+  "Find radiator repair near me.",
+  "Compare verified radiator repair shops by city, read reviews and hours, and call a cooling system specialist near you today."
+);
 
 export const metadata = buildPageMetadata({
   title: homeTitle,

@@ -15,11 +15,18 @@ import {
   getBusinessEmail,
   getBusinessPhoneDigits,
 } from "@/lib/businessContactInfo";
-import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
+import {
+  buildPageMetadata,
+  composeDescription,
+  composeTitle,
+  SITE_URL,
+} from "@/lib/seo/metadata";
 
-const pageTitle = "Contact RadiatorRepairHub | Directory Support & Feedback";
-const pageDescription =
-  "Contact the RadiatorRepairHub team about the directory, listings, partnerships, or website feedback. To reach a claimed repair shop, use Quick Contact on that business's page.";
+const pageTitle = composeTitle("Contact Us");
+const pageDescription = composeDescription(
+  "Contact the RadiatorRepairHub team about the directory, listings, partnerships, or website feedback.",
+  "To reach a claimed repair shop, use Quick Contact on that business's page."
+);
 
 export const metadata = buildPageMetadata({
   title: pageTitle,

@@ -5,17 +5,21 @@ import PageHeader from "@/components/layout/Header/PageHeader";
 import FAQPageContent from "@/components/pages/faq/FAQPageContent";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import { FAQ_KEYWORDS } from "@/lib/seo/keywords";
-import { buildPageMetadata } from "@/lib/seo/metadata";
+import {
+  buildPageMetadata,
+  composeDescription,
+  composeTitle,
+} from "@/lib/seo/metadata";
 import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-products";
 import {
   getAllFaqsFlat,
   getFaqSectionsWithItems,
 } from "@/lib/data/faq";
 
-const faqTitle =
-  "Frequently Asked Questions | Radiator Repair Help & Support - RadiatorRepairHub";
-const faqDescription =
-  "Answers about radiator repair, finding shops near you, claiming a listing, Featured upgrades, and using RadiatorRepairHub.";
+const faqTitle = composeTitle("Radiator Repair FAQ");
+const faqDescription = composeDescription(
+  "Answers about radiator repair, finding shops near you, claiming a listing, Featured upgrades, and using RadiatorRepairHub."
+);
 
 export const metadata = buildPageMetadata({
   title: faqTitle,
