@@ -12,6 +12,11 @@ export const CityIDSchema = Yup.object({
   city_id: Yup.string().trim().min(1).max(150).required(),
 });
 
+// Primary category ID Schema
+export const CategoryIDSchema = Yup.object({
+  category_id: Yup.string().trim().uuid("Invalid category ID").required(),
+});
+
 // State ID and City Slug Schema
 export const StateIDandCitySlugSchema = Yup.object({
   state_id: Yup.string().trim().min(1).max(150).required(),

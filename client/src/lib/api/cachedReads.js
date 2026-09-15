@@ -11,6 +11,10 @@ import {
   fetchCitiesCount as fetchCitiesCountRequest,
   fetchCityBySlug as fetchCityBySlugRequest,
   fetchCityBusinessCounts as fetchCityBusinessCountsRequest,
+  fetchCityCategoryCounts as fetchCityCategoryCountsRequest,
+  fetchStateCategoryCounts as fetchStateCategoryCountsRequest,
+  fetchCategoryCityCounts as fetchCategoryCityCountsRequest,
+  fetchCategoryStateCounts as fetchCategoryStateCountsRequest,
   fetchStateBusinessCounts as fetchStateBusinessCountsRequest,
 } from "@/lib/api/location";
 import { fetchPrimaryCategoryBusinessCounts as fetchPrimaryCategoryBusinessCountsRequest } from "@/lib/api/categories";
@@ -65,6 +69,23 @@ export const fetchStateBusinessCountsByLimit = cache((limit) =>
  */
 export const fetchCityBusinessCounts = cache((stateId) =>
   fetchCityBusinessCountsRequest(stateId)
+);
+
+export const fetchCityCategoryCounts = cache((cityId) =>
+  fetchCityCategoryCountsRequest(cityId)
+);
+
+export const fetchStateCategoryCounts = cache((stateId) =>
+  fetchStateCategoryCountsRequest(stateId)
+);
+
+export const fetchCategoryCityCounts = cache(
+  (categoryId, limit = 12, stateId = null) =>
+    fetchCategoryCityCountsRequest(categoryId, limit, undefined, stateId)
+);
+
+export const fetchCategoryStateCounts = cache((categoryId, limit = 12) =>
+  fetchCategoryStateCountsRequest(categoryId, limit)
 );
 
 export const fetchStateBusinessCountsByCodes = cache((codesKey) =>

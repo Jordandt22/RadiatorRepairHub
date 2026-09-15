@@ -458,6 +458,427 @@ export const getCitiesWithBusinessesForSitemap = async () => {
   return { data: cities, error: null };
 };
 
+/**
+ * City × primary-category pairs with at least one non-test business (sitemap).
+ */
+export const getCityCategoryPairsForSitemap = async () => {
+  const [citiesRes, categoriesRes] = await Promise.all([
+    getAllCitiesList(),
+    getAllPrimaryCategories(),
+  ]);
+
+  if (citiesRes.error) {
+    return { data: null, error: citiesRes.error };
+  }
+  if (categoriesRes.error) {
+    return { data: null, error: categoriesRes.error };
+  }
+
+  const cityById = new Map(
+    (citiesRes.data ?? []).map((city) => [city.id, city])
+  );
+  const categoryById = new Map(
+    (categoriesRes.data ?? []).map((category) => [category.id, category])
+  );
+  const statsByPair = new Map();
+  const pageSize = 1000;
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("city_id, primary_category_id, scraped_at")
+      .eq("is_test", false)
+      .not("city_id", "is", null)
+      .not("primary_category_id", "is", null)
+      .order("id")
+      .range(from, from + pageSize - 1);
+
+    if (error) return { data: null, error };
+
+    for (const row of data ?? []) {
+      const cityId = row.city_id;
+      const categoryId = row.primary_category_id;
+      if (!cityId || !categoryId) continue;
+
+      const pairKey = `${cityId}:${categoryId}`;
+      const current = statsByPair.get(pairKey) ?? {
+        city_id: cityId,
+        primary_category_id: categoryId,
+        business_count: 0,
+        last_modified: null,
+      };
+      current.business_count += 1;
+
+      if (
+        row.scraped_at &&
+        (!current.last_modified || row.scraped_at > current.last_modified)
+      ) {
+        current.last_modified = row.scraped_at;
+      }
+
+      statsByPair.set(pairKey, current);
+    }
+
+    if (!data?.length || data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  const pairs = [];
+  for (const stats of statsByPair.values()) {
+    if (stats.business_count <= 0) continue;
+
+    const city = cityById.get(stats.city_id);
+    const category = categoryById.get(stats.primary_category_id);
+    if (!city?.slug || !city.state_id || !category?.slug) continue;
+
+    pairs.push({
+      state_id: city.state_id,
+      city_slug: city.slug,
+      category_slug: category.slug,
+      business_count: stats.business_count,
+      last_modified: stats.last_modified,
+    });
+  }
+
+  pairs.sort((a, b) => {
+    const cityCmp = a.city_slug.localeCompare(b.city_slug);
+    if (cityCmp !== 0) return cityCmp;
+    return a.category_slug.localeCompare(b.category_slug);
+  });
+
+  return { data: pairs, error: null };
+};
+
+/**
+ * State × primary-category pairs with at least one non-test business (sitemap).
+ */
+export const getStateCategoryPairsForSitemap = async () => {
+  const [statesRes, categoriesRes] = await Promise.all([
+    getAllStates(),
+    getAllPrimaryCategories(),
+  ]);
+
+  if (statesRes.error) {
+    return { data: null, error: statesRes.error };
+  }
+  if (categoriesRes.error) {
+    return { data: null, error: categoriesRes.error };
+  }
+
+  const stateById = new Map(
+    (statesRes.data ?? []).map((state) => [state.id, state])
+  );
+  const categoryById = new Map(
+    (categoriesRes.data ?? []).map((category) => [category.id, category])
+  );
+  const statsByPair = new Map();
+  const pageSize = 1000;
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("state_id, primary_category_id, scraped_at")
+      .eq("is_test", false)
+      .not("state_id", "is", null)
+      .not("primary_category_id", "is", null)
+      .order("id")
+      .range(from, from + pageSize - 1);
+
+    if (error) return { data: null, error };
+
+    for (const row of data ?? []) {
+      const stateId = row.state_id;
+      const categoryId = row.primary_category_id;
+      if (!stateId || !categoryId) continue;
+
+      const pairKey = `${stateId}:${categoryId}`;
+      const current = statsByPair.get(pairKey) ?? {
+        state_id: stateId,
+        primary_category_id: categoryId,
+        business_count: 0,
+        last_modified: null,
+      };
+      current.business_count += 1;
+
+      if (
+        row.scraped_at &&
+        (!current.last_modified || row.scraped_at > current.last_modified)
+      ) {
+        current.last_modified = row.scraped_at;
+      }
+
+      statsByPair.set(pairKey, current);
+    }
+
+    if (!data?.length || data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  const pairs = [];
+  for (const stats of statsByPair.values()) {
+    if (stats.business_count <= 0) continue;
+
+    const state = stateById.get(stats.state_id);
+    const category = categoryById.get(stats.primary_category_id);
+    if (!state?.code || !category?.slug) continue;
+
+    pairs.push({
+      state_id: state.id,
+      state_code: state.code,
+      category_slug: category.slug,
+      business_count: stats.business_count,
+      last_modified: stats.last_modified,
+    });
+  }
+
+  pairs.sort((a, b) => {
+    const stateCmp = a.state_code.localeCompare(b.state_code);
+    if (stateCmp !== 0) return stateCmp;
+    return a.category_slug.localeCompare(b.category_slug);
+  });
+
+  return { data: pairs, error: null };
+};
+
+/**
+ * Primary categories present in a city, with business counts.
+ */
+export const getCategoryCountsForCity = async (city_id) => {
+  const categoriesRes = await getAllPrimaryCategories();
+  if (categoriesRes.error) {
+    return { data: null, error: categoriesRes.error };
+  }
+
+  const countByCategoryId = new Map();
+  const pageSize = 1000;
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("primary_category_id")
+      .eq("city_id", city_id)
+      .eq("is_test", false)
+      .not("primary_category_id", "is", null)
+      .order("id")
+      .range(from, from + pageSize - 1);
+
+    if (error) return { data: null, error };
+
+    for (const row of data ?? []) {
+      const id = row.primary_category_id;
+      if (!id) continue;
+      countByCategoryId.set(id, (countByCategoryId.get(id) || 0) + 1);
+    }
+
+    if (!data?.length || data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  const categories = (categoriesRes.data ?? [])
+    .map((category) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      business_count: countByCategoryId.get(category.id) || 0,
+    }))
+    .filter((category) => category.business_count > 0)
+    .sort((a, b) => b.business_count - a.business_count);
+
+  return { data: { categories }, error: null };
+};
+
+/**
+ * Primary categories present in a state, with business counts.
+ */
+export const getCategoryCountsForState = async (state_id) => {
+  const categoriesRes = await getAllPrimaryCategories();
+  if (categoriesRes.error) {
+    return { data: null, error: categoriesRes.error };
+  }
+
+  const countByCategoryId = new Map();
+  const pageSize = 1000;
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("primary_category_id")
+      .eq("state_id", state_id)
+      .eq("is_test", false)
+      .not("primary_category_id", "is", null)
+      .order("id")
+      .range(from, from + pageSize - 1);
+
+    if (error) return { data: null, error };
+
+    for (const row of data ?? []) {
+      const id = row.primary_category_id;
+      if (!id) continue;
+      countByCategoryId.set(id, (countByCategoryId.get(id) || 0) + 1);
+    }
+
+    if (!data?.length || data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  const categories = (categoriesRes.data ?? [])
+    .map((category) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      business_count: countByCategoryId.get(category.id) || 0,
+    }))
+    .filter((category) => category.business_count > 0)
+    .sort((a, b) => b.business_count - a.business_count);
+
+  return { data: { categories }, error: null };
+};
+
+/**
+ * Cities with businesses in a primary category, sorted by count desc.
+ */
+export const getCityCountsForCategory = async (
+  category_id,
+  limit = 12,
+  state_id = null
+) => {
+  const citiesRes = await getAllCitiesList();
+  if (citiesRes.error) {
+    return { data: null, error: citiesRes.error };
+  }
+
+  const cityById = new Map(
+    (citiesRes.data ?? []).map((city) => [city.id, city])
+  );
+  const countByCityId = new Map();
+  const pageSize = 1000;
+  let from = 0;
+
+  while (true) {
+    let query = supabase
+      .from("businesses")
+      .select("city_id")
+      .eq("primary_category_id", category_id)
+      .eq("is_test", false)
+      .not("city_id", "is", null);
+
+    if (state_id) {
+      query = query.eq("state_id", state_id);
+    }
+
+    const { data, error } = await query
+      .order("id")
+      .range(from, from + pageSize - 1);
+
+    if (error) return { data: null, error };
+
+    for (const row of data ?? []) {
+      const cityId = row.city_id;
+      if (!cityId) continue;
+      countByCityId.set(cityId, (countByCityId.get(cityId) || 0) + 1);
+    }
+
+    if (!data?.length || data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  const stateCodeById = new Map();
+  const { data: statesData, error: statesError } = await getAllStates();
+  if (statesError) {
+    return { data: null, error: statesError };
+  }
+  for (const state of statesData ?? []) {
+    stateCodeById.set(state.id, state.code);
+  }
+
+  const cities = [];
+  for (const [cityId, businessCount] of countByCityId) {
+    if (businessCount <= 0) continue;
+    const city = cityById.get(cityId);
+    if (!city?.slug || !city.state_id) continue;
+
+    cities.push({
+      id: city.id,
+      name: city.name,
+      slug: city.slug,
+      state_id: city.state_id,
+      state_code: stateCodeById.get(city.state_id) || null,
+      business_count: businessCount,
+    });
+  }
+
+  cities.sort((a, b) => b.business_count - a.business_count);
+
+  const capped =
+    typeof limit === "number" && limit > 0 ? cities.slice(0, limit) : cities;
+
+  return { data: { cities: capped }, error: null };
+};
+
+/**
+ * States with businesses in a primary category, sorted by count desc.
+ */
+export const getStateCountsForCategory = async (category_id, limit = 12) => {
+  const { data: statesData, error: statesError } = await getAllStates();
+  if (statesError) {
+    return { data: null, error: statesError };
+  }
+
+  const stateById = new Map(
+    (statesData ?? []).map((state) => [state.id, state])
+  );
+  const countByStateId = new Map();
+  const pageSize = 1000;
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("state_id")
+      .eq("primary_category_id", category_id)
+      .eq("is_test", false)
+      .not("state_id", "is", null)
+      .order("id")
+      .range(from, from + pageSize - 1);
+
+    if (error) return { data: null, error };
+
+    for (const row of data ?? []) {
+      const stateId = row.state_id;
+      if (!stateId) continue;
+      countByStateId.set(stateId, (countByStateId.get(stateId) || 0) + 1);
+    }
+
+    if (!data?.length || data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  const states = [];
+  for (const [stateId, businessCount] of countByStateId) {
+    if (businessCount <= 0) continue;
+    const state = stateById.get(stateId);
+    if (!state?.code) continue;
+
+    states.push({
+      id: state.id,
+      name: state.name,
+      code: state.code,
+      business_count: businessCount,
+    });
+  }
+
+  states.sort((a, b) => b.business_count - a.business_count);
+
+  const capped =
+    typeof limit === "number" && limit > 0 ? states.slice(0, limit) : states;
+
+  return { data: { states: capped }, error: null };
+};
+
 export const countBusinessesByState = async (state_id) => {
   const { count, error } = await supabase
     .from("businesses")
@@ -934,6 +1355,18 @@ export const getBusinessClaimInfo = async (business_id) => {
     .from("businesses")
     .select(
       "id, title, slug, email, phone, timezone, is_claimed, email_status, phone_status, hours:business_hours(day_of_week, is_closed, hours)"
+    )
+    .eq("id", business_id)
+    .single();
+
+  return { data, error };
+};
+
+export const getBusinessForListingSave = async (business_id) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .select(
+      "id, title, slug, phone, address, city:cities(name, slug), state:states(name, code)"
     )
     .eq("id", business_id)
     .single();

@@ -12,6 +12,12 @@ import {
   getAllCitiesKey,
   getCitiesCountKey,
   getCitiesForSitemapKey,
+  getCityCategoriesForSitemapKey,
+  getStateCategoriesForSitemapKey,
+  getCityCategoryCountsKey,
+  getStateCategoryCountsKey,
+  getCategoryCityCountsKey,
+  getCategoryStateCountsKey,
   getCityBySlugKey,
   getPostalCodesByStateKey,
   getStateBusinessCountsKey,
@@ -28,6 +34,12 @@ import {
   getStateBusinessCounts,
   getCityBusinessCounts,
   getCitiesWithBusinessesForSitemap,
+  getCityCategoryPairsForSitemap,
+  getStateCategoryPairsForSitemap,
+  getCategoryCountsForCity,
+  getCategoryCountsForState,
+  getCityCountsForCategory,
+  getStateCountsForCategory,
 } from "../supabase/supabase.functions.js";
 
 const { SUPABASE_ERROR } = errorCodes;
@@ -190,6 +202,176 @@ export const getCitiesForSitemapHandler = async (req, res) => {
         customErrorHandler(
           SUPABASE_ERROR,
           "There was an error fetching cities for sitemap.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getCityCategoriesForSitemapHandler = async (req, res) => {
+  const { key, interval } = getCityCategoriesForSitemapKey();
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getCityCategoryPairsForSitemap();
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching city-category pairs for sitemap.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getStateCategoriesForSitemapHandler = async (req, res) => {
+  const { key, interval } = getStateCategoriesForSitemapKey();
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getStateCategoryPairsForSitemap();
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching state-category pairs for sitemap.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getCityCategoryCountsHandler = async (req, res) => {
+  const { city_id } = req.params;
+  const { key, interval } = getCityCategoryCountsKey(city_id);
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getCategoryCountsForCity(city_id);
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching category counts for this city.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getStateCategoryCountsHandler = async (req, res) => {
+  const { state_id } = req.params;
+  const { key, interval } = getStateCategoryCountsKey(state_id);
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getCategoryCountsForState(state_id);
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching category counts for this state.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getCategoryCityCountsHandler = async (req, res) => {
+  const { category_id } = req.params;
+  const parsedLimit = Number.parseInt(String(req.query.limit ?? ""), 10);
+  const limit = Number.isFinite(parsedLimit)
+    ? Math.min(50, Math.max(1, parsedLimit))
+    : 12;
+  const stateId =
+    typeof req.query.state_id === "string" && req.query.state_id.trim()
+      ? req.query.state_id.trim()
+      : null;
+
+  const { key, interval } = getCategoryCityCountsKey(
+    category_id,
+    limit,
+    stateId
+  );
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getCityCountsForCategory(
+    category_id,
+    limit,
+    stateId
+  );
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching city counts for this category.",
+          error
+        )
+      );
+  }
+
+  await cacheData(key, interval, data);
+  res.status(200).json(successHandler(data));
+};
+
+export const getCategoryStateCountsHandler = async (req, res) => {
+  const { category_id } = req.params;
+  const parsedLimit = Number.parseInt(String(req.query.limit ?? ""), 10);
+  const limit = Number.isFinite(parsedLimit)
+    ? Math.min(50, Math.max(1, parsedLimit))
+    : 12;
+
+  const { key, interval } = getCategoryStateCountsKey(category_id, limit);
+  const cachedData = await getCacheData(key);
+  if (cachedData) {
+    return res.status(200).json(successHandler(cachedData.data));
+  }
+
+  const { data, error } = await getStateCountsForCategory(category_id, limit);
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error fetching state counts for this category.",
           error
         )
       );

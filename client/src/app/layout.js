@@ -7,7 +7,15 @@ import { PostHogProvider } from "./providers";
 import SiteChrome from "@/components/layout/SiteChrome";
 import { ToastProvider } from "@/contexts/ToastProvider";
 import { ALL_KEYWORDS } from "@/lib/seo/keywords";
-import { DEFAULT_OG_IMAGE, INDEX_ROBOTS, SITE_URL } from "@/lib/seo/metadata";
+import {
+  buildOpenGraph,
+  buildTwitterCard,
+  composeDescription,
+  composeTitle,
+  DEFAULT_OG_IMAGE,
+  INDEX_ROBOTS,
+  SITE_URL,
+} from "@/lib/seo/metadata";
 import {
   getBusinessEmail,
   getBusinessPhoneDigits,
@@ -26,11 +34,14 @@ const plexSans = IBM_Plex_Sans({
   display: "swap",
 });
 
+const layoutTitle = composeTitle("Find Trusted Auto Radiator Repair");
+const layoutDescription = composeDescription(
+  "Find radiator repair near you, browse trusted auto shop listings, and connect with cooling system specialists by city."
+);
+
 export const metadata = {
-  title:
-    "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services Near You",
-  description:
-    "RadiatorRepairHub helps you find radiator repair near me, trusted auto repair shop listings, and radiator services. Browse by city, compare reviews, and connect with certified specialists.",
+  title: layoutTitle,
+  description: layoutDescription,
   keywords: ALL_KEYWORDS,
   authors: [{ name: "RadiatorRepairHub" }],
   creator: "RadiatorRepairHub",
@@ -55,16 +66,17 @@ export const metadata = {
   alternates: {
     canonical: "https://radiatorrepairhub.com",
   },
-  openGraph: {
-    title: "RadiatorRepairHub - Find Trusted Auto Radiator Repair Services",
-    description:
-      "Connect with certified radiator repair specialists in your area. Compare services, read reviews, and keep your vehicle running cool.",
-    type: "website",
-    locale: "en_US",
-    url: "https://radiatorrepairhub.com",
-    siteName: "RadiatorRepairHub",
+  openGraph: buildOpenGraph({
+    title: layoutTitle,
+    description: layoutDescription,
+    url: "",
     images: [DEFAULT_OG_IMAGE],
-  },
+  }),
+  twitter: buildTwitterCard({
+    title: layoutTitle,
+    description: layoutDescription,
+    images: [DEFAULT_OG_IMAGE],
+  }),
   robots: INDEX_ROBOTS,
   ...(process.env.GOOGLE_VERIFICATION_ID && {
     verification: {
@@ -150,8 +162,9 @@ export default async function RootLayout({ children }) {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: `${SITE_URL}/search`,
+        urlTemplate: `${SITE_URL}/search?title={search_term_string}`,
       },
+      "query-input": "required name=search_term_string",
     },
     inLanguage: "en-US",
   };

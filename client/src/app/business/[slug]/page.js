@@ -35,8 +35,10 @@ import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import BusinessPageViewTracker from "@/components/businesses/stats/BusinessPageViewTracker";
 import NearbyBusinesses from "@/components/businesses/NearbyBusinesses";
+import RelatedBlogsSection from "@/components/businesses/RelatedBlogsSection";
 import HideWhenListingOwner from "@/components/businesses/HideWhenListingOwner";
 import {
+  buildTwitterCard,
   composeDescription,
   composeTitle,
   DEFAULT_OG_IMAGE,
@@ -54,6 +56,7 @@ import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-produ
 import { FEATURED_AFFILIATE_PRODUCT_ALIASES } from "@/lib/affiliateProducts";
 import { getBusinessDisplayImage, getBusinessHeroImage } from "@/lib/images";
 import { SHORT_CACHE, NO_STORE } from "@/lib/cachePolicy";
+import { getRelatedBlogPosts } from "@/lib/blogs";
 import {
   getGoogleMapsDirectionsUrl,
   getGoogleMapsEmbedQuery,
@@ -99,6 +102,16 @@ export async function generateMetadata({ params }) {
           : "See hours, services, and directions."
       );
     const displayImage = getBusinessDisplayImage(business);
+    const ogImages = displayImage
+      ? [
+          {
+            url: displayImage,
+            width: 1200,
+            height: 630,
+            alt: business.title,
+          },
+        ]
+      : [DEFAULT_OG_IMAGE];
 
     return {
       title,
@@ -117,18 +130,14 @@ export async function generateMetadata({ params }) {
         description,
         type: "website",
         locale: "en_US",
-        images: displayImage
-          ? [
-              {
-                url: displayImage,
-                width: 1200,
-                height: 630,
-                alt: business.title,
-              },
-            ]
-          : [DEFAULT_OG_IMAGE],
+        images: ogImages,
         siteName: "RadiatorRepairHub",
       },
+      twitter: buildTwitterCard({
+        title,
+        description,
+        images: ogImages,
+      }),
       alternates: {
         canonical: `${SITE_URL}/business/${slug}`,
       },
@@ -177,9 +186,22 @@ async function Page({ params }) {
           fetchBusinessesInCity(business.city?.id, 4, business.id),
         ]);
 
+    const relatedBlogCategoryNames = [
+      business.primary_category?.name,
+      ...(business.secondary_categories || []).map(
+        (entry) => entry?.secondary_categories?.name || entry?.name
+      ),
+    ].filter(Boolean);
+
+    const relatedBlogPosts = getRelatedBlogPosts({
+      categoryNames: relatedBlogCategoryNames,
+      limit: 3,
+    });
+
     const mapsQuery = getGoogleMapsEmbedQuery(business);
     const mapsHref = getGoogleMapsPlaceUrl(business);
     const directionsHref = getGoogleMapsDirectionsUrl(business);
+    const shareUrl = `${SITE_URL}/business/${slug}`;
 
     const structuredData = buildBusinessSchema(business, slug);
 
@@ -286,6 +308,7 @@ async function Page({ params }) {
                   emailStatus={business.email_status}
                   isClaimed={Boolean(business.is_claimed)}
                   mapsHref={directionsHref}
+                  shareUrl={shareUrl}
                   placement="hero"
                 />
               </div>
@@ -300,6 +323,7 @@ async function Page({ params }) {
             emailStatus={business.email_status}
             isClaimed={Boolean(business.is_claimed)}
             mapsHref={directionsHref}
+            shareUrl={shareUrl}
             placement="sticky"
           />
 
@@ -660,6 +684,8 @@ async function Page({ params }) {
                 ) : null}
               </HideWhenListingOwner>
             ) : null}
+
+            <RelatedBlogsSection posts={relatedBlogPosts} />
 
             <DirectoryDisclaimer className="mt-10" />
           </div>

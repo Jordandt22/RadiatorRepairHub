@@ -1,11 +1,18 @@
 import { Suspense } from "react";
 import PricingPageContent from "@/components/pages/pricing/PricingPageContent";
 import PricingHeader from "@/components/pages/pricing/PricingHeader";
-import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
+import {
+  buildPageMetadata,
+  composeDescription,
+  composeTitle,
+  SITE_URL,
+} from "@/lib/seo/metadata";
 
-const pageTitle = "Featured Listing Pricing | RadiatorRepairHub";
-const pageDescription =
-  "Upgrade a claimed radiator repair listing to Featured for $49/month. Get a Featured badge, search priority, up to 10 shop photos, and a place on the Featured page. Cancel anytime; current period fees are non-refundable.";
+const pageTitle = composeTitle("Featured Listing Pricing");
+const pageDescription = composeDescription(
+  "Upgrade a claimed radiator repair listing to Featured for $49/month.",
+  "Get a Featured badge, search priority, up to 10 shop photos, and a place on the Featured page."
+);
 
 export const metadata = buildPageMetadata({
   title: pageTitle,

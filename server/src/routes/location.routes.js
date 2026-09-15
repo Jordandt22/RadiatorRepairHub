@@ -10,6 +10,12 @@ import {
   getStateBusinessCountsHandler,
   getCityBusinessCountsHandler,
   getCitiesForSitemapHandler,
+  getCityCategoriesForSitemapHandler,
+  getStateCategoriesForSitemapHandler,
+  getCityCategoryCountsHandler,
+  getStateCategoryCountsHandler,
+  getCategoryCityCountsHandler,
+  getCategoryStateCountsHandler,
 } from "../controllers/location.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import { paramsValidator } from "../middleware/validators.js";
@@ -17,6 +23,7 @@ import {
   StateIDSchema,
   CityIDSchema,
   StateIDandCitySlugSchema,
+  CategoryIDSchema,
 } from "../schemas/location.schemas.js";
 
 const locationRouter = Router();
@@ -40,6 +47,40 @@ locationRouter.get(
 locationRouter.get(
   "/cities/sitemap",
   serverErrorCatcherWrapper(getCitiesForSitemapHandler)
+);
+
+locationRouter.get(
+  "/city-categories/sitemap",
+  serverErrorCatcherWrapper(getCityCategoriesForSitemapHandler)
+);
+
+locationRouter.get(
+  "/state-categories/sitemap",
+  serverErrorCatcherWrapper(getStateCategoriesForSitemapHandler)
+);
+
+locationRouter.get(
+  "/cities/:city_id/category-counts",
+  paramsValidator(CityIDSchema),
+  serverErrorCatcherWrapper(getCityCategoryCountsHandler)
+);
+
+locationRouter.get(
+  "/states/:state_id/category-counts",
+  paramsValidator(StateIDSchema),
+  serverErrorCatcherWrapper(getStateCategoryCountsHandler)
+);
+
+locationRouter.get(
+  "/categories/:category_id/city-counts",
+  paramsValidator(CategoryIDSchema),
+  serverErrorCatcherWrapper(getCategoryCityCountsHandler)
+);
+
+locationRouter.get(
+  "/categories/:category_id/state-counts",
+  paramsValidator(CategoryIDSchema),
+  serverErrorCatcherWrapper(getCategoryStateCountsHandler)
 );
 
 locationRouter.get(

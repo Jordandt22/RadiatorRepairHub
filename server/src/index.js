@@ -15,6 +15,7 @@ import contactMessagesRouter from "./routes/contact-messages.routes.js";
 import contactInquiriesRouter from "./routes/contact-inquiries.routes.js";
 import listingRequestsRouter from "./routes/listing-requests.routes.js";
 import listingReportsRouter from "./routes/listing-reports.routes.js";
+import listingSavesRouter from "./routes/listing-saves.routes.js";
 import feedbackSurveysRouter from "./routes/feedback-surveys.routes.js";
 import affiliateProductsRouter from "./routes/affiliate-products.routes.js";
 import adminRouter from "./routes/admin/admin.routes.js";
@@ -106,6 +107,9 @@ app.use(`/v${API_VERSION}/api/listing-requests`, listingRequestsRouter);
 
 // Routes for Listing Reports
 app.use(`/v${API_VERSION}/api/listing-reports`, listingReportsRouter);
+
+// Routes for email-me listing saves
+app.use(`/v${API_VERSION}/api/listing-saves`, listingSavesRouter);
 
 // Routes for post-submit feedback surveys
 app.use(`/v${API_VERSION}/api/feedback-surveys`, feedbackSurveysRouter);

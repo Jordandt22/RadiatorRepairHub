@@ -14,12 +14,18 @@ import {
   getBusinessEmail,
   getBusinessPhoneDigits,
 } from "@/lib/businessContactInfo";
-import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
+import {
+  buildPageMetadata,
+  composeDescription,
+  composeTitle,
+  SITE_URL,
+} from "@/lib/seo/metadata";
 
-const pageTitle =
-  "Get Listed | Add Your Radiator Repair Business - RadiatorRepairHub";
-const pageDescription =
-  "List your radiator repair business on RadiatorRepairHub for free. Show up when customers search by city or category for cooling system repair.";
+const pageTitle = composeTitle("Get Listed");
+const pageDescription = composeDescription(
+  "List your radiator repair business on RadiatorRepairHub for free.",
+  "Show up when customers search by city or category for cooling system repair."
+);
 
 export const metadata = buildPageMetadata({
   title: pageTitle,

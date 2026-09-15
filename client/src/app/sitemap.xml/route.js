@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildSitemapEntries } from "@/lib/seo/sitemap";
-import { fetchCitiesForSitemap, fetchStateBusinessCounts } from "@/lib/api/location";
+import { fetchCitiesForSitemap, fetchCityCategoriesForSitemap, fetchStateCategoriesForSitemap, fetchStateBusinessCounts } from "@/lib/api/location";
 import { fetchPrimaryCategoryBusinessCounts } from "@/lib/api/categories";
 import { fetchBusinessSlugsForSitemap } from "@/lib/api/businesses";
 import { getAllBlogPosts } from "@/lib/blogs";
@@ -25,9 +25,11 @@ function formatSitemapUrl(baseUrl, page) {
 export async function GET() {
   const blogPosts = getAllBlogPosts();
 
-  const [citiesResult, categoriesResult, businessesResult, statesResult] =
+  const [citiesResult, cityCategoriesResult, stateCategoriesResult, categoriesResult, businessesResult, statesResult] =
     await Promise.all([
       fetchCitiesForSitemap(SITEMAP_CACHE),
+      fetchCityCategoriesForSitemap(SITEMAP_CACHE),
+      fetchStateCategoriesForSitemap(SITEMAP_CACHE),
       fetchPrimaryCategoryBusinessCounts(SITEMAP_CACHE),
       fetchBusinessSlugsForSitemap(),
       fetchStateBusinessCounts(
@@ -38,6 +40,20 @@ export async function GET() {
 
   if (citiesResult.error) {
     console.warn("Sitemap: failed to fetch cities", citiesResult.error);
+  }
+
+  if (cityCategoriesResult.error) {
+    console.warn(
+      "Sitemap: failed to fetch city-category pairs",
+      cityCategoriesResult.error
+    );
+  }
+
+  if (stateCategoriesResult.error) {
+    console.warn(
+      "Sitemap: failed to fetch state-category pairs",
+      stateCategoriesResult.error
+    );
   }
 
   if (categoriesResult.error) {
@@ -60,6 +76,8 @@ export async function GET() {
 
   const allPages = buildSitemapEntries({
     cities: citiesResult.data || [],
+    cityCategories: cityCategoriesResult.data || [],
+    stateCategories: stateCategoriesResult.data || [],
     primaryCategories: categoriesResult.data?.categories || [],
     businesses: businessesResult.data || [],
     blogPosts,

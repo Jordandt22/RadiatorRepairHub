@@ -13,11 +13,18 @@ import {
 } from "lucide-react";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
-import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
+import {
+  buildPageMetadata,
+  composeDescription,
+  composeTitle,
+  SITE_URL,
+} from "@/lib/seo/metadata";
 
-const pageTitle = "About RadiatorRepairHub | Radiator Repair Directory";
-const pageDescription =
-  "Learn about RadiatorRepairHub, a directory for finding radiator repair shops across the U.S. Search by location, compare listings, and contact shops directly.";
+const pageTitle = composeTitle("About Us");
+const pageDescription = composeDescription(
+  "Learn about RadiatorRepairHub, a directory for finding radiator repair shops across the U.S.",
+  "Search by location, compare listings, and contact shops directly."
+);
 
 export const metadata = buildPageMetadata({
   title: pageTitle,

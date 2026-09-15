@@ -338,6 +338,75 @@ export const LISTING_REPORT_RECEIVED_MESSAGE = Object.freeze({
   },
 });
 
+export const LISTING_SAVE_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Saved listing: ${businessName ?? "RadiatorRepairHub shop"}`,
+  html: (
+    recipientName,
+    businessName,
+    {
+      phone,
+      address,
+      cityName,
+      stateCode,
+      businessPageUrl,
+      cityPageUrl,
+    } = {},
+  ) => {
+    const safeName = escapeEmailHtml(recipientName?.trim() || "there");
+    const safeBusiness = escapeEmailHtml(businessName ?? "this shop");
+    const safePhone = escapeEmailHtml(phone ?? "");
+    const safeAddress = escapeEmailHtml(address ?? "");
+    const locationParts = [cityName, stateCode].filter(Boolean).join(", ");
+    const safeLocation = escapeEmailHtml(locationParts);
+    const listingLink = businessPageUrl
+      ? `<p><a href="${escapeEmailHtml(businessPageUrl)}" style="display: inline-block; padding: 12px 20px; background: #0b3a66; color: #ffffff; text-decoration: none; border-radius: 999px; font-weight: 600;">Open listing</a></p>
+  <p>Or copy this link:<br>
+  <a href="${escapeEmailHtml(businessPageUrl)}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl)}</a></p>`
+      : "";
+    const cityLink = cityPageUrl
+      ? `<p>Browse more shops nearby:<br>
+  <a href="${escapeEmailHtml(cityPageUrl)}" style="color: #1a73e8;">${escapeEmailHtml(cityPageUrl)}</a></p>`
+      : "";
+
+    return `
+  <p>Hi ${safeName},</p>
+
+  <p>You asked us to email you this RadiatorRepairHub listing so you can find it later.</p>
+
+  <p><strong>${safeBusiness}</strong></p>
+  <table style="width: 100%; border-collapse: collapse; margin: 12px 0 20px;">
+    ${
+      safePhone
+        ? `<tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 100px; vertical-align: top;">Phone:</td>
+      <td style="padding: 8px 0;"><a href="tel:${safePhone}" style="color: #1a73e8;">${safePhone}</a></td>
+    </tr>`
+        : ""
+    }
+    ${
+      safeAddress
+        ? `<tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Address:</td>
+      <td style="padding: 8px 0;">${safeAddress}${safeLocation ? `<br>${safeLocation}` : ""}</td>
+    </tr>`
+        : safeLocation
+          ? `<tr>
+      <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Location:</td>
+      <td style="padding: 8px 0;">${safeLocation}</td>
+    </tr>`
+          : ""
+    }
+  </table>
+
+  ${listingLink}
+  ${cityLink}
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `;
+  },
+});
+
 // Admin notification when a listing report is submitted
 export const ADMIN_NEW_LISTING_REPORT_MESSAGE = Object.freeze({
   subject: (businessName) =>

@@ -4,15 +4,22 @@ import { ArrowRight } from "lucide-react";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import ShopProductsList from "@/components/pages/shop/ShopProductsList";
 import { fetchActiveAffiliateProducts } from "@/lib/api/affiliate-products";
-import { buildPageMetadata, SITE_URL } from "@/lib/seo/metadata";
+import {
+  buildPageMetadata,
+  composeDescription,
+  composeTitle,
+  SITE_URL,
+} from "@/lib/seo/metadata";
 
 // Must be a literal — Next.js rejects imported segment config values.
 export const revalidate = 21600;
 
 export const metadata = buildPageMetadata({
-  title: "Shop | Cooling System Tools & Supplies - RadiatorRepairHub",
-  description:
-    "Browse radiator caps, coolant, funnels, and diagnostic tools recommended for cooling system care. As an Amazon Associate, we earn from qualifying purchases.",
+  title: composeTitle("Cooling System Tools & Supplies"),
+  description: composeDescription(
+    "Browse radiator caps, coolant, funnels, and diagnostic tools recommended for cooling system care.",
+    "As an Amazon Associate, we earn from qualifying purchases."
+  ),
   keywords:
     "radiator cap, coolant, antifreeze, infrared thermometer, coolant funnel, radiator tools, Amazon",
   path: "/shop",
