@@ -59,6 +59,8 @@ const SORT_VALUES = new Set([
   "ctr_asc",
   "page_views_desc",
   "page_views_asc",
+  "phone_clicks_desc",
+  "phone_clicks_asc",
   "title_asc",
   "title_desc",
 ]);

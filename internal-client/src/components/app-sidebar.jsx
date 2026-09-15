@@ -24,6 +24,7 @@ import {
   ImageIcon,
   MailXIcon,
   PhoneOffIcon,
+  PhoneIcon,
   MailSearchIcon,
   UsersIcon,
   FlaskConicalIcon,
@@ -88,6 +89,11 @@ const data = {
           title: "Analytics",
           url: "/businesses/analytics",
           icon: <BarChart3Icon />,
+        },
+        {
+          title: "Phone Activity",
+          url: "/businesses/phone-activity",
+          icon: <PhoneIcon />,
         },
         {
           title: "Search Demand",

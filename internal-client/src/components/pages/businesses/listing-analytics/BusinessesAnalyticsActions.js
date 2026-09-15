@@ -15,6 +15,7 @@ import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierComb
 export const ACTIVITY_OPTIONS = [
   { id: "all", label: "All listings" },
   { id: "has_stats", label: "Has stats" },
+  { id: "has_phone", label: "Has phone clicks" },
   { id: "no_stats", label: "No stats" },
 ];
 

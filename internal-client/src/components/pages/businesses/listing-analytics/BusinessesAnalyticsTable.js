@@ -39,7 +39,7 @@ function ctrColorClass(value) {
 function parseSort(sort) {
   const value = String(sort || "impressions_desc");
   const match = value.match(
-    /^(title|impressions|listing_clicks|ctr|page_views)_(asc|desc)$/,
+    /^(title|impressions|listing_clicks|ctr|page_views|phone_clicks)_(asc|desc)$/,
   );
   if (!match) return { key: "impressions", direction: "desc" };
   return { key: match[1], direction: match[2] };
@@ -226,7 +226,13 @@ export default function BusinessesAnalyticsTable({
                 onSortChange={onSortChange}
                 align="right"
               />
-              <TableHead className="text-right">Phone</TableHead>
+              <SortHeader
+                columnKey="phone_clicks"
+                label="Phone"
+                sort={sort}
+                onSortChange={onSortChange}
+                align="right"
+              />
               <TableHead className="text-right">Directions</TableHead>
               <TableHead className="text-right">Website</TableHead>
               <TableHead className="text-right">Email</TableHead>

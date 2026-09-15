@@ -4698,6 +4698,8 @@ const ADMIN_STATS_SORTS = new Set([
   "ctr_asc",
   "page_views_desc",
   "page_views_asc",
+  "phone_clicks_desc",
+  "phone_clicks_asc",
   "title_asc",
   "title_desc",
 ]);
@@ -4725,7 +4727,11 @@ export const getAdminBusinessStatsList = async ({
 }) => {
   const sanitizedQ = sanitizeIlikeSearch(q);
   const resolvedActivity =
-    activity === "has_stats" || activity === "no_stats" ? activity : "all";
+    activity === "has_stats" ||
+    activity === "no_stats" ||
+    activity === "has_phone"
+      ? activity
+      : "all";
   const resolvedSort = ADMIN_STATS_SORTS.has(sort) ? sort : "impressions_desc";
   const resolvedPage = Math.max(1, Number(page) || 1);
   const resolvedLimit = Math.min(50, Math.max(1, Number(limit) || 20));
@@ -4763,6 +4769,113 @@ export const getAdminBusinessStatsList = async ({
       page: currentPage,
       limit: currentLimit,
       totalPages: currentLimit > 0 ? Math.ceil(count / currentLimit) : 0,
+    },
+    error: null,
+  };
+};
+
+export const getAdminPhoneClickEvents = async ({
+  startDate,
+  endDate,
+  q = null,
+  claimed = null,
+  featured = null,
+  page = 1,
+  limit = 25,
+}) => {
+  const sanitizedQ = sanitizeIlikeSearch(q);
+  const resolvedPage = Math.max(1, Number(page) || 1);
+  const resolvedLimit = Math.min(100, Math.max(1, Number(limit) || 25));
+  const from = (resolvedPage - 1) * resolvedLimit;
+  const to = from + resolvedLimit - 1;
+
+  const endKey = endDate || businessStatDateKey();
+  const endExclusive = dateKeyOffset(endKey, 1);
+  const endIso = dateKeyStartIso(endExclusive);
+
+  let query = supabase
+    .from("business_phone_click_events")
+    .select(
+      `
+      id,
+      created_at,
+      business:businesses!inner(
+        id,
+        title,
+        slug,
+        is_claimed,
+        is_featured,
+        is_test,
+        city:cities(name),
+        state:states(name, code)
+      )
+    `,
+      { count: "exact" }
+    )
+    .eq("business.is_test", false)
+    .lt("created_at", endIso)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(from, to);
+
+  if (startDate) {
+    query = query.gte("created_at", dateKeyStartIso(startDate));
+  }
+
+  const claimedFilter = parseAdminStatsBool(claimed);
+  if (claimedFilter !== null) {
+    query = query.eq("business.is_claimed", claimedFilter);
+  }
+
+  const featuredFilter = parseAdminStatsBool(featured);
+  if (featuredFilter !== null) {
+    query = query.eq("business.is_featured", featuredFilter);
+  }
+
+  const searchOr = buildIlikeOrFilter(["title", "slug"], sanitizedQ);
+  if (searchOr) {
+    query = query.or(searchOr, { foreignTable: "business" });
+  }
+
+  const { data, error, count } = await query;
+  if (error) {
+    return { data: null, error };
+  }
+
+  const rows = (data ?? []).map((row) => {
+    const business = row.business || {};
+    return {
+      id: row.id,
+      createdAt: row.created_at,
+      business: {
+        id: business.id,
+        title: business.title,
+        slug: business.slug,
+        is_claimed: Boolean(business.is_claimed),
+        is_featured: Boolean(business.is_featured),
+        city: business.city?.name
+          ? { name: business.city.name }
+          : null,
+        state:
+          business.state?.name || business.state?.code
+            ? {
+                name: business.state?.name ?? null,
+                code: business.state?.code ?? null,
+              }
+            : null,
+      },
+    };
+  });
+
+  const totalCount = Number(count || 0);
+
+  return {
+    data: {
+      rows,
+      count: totalCount,
+      page: resolvedPage,
+      limit: resolvedLimit,
+      totalPages: resolvedLimit > 0 ? Math.ceil(totalCount / resolvedLimit) : 0,
     },
     error: null,
   };
