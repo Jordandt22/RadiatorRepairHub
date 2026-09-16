@@ -10,11 +10,7 @@ import {
   fetchCategoryStateCounts,
   fetchPrimaryCategoryBySlug,
 } from "@/lib/api/cachedReads";
-import { fetchBusinessesSearch } from "@/lib/api/businesses";
-import {
-  buildListingsSearchBody,
-  getListingsPage,
-} from "@/lib/businesses/listingsSearch";
+import { getListingsPage } from "@/lib/businesses/listingsSearch";
 import { CATEGORY_KEYWORDS } from "@/lib/seo/keywords";
 import {
   buildDirectoryMetadata,
@@ -36,14 +32,11 @@ function findState(stateParam) {
   return STATES.find((s) => s.code === String(stateParam || "").toUpperCase());
 }
 
-async function getStateCategoryListingCount(stateId, categoryId) {
-  const searchBody = buildListingsSearchBody({
-    stateData: { id: stateId },
-    categoryData: { id: categoryId },
-    searchParams: {},
-  });
-  const { data } = await fetchBusinessesSearch(searchBody, 1, 1);
-  return Number(data?.totalBusinesses || 0);
+function listingCountForCategory(categoryCounts, categoryId) {
+  return Number(
+    (categoryCounts?.categories ?? []).find((entry) => entry.id === categoryId)
+      ?.business_count || 0
+  );
 }
 
 export async function generateMetadata({ params, searchParams }) {
@@ -72,8 +65,11 @@ export async function generateMetadata({ params, searchParams }) {
   const displayName = toTitleCase(primaryCategory.name);
   const lowerName = primaryCategory.name.toLowerCase();
   const page = getListingsPage(resolvedSearchParams);
-  const listingCount = await getStateCategoryListingCount(
-    stateData.id,
+  const { data: stateCategoryCounts } = await fetchStateCategoryCounts(
+    stateData.id
+  );
+  const listingCount = listingCountForCategory(
+    stateCategoryCounts,
     primaryCategory.id
   );
 
@@ -114,13 +110,16 @@ async function Page({ params, searchParams }) {
     { data: stateCategoryCounts },
     { data: cityCounts },
     { data: categoryStateCounts },
-    listingCount,
   ] = await Promise.all([
     fetchStateCategoryCounts(stateData.id),
     fetchCategoryCityCounts(primaryCategory.id, CITY_LINKS, stateData.id),
     fetchCategoryStateCounts(primaryCategory.id, SIBLING_STATE_LINKS + 1),
-    getStateCategoryListingCount(stateData.id, primaryCategory.id),
   ]);
+
+  const listingCount = listingCountForCategory(
+    stateCategoryCounts,
+    primaryCategory.id
+  );
 
   const displayName = toTitleCase(primaryCategory.name);
   const lowerName = primaryCategory.name.toLowerCase();

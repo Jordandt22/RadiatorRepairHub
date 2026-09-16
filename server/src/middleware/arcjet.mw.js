@@ -23,9 +23,10 @@ const botRule = detectBot({
 
 const rateLimitRule = tokenBucket({
   mode: "LIVE",
-  refillRate: 15,
+  // Raised for Vercel SSR bursts (many directory pages share a few egress IPs).
+  refillRate: 40,
   interval: 30,
-  capacity: 150,
+  capacity: 600,
 });
 
 const characteristics = ["ip.src"];
@@ -43,6 +44,20 @@ const ajWithoutShield = arcjet({
   rules: [botRule, rateLimitRule],
 });
 
+// Next.js SSR on Vercel shares egress IPs — rate-limiting them like browsers
+// denies legitimate directory renders under crawl. Bot + Shield still apply.
+const ajVercelSsr = arcjet({
+  key: process.env.ARCJET_KEY,
+  characteristics,
+  rules: [shield({ mode: shieldMode }), botRule],
+});
+
+const ajVercelSsrWithoutShield = arcjet({
+  key: process.env.ARCJET_KEY,
+  characteristics,
+  rules: [botRule],
+});
+
 function isFileUploadRoute(req) {
   if (req.method !== "POST") return false;
   const path = String(req.originalUrl || req.url || "").split("?")[0];
@@ -52,8 +67,21 @@ function isFileUploadRoute(req) {
   );
 }
 
+function isVercelSsrRequest(req) {
+  const vercelId = req.get("x-vercel-id");
+  return Boolean(vercelId && String(vercelId).trim());
+}
+
 export const arcjetMiddleware = async (req, res, next) => {
-  const client = isFileUploadRoute(req) ? ajWithoutShield : aj;
+  const fileUpload = isFileUploadRoute(req);
+  const vercelSsr = isVercelSsrRequest(req);
+  const client = vercelSsr
+    ? fileUpload
+      ? ajVercelSsrWithoutShield
+      : ajVercelSsr
+    : fileUpload
+      ? ajWithoutShield
+      : aj;
   const decision = await client.protect(req, { requested: 1 });
 
   if (isDev) {
