@@ -12,8 +12,13 @@ const shieldMode = isDev ? "DRY_RUN" : "LIVE";
 const botRule = detectBot({
   mode: "LIVE",
   allow: isDev
-    ? ["CATEGORY:SEARCH_ENGINE", "POSTMAN"]
-    : ["CATEGORY:SEARCH_ENGINE"],
+    ? [
+        "CATEGORY:SEARCH_ENGINE",
+        "CATEGORY:PREVIEW",
+        "META_CRAWLER",
+        "POSTMAN",
+      ]
+    : ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW", "META_CRAWLER"],
 });
 
 const rateLimitRule = tokenBucket({

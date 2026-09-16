@@ -6,6 +6,7 @@ import { ArrowRight, BadgeCheck, LayoutDashboard, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOwnerListingView } from "@/contexts/OwnerListingViewProvider";
 import { fetchBusinessBySlug } from "@/lib/api/businesses";
+import { isUsableBusinessSlug } from "@/lib/businesses/slug";
 import {
   canClaimListing,
   getUnclaimableListingReason,
@@ -173,6 +174,11 @@ export default function ClaimBusinessButton({
     let active = true;
 
     async function loadClaimMeta() {
+      if (!isUsableBusinessSlug(businessSlug)) {
+        if (active) setMetaReady(true);
+        return;
+      }
+
       try {
         const { data: business } = await fetchBusinessBySlug(businessSlug);
         if (!active) return;

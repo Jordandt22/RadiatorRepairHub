@@ -7,6 +7,7 @@ import { usePostHog } from "posthog-js/react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { fetchBusinessBySlug } from "@/lib/api/businesses";
 import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
+import { isUsableBusinessSlug } from "@/lib/businesses/slug";
 import {
   canClaimListing,
   isClaimListingEligible,
@@ -65,12 +66,12 @@ export default function ClaimListingBanner({
 
     async function loadClaimMeta() {
       try {
-        const requests = [fetchBusinessBySlug(businessSlug)];
-        if (isSignedIn) {
-          requests.push(fetchOwnedBusinesses());
-        }
-
-        const [businessResult, ownedResult] = await Promise.all(requests);
+        const [businessResult, ownedResult] = await Promise.all([
+          isUsableBusinessSlug(businessSlug)
+            ? fetchBusinessBySlug(businessSlug)
+            : Promise.resolve(null),
+          isSignedIn ? fetchOwnedBusinesses() : Promise.resolve(null),
+        ]);
         if (!active) return;
 
         const business = businessResult?.data;

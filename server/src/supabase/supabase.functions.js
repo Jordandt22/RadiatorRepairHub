@@ -29,6 +29,10 @@ import {
   dateKeyStartIso,
 } from "../lib/businessStatsDate.js";
 import { selectPublicGalleryImages, applyPublicCoverImage } from "../lib/businessImages.js";
+import {
+  BUSINESS_NOT_FOUND_ERROR,
+  isUsableBusinessSlug,
+} from "../lib/businessSlug.js";
 
 const listingBusinessSelect = `*, state:states(*), city:cities(*), postal_code:postal_codes(*), primary_category:primary_categories(*), features:business_features!inner(*), business_images(image_id, is_primary, is_hidden, sort_order)`;
 const fullBusinessSelect = `*, state:states(*), city:cities!inner(*), postal_code:postal_codes(*), primary_category:primary_categories(*), secondary_categories:business_secondary_categories(secondary_categories(*)), features:business_features!inner(*), hours:business_hours!inner(*), business_images(image_id, is_primary, is_hidden, created_at, sort_order)`;
@@ -224,22 +228,34 @@ export const getBusinessById = async (business_id) => {
 };
 
 export const getBusinessBySlug = async (business_slug) => {
+  if (!isUsableBusinessSlug(business_slug)) {
+    return { data: null, error: BUSINESS_NOT_FOUND_ERROR };
+  }
+
   const { data, error } = await supabase
     .from("businesses")
     .select(fullBusinessSelect)
     .eq("slug", business_slug)
-    .single();
+    .maybeSingle();
 
-  return { data: formatFullBusiness(data, { includeGallery: true }), error };
+  if (error) {
+    return { data: null, error };
+  }
+
+  if (!data) {
+    return { data: null, error: BUSINESS_NOT_FOUND_ERROR };
+  }
+
+  return {
+    data: formatFullBusiness(data, { includeGallery: true }),
+    error: null,
+  };
 };
 
 /** Lightweight slug existence check (id + slug + title only). */
 export const getBusinessExistsBySlug = async (business_slug) => {
-  if (!business_slug || typeof business_slug !== "string") {
-    return {
-      data: null,
-      error: { code: "PGRST116", message: "Business not found" },
-    };
+  if (!isUsableBusinessSlug(business_slug)) {
+    return { data: null, error: BUSINESS_NOT_FOUND_ERROR };
   }
 
   const { data, error } = await supabase
@@ -253,10 +269,7 @@ export const getBusinessExistsBySlug = async (business_slug) => {
   }
 
   if (!data) {
-    return {
-      data: null,
-      error: { code: "PGRST116", message: "Business not found" },
-    };
+    return { data: null, error: BUSINESS_NOT_FOUND_ERROR };
   }
 
   return { data, error: null };

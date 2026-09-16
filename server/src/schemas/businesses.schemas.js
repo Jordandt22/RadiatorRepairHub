@@ -2,12 +2,22 @@ import * as Yup from "yup";
 import { normalizeWebsiteUrl } from "../lib/websiteReachability.js";
 import { getPasswordStrengthError } from "../lib/password.js";
 import { DEFAULT_LISTING_IMAGE_ID } from "../lib/businessImages.js";
+import { isUsableBusinessSlug } from "../lib/businessSlug.js";
 
 // ---- Params Request ----
 
 // Business Slug Schema
 export const BusinessSlugSchema = Yup.object({
-  business_slug: Yup.string().trim().min(1).max(200).required(),
+  business_slug: Yup.string()
+    .trim()
+    .min(1)
+    .max(200)
+    .required()
+    .test(
+      "usable-slug",
+      "Invalid business slug",
+      (value) => isUsableBusinessSlug(value)
+    ),
 });
 
 export const ClaimRequestIdSchema = Yup.object({

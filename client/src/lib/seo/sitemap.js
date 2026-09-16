@@ -1,4 +1,5 @@
 import STATES from "@/lib/data/states";
+import { getBusinessPath } from "@/lib/businesses/slug";
 
 const stateCodeById = Object.fromEntries(
   STATES.map((state) => [state.id, state.code])
@@ -131,13 +132,17 @@ export function buildSitemapEntries({
     .filter(Boolean);
 
   const businessPages = businesses
-    .filter((business) => business.slug)
-    .map((business) => ({
-      url: `/business/${business.slug}`,
-      lastModified: toIsoDate(business.scraped_at),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    }));
+    .map((business) => {
+      const path = getBusinessPath(business.slug);
+      if (!path) return null;
+      return {
+        url: path,
+        lastModified: toIsoDate(business.scraped_at),
+        changeFrequency: "weekly",
+        priority: 0.7,
+      };
+    })
+    .filter(Boolean);
 
   const blogPostPages = blogPosts
     .filter((post) => post.slug)
