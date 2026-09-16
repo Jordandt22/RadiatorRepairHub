@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/lib/seo/metadata";
 import { getBusinessDisplayImage } from "@/lib/images";
+import { getBusinessPath, isUsableBusinessSlug } from "@/lib/businesses/slug";
 
 const ORGANIZATION_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
@@ -48,7 +49,8 @@ function compact(value) {
 }
 
 export function getBusinessUrl(slug) {
-  return `${SITE_URL}/business/${slug}`;
+  const path = getBusinessPath(slug);
+  return path ? `${SITE_URL}${path}` : null;
 }
 
 function buildOpeningHours(hours) {
@@ -107,6 +109,7 @@ export function buildBusinessSchema(business, slug) {
   if (!business) return null;
 
   const pageUrl = getBusinessUrl(slug);
+  if (!pageUrl) return null;
   const latitude = Number(business.latitude);
   const longitude = Number(business.longitude);
   const hasCoordinates =
@@ -202,7 +205,7 @@ export function buildListingsItemList({
   pageSize = 12,
 }) {
   const items = (Array.isArray(businesses) ? businesses : [])
-    .filter((business) => business?.slug)
+    .filter((business) => isUsableBusinessSlug(business?.slug))
     .map((business, index) => ({
       "@type": "ListItem",
       position: (Math.max(1, Number(page) || 1) - 1) * pageSize + index + 1,

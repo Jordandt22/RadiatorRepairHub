@@ -56,6 +56,7 @@ import { fetchActiveAffiliateProductsByAliases } from "@/lib/api/affiliate-produ
 import { FEATURED_AFFILIATE_PRODUCT_ALIASES } from "@/lib/affiliateProducts";
 import { getBusinessDisplayImage, getBusinessHeroImage } from "@/lib/images";
 import { SHORT_CACHE, NO_STORE } from "@/lib/cachePolicy";
+import { isUsableBusinessSlug } from "@/lib/businesses/slug";
 import { getRelatedBlogPosts } from "@/lib/blogs";
 import {
   getGoogleMapsDirectionsUrl,
@@ -66,18 +67,24 @@ import {
 // Must be a literal — Next.js rejects imported segment config values.
 export const revalidate = 3600;
 
+const NOT_FOUND_METADATA = {
+  title: "Business Not Found - RadiatorRepairHub",
+  description: "The requested business could not be found.",
+  robots: NOINDEX_ROBOTS,
+};
+
 export async function generateMetadata({ params }) {
   const { slug } = await params;
+
+  if (!isUsableBusinessSlug(slug)) {
+    return NOT_FOUND_METADATA;
+  }
 
   try {
     const { data: business, error } = await fetchBusinessBySlug(slug, SHORT_CACHE);
 
     if (error || !business) {
-      return {
-        title: "Business Not Found - RadiatorRepairHub",
-        description: "The requested business could not be found.",
-        robots: NOINDEX_ROBOTS,
-      };
+      return NOT_FOUND_METADATA;
     }
 
     const location = `${business.city.name}, ${business.state.code}`;
@@ -144,16 +151,16 @@ export async function generateMetadata({ params }) {
       robots: INDEX_ROBOTS,
     };
   } catch {
-    return {
-      title: "Business Not Found - RadiatorRepairHub",
-      description: "The requested business could not be found.",
-      robots: NOINDEX_ROBOTS,
-    };
+    return NOT_FOUND_METADATA;
   }
 }
 
 async function Page({ params }) {
   const { slug } = await params;
+
+  if (!isUsableBusinessSlug(slug)) {
+    return notFound();
+  }
 
   try {
     const { data: business, error, status } = await fetchBusinessBySlug(
@@ -161,17 +168,17 @@ async function Page({ params }) {
       NO_STORE
     );
 
-    if (error) {
-      return (
-        <ErrorDisplay
-          status={status || 500}
-          code={error?.code}
-          message={error?.message || "Unable to load business details."}
-        />
-      );
-    }
-
     if (!business) {
+      if (error && status !== 404 && status !== 422) {
+        return (
+          <ErrorDisplay
+            status={status || 500}
+            code={error?.code}
+            message={error?.message || "Unable to load business details."}
+          />
+        );
+      }
+
       return notFound();
     }
 

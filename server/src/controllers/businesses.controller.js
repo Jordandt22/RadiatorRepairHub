@@ -2733,6 +2733,18 @@ export const getBusiness = async (req, res) => {
     // Get Business by Slug
     const { data, error } = await getBusinessBySlug(business_slug);
     if (error) {
+      if (error.code === "PGRST116") {
+        return res
+          .status(404)
+          .json(
+            customErrorHandler(
+              SUPABASE_ERROR,
+              `Business "${business_slug}" not found.`,
+              error
+            )
+          );
+      }
+
       return res
         .status(500)
         .json(
@@ -2740,6 +2752,17 @@ export const getBusiness = async (req, res) => {
             SUPABASE_ERROR,
             `There was an error fetching business by Slug (${business_slug}).`,
             error
+          )
+        );
+    }
+
+    if (!data) {
+      return res
+        .status(404)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            `Business "${business_slug}" not found.`
           )
         );
     }

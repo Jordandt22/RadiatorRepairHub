@@ -1,6 +1,7 @@
 import { fetchApi } from "./fetchApi";
 import { fetchAuthenticatedApi } from "./fetchAuthenticatedApi";
 import { DEFAULT_SORT_OPTION } from "@/lib/businesses/sortOptions";
+import { isUsableBusinessSlug } from "@/lib/businesses/slug";
 import { NO_STORE, SITEMAP_CACHE } from "@/lib/cachePolicy";
 
 export async function fetchBusinessSlugsForSitemap(options = SITEMAP_CACHE) {
@@ -8,6 +9,14 @@ export async function fetchBusinessSlugsForSitemap(options = SITEMAP_CACHE) {
 }
 
 export async function fetchBusinessBySlug(slug, options = NO_STORE) {
+  if (!isUsableBusinessSlug(slug)) {
+    return {
+      data: null,
+      error: { message: "Business not found" },
+      status: 404,
+    };
+  }
+
   return fetchApi(`/businesses/${slug}`, {
     ...options,
     next: {
