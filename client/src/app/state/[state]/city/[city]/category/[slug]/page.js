@@ -10,11 +10,7 @@ import {
   fetchCategoryCityCounts,
   fetchPrimaryCategoryBySlug,
 } from "@/lib/api/cachedReads";
-import { fetchBusinessesSearch } from "@/lib/api/businesses";
-import {
-  buildListingsSearchBody,
-  getListingsPage,
-} from "@/lib/businesses/listingsSearch";
+import { getListingsPage } from "@/lib/businesses/listingsSearch";
 import { CATEGORY_KEYWORDS } from "@/lib/seo/keywords";
 import {
   buildDirectoryMetadata,
@@ -42,14 +38,11 @@ function titleCaseSlug(slug) {
     .join(" ");
 }
 
-async function getCityCategoryListingCount(cityId, categoryId) {
-  const searchBody = buildListingsSearchBody({
-    cityData: { id: cityId },
-    categoryData: { id: categoryId },
-    searchParams: {},
-  });
-  const { data } = await fetchBusinessesSearch(searchBody, 1, 1);
-  return Number(data?.totalBusinesses || 0);
+function listingCountForCategory(categoryCounts, categoryId) {
+  return Number(
+    (categoryCounts?.categories ?? []).find((entry) => entry.id === categoryId)
+      ?.business_count || 0
+  );
 }
 
 export async function generateMetadata({ params, searchParams }) {
@@ -83,8 +76,11 @@ export async function generateMetadata({ params, searchParams }) {
   const cityName = cityData.name || titleCaseSlug(city);
   const location = `${cityName}, ${stateData.code}`;
   const page = getListingsPage(resolvedSearchParams);
-  const listingCount = await getCityCategoryListingCount(
-    cityData.id,
+  const { data: cityCategoryCounts } = await fetchCityCategoryCounts(
+    cityData.id
+  );
+  const listingCount = listingCountForCategory(
+    cityCategoryCounts,
     primaryCategory.id
   );
 
@@ -125,19 +121,20 @@ async function Page({ params, searchParams }) {
     return notFound();
   }
 
-  const [
-    { data: cityCategoryCounts },
-    { data: categoryCityCounts },
-    listingCount,
-  ] = await Promise.all([
-    fetchCityCategoryCounts(cityData.id),
-    fetchCategoryCityCounts(
-      primaryCategory.id,
-      NEARBY_CITY_LINKS + 1,
-      stateData.id
-    ),
-    getCityCategoryListingCount(cityData.id, primaryCategory.id),
-  ]);
+  const [{ data: cityCategoryCounts }, { data: categoryCityCounts }] =
+    await Promise.all([
+      fetchCityCategoryCounts(cityData.id),
+      fetchCategoryCityCounts(
+        primaryCategory.id,
+        NEARBY_CITY_LINKS + 1,
+        stateData.id
+      ),
+    ]);
+
+  const listingCount = listingCountForCategory(
+    cityCategoryCounts,
+    primaryCategory.id
+  );
 
   const displayName = toTitleCase(primaryCategory.name);
   const lowerName = primaryCategory.name.toLowerCase();

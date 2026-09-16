@@ -23,9 +23,10 @@ const botRule = detectBot({
 
 const rateLimitRule = tokenBucket({
   mode: "LIVE",
-  refillRate: 15,
+  // Raised for Vercel SSR bursts (many directory pages share a few egress IPs).
+  refillRate: 40,
   interval: 30,
-  capacity: 150,
+  capacity: 600,
 });
 
 const characteristics = ["ip.src"];
