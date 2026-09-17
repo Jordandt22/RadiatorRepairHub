@@ -9,7 +9,6 @@ Allow: /
 # Disallow internal / non-public paths
 Disallow: /api/
 Disallow: /admin/
-Disallow: /_next/
 Disallow: /private/
 Disallow: /checkout/
 Disallow: /dashboard/
