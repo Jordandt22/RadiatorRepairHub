@@ -16,9 +16,15 @@ const botRule = detectBot({
         "CATEGORY:SEARCH_ENGINE",
         "CATEGORY:PREVIEW",
         "META_CRAWLER",
+        "FACEBOOK_CRAWLER",
         "POSTMAN",
       ]
-    : ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW", "META_CRAWLER"],
+    : [
+        "CATEGORY:SEARCH_ENGINE",
+        "CATEGORY:PREVIEW",
+        "META_CRAWLER",
+        "FACEBOOK_CRAWLER",
+      ],
 });
 
 const rateLimitRule = tokenBucket({
