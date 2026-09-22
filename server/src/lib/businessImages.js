@@ -106,21 +106,25 @@ export function withDefaultListingImage(
       is_default: false,
     }));
 
+  const hasPrimary =
+    typeof hasStoredPrimary === "boolean"
+      ? hasStoredPrimary
+      : stored.some((image) => image.is_primary);
+
+  // Public galleries skip the legacy image_url when a stored primary exists.
+  // Owner/admin (includeHiddenDefault) still keep it for manage/hide flows.
   const includeDefault =
-    Boolean(imageUrl) && (!hideDefaultImage || includeHiddenDefault);
+    Boolean(imageUrl) &&
+    (!hideDefaultImage || includeHiddenDefault) &&
+    (!hasPrimary || includeHiddenDefault);
 
   if (!includeDefault) {
     return orderGalleryImages(stored);
   }
 
-  const defaultIsPrimary =
-    typeof hasStoredPrimary === "boolean"
-      ? !hasStoredPrimary
-      : !stored.some((image) => image.is_primary);
-
   const defaultImage = {
     image_id: DEFAULT_LISTING_IMAGE_ID,
-    is_primary: defaultIsPrimary,
+    is_primary: !hasPrimary,
     visible: !hideDefaultImage,
     is_default: true,
     image_url: imageUrl,
@@ -136,9 +140,9 @@ export function withDefaultListingImage(
 
 /**
  * Public gallery for a listing detail page.
- * The original listing photo (image_url) is included when present.
- * Unclaimed listings only show that default. Claimed listings include
- * stored extras, sliced to the current entitlement, with the primary first.
+ * The original listing photo (image_url) is included only when there is no
+ * stored primary. Unclaimed listings show the default or a CDN primary.
+ * Claimed listings include stored extras, sliced to entitlement, primary first.
  */
 export function selectPublicGalleryImages(
   rows,
@@ -156,12 +160,13 @@ export function selectPublicGalleryImages(
   const primary = visibleImages.find((row) => row.is_primary) || null;
 
   if (!isClaimed) {
-    if (imageUrl) {
-      return hideDefaultImage
-        ? []
-        : withDefaultListingImage([], { imageUrl });
+    if (primary) {
+      return [toPublicImage(primary)];
     }
-    return primary ? [toPublicImage(primary)] : [];
+    if (imageUrl && !hideDefaultImage) {
+      return withDefaultListingImage([], { imageUrl });
+    }
+    return [];
   }
 
   const limit = getBusinessImageLimit({ isFeatured: Boolean(isFeatured) });

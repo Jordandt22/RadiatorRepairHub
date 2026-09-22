@@ -76,7 +76,7 @@ describe("selectPublicGalleryImages", () => {
     );
   });
 
-  it("puts a stored primary before the original listing photo", () => {
+  it("skips the original listing photo when a stored primary exists", () => {
     const images = selectPublicGalleryImages(
       [{ image_id: "upload", is_primary: true, created_at: "2026-01-02T00:00:00Z" }],
       {
@@ -87,13 +87,6 @@ describe("selectPublicGalleryImages", () => {
     );
     assert.deepEqual(images, [
       { image_id: "upload", is_primary: true, image_url: null, is_default: false },
-      {
-        image_id: "listing-default",
-        is_primary: false,
-        visible: true,
-        is_default: true,
-        image_url: "https://example.com/original.jpg",
-      },
     ]);
   });
 
@@ -109,8 +102,19 @@ describe("selectPublicGalleryImages", () => {
     assert.equal(images[1].image_id, "older");
   });
 
-  it("shows only the original listing photo for unclaimed listings with imageUrl", () => {
+  it("prefers a stored primary over imageUrl for unclaimed listings", () => {
     const images = selectPublicGalleryImages(rows, {
+      isClaimed: false,
+      imageUrl: "https://example.com/original.jpg",
+    });
+    assert.deepEqual(images, [
+      { image_id: "primary", is_primary: true },
+    ]);
+  });
+
+  it("shows only the original listing photo for unclaimed listings with imageUrl and no stored primary", () => {
+    const extras = rows.filter((row) => !row.is_primary);
+    const images = selectPublicGalleryImages(extras, {
       isClaimed: false,
       imageUrl: "https://example.com/original.jpg",
     });
@@ -142,9 +146,10 @@ describe("selectPublicGalleryImages", () => {
     ]);
   });
 
-  it("hides the default photo for unclaimed listings", () => {
+  it("hides the default photo for unclaimed listings with no stored primary", () => {
+    const extras = rows.filter((row) => !row.is_primary);
     assert.deepEqual(
-      selectPublicGalleryImages(rows, {
+      selectPublicGalleryImages(extras, {
         isClaimed: false,
         imageUrl: "https://example.com/original.jpg",
         hideDefaultImage: true,
@@ -170,10 +175,10 @@ describe("selectPublicGalleryImages", () => {
     );
   });
 
-  it("places the default listing photo using default_image_sort_order", () => {
+  it("places the default listing photo using default_image_sort_order when no stored primary", () => {
     const images = selectPublicGalleryImages(
       [
-        { image_id: "upload-a", is_primary: true, sort_order: 0, created_at: "2026-01-02T00:00:00Z" },
+        { image_id: "upload-a", is_primary: false, sort_order: 0, created_at: "2026-01-02T00:00:00Z" },
         { image_id: "upload-b", is_primary: false, sort_order: 2, created_at: "2026-01-03T00:00:00Z" },
       ],
       {
@@ -186,8 +191,9 @@ describe("selectPublicGalleryImages", () => {
 
     assert.deepEqual(
       images.map((image) => image.image_id),
-      ["upload-a", "listing-default", "upload-b"]
+      ["listing-default", "upload-a", "upload-b"]
     );
+    assert.equal(images[0].is_primary, true);
   });
 
   it("excludes hidden extras and does not let them consume a public slot", () => {
