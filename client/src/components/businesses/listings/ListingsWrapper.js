@@ -18,6 +18,7 @@ import { useFilters } from "@/contexts/FilterProvider";
 // Components
 import Listings from "./Listings";
 import Pagination from "./Pagination";
+import GetListedListingsCta from "./GetListedListingsCta";
 import PageErrorMessage from "@/components/status/Errors/PageErrorMessage";
 import ListingsSkeleton from "@/components/status/Skeletons/ListingsSkeleton";
 import BusinessCount from "@/components/content/BusinessCount";
@@ -149,6 +150,8 @@ export default function ListingsWrapper({
           limit={limit}
         />
       )}
+
+      <GetListedListingsCta />
     </div>
   );
 }

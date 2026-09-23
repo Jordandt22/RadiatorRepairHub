@@ -2,6 +2,16 @@
 export function getBusinessPhoneDigits() {
   const raw = process.env.BUSINESS_PHONE;
   if (!raw || typeof raw !== "string") return null;
+  return normalizePhoneDigits(raw);
+}
+
+/** Digits-only national number from a listing phone string. */
+export function getListingPhoneDigits(phone) {
+  if (!phone || typeof phone !== "string") return null;
+  return normalizePhoneDigits(phone);
+}
+
+function normalizePhoneDigits(raw) {
   const digits = raw.replace(/\D/g, "");
   if (!digits) return null;
   return digits.length === 11 && digits.startsWith("1")

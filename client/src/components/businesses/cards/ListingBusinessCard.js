@@ -8,6 +8,11 @@ import BusinessImage from "@/components/businesses/BusinessImage";
 import ListingBadges from "@/components/businesses/ListingBadges";
 import { buttonVariants } from "@/components/ui/button";
 import { BUSINESS_FEATURED_CARD_IMAGE_SIZES } from "@/lib/images";
+import {
+  formatBusinessPhoneDisplay,
+  getBusinessPhoneTelHref,
+  getListingPhoneDigits,
+} from "@/lib/businessContactInfo";
 import { trackBusinessStat } from "@/lib/businessStats/trackBusinessStat";
 import { cn } from "@/lib/utils";
 
@@ -38,8 +43,9 @@ function StarRating({ score, title }) {
       {[...Array(5)].map((_, i) => (
         <svg
           key={`${title}-star-${i}`}
-          className={`h-4 w-4 ${i < Math.floor(safeScore) ? "text-yellow-400" : "text-border"
-            }`}
+          className={`h-4 w-4 ${
+            i < Math.floor(safeScore) ? "text-yellow-400" : "text-border"
+          }`}
           fill="currentColor"
           viewBox="0 0 20 20"
           aria-hidden="true"
@@ -51,15 +57,20 @@ function StarRating({ score, title }) {
   );
 }
 
-export default function FeaturedBusinessCard({
+export default function ListingBusinessCard({
   business,
   priority = false,
   listingSource,
   position,
 }) {
   const posthog = usePostHog();
-  const phone =
-    typeof business?.phone === "string" ? business.phone.trim() : "";
+  const isFeatured = Boolean(business?.is_featured);
+  const isClaimed = Boolean(business?.is_claimed);
+  const showMedia = isClaimed || isFeatured;
+  const showDescription = showMedia;
+  const phoneDigits = getListingPhoneDigits(business?.phone);
+  const phoneDisplay = formatBusinessPhoneDisplay(phoneDigits);
+  const phoneHref = getBusinessPhoneTelHref(phoneDigits);
   const description =
     typeof business?.description === "string"
       ? business.description.trim()
@@ -70,6 +81,7 @@ export default function FeaturedBusinessCard({
     business?.state?.code && business?.city?.slug
       ? `/state/${business.state.code}/city/${business.city.slug}`
       : null;
+  const hasBadges = isFeatured || isClaimed;
 
   const trackListingClick = () => {
     if (!business?.id || !listingSource) return;
@@ -87,7 +99,7 @@ export default function FeaturedBusinessCard({
       business_name: business?.title || undefined,
       source: listingSource || undefined,
       position,
-      placement: "featured_listing_card",
+      placement: "listing_card",
     });
     if (!business?.id) return;
     trackBusinessStat({
@@ -100,58 +112,72 @@ export default function FeaturedBusinessCard({
 
   return (
     <article
-      className="overflow-hidden rounded-lg shadow-2xl md:shadow-lg bg-card hover:shadow-xl hover:scale-101 hover:-translate-y-1.5 transition-all duration-300"
+      className={cn(
+        "overflow-hidden rounded-lg border border-border bg-card transition-all duration-300",
+        isFeatured
+          ? "shadow-lg hover:-translate-y-1 hover:shadow-xl"
+          : "hover:border-border/80 hover:shadow-md"
+      )}
       role="article"
-      aria-label={`Featured business listing for ${business.title}`}
+      aria-label={`Business listing for ${business.title}`}
     >
-      <div className="flex flex-col md:flex-row">
-        <div className="group/image relative h-52 w-full shrink-0 bg-muted md:h-auto md:min-h-[220px] md:w-[280px] lg:w-[320px]">
-          <BusinessImage
-            src={business.image_url}
-            businessId={business.id}
-            imageId={business.primary_image_id}
-            cdnStored={Boolean(business.cdn_stored)}
-            alt={business.title}
-            sizes={BUSINESS_FEATURED_CARD_IMAGE_SIZES}
-            showIcon={false}
-            priority={priority}
-          />
-          <Link
-            href={`/business/${business.slug}`}
-            className="absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 group-hover/image:bg-black/50"
-            prefetch={false}
-            aria-label={`View ${business.title} details`}
-            onClick={trackListingClick}
-          />
-          <ListingBadges
-            business={business}
-            size="md"
-            className="pointer-events-none absolute top-3 left-3 z-10"
-          />
-          {business?.primary_category?.slug &&
-            business?.primary_category?.name ? (
-            <Link
-              href={`/category/${business.primary_category.slug}`}
-              className="absolute bottom-3 left-3 z-10 rounded-md bg-tint px-2 py-1 text-sm font-medium capitalize text-primary hover:bg-white"
-              prefetch={false}
-            >
-              {business.primary_category.name}
-            </Link>
-          ) : null}
-        </div>
-
-        <div className="flex min-w-0 flex-1 flex-col p-5 md:p-6">
-          <h3 className="font-heading text-xl font-semibold text-foreground">
+      <div className={cn("flex flex-col", showMedia && "sm:flex-row")}>
+        {showMedia ? (
+          <div className="group/image relative h-48 w-full shrink-0 bg-muted sm:h-auto sm:min-h-[200px] sm:w-[240px] lg:w-[280px]">
+            <BusinessImage
+              src={business.image_url}
+              businessId={business.id}
+              imageId={business.primary_image_id}
+              cdnStored={Boolean(business.cdn_stored)}
+              alt={business.title}
+              sizes={BUSINESS_FEATURED_CARD_IMAGE_SIZES}
+              showIcon={false}
+              priority={priority}
+            />
             <Link
               href={`/business/${business.slug}`}
-              className="hover:text-interactive"
+              className="absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 group-hover/image:bg-black/50"
               prefetch={false}
               aria-label={`View ${business.title} details`}
               onClick={trackListingClick}
-            >
-              {business.title}
-            </Link>
-          </h3>
+            />
+            {hasBadges ? (
+              <ListingBadges
+                business={business}
+                size="md"
+                className="pointer-events-none absolute top-3 left-3 z-10"
+              />
+            ) : null}
+            {business?.primary_category?.slug &&
+            business?.primary_category?.name ? (
+              <Link
+                href={`/category/${business.primary_category.slug}`}
+                className="absolute bottom-3 left-3 z-10 rounded-md bg-tint px-2 py-1 text-sm font-medium capitalize text-primary hover:bg-white"
+                prefetch={false}
+              >
+                {business.primary_category.name}
+              </Link>
+            ) : null}
+          </div>
+        ) : null}
+
+        <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-5">
+          <div className="flex flex-wrap items-start gap-2">
+            <h3 className="min-w-0 flex-1 font-heading text-lg font-semibold text-foreground sm:text-xl">
+              <Link
+                href={`/business/${business.slug}`}
+                className="hover:text-interactive"
+                prefetch={false}
+                aria-label={`View ${business.title} details`}
+                onClick={trackListingClick}
+              >
+                {business.title}
+              </Link>
+            </h3>
+            {!showMedia && hasBadges ? (
+              <ListingBadges business={business} size="sm" className="mt-0.5" />
+            ) : null}
+          </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <StarRating score={business.total_score} title={business.title} />
@@ -187,14 +213,16 @@ export default function FeaturedBusinessCard({
             </p>
           )}
 
-          <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-            {about}
-          </p>
+          {showDescription ? (
+            <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+              {about}
+            </p>
+          ) : null}
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            {phone ? (
+          <div className="mt-4 flex flex-wrap items-center gap-3 sm:mt-auto sm:pt-4">
+            {phoneHref && phoneDisplay ? (
               <a
-                href={`tel:${phone}`}
+                href={phoneHref}
                 onClick={trackPhoneClick}
                 className={cn(
                   buttonVariants({ size: "lg" }),
@@ -202,7 +230,7 @@ export default function FeaturedBusinessCard({
                 )}
               >
                 <Phone className="size-4 shrink-0" aria-hidden="true" />
-                Call
+                {phoneDisplay}
               </a>
             ) : null}
             <Link
