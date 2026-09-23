@@ -112,7 +112,7 @@ export default function ListingFeaturedCta({
             Get Featured to Increase Your Visibility
           </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Higher priority in search results, a Featured badge, and a spot on the Featured page.
+            Higher priority in search results, a Featured badge, and extra shop photos.
           </p>
         </div>
       </div>

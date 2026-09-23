@@ -33,7 +33,6 @@ export function buildSitemapEntries({
     { url: "/how-to-claim", changeFrequency: "monthly", priority: 0.7 },
     { url: "/contact", changeFrequency: "monthly", priority: 0.7 },
     { url: "/get-listed", changeFrequency: "monthly", priority: 0.8 },
-    { url: "/featured", changeFrequency: "weekly", priority: 0.6 },
     { url: "/pricing", changeFrequency: "monthly", priority: 0.75 },
     { url: "/faq", changeFrequency: "monthly", priority: 0.7 },
     { url: "/privacy", changeFrequency: "yearly", priority: 0.3 },

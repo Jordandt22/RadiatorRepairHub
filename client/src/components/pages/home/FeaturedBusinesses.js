@@ -13,8 +13,8 @@ async function TopVerifiedBusinesses() {
           code={error?.code}
           message={error?.message}
           link={{
-            path: "/featured",
-            text: "Go to featured businesses page",
+            path: "/search",
+            text: "Find a shop",
           }}
         />
       );

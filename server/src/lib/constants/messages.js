@@ -803,7 +803,6 @@ export const OWNER_FEATURED_THANK_YOU_MESSAGE = Object.freeze({
   <ul>
     <li>A Featured badge on your listing and business cards</li>
     <li>Priority placement in search and directory browse results</li>
-    <li>A spot on the Featured businesses page</li>
     <li>Up to 10 shop photos on your listing</li>
     <li>Full listing analytics, including listing clicks, CTR, average position, contact clicks, and performance by source</li>
     <li>Competitor insights showing how every shop in your city is performing and where you rank</li>

@@ -38,13 +38,9 @@ const RELATED_TOPICS = [
     href: "/categories",
   },
   {
-    title: "Featured Businesses",
-    description: "Featured partners with extra visibility in the directory",
-    href: "/featured",
-  },
-  {
     title: "Featured Pricing",
-    description: "Optional paid upgrade for claimed listings—badge, search priority, extra photos, Featured page",
+    description:
+      "Optional paid upgrade for claimed listings—badge, search priority, extra photos, and analytics",
     href: "/pricing",
   },
   {

@@ -78,7 +78,7 @@ const BENEFITS = [
   {
     title: "Featured Placement",
     description:
-      "Claiming is free. Optional paid Featured listings add a Featured badge, search priority, a place on the Featured page, up to 10 shop photos, and full listing analytics with competitor insights.",
+      "Claiming is free. Optional paid Featured listings add a Featured badge, search priority, up to 10 shop photos, and full listing analytics with competitor insights.",
     icon: Flag,
     cta: { href: "/pricing", label: "Get Featured" },
     fullRow: true,
@@ -140,7 +140,7 @@ function buildClaimFaqs(supportEmail) {
     {
       question: "What is a Featured listing?",
       answer:
-        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, a spot on the Featured businesses page, up to 10 shop photos (claimed listings include 3), full listing analytics, and competitor insights for your city. Claiming stays free; only Featured is paid.",
+        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, up to 10 shop photos (claimed listings include 3), full listing analytics, and competitor insights for your city. Claiming stays free; only Featured is paid.",
     },
     {
       question: "Can I see how customers find my listing?",
@@ -389,8 +389,7 @@ export default function HowToClaimPage() {
               </h3>
               <p className="mb-6 text-muted-foreground">
                 After you claim, upgrade to Featured for a badge, search priority,
-                extra shop photos, a spot on the Featured page, and full listing
-                analytics with competitor insights.
+                extra shop photos, and full listing analytics with competitor insights.
               </p>
               <Link
                 href="/pricing"

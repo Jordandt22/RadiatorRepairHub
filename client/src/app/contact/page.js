@@ -5,7 +5,6 @@ import {
   Mail,
   Phone,
   Search,
-  Store,
 } from "lucide-react";
 import ContactForm from "@/components/pages/contact/ContactForm";
 import ContactHeader from "@/components/pages/contact/ContactHeader";
@@ -82,13 +81,6 @@ const Page = () => {
               >
                 <Search className="h-4 w-4" aria-hidden="true" />
                 Find a shop
-              </Link>
-              <Link
-                href="/featured"
-                className="inline-flex items-center gap-2 text-sm font-medium text-interactive transition-colors hover:text-primary"
-              >
-                <Store className="h-4 w-4" aria-hidden="true" />
-                Featured businesses
               </Link>
             </div>
           </div>
