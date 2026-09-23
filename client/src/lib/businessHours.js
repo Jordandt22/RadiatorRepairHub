@@ -28,6 +28,14 @@ function getNowInTimezone(timezone) {
   return { weekday, currentMinutes: hour * 60 + minute };
 }
 
+/** Current weekday name (e.g. "Monday") in the shop timezone, or local. */
+export function getBusinessLocalWeekday(timezone) {
+  if (timezone) {
+    return getNowInTimezone(timezone).weekday;
+  }
+  return new Date().toLocaleDateString("en-US", { weekday: "long" });
+}
+
 function isWithinPeriod(currentMinutes, openMinutes, closeMinutes) {
   if (openMinutes < closeMinutes) {
     return currentMinutes >= openMinutes && currentMinutes <= closeMinutes;

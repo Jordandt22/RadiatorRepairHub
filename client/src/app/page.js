@@ -26,6 +26,7 @@ import {
   fetchDirectoryTotals,
   fetchStateBusinessCountsByLimit,
 } from "@/lib/api/cachedReads";
+import { getVisitorsLast30Days } from "@/lib/analytics/posthogSiteStats";
 import {
   HOME_HERO_IMAGE_PATH,
   HOME_HERO_IMAGE_SIZES,
@@ -56,12 +57,13 @@ export default async function Home() {
     imageSizes: HOME_HERO_IMAGE_SIZES,
   });
 
-  const [affiliateRes, categoriesRes, statesRes, directoryTotalsRes] =
+  const [affiliateRes, categoriesRes, statesRes, directoryTotalsRes, visitorsLast30Days] =
     await Promise.all([
     fetchActiveAffiliateProductsByAliases(FEATURED_AFFILIATE_PRODUCT_ALIASES),
     fetchTopPrimaryCategories({ limit: 3 }),
     fetchStateBusinessCountsByLimit(DIRECTORY_STATE_COUNTS_LIMIT),
     fetchDirectoryTotals(),
+    getVisitorsLast30Days(),
   ]);
 
   const featuredProducts = affiliateRes.data?.products ?? [];
@@ -118,6 +120,7 @@ export default async function Home() {
         popularStates={heroStates}
         totalBusinesses={totalBusinesses}
         totalCities={totalCities}
+        visitorsLast30Days={visitorsLast30Days}
       />
 
       <FeaturedBusinesses />

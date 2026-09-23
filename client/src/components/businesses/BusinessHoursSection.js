@@ -18,6 +18,7 @@ import { captureOwnerListingUpdate } from "@/lib/analytics/ownerListing";
 import BusinessSectionHeader from "@/components/businesses/BusinessSectionHeader";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import { updateBusinessHours } from "@/lib/api/businessHoursUpdate";
+import { getBusinessLocalWeekday } from "@/lib/businessHours";
 import {
   WEEKDAYS,
   HOUR_12_OPTIONS,
@@ -116,19 +117,47 @@ function TimePartSelects({ idPrefix, label, value, disabled, onChange }) {
   );
 }
 
-function DayHoursDisplay({ hours }) {
+function DayHoursDisplay({ hours, timezone }) {
+  const [today, setToday] = useState(null);
+
+  useEffect(() => {
+    setToday(getBusinessLocalWeekday(timezone));
+  }, [timezone]);
+
   if (!hours || !Array.isArray(hours) || hours.length === 0) {
     return <p className="text-sm text-muted-foreground">Hours not available</p>;
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       {WEEKDAYS.map((dayName) => {
         const day = hours.find((item) => item.day_of_week === dayName);
+        const isToday = today === dayName;
         return (
-          <div key={dayName} className="flex justify-between text-sm">
-            <span className="font-medium text-foreground">{dayName}</span>
-            <div className="text-right text-muted-foreground">
+          <div
+            key={dayName}
+            className={`flex justify-between rounded-md px-2 py-1.5 text-sm ${
+              isToday ? "bg-tint" : ""
+            }`}
+            aria-current={isToday ? "date" : undefined}
+          >
+            <span
+              className={
+                isToday
+                  ? "font-semibold text-foreground"
+                  : "font-medium text-foreground"
+              }
+            >
+              {dayName}
+              {isToday ? (
+                <span className="sr-only"> (today)</span>
+              ) : null}
+            </span>
+            <div
+              className={`text-right ${
+                isToday ? "font-medium text-foreground" : "text-muted-foreground"
+              }`}
+            >
               {!day || day.is_closed ? (
                 <span>Closed</span>
               ) : day.hours_text ? (
@@ -334,7 +363,7 @@ function BusinessHoursSectionContent({
         trailing={<OpenStatus hours={initialHours} timezone={timezone} />}
       />
 
-      <DayHoursDisplay hours={initialHours} />
+      <DayHoursDisplay hours={initialHours} timezone={timezone} />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">

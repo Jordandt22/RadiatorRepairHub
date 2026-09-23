@@ -37,8 +37,8 @@ import BusinessPageViewTracker from "@/components/businesses/stats/BusinessPageV
 import NearbyBusinesses from "@/components/businesses/NearbyBusinesses";
 import RelatedBlogsSection from "@/components/businesses/RelatedBlogsSection";
 import HideWhenListingOwner from "@/components/businesses/HideWhenListingOwner";
-import {
-  buildTwitterCard,
+import AdSenseUnit from "@/components/ads/AdSenseUnit";
+import {  buildTwitterCard,
   composeDescription,
   composeTitle,
   DEFAULT_OG_IMAGE,
@@ -66,6 +66,10 @@ import {
 
 // Must be a literal — Next.js rejects imported segment config values.
 export const revalidate = 3600;
+
+/** Reuse existing responsive AdSense display units (same as FAQ / blog article). */
+const BUSINESS_MID_PAGE_AD_SLOT = "9000202208";
+const BUSINESS_BEFORE_GUIDES_AD_SLOT = "4106968175";
 
 const NOT_FOUND_METADATA = {
   title: "Business Not Found - RadiatorRepairHub",
@@ -560,6 +564,15 @@ async function Page({ params }) {
               </div>
             </div>
 
+            {!business.is_claimed ? (
+              <HideWhenListingOwner>
+                <AdSenseUnit
+                  slot={BUSINESS_MID_PAGE_AD_SLOT}
+                  className="mt-10 overflow-hidden rounded-lg"
+                />
+              </HideWhenListingOwner>
+            ) : null}
+
             <section className="mt-10 border-t border-border pt-10">
               <h2 className="mb-4 font-heading text-xl font-semibold tracking-tight text-foreground md:text-2xl">
                 Explore nearby
@@ -689,6 +702,15 @@ async function Page({ params }) {
                     layout="carousel"
                   />
                 ) : null}
+              </HideWhenListingOwner>
+            ) : null}
+
+            {!business.is_claimed ? (
+              <HideWhenListingOwner>
+                <AdSenseUnit
+                  slot={BUSINESS_BEFORE_GUIDES_AD_SLOT}
+                  className="mt-10 overflow-hidden rounded-lg"
+                />
               </HideWhenListingOwner>
             ) : null}
 
