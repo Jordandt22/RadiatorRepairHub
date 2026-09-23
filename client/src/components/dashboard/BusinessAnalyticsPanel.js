@@ -46,7 +46,7 @@ const SOURCE_META = {
     className: "bg-primary/10 text-primary",
   },
   featured: {
-    label: "Featured page",
+    label: "Featured",
     icon: Star,
     className:
       "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400",
@@ -625,7 +625,7 @@ function AnalyticsFeaturedCta({ business }) {
           </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
             Priority in search, a Featured badge, extra shop photos, full listing
-            analytics, competitor insights, and a card on the Featured page.
+            analytics, and competitor insights.
             $49/month, cancel anytime.
           </p>
         </div>

@@ -17,9 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const BROWSE_LINKS = [
-  { label: "Featured", path: "/featured" },
-  { label: "Categories", path: "/categories" },
   { label: "States", path: "/states" },
+  { label: "Categories", path: "/categories" },
   { label: "Shop", path: "/shop" },
 ];
 
@@ -33,8 +32,6 @@ const RESOURCE_LINKS = [
 
 function isBrowseActive(pathname) {
   return (
-    pathname === "/featured" ||
-    pathname.startsWith("/featured/") ||
     pathname === "/categories" ||
     pathname.startsWith("/category/") ||
     pathname === "/states" ||
@@ -61,7 +58,6 @@ function isResourcesActive(pathname) {
 
 function isItemActive(pathname, path) {
   if (pathname === path) return true;
-  if (path === "/featured") return pathname.startsWith("/featured/");
   if (path === "/categories") return pathname.startsWith("/category/");
   if (path === "/states") {
     return pathname.startsWith("/states/") || pathname.startsWith("/state/");

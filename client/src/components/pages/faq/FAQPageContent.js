@@ -108,7 +108,7 @@ function FAQPageContent({ sections = [], allFaqs = [] }) {
           {visibleCount > 0 ? (
             <AdSenseUnit
               slot={FAQ_DISPLAY_SLOT}
-              className="mb-10 min-h-[90px] overflow-hidden rounded-lg"
+              className="mb-10 overflow-hidden rounded-lg"
             />
           ) : null}
 

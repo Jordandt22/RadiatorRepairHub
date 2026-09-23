@@ -68,7 +68,7 @@ function BlogArticleLayout({
 
         <AdSenseUnit
           slot={BLOG_ARTICLE_DISPLAY_SLOT}
-          className="mt-10 min-h-[90px] overflow-hidden rounded-lg"
+          className="mt-10 overflow-hidden rounded-lg"
         />
 
         {relatedProductsSlot}

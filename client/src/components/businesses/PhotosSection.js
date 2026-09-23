@@ -116,8 +116,14 @@ function withDefaultListingImage(
       is_default: false,
     }));
 
+  const hasPrimary = stored.some((image) => image.is_primary);
+
+  // Public galleries skip the legacy image_url when a stored primary exists.
+  // Owner manage view (includeHiddenDefault) still keeps it for hide/reorder.
   const includeDefault =
-    Boolean(imageUrl) && (!hideDefaultImage || includeHiddenDefault);
+    Boolean(imageUrl) &&
+    (!hideDefaultImage || includeHiddenDefault) &&
+    (!hasPrimary || includeHiddenDefault);
 
   if (!includeDefault) {
     return orderGalleryImages(stored);
@@ -125,7 +131,7 @@ function withDefaultListingImage(
 
   const defaultImage = {
     image_id: DEFAULT_IMAGE_KEY,
-    is_primary: !stored.some((image) => image.is_primary),
+    is_primary: !hasPrimary,
     visible: !hideDefaultImage,
     is_default: true,
     is_hidden: includeHiddenDefault ? Boolean(hideDefaultImage) : false,

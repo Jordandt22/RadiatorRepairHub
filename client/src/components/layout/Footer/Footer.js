@@ -19,7 +19,6 @@ function Footer({
   topStates = null,
 }) {
   const browseLinks = [
-    { label: "Featured", path: "/featured" },
     { label: "Categories", path: "/categories" },
     { label: "States", path: "/states" },
     { label: "Find a Shop", path: "/search" },

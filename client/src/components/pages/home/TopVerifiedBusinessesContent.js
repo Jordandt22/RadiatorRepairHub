@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 import DetailedBusinessCard from "@/components/businesses/cards/DetailedBusinessCard";
@@ -58,21 +56,6 @@ export default function TopVerifiedBusinessesContent({ businesses = [] }) {
             <p className="text-muted-foreground">No verified businesses found</p>
           </div>
         )}
-
-        <motion.div
-          className="mt-10 text-center"
-          initial="hidden"
-          animate={inView ? "visible" : "hidden"}
-          variants={fadeIn(reduceMotion, 0.24)}
-        >
-          <Link
-            href="/featured"
-            className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-2.5 font-medium text-foreground transition-interactive hover:bg-muted"
-          >
-            View Featured Businesses
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        </motion.div>
       </div>
     </section>
   );

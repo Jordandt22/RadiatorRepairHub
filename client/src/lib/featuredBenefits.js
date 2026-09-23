@@ -2,7 +2,6 @@ import {
   BarChart3,
   Calendar,
   Images,
-  MapPin,
   Search,
   Sparkles,
   Star,
@@ -21,12 +20,6 @@ export const FEATURED_BENEFITS = [
     title: "Priority in Search",
     description:
       "Priority placement in search, state, city, category, and postal code listings. More drivers will see your local listing.",
-  },
-  {
-    icon: MapPin,
-    title: "Featured Page",
-    description:
-      "Appear on the Featured businesses page drivers use to find recommended shops.",
   },
   {
     icon: Sparkles,

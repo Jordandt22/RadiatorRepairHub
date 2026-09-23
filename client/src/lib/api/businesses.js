@@ -26,25 +26,6 @@ export async function fetchBusinessBySlug(slug, options = NO_STORE) {
   });
 }
 
-export async function fetchFeaturedBusinesses(
-  { page = 1, limit = 12, sort = "featured", q = "" } = {},
-  options = NO_STORE
-) {
-  const params = new URLSearchParams({
-    page: String(page),
-    limit: String(limit),
-    sort,
-  });
-  if (q) params.set("q", q);
-  return fetchApi(`/businesses/featured?${params.toString()}`, {
-    ...options,
-    next: {
-      tags: ["featured-businesses"],
-      ...(options.next || {}),
-    },
-  });
-}
-
 export async function fetchTopVerifiedBusinesses(options = NO_STORE) {
   return fetchApi("/businesses/top-verified", {
     ...options,

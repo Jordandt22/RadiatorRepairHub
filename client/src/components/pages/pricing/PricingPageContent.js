@@ -27,7 +27,6 @@ const FEATURED_FEATURES = [
   "Everything in Claimed Listing",
   "Featured badge next to Verified",
   "Priority placement in search and local listings",
-  "Listed on the Featured businesses page",
   "Up to 10 shop photos",
   "Full listing analytics (clicks, CTR, position, sources)",
   "Competitor insights for shops in your city",

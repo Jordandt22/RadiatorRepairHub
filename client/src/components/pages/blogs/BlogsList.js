@@ -187,7 +187,7 @@ function BlogsList({ posts }) {
           <FeaturedPost post={featuredPost} />
           <AdSenseUnit
             slot={BLOGS_DISPLAY_SLOT}
-            className="min-h-[90px] overflow-hidden rounded-lg"
+            className="overflow-hidden rounded-lg"
           />
         </section>
       ) : null}

@@ -62,7 +62,7 @@ function CitiesGrid({
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <AdSenseUnit
         slot={CITIES_DISPLAY_SLOT}
-        className="mb-6 min-h-[90px] overflow-hidden rounded-lg"
+        className="mb-6 overflow-hidden rounded-lg"
       />
 
       <p className="mb-6 text-sm text-muted-foreground">

@@ -32,6 +32,10 @@ import {
 import FiltersWrapper from "./FiltersWrapper";
 import ListingsWrapper from "./listings/ListingsWrapper";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
+import AdSenseUnit from "@/components/ads/AdSenseUnit";
+
+/** Reuse existing responsive AdSense display unit (states browse). */
+const LISTINGS_DISPLAY_AD_SLOT = "6576279494";
 
 function ContentInner({
   stateData,
@@ -191,6 +195,13 @@ function ContentInner({
         categoryData={categoryData}
         page={page}
       />
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <AdSenseUnit
+          slot={LISTINGS_DISPLAY_AD_SLOT}
+          className="overflow-hidden rounded-lg"
+        />
+      </div>
 
       <ListingsWrapper
         stateData={stateData}

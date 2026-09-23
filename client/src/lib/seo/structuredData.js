@@ -188,8 +188,6 @@ export function buildBusinessSchema(business, slug) {
     knowsAbout: Array.isArray(business.keywords)
       ? business.keywords.filter(Boolean)
       : null,
-    parentOrganization: { "@id": ORGANIZATION_ID },
-    isPartOf: { "@id": WEBSITE_ID },
   });
 }
 

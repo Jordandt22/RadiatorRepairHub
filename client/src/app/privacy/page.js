@@ -25,7 +25,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date(2026, 8, 15).toLocaleDateString("en-US", {
+  const lastUpdated = new Date(2026, 8, 22).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -135,7 +135,7 @@ function PrivacyPage() {
         },
         {
           label: "Advertising Cookies:",
-          description:"Google AdSense may set cookies or use similar technologies to serve and measure ads on pages where we place AdSense units (for example blog, FAQ, and directory browse pages).",
+          description:"Google AdSense may set cookies or use similar technologies to serve and measure ads on pages where we place AdSense units (for example blog, FAQ, directory browse and search pages, and unclaimed business listing pages).",
         },
         {
           label: "Security and Performance Cookies:",
@@ -373,7 +373,7 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Display advertising and ad measurement on selected pages where we place AdSense units (for example blog, FAQ, and directory browse pages).",
+          description:"Display advertising and ad measurement on selected pages where we place AdSense units (for example blog, FAQ, directory browse and search pages, and unclaimed business listing pages).",
         },
         {
           label: "Data Collected:",

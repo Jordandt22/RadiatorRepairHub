@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { BadgeCheck, BarChart3, Clock3, Flag, ImageIcon, MessageSquare, Search } from "lucide-react";
+import { BadgeCheck, BarChart3, Clock3, EyeOff, Flag, ImageIcon, MegaphoneOff, MessageSquare, Search } from "lucide-react";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import FAQSection from "@/components/seo/FAQSection";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
@@ -28,16 +28,34 @@ export const metadata = buildPageMetadata({
 
 const BENEFITS = [
   {
-    title: "Update How Your Listing Looks",
+    title: "Verified Badge",
     description:
-      "Add or edit your About section, service categories, and up to 3 shop photos so customers see current information.",
-    icon: ImageIcon,
+      "Claimed businesses get a verified badge in search and on the listing page.",
+    icon: Search,
+  },
+  {
+    title: "No Ads",
+    description:
+      "Claimed listings remove third-party display ads from your business page so customers see a cleaner listing.",
+    icon: MegaphoneOff,
+  },
+  {
+    title: "No Competitors Shown",
+    description:
+      "Unclaimed pages can show nearby competing shops. After you claim, your competitors aren't shown on your listing.",
+    icon: EyeOff,
   },
   {
     title: "Receive Quick Contact Inquiries",
     description:
       "Customers can message claimed listings through Quick Contact. Unclaimed listings show phone and email only.",
     icon: MessageSquare,
+  },
+  {
+    title: "Update How Your Listing Looks",
+    description:
+      "Add or edit your About section, service categories, and up to 3 shop photos so customers see current information.",
+    icon: ImageIcon,
   },
   {
     title: "Keep Contact Details Accurate",
@@ -52,12 +70,6 @@ const BENEFITS = [
     icon: Clock3,
   },
   {
-    title: "Verified Badge",
-    description:
-      "Claimed businesses get a verified badge in search and on the listing page.",
-    icon: Search,
-  },
-  {
     title: "Listing Analytics",
     description:
       "See page views, impressions, and impressions by source in your dashboard, and optionally receive a weekly activity report by email. Upgrade to Featured for full analytics, including listing clicks, CTR, average position, and contact clicks. Stats are not live and can take a few minutes to appear.",
@@ -66,7 +78,7 @@ const BENEFITS = [
   {
     title: "Featured Placement",
     description:
-      "Claiming is free. Optional paid Featured listings add a Featured badge, search priority, a place on the Featured page, up to 10 shop photos, and full listing analytics with competitor insights.",
+      "Claiming is free. Optional paid Featured listings add a Featured badge, search priority, up to 10 shop photos, and full listing analytics with competitor insights.",
     icon: Flag,
     cta: { href: "/pricing", label: "Get Featured" },
     fullRow: true,
@@ -128,7 +140,7 @@ function buildClaimFaqs(supportEmail) {
     {
       question: "What is a Featured listing?",
       answer:
-        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, a spot on the Featured businesses page, up to 10 shop photos (claimed listings include 3), full listing analytics, and competitor insights for your city. Claiming stays free; only Featured is paid.",
+        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, up to 10 shop photos (claimed listings include 3), full listing analytics, and competitor insights for your city. Claiming stays free; only Featured is paid.",
     },
     {
       question: "Can I see how customers find my listing?",
@@ -377,8 +389,7 @@ export default function HowToClaimPage() {
               </h3>
               <p className="mb-6 text-muted-foreground">
                 After you claim, upgrade to Featured for a badge, search priority,
-                extra shop photos, a spot on the Featured page, and full listing
-                analytics with competitor insights.
+                extra shop photos, and full listing analytics with competitor insights.
               </p>
               <Link
                 href="/pricing"

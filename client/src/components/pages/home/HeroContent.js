@@ -19,12 +19,15 @@ function HeroContent({
   popularStates = [],
   totalBusinesses = 0,
   totalCities = 0,
+  visitorsLast30Days = null,
 }) {
   const heroRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true });
   const reduceMotion = useReducedMotion();
   const headerPullClass = "-mt-16";
   const headerOffsetClass = STICKY_NAVBAR_OFFSET_CLASS;
+  const showVisitors =
+    visitorsLast30Days != null && Number.isFinite(Number(visitorsLast30Days));
 
   const strokeTextProps = {
     strokeColor: "#FFFFFF",
@@ -142,7 +145,10 @@ function HeroContent({
           ) : null}
 
           <motion.div
-            className="mx-auto mt-8 grid max-w-md grid-cols-2 gap-3"
+            className={`mx-auto mt-8 grid gap-3 ${showVisitors
+              ? "max-w-2xl grid-cols-1 sm:grid-cols-3"
+              : "max-w-md grid-cols-2"
+              }`}
             initial="hidden"
             animate={heroInView ? "visible" : "hidden"}
             variants={{
@@ -193,6 +199,28 @@ function HeroContent({
                 heroInView={heroInView}
               />
             </motion.div>
+            {showVisitors ? (
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: 8 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: {
+                      duration: reduceMotion ? 0 : 0.45,
+                      ease: "easeOut",
+                    },
+                  },
+                }}
+              >
+                <HeroStatBox
+                  label="Visitors (Last 30 days)"
+                  value={visitorsLast30Days}
+                  heroInView={heroInView}
+                  live
+                />
+              </motion.div>
+            ) : null}
           </motion.div>
         </div>
       </div>

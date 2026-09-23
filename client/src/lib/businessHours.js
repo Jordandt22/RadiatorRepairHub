@@ -1,7 +1,24 @@
+import { formatHoursText } from "@/lib/businessHoursFormat";
+
 function parseTime(timeStr) {
   if (!timeStr) return 0;
   const [hours, minutes] = timeStr.split(":");
   return parseInt(hours, 10) * 60 + parseInt(minutes || 0, 10);
+}
+
+function formatTodayHoursRange(todayHours) {
+  if (!todayHours) return null;
+
+  const hoursText =
+    typeof todayHours.hours_text === "string" ? todayHours.hours_text.trim() : "";
+  if (hoursText && hoursText.toLowerCase() !== "closed") return hoursText;
+
+  if (!Array.isArray(todayHours.hours) || todayHours.hours.length === 0) {
+    return null;
+  }
+
+  const formatted = formatHoursText(todayHours.hours);
+  return formatted === "Closed" ? null : formatted;
 }
 
 function getNowInTimezone(timezone) {
@@ -26,6 +43,14 @@ function getNowInTimezone(timezone) {
   );
 
   return { weekday, currentMinutes: hour * 60 + minute };
+}
+
+/** Current weekday name (e.g. "Monday") in the shop timezone, or local. */
+export function getBusinessLocalWeekday(timezone) {
+  if (timezone) {
+    return getNowInTimezone(timezone).weekday;
+  }
+  return new Date().toLocaleDateString("en-US", { weekday: "long" });
 }
 
 function isWithinPeriod(currentMinutes, openMinutes, closeMinutes) {
@@ -57,7 +82,11 @@ export function getBusinessOpenStatus(hours, timezone) {
 
   const todayHours = hours.find((day) => day.day_of_week === currentDay);
 
-  if (!todayHours || todayHours.is_closed || !todayHours.hours?.length) {
+  if (!todayHours) {
+    return { isOpen: false, status: "Hours not available", color: "gray" };
+  }
+
+  if (todayHours.is_closed || !todayHours.hours?.length) {
     return { isOpen: false, status: "Closed", color: "red" };
   }
 
@@ -69,10 +98,12 @@ export function getBusinessOpenStatus(hours, timezone) {
         parseTime(period.close)
       )
     );
+    const hoursRange = formatTodayHoursRange(todayHours);
+    const label = isOpen ? "Open" : "Closed";
 
     return {
       isOpen,
-      status: isOpen ? "Open" : "Closed",
+      status: hoursRange ? `${label} · ${hoursRange}` : label,
       color: isOpen ? "green" : "red",
     };
   } catch {

@@ -1,6 +1,10 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import AdSenseUnit from "@/components/ads/AdSenseUnit";
+
+/** Reuse existing responsive AdSense display unit (categories browse). */
+const LOCATION_LINKS_AD_SLOT = "2090239571";
 
 /**
  * Internal-link block for directory pages. Gives crawlers a flat path between
@@ -11,6 +15,7 @@ export default function LocationLinks({
   description,
   links = [],
   footerLink = null,
+  showAd = false,
 }) {
   if (!Array.isArray(links) || links.length === 0) return null;
 
@@ -52,6 +57,13 @@ export default function LocationLinks({
             {footerLink.label}
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
+        ) : null}
+
+        {showAd ? (
+          <AdSenseUnit
+            slot={LOCATION_LINKS_AD_SLOT}
+            className="mt-8 overflow-hidden rounded-lg"
+          />
         ) : null}
       </div>
     </section>
