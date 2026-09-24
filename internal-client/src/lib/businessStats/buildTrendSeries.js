@@ -96,6 +96,17 @@ export function buildSearchTrendSeries(
   }));
 }
 
+export function buildPhoneTrendSeries(
+  daily = [],
+  days = 7,
+  startDate,
+  endDate
+) {
+  return fillDailySeries(daily, days, startDate, endDate, (row) => ({
+    phone_clicks: Number(row?.phone_clicks || 0),
+  }));
+}
+
 export function formatTrendTick(date, days) {
   const parsed = new Date(`${date}T00:00:00.000Z`);
   if (Number.isNaN(parsed.getTime())) return date;
