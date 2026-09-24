@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EMAIL_FILTERS, SCORE_TIERS } from "@/lib/businessTiers";
+import { EMAIL_FILTERS, SCORE_TIERS, WEBSITE_FILTERS } from "@/lib/businessTiers";
 import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
 
 export const ACTIVITY_OPTIONS = [
@@ -28,6 +28,8 @@ export default function BusinessesAnalyticsActions({
   onScoreTierChange,
   emailFilter = null,
   onEmailFilterChange,
+  websiteFilter = null,
+  onWebsiteFilterChange,
   disabled = false,
 }) {
   const selected =
@@ -88,6 +90,17 @@ export default function BusinessesAnalyticsActions({
           placeholder="All contacts"
           ariaLabel="Filter by contact"
           inputName="rrh-analytics-contact-filter"
+          disabled={disabled}
+        />
+      </div>
+      <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-xs">
+        <BusinessTierCombobox
+          items={WEBSITE_FILTERS}
+          value={websiteFilter}
+          onValueChange={onWebsiteFilterChange}
+          placeholder="All websites"
+          ariaLabel="Filter by website"
+          inputName="rrh-analytics-website-filter"
           disabled={disabled}
         />
       </div>

@@ -163,6 +163,7 @@ import {
 import { gateCompetitorInsights } from "../../lib/gateCompetitorInsights.js";
 import {
   EMAIL_FILTER_IDS,
+  WEBSITE_FILTER_IDS,
   SCORE_TIER_IDS,
 } from "../../lib/adminBusinessTiers.js";
 import {
@@ -2623,6 +2624,10 @@ export const getBusinessStatsList = async (req, res) => {
       req.query.email_filter,
       EMAIL_FILTER_IDS
     ),
+    websiteFilter: parseAdminStatsTextFilter(
+      req.query.website_filter,
+      WEBSITE_FILTER_IDS
+    ),
   });
 
   if (error) {
@@ -2703,6 +2708,10 @@ export const getBusinessStatsSummary = async (req, res) => {
     emailFilter: parseAdminStatsTextFilter(
       req.query.email_filter,
       EMAIL_FILTER_IDS
+    ),
+    websiteFilter: parseAdminStatsTextFilter(
+      req.query.website_filter,
+      WEBSITE_FILTER_IDS
     ),
   });
 

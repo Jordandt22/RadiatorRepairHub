@@ -19,7 +19,7 @@ import BusinessFilterTabs, {
   TAB_FILTERS,
   VALID_TABS,
 } from "@/components/pages/businesses/BusinessFilterTabs";
-import { EMAIL_FILTERS, SCORE_TIERS } from "@/lib/businessTiers";
+import { EMAIL_FILTERS, SCORE_TIERS, WEBSITE_FILTERS } from "@/lib/businessTiers";
 import BusinessesAnalyticsActions, {
   ACTIVITY_OPTIONS,
 } from "@/components/pages/businesses/listing-analytics/BusinessesAnalyticsActions";
@@ -100,6 +100,7 @@ export default function BusinessesAnalyticsPageContent() {
     activity: activityOption,
     score: scoreTier,
     contact: emailFilter,
+    website: websiteFilter,
     sort: sortRaw,
     setField,
   } = useUrlQueryState(
@@ -124,6 +125,7 @@ export default function BusinessesAnalyticsPageContent() {
       },
       score: { type: "option", param: "score", options: SCORE_TIERS },
       contact: { type: "option", param: "contact", options: EMAIL_FILTERS },
+      website: { type: "option", param: "website", options: WEBSITE_FILTERS },
       sort: {
         type: "string",
         param: "sort",
@@ -139,6 +141,7 @@ export default function BusinessesAnalyticsPageContent() {
   const activity = activityOption?.id || "all";
   const scoreTierId = scoreTier?.id ?? null;
   const emailFilterId = emailFilter?.id ?? null;
+  const websiteFilterId = websiteFilter?.id ?? null;
   const sort = resolveSort(sortRaw);
   const searchQuery = (q || "").trim();
   const claimedFilter = TAB_FILTERS[segment]?.claimed ?? null;
@@ -188,6 +191,7 @@ export default function BusinessesAnalyticsPageContent() {
       sort,
       scoreTierId,
       emailFilterId,
+      websiteFilterId,
     ],
     queryFn: async () => {
       const result = await fetchAdminBusinessStatsList(
@@ -202,6 +206,7 @@ export default function BusinessesAnalyticsPageContent() {
           sort,
           scoreTier: scoreTierId,
           emailFilter: emailFilterId,
+          websiteFilter: websiteFilterId,
         },
         accessToken,
       );
@@ -228,6 +233,7 @@ export default function BusinessesAnalyticsPageContent() {
       segment,
       scoreTierId,
       emailFilterId,
+      websiteFilterId,
     ],
     queryFn: async () => {
       const result = await fetchAdminBusinessStatsSummary(
@@ -237,6 +243,7 @@ export default function BusinessesAnalyticsPageContent() {
           featured: featuredFilter === true,
           scoreTier: scoreTierId,
           emailFilter: emailFilterId,
+          websiteFilter: websiteFilterId,
         },
         accessToken,
       );
@@ -393,6 +400,8 @@ export default function BusinessesAnalyticsPageContent() {
           onScoreTierChange={(tier) => setField("score", tier)}
           emailFilter={emailFilter}
           onEmailFilterChange={(filter) => setField("contact", filter)}
+          websiteFilter={websiteFilter}
+          onWebsiteFilterChange={(filter) => setField("website", filter)}
           disabled={refreshPending && showListSkeleton}
         />
 

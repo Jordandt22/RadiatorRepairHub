@@ -5170,6 +5170,7 @@ export const getAdminBusinessStatsList = async ({
   cityId = null,
   scoreTier = null,
   emailFilter = null,
+  websiteFilter = null,
 }) => {
   const sanitizedQ = sanitizeIlikeSearch(q);
   const resolvedActivity =
@@ -5196,6 +5197,7 @@ export const getAdminBusinessStatsList = async ({
     p_city_id: cityId || null,
     p_score_tier: scoreTier || null,
     p_email_filter: emailFilter || null,
+    p_website_filter: websiteFilter || null,
   });
 
   if (error) {
@@ -5336,6 +5338,7 @@ export const getAdminBusinessStatsSummary = async ({
   cityId = null,
   scoreTier = null,
   emailFilter = null,
+  websiteFilter = null,
 }) => {
   const { data, error } = await supabase.rpc("admin_summary_business_stats", {
     p_start_date: startDate || null,
@@ -5346,6 +5349,7 @@ export const getAdminBusinessStatsSummary = async ({
     p_city_id: cityId || null,
     p_score_tier: scoreTier || null,
     p_email_filter: emailFilter || null,
+    p_website_filter: websiteFilter || null,
   });
 
   if (error) {
@@ -5383,10 +5387,45 @@ export const getAdminBusinessStatsSummary = async ({
       },
       ctr: payload.ctr == null ? null : Number(payload.ctr),
       daily: Array.isArray(payload.daily) ? payload.daily : [],
+      phone_contact: normalizePhoneContactChart(payload.phone_contact),
     },
     error: null,
   };
 };
+
+const PHONE_CONTACT_SLICE_ORDER = ["email", "website", "both", "none"];
+const PHONE_CONTACT_SLICE_LABELS = {
+  email: "Email Only",
+  website: "Website Only",
+  both: "Both",
+  none: "None",
+};
+
+function normalizePhoneContactChart(raw) {
+  const source =
+    raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+  const byKey = new Map();
+  const slices = Array.isArray(source.slices) ? source.slices : [];
+  for (const slice of slices) {
+    if (!slice || typeof slice !== "object") continue;
+    const key = String(slice.key || "");
+    if (!PHONE_CONTACT_SLICE_LABELS[key]) continue;
+    byKey.set(key, Number(slice.count || 0));
+  }
+  const normalizedSlices = PHONE_CONTACT_SLICE_ORDER.map((key) => ({
+    key,
+    label: PHONE_CONTACT_SLICE_LABELS[key],
+    count: byKey.get(key) || 0,
+  }));
+  const totalFromSlices = normalizedSlices.reduce(
+    (sum, slice) => sum + slice.count,
+    0
+  );
+  return {
+    total: Number(source.total ?? totalFromSlices) || totalFromSlices,
+    slices: normalizedSlices,
+  };
+}
 
 const ADMIN_SEARCH_STATS_DIMENSIONS = new Set(["state", "city", "category"]);
 const ADMIN_SEARCH_STATS_SORTS = new Set([

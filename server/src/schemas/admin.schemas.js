@@ -979,6 +979,16 @@ const adminBusinessStatsEmailFilterField = Yup.string()
   .oneOf([...EMAIL_FILTER_IDS, null], "Invalid email filter")
   .optional();
 
+const adminBusinessStatsWebsiteFilterField = Yup.string()
+  .transform((value) => {
+    if (value == null) return null;
+    const trimmed = String(value).trim();
+    return trimmed === "" ? null : trimmed;
+  })
+  .nullable()
+  .oneOf([...WEBSITE_FILTER_IDS, null], "Invalid website filter")
+  .optional();
+
 export const ADMIN_BUSINESS_STATS_SORTS = [
   "impressions_desc",
   "impressions_asc",
@@ -1027,6 +1037,7 @@ export const GetAdminBusinessStatsListQuerySchema = Yup.object({
   featured: adminBusinessStatsBoolField,
   score_tier: adminBusinessStatsScoreTierField,
   email_filter: adminBusinessStatsEmailFilterField,
+  website_filter: adminBusinessStatsWebsiteFilterField,
   activity: Yup.string()
     .transform((value) => {
       if (value == null || String(value).trim() === "") return undefined;
@@ -1097,6 +1108,7 @@ export const GetAdminBusinessStatsSummaryQuerySchema = Yup.object({
   featured: adminBusinessStatsBoolField,
   score_tier: adminBusinessStatsScoreTierField,
   email_filter: adminBusinessStatsEmailFilterField,
+  website_filter: adminBusinessStatsWebsiteFilterField,
   state_id: Yup.string()
     .transform((value) => {
       if (value === "" || value == null) return null;

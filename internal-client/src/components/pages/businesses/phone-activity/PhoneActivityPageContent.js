@@ -23,9 +23,15 @@ import BusinessFilterTabs, {
 import PhoneActivityBusinessesTable, {
   PhoneActivityBusinessesSkeleton,
 } from "@/components/pages/businesses/phone-activity/PhoneActivityBusinessesTable";
+import PhoneActivityContactChart, {
+  PhoneActivityContactChartSkeleton,
+} from "@/components/pages/businesses/phone-activity/PhoneActivityContactChart";
 import PhoneActivityEventsTable, {
   PhoneActivityEventsSkeleton,
 } from "@/components/pages/businesses/phone-activity/PhoneActivityEventsTable";
+import PhoneActivityTrendChart, {
+  PhoneActivityTrendChartSkeleton,
+} from "@/components/pages/businesses/phone-activity/PhoneActivityTrendChart";
 import Pagination from "@/components/pages/dashboard/Pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -290,8 +296,10 @@ export default function PhoneActivityPageContent() {
   const phoneClicksTotal = Number(summaryQuery.data?.totals?.phone_clicks || 0);
   const listError = listQuery.error?.message || null;
   const eventsError = eventsQuery.error?.message || null;
+  const summaryError = summaryQuery.error?.message || null;
   const showListSkeleton = listQuery.isLoading && !listQuery.data;
   const showEventsSkeleton = eventsQuery.isLoading && !eventsQuery.data;
+  const showChartsSkeleton = summaryQuery.isLoading && !summaryQuery.data;
 
   const handleRefresh = () => {
     if (refreshPending || refreshLockedRef.current) return;
@@ -392,7 +400,7 @@ export default function PhoneActivityPageContent() {
         />
       </div>
 
-      {summaryQuery.isLoading && !summaryQuery.data ? (
+      {showChartsSkeleton ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="rounded-lg border border-border bg-card px-4 py-4">
             <Skeleton className="h-4 w-28" />
@@ -422,6 +430,22 @@ export default function PhoneActivityPageContent() {
               {formatNumber(businessTotal)}
             </p>
           </div>
+        </div>
+      )}
+
+      {summaryError && !summaryQuery.data ? (
+        <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {summaryError}
+        </div>
+      ) : showChartsSkeleton ? (
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <PhoneActivityTrendChartSkeleton />
+          <PhoneActivityContactChartSkeleton />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <PhoneActivityTrendChart stats={summaryQuery.data} days={days} />
+          <PhoneActivityContactChart chart={summaryQuery.data?.phone_contact} />
         </div>
       )}
 
