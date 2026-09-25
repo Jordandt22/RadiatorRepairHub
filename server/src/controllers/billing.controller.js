@@ -158,9 +158,14 @@ export const createCheckoutSession = async (req, res) => {
   }
 
   const webUrl = getWebBaseUrl();
+  const businessTitle =
+    typeof business.title === "string" && business.title.trim()
+      ? business.title.trim()
+      : "Featured listing";
   const metadata = {
     business_id: businessId,
     owner_uid: ownerUid,
+    business_title: businessTitle.slice(0, 500),
   };
 
   const session = await stripe.checkout.sessions.create({
@@ -176,7 +181,11 @@ export const createCheckoutSession = async (req, res) => {
     managed_payments: { enabled: false },
     allow_promotion_codes: true,
     metadata,
-    subscription_data: { metadata },
+    subscription_data: {
+      metadata,
+      // Shown in Customer Portal to tell multi-shop subscriptions apart.
+      description: `Featured Listing: ${businessTitle}`.slice(0, 500),
+    },
   });
 
   if (!session?.url) {
