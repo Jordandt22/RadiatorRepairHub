@@ -23,6 +23,7 @@ import authRouter from "./routes/auth.routes.js";
 import billingRouter from "./routes/billing.routes.js";
 import businessStatsRouter from "./routes/business-stats.routes.js";
 import searchStatsRouter from "./routes/search-stats.routes.js";
+import siteStatsRouter from "./routes/site-stats.routes.js";
 import stripeWebhookRouter from "./routes/stripeWebhook.routes.js";
 import emailUnsubscribeRouter from "./routes/email-unsubscribe.routes.js";
 
@@ -131,6 +132,9 @@ app.use(`/v${API_VERSION}/api/business-stats`, businessStatsRouter);
 
 // Routes for public search demand stats ingest
 app.use(`/v${API_VERSION}/api/search-stats`, searchStatsRouter);
+
+// Routes for public directory engagement totals (pricing / marketing)
+app.use(`/v${API_VERSION}/api/site-stats`, siteStatsRouter);
 
 app.use(`/v${API_VERSION}/api/email`, emailUnsubscribeRouter);
 

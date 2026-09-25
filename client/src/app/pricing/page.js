@@ -1,6 +1,13 @@
 import { Suspense } from "react";
 import PricingPageContent from "@/components/pages/pricing/PricingPageContent";
 import PricingHeader from "@/components/pages/pricing/PricingHeader";
+import { getPricingSiteStats } from "@/lib/analytics/pricingSiteStats";
+import {
+  FEATURED_PRICE_CURRENCY,
+  FEATURED_YEARLY_PRICE_WITH_INTERVAL,
+  featuredPriceValidUntil,
+  formatFeaturedOfferPrice,
+} from "@/lib/featuredPricing";
 import {
   buildPageMetadata,
   composeDescription,
@@ -10,7 +17,7 @@ import {
 
 const pageTitle = composeTitle("Featured Listing Pricing");
 const pageDescription = composeDescription(
-  "Upgrade a claimed radiator repair listing to Featured for $149/year.",
+  `Upgrade a claimed radiator repair listing to Featured for ${FEATURED_YEARLY_PRICE_WITH_INTERVAL}.`,
   "Get a Featured badge, search priority, up to 10 shop photos, and full listing analytics."
 );
 
@@ -45,11 +52,23 @@ const featuredListingServiceSchema = {
   offers: {
     "@type": "Offer",
     url: `${SITE_URL}/pricing`,
-    priceCurrency: "USD",
-    price: "149.00",
-    priceValidUntil: "2027-12-31",
+    priceCurrency: FEATURED_PRICE_CURRENCY,
+    price: formatFeaturedOfferPrice(),
+    priceValidUntil: featuredPriceValidUntil(),
     availability: "https://schema.org/InStock",
     category: "Subscription",
+    priceSpecification: {
+      "@type": "UnitPriceSpecification",
+      price: formatFeaturedOfferPrice(),
+      priceCurrency: FEATURED_PRICE_CURRENCY,
+      billingDuration: "P1Y",
+      unitText: "year",
+      referenceQuantity: {
+        "@type": "QuantitativeValue",
+        value: 1,
+        unitCode: "ANN",
+      },
+    },
   },
 };
 
@@ -61,7 +80,9 @@ function PricingPageFallback() {
   );
 }
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const siteStats = await getPricingSiteStats();
+
   return (
     <>
       <script
@@ -71,7 +92,7 @@ export default function PricingPage() {
         }}
       />
       <Suspense fallback={<PricingPageFallback />}>
-        <PricingPageContent />
+        <PricingPageContent siteStats={siteStats} />
       </Suspense>
     </>
   );

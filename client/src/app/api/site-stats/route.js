@@ -1,29 +1,19 @@
 import { NextResponse } from "next/server";
-import {
-  getVisitorsLast30Days,
-  SITE_STATS_CACHE_SECONDS,
-  SITE_STATS_LOOKBACK_DAYS,
-} from "@/lib/analytics/posthogSiteStats";
+import { getPricingSiteStats } from "@/lib/analytics/pricingSiteStats";
+import { SITE_STATS_CACHE_SECONDS } from "@/lib/analytics/posthogSiteStats";
 
 export const revalidate = 3600;
 
 /**
- * Public site stats for marketing surfaces (home hero, pricing later).
- * Visitors come from PostHog Web Analytics and are cached ~1 hour.
+ * Public site stats for marketing surfaces (home hero, pricing).
+ * Aggregates PostHog visitors, directory engagement, and listing counts.
  */
 export async function GET() {
-  const visitorsLast30Days = await getVisitorsLast30Days();
+  const stats = await getPricingSiteStats();
 
-  return NextResponse.json(
-    {
-      visitorsLast30Days,
-      lookbackDays: SITE_STATS_LOOKBACK_DAYS,
-      cacheSeconds: SITE_STATS_CACHE_SECONDS,
+  return NextResponse.json(stats, {
+    headers: {
+      "Cache-Control": `public, s-maxage=${SITE_STATS_CACHE_SECONDS}, stale-while-revalidate=600`,
     },
-    {
-      headers: {
-        "Cache-Control": `public, s-maxage=${SITE_STATS_CACHE_SECONDS}, stale-while-revalidate=600`,
-      },
-    }
-  );
+  });
 }

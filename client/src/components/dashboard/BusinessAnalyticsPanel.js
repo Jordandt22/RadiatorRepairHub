@@ -30,6 +30,7 @@ import {
   dismissFeaturedCta,
   isFeaturedCtaDismissed,
 } from "@/lib/featuredListingCtaStorage";
+import { FEATURED_YEARLY_PRICE_WITH_INTERVAL } from "@/lib/featuredPricing";
 import {
   ctrColorClass,
   formatCtr,
@@ -625,8 +626,8 @@ function AnalyticsFeaturedCta({ business }) {
           </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
             Priority in search, a Featured badge, extra shop photos, full listing
-            analytics, and competitor insights.
-            $149/year, cancel anytime.
+            analytics, and competitor insights.{" "}
+            {FEATURED_YEARLY_PRICE_WITH_INTERVAL}, cancel anytime.
           </p>
         </div>
       </div>
