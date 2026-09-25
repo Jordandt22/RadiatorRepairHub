@@ -219,15 +219,14 @@ export default function PricingRoiCalculator({
             {jobValue >= FEATURED_YEARLY_PRICE
               ? "Paid back by the first sale. Everything after that is profit."
               : salesToBreakEven != null
-                ? `At ${formatUsd(jobValue)} per sale, about ${salesToBreakEven} ${
-                    salesToBreakEven === 1 ? "sale" : "sales"
-                  } would cover Featured for the year.`
+                ? `At ${formatUsd(jobValue)} per sale, about ${salesToBreakEven} ${salesToBreakEven === 1 ? "sale" : "sales"
+                } would cover Featured for the year.`
                 : "Enter an average sale value to estimate your return."}
           </p>
 
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Estimates only. Demand stats and this calculator are illustrative —
-            Featured improves placement and listing tools; it does not guarantee
+            Estimates only. Demand stats and this calculator are illustrative.
+            Featured improves placement and listing tools, it does not guarantee
             calls or sales.
           </p>
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Check, CircleHelp, Search } from "lucide-react";
+import { motion } from "framer-motion";
 import { usePostHog } from "posthog-js/react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import PricingHeader from "@/components/pages/pricing/PricingHeader";
@@ -13,6 +14,10 @@ import PricingFaqSection from "@/components/pages/pricing/PricingFaqSection";
 import FeaturedUpgradeDialog from "@/components/pages/pricing/FeaturedUpgradeDialog";
 import FeaturedUpgradeCtaLabel from "@/components/pages/pricing/FeaturedUpgradeCtaLabel";
 import { featuredUpgradeButtonClass } from "@/components/pages/pricing/featuredUpgradeStyles";
+import {
+  fadeIn,
+  useHomeSectionInView,
+} from "@/components/ui/homeSectionMotion";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
 import { createFeaturedCheckoutSession } from "@/lib/api/billing";
@@ -209,6 +214,11 @@ export default function PricingPageContent({ siteStats = null }) {
 
   const upgradeLoading = authLoading || (isSignedIn && loadingBusinesses);
   const upgradeBusy = upgradeLoading || isSubmitting;
+  const {
+    ref: searchesRef,
+    inView: searchesInView,
+    reduceMotion,
+  } = useHomeSectionInView();
 
   return (
     <div className="min-h-screen bg-background">
@@ -233,17 +243,26 @@ export default function PricingPageContent({ siteStats = null }) {
             visibility, photos, and analytics.
           </p>
           {siteStats?.searchesLast30Days != null &&
-            Number.isFinite(Number(siteStats.searchesLast30Days)) &&
-            Number(siteStats.searchesLast30Days) > 0 ? (
-            <p className="mt-3 inline-flex items-center justify-center gap-1.5 text-sm font-medium text-foreground bg-tint px-4 py-2 border border-primary rounded-full">
+          Number.isFinite(Number(siteStats.searchesLast30Days)) &&
+          Number(siteStats.searchesLast30Days) > 0 ? (
+            <motion.p
+              ref={searchesRef}
+              className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-full border border-primary bg-tint px-4 py-2 text-sm font-medium text-foreground"
+              initial="hidden"
+              animate={searchesInView ? "visible" : "hidden"}
+              variants={fadeIn(reduceMotion, 0.15)}
+            >
               <Search
                 className="size-3.5 shrink-0 text-primary"
                 aria-hidden="true"
               />
-              <span className="text-primary font-medium">
-                <span className="font-bold">{formatNumber(siteStats.searchesLast30Days)}</span> Searches (Last 30 Days)
+              <span className="font-medium text-primary">
+                <span className="font-bold">
+                  {formatNumber(siteStats.searchesLast30Days)}
+                </span>{" "}
+                Searches (Last 30 Days)
               </span>
-            </p>
+            </motion.p>
           ) : null}
         </div>
 
