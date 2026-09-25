@@ -52,6 +52,9 @@ const featuredListingServiceSchema = {
   offers: {
     "@type": "Offer",
     url: `${SITE_URL}/pricing`,
+    name: "Featured Listing (yearly)",
+    description:
+      "Yearly Featured listing subscription for claimed radiator repair businesses: Featured badge, search and directory priority, up to 10 shop photos, full analytics, and competitor insights.",
     priceCurrency: FEATURED_PRICE_CURRENCY,
     price: formatFeaturedOfferPrice(),
     priceValidUntil: featuredPriceValidUntil(),

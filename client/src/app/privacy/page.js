@@ -25,7 +25,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date(2026, 8, 22).toLocaleDateString("en-US", {
+  const lastUpdated = new Date(2026, 8, 24).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -65,7 +65,7 @@ function PrivacyPage() {
         },
         {
           label: "Listing Activity Stats:",
-          description:"When visitors view directory listings, we record aggregated activity such as listing impressions, listing clicks, business page views, and contact clicks (phone, directions, website, and email). Claimed owners can see basic analytics for their own listings in the dashboard (page views and impressions, plus impressions by source). Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source. Featured listings also unlock competitor insights, which show aggregated directory activity (impressions, listing clicks, CTR, and average position) for other public listings in the same city so owners can benchmark their own performance. Competitor insights cover directory activity only, never a shop's private account or contact details, and are withheld in cities with too few listings. These stats are not live and can take a few minutes to appear. We do not use this data to identify a visitor to the shop owner.",
+          description:"When visitors view directory listings, we record aggregated activity such as listing impressions, listing clicks, business page views, contact clicks (phone, directions, website, and email), and directory search activity. Claimed owners can see basic analytics for their own listings in the dashboard (page views and impressions, plus impressions by source). Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source. Featured listings also unlock competitor insights, which show aggregated directory activity (impressions, listing clicks, CTR, and average position) for other public listings in the same city so owners can benchmark their own performance. Competitor insights cover directory activity only, never a shop's private account or contact details, and are withheld in cities with too few listings. We may also show directory-wide aggregated totals (for example visitors, listing views, phone clicks, or searches over a recent period) on public marketing pages such as Featured listing pricing. These stats are not live and can take a few minutes to appear. We do not use this data to identify a visitor to the shop owner.",
         },
         {
           label: "Weekly Activity Reports:",
@@ -97,7 +97,7 @@ function PrivacyPage() {
         },
         {
           label: "Featured Listing Billing Information:",
-          description:"When you purchase or manage a Featured listing upgrade, payment card and billing details are collected and processed by Stripe on Stripe-hosted Checkout and Customer Portal pages. We do not store your full payment card number on our servers. We may store subscription-related records such as Stripe customer ID, subscription ID, price ID, subscription status, current period end, cancel-at-period-end or cancel-at scheduling flags, and the business listing associated with the subscription so we can apply or remove Featured status and show billing status in your account Settings. Stripe may also calculate applicable taxes at checkout. We may receive Stripe webhook events about checkout and subscription status changes to keep Featured placement in sync. Starting Featured checkout or managing a subscription is also subject to our Terms of Service.",
+          description:"When you purchase or manage a Featured listing upgrade, payment card and billing details are collected and processed by Stripe on Stripe-hosted Checkout and Customer Portal pages. We do not store your full payment card number on our servers. We may store subscription-related records such as Stripe customer ID, subscription ID, price ID, subscription status, current period end, cancel-at-period-end or cancel-at scheduling flags, and the business listing associated with the subscription so we can apply or remove Featured status and show billing status in your account Settings. Stripe may also calculate applicable taxes at checkout. If you enter a promotion or discount code at Checkout, Stripe processes that code under its coupon rules; we may receive related discount or invoice details in Stripe webhook events. We may receive Stripe webhook events about checkout and subscription status changes to keep Featured placement in sync. Starting Featured checkout or managing a subscription is also subject to our Terms of Service.",
         },
       ],
     },
@@ -352,7 +352,7 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Process payments and subscriptions for optional Featured listing upgrades, including Checkout, invoices, tax calculation where enabled, and the customer billing portal used to manage or cancel subscriptions. Stripe also sends us webhook events so we can sync subscription status and Featured placement.",
+          description:"Process payments and subscriptions for optional Featured listing upgrades, including Checkout, invoices, tax calculation where enabled, promotion or discount codes where offered, and the customer billing portal used to manage or cancel subscriptions. Stripe also sends us webhook events so we can sync subscription status and Featured placement.",
         },
         {
           label: "Data Collected:",
@@ -446,7 +446,7 @@ function PrivacyPage() {
         },
         {
           label: "Featured Listing Billing:",
-          description:"Process optional paid Featured upgrades through Stripe, apply or remove Featured placement based on subscription status (including canceling Featured when a listing is unclaimed or an account is deleted), show billing status in account Settings, confirm checkout status after payment using Stripe session details, and send internal admin notifications when a Featured subscription is purchased.",
+          description:"Process optional paid Featured upgrades through Stripe (including promotion or discount codes where offered), apply or remove Featured placement based on subscription status (including canceling Featured when a listing is unclaimed or an account is deleted), show billing status in account Settings, confirm checkout status after payment using Stripe session details, and send internal admin notifications when a Featured subscription is purchased.",
         },
         {
           label: "Affiliate Recommendations:",

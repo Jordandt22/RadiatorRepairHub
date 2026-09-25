@@ -46,8 +46,14 @@ export const PRICING_FAQS = [
     id: "pricing-billing",
     question: "How does billing work?",
     answer:
-      "You pay yearly through Stripe Checkout. Your card is charged in advance for each billing period. You can cancel anytime to stop renewals. Featured fees are non-refundable for the current period, including if you unclaim the listing or delete your account.",
+      "You pay yearly through Stripe Checkout at the then-current Featured price (see this page). Your card is charged in advance for each billing period. Promotion codes may apply at checkout when we provide them. You can cancel anytime to stop renewals. Featured fees are non-refundable for the current period, including if you unclaim the listing or delete your account.",
     relatedBlogs: [{ title: "Terms of Service", href: "/terms" }],
+  },
+  {
+    id: "pricing-promo",
+    question: "Can I use a promo or discount code?",
+    answer:
+      "Yes, when we provide a code. Enter it on the Stripe Checkout page. Codes may make the first year free or discounted; unless the coupon covers later periods, renewals bill at the then-current Featured price. You can cancel anytime in Settings to stop renewals; canceling during a promo-covered period generally keeps Featured until that period ends, with no refund for unused time.",
   },
 ];
 
