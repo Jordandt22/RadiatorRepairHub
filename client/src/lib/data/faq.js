@@ -171,7 +171,7 @@ export const FAQ_ITEMS = [
     id: "featured-listing",
     question: "What is a Featured listing?",
     answer:
-      "Featured is an optional paid upgrade for claimed listings. It adds a Featured badge, higher placement in search and browse results, up to 10 shop photos (claimed listings include 3), and full listing analytics (listing clicks, CTR, average position, contact clicks, and source breakdown). Claiming stays free; only Featured is paid. You can cancel anytime to stop future renewals; fees for the current billing period are non-refundable. See Featured listing pricing for current rates and how to upgrade.",
+      "Featured is an optional paid upgrade for claimed listings. It adds a Featured badge, higher placement in search and browse results (including state, city, category, and postal pages), up to 10 shop photos (claimed listings include 3), full listing analytics (listing clicks, CTR, average position, contact clicks, and source breakdown), and competitor insights for other public shops in your city. Claiming stays free; only Featured is paid (currently billed yearly through Stripe). You can cancel anytime to stop future renewals; fees for the current billing period are non-refundable. See Featured listing pricing for current rates and how to upgrade.",
   },
   {
     id: "listing-analytics",
