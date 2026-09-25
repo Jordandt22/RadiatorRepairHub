@@ -626,7 +626,7 @@ function AnalyticsFeaturedCta({ business }) {
           <p className="mt-0.5 text-sm text-muted-foreground">
             Priority in search, a Featured badge, extra shop photos, full listing
             analytics, and competitor insights.
-            $49/month, cancel anytime.
+            $149/year, cancel anytime.
           </p>
         </div>
       </div>

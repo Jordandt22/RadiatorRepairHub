@@ -47,8 +47,8 @@ export const FEATURED_BENEFITS = [
   },
   {
     icon: Calendar,
-    title: "Flexible Monthly Plan",
+    title: "Flexible Yearly Plan",
     description:
-      "Billed monthly through Stripe. Cancel anytime from your billing portal in Settings.",
+      "Billed yearly through Stripe. Cancel anytime from your billing portal in Settings.",
   },
 ];

@@ -230,9 +230,9 @@ export default function PricingPageContent() {
               </span>
             </div>
             <p className="mt-2 font-heading text-4xl font-bold text-foreground">
-              $49
+              $149
               <span className="text-lg font-medium text-muted-foreground">
-                /month
+                /year
               </span>
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -320,7 +320,7 @@ export default function PricingPageContent() {
                     ) : null}
                   </Button>
                   <p className="text-xs leading-relaxed text-muted-foreground">
-                    Billed monthly through Stripe. Cancel anytime to stop future
+                    Billed yearly through Stripe. Cancel anytime to stop future
                     renewals. Featured fees are non-refundable for the current
                     billing period.
                   </p>

@@ -10,7 +10,7 @@ import {
 
 const pageTitle = composeTitle("Featured Listing Pricing");
 const pageDescription = composeDescription(
-  "Upgrade a claimed radiator repair listing to Featured for $49/month.",
+  "Upgrade a claimed radiator repair listing to Featured for $149/year.",
   "Get a Featured badge, search priority, up to 10 shop photos, and full listing analytics."
 );
 
@@ -46,7 +46,7 @@ const featuredListingServiceSchema = {
     "@type": "Offer",
     url: `${SITE_URL}/pricing`,
     priceCurrency: "USD",
-    price: "49.00",
+    price: "149.00",
     priceValidUntil: "2027-12-31",
     availability: "https://schema.org/InStock",
     category: "Subscription",
