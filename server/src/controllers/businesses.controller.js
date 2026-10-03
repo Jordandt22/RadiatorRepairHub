@@ -1157,7 +1157,7 @@ export const completeClaim = async (req, res) => {
         await generateSignupConfirmationLink({
           email,
           password,
-          redirectTo: `${getWebBaseUrl()}/email-confirmed?flow=signup`,
+          redirectTo: `${getWebBaseUrl()}/account-confirmed`,
         });
 
       const createdId = linkData?.user?.id ?? null;

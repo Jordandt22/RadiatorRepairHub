@@ -18,6 +18,7 @@ Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /claim/
 Disallow: /email-confirmed
+Disallow: /account-confirmed
 
 # Sitemap location
 Sitemap: https://radiatorrepairhub.com/sitemap.xml`;

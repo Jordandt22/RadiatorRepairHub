@@ -15,6 +15,7 @@ import {
   deletePublicUserByUid,
 } from "../supabase/supabase.functions.js";
 import { getWebBaseUrl } from "../lib/constants/messages.js";
+import { loginFailureMessage } from "../lib/loginFailureMessage.js";
 import { cancelFeaturedSubscriptionsForOwner } from "../lib/cancelFeaturedSubscriptions.js";
 import { invalidateClaimStatusCaches } from "../lib/invalidateListingCaches.js";
 
@@ -37,7 +38,7 @@ export const loginOwner = async (req, res) => {
       .json(
         customErrorHandler(
           ACCESS_DENIED,
-          "Invalid email or password.",
+          loginFailureMessage(signInError),
           signInError
         )
       );
