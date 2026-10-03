@@ -31,6 +31,13 @@ import ClaimConsentPolicyLinks from "@/components/businesses/ClaimConsentPolicyL
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
+const ACCOUNT_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function initialAccountEmail(channel, business) {
+  if (channel === "phone") return "";
+  return typeof business?.email === "string" ? business.email.trim() : "";
+}
+
 const EMAIL_RESEND_CONSENT_TEXT =
   "Send a new verification code to this listing's email address.";
 
@@ -47,7 +54,9 @@ function ClaimVerifyFormContent({
   const { isSignedIn, user, isLoading: isAuthLoading } = useIsSignedIn();
   const isPhoneClaim = channel === "phone";
   const [code, setCode] = useState("");
-  const [loginEmail, setLoginEmail] = useState("");
+  const [loginEmail, setLoginEmail] = useState(() =>
+    initialAccountEmail(channel, business)
+  );
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -123,7 +132,7 @@ function ClaimVerifyFormContent({
       next.code = "Enter the 6-character verification code.";
     }
     if (!isSignedIn) {
-      if (isPhoneClaim && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginEmail.trim())) {
+      if (!ACCOUNT_EMAIL_PATTERN.test(loginEmail.trim())) {
         next.email = "Enter a valid email address for your account.";
       }
       const passwordError = getPasswordStrengthError(password);
@@ -245,8 +254,7 @@ function ClaimVerifyFormContent({
             code: code.toUpperCase(),
             password,
             confirmPassword,
-            // Phone claims have no listing email, so the owner picks their own.
-            ...(isPhoneClaim ? { email: loginEmail.trim() } : {}),
+            email: loginEmail.trim(),
           };
 
       const { data, error } = await completeClaimRequest(payload, {
@@ -290,6 +298,20 @@ function ClaimVerifyFormContent({
         return;
       }
 
+      if (data?.requiresEmailConfirmation) {
+        capture("claim_completed", {
+          flow: "create_account",
+          requires_email_confirmation: true,
+        });
+        showCustomSuccess(
+          typeof data.message === "string"
+            ? data.message
+            : "Your business has been claimed. Check your account email to confirm it, then sign in."
+        );
+        router.push("/signin");
+        return;
+      }
+
       if (data?.session) {
         const { error: sessionError } = await persistSession(data.session);
         if (sessionError) {
@@ -302,9 +324,16 @@ function ClaimVerifyFormContent({
           router.push("/signin");
           return;
         }
-        capture("claim_completed", { flow: "create_account" });
+        capture("claim_completed", {
+          flow: "create_account",
+          email_confirmation_pending: Boolean(data.emailConfirmationPending),
+        });
         await identifyOwner();
-        showCustomSuccess("Your business has been claimed successfully.");
+        showCustomSuccess(
+          typeof data.message === "string"
+            ? data.message
+            : "Your business has been claimed successfully."
+        );
         goToBusinessPage(data?.slug || business.slug);
         return;
       }
@@ -337,6 +366,11 @@ function ClaimVerifyFormContent({
   };
 
   const busy = isSubmitting || isCanceling || isResending || isAuthLoading;
+  const listingEmail =
+    typeof business?.email === "string" ? business.email.trim() : "";
+  const accountEmailDiffers =
+    !isPhoneClaim &&
+    loginEmail.trim().toLowerCase() !== listingEmail.toLowerCase();
 
   if (isAuthLoading) {
     return (
@@ -523,7 +557,7 @@ function ClaimVerifyFormContent({
               ? "We call this number to read your verification code. It never asks for personal or payment information."
               : isSignedIn
                 ? "Verification code is sent to this listing email. Your login email stays the same."
-                : "Email can be changed after account creation"}
+                : "We sent the verification code here. This address stays the public contact on your listing."}
           </p>
         </div>
 
@@ -548,41 +582,43 @@ function ClaimVerifyFormContent({
 
         {!isSignedIn ? (
           <>
-            {isPhoneClaim ? (
-              <div className="grid gap-1.5">
-                <label
-                  htmlFor="claim-login-email"
-                  className="text-sm font-medium text-foreground"
-                >
-                  Your email <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  id="claim-login-email"
-                  type="email"
-                  autoComplete="email"
-                  value={loginEmail}
-                  onChange={(e) => {
-                    setLoginEmail(e.target.value);
-                    if (errors.email) {
-                      setErrors((prev) => {
-                        const next = { ...prev };
-                        delete next.email;
-                        return next;
-                      });
-                    }
-                  }}
-                  disabled={busy}
-                  aria-invalid={Boolean(errors.email)}
-                  placeholder="you@example.com"
-                />
-                <p className="text-xs text-muted-foreground">
-                  This becomes the login email for your owner account.
-                </p>
-                {errors.email && (
-                  <p className="text-xs text-destructive">{errors.email}</p>
-                )}
-              </div>
-            ) : null}
+            <div className="grid gap-1.5">
+              <label
+                htmlFor="claim-login-email"
+                className="text-sm font-medium text-foreground"
+              >
+                Account email <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="claim-login-email"
+                type="email"
+                autoComplete="email"
+                value={loginEmail}
+                onChange={(e) => {
+                  setLoginEmail(e.target.value);
+                  if (errors.email) {
+                    setErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.email;
+                      return next;
+                    });
+                  }
+                }}
+                disabled={busy}
+                aria-invalid={Boolean(errors.email)}
+                placeholder="you@example.com"
+              />
+              <p className="text-xs text-muted-foreground">
+                {isPhoneClaim
+                  ? "This is the email you use to sign in. It is not shown on the listing."
+                  : accountEmailDiffers
+                    ? "We'll send a confirmation link to this address. The listing email above stays the public contact."
+                    : "This is the email you use to sign in. It starts as the listing email, and you can change it."}
+              </p>
+              {errors.email && (
+                <p className="text-xs text-destructive">{errors.email}</p>
+              )}
+            </div>
 
             <div className="grid gap-1.5">
               <label

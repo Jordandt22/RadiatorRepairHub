@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/Auth.context";
 import { useLoading } from "@/contexts/Loading.context";
 import { useSite } from "@/contexts/Site.context";
-import { fetchApi } from "@/lib/api/fetchApi";
 import { consumeLastPath } from "@/lib/lastPath";
 import PageFadeIn from "@/components/PageFadeIn";
 
@@ -26,7 +25,7 @@ function resolvePostLoginPath() {
 
 export default function Home() {
   const router = useRouter();
-  const { accessToken, setAccessToken, isReady } = useAuth();
+  const { accessToken, signIn, isReady } = useAuth();
   const { showLoading, hideLoading } = useLoading();
   const { sites, activeSite, activeSiteId, setActiveSiteId } = useSite();
 
@@ -45,17 +44,12 @@ export default function Home() {
       showLoading();
 
       try {
-        const { data, error } = await fetchApi("/admin/login", {
-          method: "POST",
-          body: JSON.stringify({ password: values.password }),
-        });
+        const { error } = await signIn(values.password);
 
         if (error) {
           setStatus(error.message || "Login failed");
           return;
         }
-
-        setAccessToken(data.token);
         // Redirect handled by the accessToken effect above.
       } finally {
         hideLoading();
@@ -77,7 +71,8 @@ export default function Home() {
         <div className="flex flex-col gap-1">
           <h1 className="text-xl font-semibold tracking-tight">Admin Login</h1>
           <p className="text-sm text-muted-foreground">
-            Signing in to {activeSite?.name}
+            One password signs you in to RRH and DRH when it matches. You will
+            open {activeSite?.name}.
           </p>
         </div>
 

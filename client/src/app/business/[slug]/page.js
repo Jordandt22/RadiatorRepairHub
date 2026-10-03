@@ -186,16 +186,16 @@ async function Page({ params }) {
       return notFound();
     }
 
-    // Claimed listings keep the page focused on the owner's business; only
-    // unclaimed pages surface affiliate products and competing shops.
-    const [featuredProducts, nearbyBusinesses] = business.is_claimed
-      ? [[], []]
-      : await Promise.all([
-          fetchActiveAffiliateProductsByAliases(
+    // Nearby shops are on every listing so crawlers get listing-to-listing
+    // links. Ads and affiliate products stay off claimed pages.
+    const [featuredProducts, nearbyBusinesses] = await Promise.all([
+      business.is_claimed
+        ? []
+        : fetchActiveAffiliateProductsByAliases(
             FEATURED_AFFILIATE_PRODUCT_ALIASES
           ).then((res) => res.data?.products ?? []),
-          fetchBusinessesInCity(business.city?.id, 4, business.id),
-        ]);
+      fetchBusinessesInCity(business.city?.id, 4, business.id),
+    ]);
 
     const relatedBlogCategoryNames = [
       business.primary_category?.name,
@@ -684,24 +684,25 @@ async function Page({ params }) {
               </div>
             </section>
 
-            {!business.is_claimed ? (
+            <HideWhenListingOwner>
+              <NearbyBusinesses
+                businesses={nearbyBusinesses}
+                cityName={business.city.name}
+                cityHref={cityHref}
+              />
+            </HideWhenListingOwner>
+
+            {!business.is_claimed && featuredProducts.length > 0 ? (
               <HideWhenListingOwner>
-                <NearbyBusinesses
-                  businesses={nearbyBusinesses}
-                  cityName={business.city.name}
-                  cityHref={cityHref}
+                <AffiliateProductsSection
+                  products={featuredProducts}
+                  title="Recommended Amazon Tools & Supplies"
+                  description={`Optional DIY supplies recommended by RadiatorRepairHub. These products are not sold, endorsed, or affiliated with ${business?.title ?? "this business"}.`}
+                  descriptionVariant="notice"
+                  disclosure="Product links are RadiatorRepairHub Amazon Associate recommendations. As an Amazon Associate, RadiatorRepairHub earns from qualifying purchases. This shop is not responsible for these products or purchases."
+                  variant="related"
+                  layout="carousel"
                 />
-                {featuredProducts.length > 0 ? (
-                  <AffiliateProductsSection
-                    products={featuredProducts}
-                    title="Recommended Amazon Tools & Supplies"
-                    description={`Optional DIY supplies recommended by RadiatorRepairHub. These products are not sold, endorsed, or affiliated with ${business?.title ?? "this business"}.`}
-                    descriptionVariant="notice"
-                    disclosure="Product links are RadiatorRepairHub Amazon Associate recommendations. As an Amazon Associate, RadiatorRepairHub earns from qualifying purchases. This shop is not responsible for these products or purchases."
-                    variant="related"
-                    layout="carousel"
-                  />
-                ) : null}
               </HideWhenListingOwner>
             ) : null}
 

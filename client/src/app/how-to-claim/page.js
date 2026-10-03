@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { BadgeCheck, BarChart3, Clock3, EyeOff, Flag, ImageIcon, MegaphoneOff, MessageSquare, Search } from "lucide-react";
+import { BadgeCheck, BarChart3, Clock3, Flag, ImageIcon, MegaphoneOff, MessageSquare, Search } from "lucide-react";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import FAQSection from "@/components/seo/FAQSection";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
@@ -38,12 +38,6 @@ const BENEFITS = [
     description:
       "Claimed listings remove third-party display ads from your business page so customers see a cleaner listing.",
     icon: MegaphoneOff,
-  },
-  {
-    title: "No Competitors Shown",
-    description:
-      "Unclaimed pages can show nearby competing shops. After you claim, your competitors aren't shown on your listing.",
-    icon: EyeOff,
   },
   {
     title: "Receive Quick Contact Inquiries",
@@ -90,7 +84,7 @@ const CLAIM_STEPS = [
   "Click Claim on the listing and pick Email or Phone call.",
   "Email: we send a 6-character code to the business email (valid for 1 hour). Phone: we place an automated call that reads a 6-digit code (valid for about 10 minutes).",
   "Stay on the verification page that opens, you'll need it to enter your code.",
-  "Enter the code and create a password for your new account.",
+  "Enter the code, confirm the email for your account, and create a password.",
   "Congrats, you've successfully claimed your listing!",
 ];
 
@@ -107,9 +101,9 @@ function buildClaimFaqs(supportEmail) {
         "Choose the Phone call tab when you claim, confirm the consent checkbox (including that you agree to a prerecorded or artificial voice call), and we place an automated call to the phone number on your listing. Press a key when prompted, then enter the 6-digit code the call reads out. Phone codes expire in about 10 minutes. Calls are only placed between 7:00 AM and 9:00 PM local time, and the call never asks for personal, payment, or account information.",
     },
     {
-      question: "Which email does my account use after a phone claim?",
+      question: "Which email does my account use?",
       answer:
-        "You choose it. On the verification page for a phone claim, you enter the email address you want to sign in with and set a password. That email becomes your login and is not published on the listing.",
+        "For an email claim, the account email starts as the listing email. You can change it before you create the account. The verification code still goes to the listing email, and that address stays the public contact on the listing. If you choose a different account email, we send that inbox a confirmation link. For a phone claim, you enter the account email yourself. Either way, the account email is only for signing in and is not published on the listing.",
     },
     {
       question: "What if the email or phone on my listing is wrong?",

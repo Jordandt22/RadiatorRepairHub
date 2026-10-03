@@ -4185,11 +4185,34 @@ export const completeBusinessClaimRpc = async (
   return { data, error };
 };
 
-export const createAuthUser = async ({ email, password }) => {
+export const createAuthUser = async ({
+  email,
+  password,
+  emailConfirm = true,
+}) => {
   const { data, error } = await adminAuthClient.createUser({
     email,
     password,
-    email_confirm: true,
+    email_confirm: emailConfirm,
+  });
+
+  return { data, error };
+};
+
+/**
+ * Creates an unconfirmed user and returns the signup confirmation link.
+ * Admin generateLink does not send the email; the caller delivers it.
+ */
+export const generateSignupConfirmationLink = async ({
+  email,
+  password,
+  redirectTo,
+}) => {
+  const { data, error } = await adminAuthClient.generateLink({
+    type: "signup",
+    email,
+    password,
+    options: redirectTo ? { redirectTo } : undefined,
   });
 
   return { data, error };

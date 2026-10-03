@@ -4,11 +4,10 @@ import { ArrowRight } from "lucide-react";
 import NearbyBusinessCard from "@/components/businesses/NearbyBusinessCard";
 
 /**
- * Alternative shops shown on unclaimed listings.
+ * Other shops in the same city, on claimed and unclaimed listings.
  *
- * Unclaimed pages cannot offer Quick Contact, so visitors who bounce here have
- * no next step. Rendering server-side also gives crawlers direct links between
- * listings in the same city rather than only through filtered search URLs.
+ * Rendered on the server so crawlers get direct links between listings.
+ * The listing owner does not see this block while signed in on their page.
  */
 export default function NearbyBusinesses({
   businesses = [],
