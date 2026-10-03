@@ -5,45 +5,26 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Check } from "lucide-react";
 import { hydrateSessionFromRedirect } from "@/lib/auth/redirectSession";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 export default function EmailConfirmedContent() {
   const searchParams = useSearchParams();
   const isSignupConfirm = searchParams.get("flow") === "signup";
   const [ready, setReady] = useState(false);
-  const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
-    (async () => {
-      await hydrateSessionFromRedirect();
-      try {
-        const supabase = getSupabaseBrowserClient();
-        const { data } = await supabase.auth.getUser();
-        if (mounted) setSignedIn(Boolean(data?.user));
-      } catch {
-        // Confirmation may already be applied; the page can still show success.
-      } finally {
-        if (mounted) setReady(true);
-      }
-    })();
+    hydrateSessionFromRedirect().finally(() => {
+      if (mounted) setReady(true);
+    });
 
     return () => {
       mounted = false;
     };
   }, []);
 
-  const continueHref = isSignupConfirm
-    ? signedIn
-      ? "/dashboard"
-      : "/signin"
-    : "/settings";
-  const continueLabel = isSignupConfirm
-    ? signedIn
-      ? "Go to dashboard"
-      : "Sign in"
-    : "Go to Settings";
+  const continueHref = isSignupConfirm ? "/signin" : "/settings";
+  const continueLabel = isSignupConfirm ? "Sign in" : "Go to Settings";
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col items-center justify-center px-4 py-16 text-center">
@@ -64,9 +45,8 @@ export default function EmailConfirmedContent() {
 
       {isSignupConfirm ? (
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-          {ready && signedIn
-            ? "Your account email is confirmed. You can manage your listing from the dashboard."
-            : "Your account email is confirmed. Sign in to manage your listing."}
+          Your account email is confirmed. Sign in with the password you
+          created to manage your listing.
         </p>
       ) : (
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
