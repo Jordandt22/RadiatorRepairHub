@@ -699,7 +699,13 @@ export const LISTING_REQUEST_LIVE_MESSAGE = Object.freeze({
 export const ADMIN_BUSINESS_CLAIMED_MESSAGE = Object.freeze({
   subject: (businessName) =>
     `Business claimed${businessName ? `: ${businessName}` : ""}`,
-  html: (businessName, { email, businessPageUrl }) => `
+  html: (businessName, { email, listingEmail, businessPageUrl }) => {
+    const owner = typeof email === "string" ? email.trim().toLowerCase() : "";
+    const listing =
+      typeof listingEmail === "string" ? listingEmail.trim().toLowerCase() : "";
+    const showListing = Boolean(listing && owner && listing !== owner);
+
+    return `
   <p>A business was successfully claimed on RadiatorRepairHub.</p>
 
   <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
@@ -711,11 +717,36 @@ export const ADMIN_BUSINESS_CLAIMED_MESSAGE = Object.freeze({
       <td style="padding: 8px 0; font-weight: bold;">Owner email:</td>
       <td style="padding: 8px 0;">${email ?? "N/A"}</td>
     </tr>
+    ${
+      showListing
+        ? `<tr>
+      <td style="padding: 8px 0; font-weight: bold;">Listing email:</td>
+      <td style="padding: 8px 0;">${listingEmail}</td>
+    </tr>`
+        : ""
+    }
     <tr>
       <td style="padding: 8px 0; font-weight: bold;">Listing:</td>
       <td style="padding: 8px 0;"><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></td>
     </tr>
   </table>
+  `;
+  },
+});
+
+export const ACCOUNT_EMAIL_CONFIRMATION_MESSAGE = Object.freeze({
+  subject: () => "Confirm your RadiatorRepairHub account email",
+  html: (businessName, { confirmUrl }) => `
+  <p>Hi there,</p>
+
+  <p>You claimed <strong>${businessName ?? "your business"}</strong> on RadiatorRepairHub with an account email that is different from the listing email.</p>
+
+  <p>Confirm this address so you can rely on it for sign-in and password resets:<br>
+  <a href="${confirmUrl}" style="color: #1a73e8;">Confirm email</a></p>
+
+  <p>The public contact email on your listing was not changed.</p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
   `,
 });
 

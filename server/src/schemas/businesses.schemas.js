@@ -82,9 +82,10 @@ export const CompleteClaimAuthenticatedSchema = Yup.object({
 });
 
 /**
- * Unsigned: create account with password during claim. Phone claims also send
- * a login email since there is no listing email to use; the controller
- * requires it for that channel.
+ * Unsigned: create account with password during claim. The login email
+ * defaults to the listing email for email claims, and the owner may send a
+ * different one. Phone claims must send a login email because there is no
+ * listing email to use.
  */
 export const CompleteClaimSchema = Yup.object({
   ...ClaimVerificationCodeSchema,

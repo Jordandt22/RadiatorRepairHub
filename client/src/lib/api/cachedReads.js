@@ -106,8 +106,8 @@ export const fetchStateListingCount = cache(async (stateId) => {
 });
 
 /**
- * Other listings in a city, used for the alternatives block on unclaimed
- * business pages. Fetches one extra row so the current listing can be removed
+ * Other listings in a city, used for the nearby-shops block on business
+ * pages. Fetches one extra row so the current listing can be removed
  * without leaving a short list.
  */
 export const fetchBusinessesInCity = cache(

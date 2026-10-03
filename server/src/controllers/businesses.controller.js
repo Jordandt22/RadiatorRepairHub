@@ -48,6 +48,7 @@ import {
   deleteClaimRequest,
   completeBusinessClaimRpc,
   createAuthUser,
+  generateSignupConfirmationLink,
   deleteAuthUser,
   signInWithPassword,
   formatAuthSession,
@@ -109,6 +110,7 @@ import {
 import { resendClient } from "../resend/resend.js";
 import {
   ADMIN_BUSINESS_CLAIMED_MESSAGE,
+  ACCOUNT_EMAIL_CONFIRMATION_MESSAGE,
   OWNER_CLAIM_THANK_YOU_MESSAGE,
   CLAIM_VERIFICATION_MESSAGE,
   SENDER_NAME,
@@ -131,6 +133,10 @@ import {
   failClaimForMaxAttempts,
   expireStalePendingClaimsForBusiness,
 } from "../lib/claimHelpers.js";
+import {
+  isVerifiedListingAccountEmail,
+  resolveClaimAccountEmail,
+} from "../lib/claimAccountEmail.js";
 import {
   CLAIM_PHONE_BLOCK_REASONS,
   formatClaimPhoneDisplay,
@@ -886,6 +892,29 @@ export const cancelClaim = async (req, res) => {
   );
 };
 
+const authEmailAlreadyExists = (authError) => {
+  const message = authError?.message?.toLowerCase?.() ?? "";
+  return (
+    message.includes("already") ||
+    authError?.status === 422 ||
+    authError?.code === "email_exists" ||
+    authError?.code === "user_already_exists"
+  );
+};
+
+const respondAuthCreateError = (res, authError) => {
+  const taken = authEmailAlreadyExists(authError);
+  return res.status(taken ? 409 : 500).json(
+    customErrorHandler(
+      taken ? ACCESS_DENIED : SERVER_ERROR,
+      taken
+        ? "An account with this email already exists."
+        : "There was an error creating your account.",
+      authError
+    )
+  );
+};
+
 export const completeClaim = async (req, res) => {
   const { claimRequestId, code, password } = req.body;
   const normalizedCode = String(code).trim().toUpperCase();
@@ -977,12 +1006,21 @@ export const completeClaim = async (req, res) => {
   }
 
   const authenticatedUser = req.user ?? null;
+  const listingEmailNormalized = listingEmail.toLowerCase();
 
-  // Phone claims have no listing email to build an account from, so the owner
-  // supplies the login email on the verify page.
-  const email = isPhoneClaim
-    ? submittedEmail || authenticatedUser?.email || ""
-    : listingEmail;
+  // The code proves the listing inbox. The account email defaults to that
+  // address and can be a different login. Signed-in owners keep their account.
+  const email = resolveClaimAccountEmail({
+    isPhoneClaim,
+    submittedEmail,
+    authenticatedEmail: authenticatedUser?.email,
+    listingEmail: listingEmailNormalized,
+  });
+  const accountEmailVerified = isVerifiedListingAccountEmail({
+    isPhoneClaim,
+    accountEmail: email,
+    listingEmail: listingEmailNormalized,
+  });
 
   if (!authenticatedUser && !email) {
     return res
@@ -1095,37 +1133,50 @@ export const completeClaim = async (req, res) => {
 
   let uid = authenticatedUser?.id ?? null;
   let createdAuthUser = false;
+  let confirmationLink = null;
 
   if (!uid) {
-    const { data: authData, error: authError } = await createAuthUser({
-      email,
-      password,
-    });
+    // Matching the listing inbox is enough to confirm that address. A different
+    // login still needs its own confirmation email. Phone claims have no
+    // listing inbox, so the address the owner typed is confirmed as before.
+    if (isPhoneClaim || accountEmailVerified) {
+      const { data: authData, error: authError } = await createAuthUser({
+        email,
+        password,
+        emailConfirm: true,
+      });
 
-    if (authError || !authData?.user?.id) {
-      const message =
-        authError?.message?.toLowerCase?.().includes("already") ||
-        authError?.status === 422
-          ? "An account with this email already exists."
-          : "There was an error creating your account.";
+      if (authError || !authData?.user?.id) {
+        return respondAuthCreateError(res, authError);
+      }
 
-      return res
-        .status(
-          authError?.message?.toLowerCase?.().includes("already") ? 409 : 500
-        )
-        .json(
-          customErrorHandler(
-            authError?.message?.toLowerCase?.().includes("already")
-              ? ACCESS_DENIED
-              : SERVER_ERROR,
-            message,
-            authError
-          )
-        );
+      uid = authData.user.id;
+      createdAuthUser = true;
+    } else {
+      const { data: linkData, error: linkError } =
+        await generateSignupConfirmationLink({
+          email,
+          password,
+          redirectTo: `${getWebBaseUrl()}/email-confirmed?flow=signup`,
+        });
+
+      const createdId = linkData?.user?.id ?? null;
+      confirmationLink = linkData?.properties?.action_link ?? null;
+
+      if (linkError || !createdId || !confirmationLink) {
+        if (!linkError && createdId) {
+          try {
+            await deleteAuthUser(createdId);
+          } catch {
+            // best-effort cleanup of the user this request just created
+          }
+        }
+        return respondAuthCreateError(res, linkError);
+      }
+
+      uid = createdId;
+      createdAuthUser = true;
     }
-
-    uid = authData.user.id;
-    createdAuthUser = true;
   }
 
   const { error: rpcError } = await completeBusinessClaimRpc(
@@ -1174,6 +1225,7 @@ export const completeClaim = async (req, res) => {
       subject: ADMIN_BUSINESS_CLAIMED_MESSAGE.subject(business.title),
       html: ADMIN_BUSINESS_CLAIMED_MESSAGE.html(business.title, {
         email,
+        listingEmail: listingEmailNormalized,
         businessPageUrl,
       }),
     });
@@ -1187,6 +1239,32 @@ export const completeClaim = async (req, res) => {
   }
 
   const ownerRecipient = isDev ? TEST_RECIPIENT_EMAIL : email;
+  let emailConfirmationSent = false;
+
+  if (
+    confirmationLink &&
+    RESEND_API_KEY &&
+    SENDER_EMAIL &&
+    ownerRecipient
+  ) {
+    const { error: confirmSendError } = await resendClient().emails.send({
+      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+      to: [ownerRecipient],
+      subject: ACCOUNT_EMAIL_CONFIRMATION_MESSAGE.subject(),
+      html: ACCOUNT_EMAIL_CONFIRMATION_MESSAGE.html(business.title, {
+        confirmUrl: confirmationLink,
+      }),
+    });
+
+    if (confirmSendError && isDev) {
+      console.error(
+        "Failed to send account email confirmation:",
+        confirmSendError
+      );
+    } else if (!confirmSendError) {
+      emailConfirmationSent = true;
+    }
+  }
 
   if (RESEND_API_KEY && SENDER_EMAIL && ownerRecipient) {
     const dashboardUrl = `${getWebBaseUrl()}/dashboard`;
@@ -1218,6 +1296,10 @@ export const completeClaim = async (req, res) => {
     );
   }
 
+  const confirmationMessage = emailConfirmationSent
+    ? "Your business has been claimed. We sent a confirmation link to your account email."
+    : "Your business has been claimed, but we couldn't send the confirmation email. Try signing in, or contact support if that doesn't work.";
+
   const { data: signInData, error: signInError } = await signInWithPassword({
     email,
     password,
@@ -1226,6 +1308,18 @@ export const completeClaim = async (req, res) => {
   const session = formatAuthSession(signInData?.session);
 
   if (signInError || !session) {
+    if (confirmationLink) {
+      return res.status(201).json(
+        successHandler({
+          slug: business.slug,
+          session: null,
+          requiresEmailConfirmation: true,
+          emailConfirmationSent,
+          message: confirmationMessage,
+        })
+      );
+    }
+
     return res.status(201).json(
       successHandler({
         slug: business.slug,
@@ -1241,6 +1335,13 @@ export const completeClaim = async (req, res) => {
     successHandler({
       slug: business.slug,
       session,
+      ...(confirmationLink
+        ? {
+            emailConfirmationPending: true,
+            emailConfirmationSent,
+            message: confirmationMessage,
+          }
+        : {}),
     })
   );
 };

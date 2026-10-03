@@ -1,11 +1,16 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isTokenExpired } from "@/lib/auth";
+import {
+  clearStoredTokens,
+  isTokenExpired,
+  loginToSite,
+  writeStoredToken,
+} from "@/lib/auth";
 import { saveCurrentPath } from "@/lib/lastPath";
 import { useSite } from "@/contexts/Site.context";
-import { DEFAULT_SITE_ID, siteTokenKey } from "@/lib/sites";
+import { DEFAULT_SITE_ID, SITES, siteTokenKey } from "@/lib/sites";
 
 const AuthContext = createContext(null);
 
@@ -37,26 +42,44 @@ function readStoredToken(siteId) {
 export function AuthProvider({ children }) {
   const router = useRouter();
   const { activeSiteId, isReady: isSiteReady } = useSite();
+  const activeSiteIdRef = useRef(activeSiteId);
+  activeSiteIdRef.current = activeSiteId;
   const [accessToken, setAccessTokenState] = useState(null);
+  const [tokenSiteId, setTokenSiteId] = useState(null);
   const [isReady, setIsReady] = useState(false);
 
-  // Each site's API signs tokens with its own secret, so sessions are stored
-  // and restored per site.
+  // Each site's API signs tokens with its own secret, so a session is stored
+  // per site. Login fills every site the password matches.
   const setAccessToken = (token) => {
-    const key = siteTokenKey(activeSiteId);
+    writeStoredToken(activeSiteId, token);
+    setAccessTokenState(token && !isTokenExpired(token) ? token : null);
+    setTokenSiteId(activeSiteId);
+  };
 
-    if (token && !isTokenExpired(token)) {
-      localStorage.setItem(key, token);
-      setAccessTokenState(token);
-    } else {
-      localStorage.removeItem(key);
-      setAccessTokenState(null);
+  const signIn = async (password) => {
+    const results = await Promise.all(
+      SITES.map((site) => loginToSite(site, password))
+    );
+
+    for (const result of results) {
+      if (result.token) writeStoredToken(result.siteId, result.token);
     }
+
+    const siteId = activeSiteIdRef.current;
+    const active = results.find((result) => result.siteId === siteId);
+    if (!active?.token) {
+      return { error: active?.error || { message: "Login failed" } };
+    }
+
+    setAccessTokenState(active.token);
+    setTokenSiteId(siteId);
+    return { error: null };
   };
 
   const logout = () => {
     saveCurrentPath();
-    setAccessToken(null);
+    clearStoredTokens();
+    setAccessTokenState(null);
     router.replace("/");
   };
 
@@ -73,6 +96,7 @@ export function AuthProvider({ children }) {
     }
 
     setAccessTokenState(stored);
+    setTokenSiteId(activeSiteId);
     setIsReady(true);
   }, [activeSiteId, isSiteReady]);
 
@@ -90,9 +114,17 @@ export function AuthProvider({ children }) {
     return () => clearInterval(intervalId);
   }, [accessToken]);
 
+  const sessionReady = isReady && tokenSiteId === activeSiteId;
+
   return (
     <AuthContext.Provider
-      value={{ accessToken, setAccessToken, logout, isReady }}
+      value={{
+        accessToken: sessionReady ? accessToken : null,
+        setAccessToken,
+        signIn,
+        logout,
+        isReady: sessionReady,
+      }}
     >
       {children}
     </AuthContext.Provider>

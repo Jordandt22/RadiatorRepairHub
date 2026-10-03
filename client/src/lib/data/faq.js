@@ -159,7 +159,7 @@ export const FAQ_ITEMS = [
     id: "claim-listing",
     question: "How do I claim my business listing?",
     answer:
-      "Open your business page and use Claim Business. Choose email verification (code to the listing email) or phone verification (automated call that reads a code to the listing phone). After you verify, create your account password—or sign in if you already have one—then manage the listing, add shop photos, view basic listing analytics (page views and impressions), and manage weekly activity report emails in Settings. Claiming is free. Full steps and eligibility rules are on our How to Claim page.",
+      "Open your business page and use Claim Business. Choose email verification (code to the listing email) or phone verification (automated call that reads a code to the listing phone). After you verify, confirm the email for your account — email claims start with the listing email, and you can change it — then create a password, or sign in if you already have one. From there you can manage the listing, add shop photos, view basic listing analytics (page views and impressions), and manage weekly activity report emails in Settings. Claiming is free. Full steps and eligibility rules are on our How to Claim page.",
   },
   {
     id: "cant-claim",
