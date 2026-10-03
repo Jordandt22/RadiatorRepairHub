@@ -1,6 +1,5 @@
-import { Suspense } from "react";
 import { NOINDEX_ROBOTS } from "@/lib/seo/metadata";
-import EmailConfirmedContent from "@/components/auth/EmailConfirmedContent";
+import ConfirmationResult from "@/components/auth/ConfirmationResult";
 
 export const metadata = {
   title: "Email Confirmed | RadiatorRepairHub",
@@ -11,15 +10,14 @@ export const metadata = {
 export default function EmailConfirmedPage() {
   return (
     <div className="min-h-screen bg-background">
-      <Suspense
-        fallback={
-          <div className="mx-auto flex min-h-[70vh] max-w-lg items-center justify-center px-4 py-16 text-sm text-muted-foreground">
-            Loading...
-          </div>
-        }
-      >
-        <EmailConfirmedContent />
-      </Suspense>
+      <ConfirmationResult continueHref="/settings" continueLabel="Go to Settings">
+        <p>
+          For an email address update to finish, make sure you confirm from{" "}
+          <span className="font-medium text-foreground">both</span> your old and
+          new email inboxes. If you still have a confirmation link waiting, open
+          it to complete the change.
+        </p>
+      </ConfirmationResult>
     </div>
   );
 }

@@ -25,6 +25,7 @@ const HIDDEN_BANNER_PREFIXES = [
   "/forgot-password",
   "/reset-password",
   "/email-confirmed",
+  "/account-confirmed",
 ];
 
 function isHiddenBannerPath(pathname) {
