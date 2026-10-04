@@ -5,12 +5,8 @@ import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import BusinessCount from "@/components/content/BusinessCount";
 import AnimatedStaggerRows from "@/components/ui/AnimatedStaggerRows";
-import AdSenseUnit from "@/components/ads/AdSenseUnit";
 import StateSearch from "./StateSearch";
 import StateSort from "./StateSort";
-
-/** Display unit above the state count on /states */
-const STATES_DISPLAY_SLOT = "6576279494";
 
 function StateCard({ state }) {
   return (
@@ -67,11 +63,6 @@ function StatesGrid({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <AdSenseUnit
-        slot={STATES_DISPLAY_SLOT}
-        className="mb-6 overflow-hidden rounded-lg"
-      />
-
       <p className="mb-6 text-sm text-muted-foreground">
         <span className="font-semibold text-green-700">
           {(filteredCount ?? states.length).toLocaleString()}

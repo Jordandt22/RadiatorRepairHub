@@ -187,7 +187,6 @@ async function Page({ params, searchParams }) {
           label: "View all categories",
           href: "/categories",
         }}
-        showAd
       />
 
       <LocationLinks
@@ -198,7 +197,6 @@ async function Page({ params, searchParams }) {
           label: `View all ${stateData.name} cities`,
           href: `/states/${stateData.code}/cities`,
         }}
-        showAd
       />
     </>
   );

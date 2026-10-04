@@ -209,7 +209,6 @@ async function Page({ params, searchParams }) {
           label: `View all ${stateData.name} cities`,
           href: `/states/${stateData.code}/cities`,
         }}
-        showAd
       />
 
       <LocationLinks
@@ -220,7 +219,6 @@ async function Page({ params, searchParams }) {
           label: `All shops in ${stateData.name}`,
           href: `/state/${stateData.code}`,
         }}
-        showAd
       />
 
       <LocationLinks
@@ -231,7 +229,6 @@ async function Page({ params, searchParams }) {
           label: `All ${displayName} listings`,
           href: `/category/${slug}`,
         }}
-        showAd
       />
     </>
   );

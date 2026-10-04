@@ -3,11 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { FAQAccordion } from "@/components/seo/FAQSection";
 import { useReducedMotion } from "framer-motion";
-import AdSenseUnit from "@/components/ads/AdSenseUnit";
 import FAQSearch from "./FAQSearch";
-
-/** Display unit above the first FAQ accordion on /faq */
-const FAQ_DISPLAY_SLOT = "9000202208";
 
 function matchesFaq(faq, query) {
   const haystack = [faq.question, faq.answer]
@@ -103,13 +99,6 @@ function FAQPageContent({ sections = [], allFaqs = [] }) {
                 </a>
               ))}
             </nav>
-          ) : null}
-
-          {visibleCount > 0 ? (
-            <AdSenseUnit
-              slot={FAQ_DISPLAY_SLOT}
-              className="mb-10 overflow-hidden rounded-lg"
-            />
           ) : null}
 
           {isSearching && visibleCount === 0 ? (
