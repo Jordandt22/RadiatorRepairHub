@@ -91,7 +91,6 @@ export const metadata = {
     "theme-color": "#2B50AA",
     "msapplication-TileColor": "#2B50AA",
     "msapplication-config": "/browserconfig.xml",
-    "google-adsense-account": "ca-pub-6504336368539075",
   },
 };
 
@@ -203,6 +202,15 @@ export default async function RootLayout({ children }) {
 
         {/* Favicon and icons are injected via root metadata.icons */}
         <link key="manifest" rel="manifest" href="/manifest.json" />
+
+        {/* Mediavine Journey — keep this last in <head> so it loads early */}
+        <script
+          type="text/javascript"
+          async
+          data-noptimize="1"
+          data-cfasync="false"
+          src="//scripts.scriptwrapper.com/tags/740b71f1-6750-4efc-8d1f-89390ce16418.js"
+        />
       </head>
       <body
         className={`${plexSans.variable} font-sans antialiased`}
@@ -226,14 +234,6 @@ export default async function RootLayout({ children }) {
             </Script>
           </>
         )}
-
-        {/* Google AdSense — manual units only; Auto ads stay off in the dashboard */}
-        <Script
-          id="google-adsense"
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6504336368539075"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
 
         <PostHogProvider>
           <ToastProvider>

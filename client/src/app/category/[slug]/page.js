@@ -171,7 +171,6 @@ async function Page({ params, searchParams }) {
         title={`${displayName} by city`}
         description={`These cities have the most ${lowerName} listings. Open a city page to compare local shops.`}
         links={cityLinks}
-        showAd
       />
 
       <LocationLinks
@@ -182,7 +181,6 @@ async function Page({ params, searchParams }) {
           label: "View all states",
           href: "/states",
         }}
-        showAd
       />
 
       <LocationLinks
@@ -193,7 +191,6 @@ async function Page({ params, searchParams }) {
           label: "View all categories",
           href: "/categories",
         }}
-        showAd
       />
     </>
   );

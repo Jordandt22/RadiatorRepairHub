@@ -11,7 +11,7 @@ import {
 export const metadata = buildPageMetadata({
   title: composeTitle("Privacy Policy"),
   description: composeDescription(
-    "How RadiatorRepairHub collects and uses personal information for our directory, forms, claims, Featured billing, listing saves, analytics, AdSense, and affiliate links."
+    "How RadiatorRepairHub collects and uses personal information for our directory, forms, claims, Featured billing, listing saves, analytics, Mediavine ads, and affiliate links."
   ),
   keywords:
     "privacy policy, data protection, personal information, GDPR, CCPA, privacy rights, data security",
@@ -25,7 +25,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date(2026, 8, 24).toLocaleDateString("en-US", {
+  const lastUpdated = new Date(2026, 9, 3).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -135,7 +135,7 @@ function PrivacyPage() {
         },
         {
           label: "Advertising Cookies:",
-          description:"Google AdSense may set cookies or use similar technologies to serve and measure ads on pages where we place AdSense units (for example blog, FAQ, directory browse and search pages, and unclaimed business listing pages).",
+          description:"Mediavine may set cookies or use similar technologies to serve and measure display ads on pages where Mediavine ads appear.",
         },
         {
           label: "Security and Performance Cookies:",
@@ -365,23 +365,23 @@ function PrivacyPage() {
       ],
     },
     {
-      title: "Google AdSense",
+      title: "Mediavine",
       bulletPoints: [
         {
           label: "Provider:",
-          description: "Google LLC",
+          description: "Mediavine, Inc.",
         },
         {
           label: "Purpose:",
-          description:"Display advertising and ad measurement on selected pages where we place AdSense units (for example blog, FAQ, directory browse and search pages, and unclaimed business listing pages).",
+          description:"Display advertising and ad measurement on pages where Mediavine serves ads.",
         },
         {
           label: "Data Collected:",
-          description:"May include IP address, cookies or similar device identifiers, page URLs, and approximate location used to serve and measure ads. Ad personalization and any data Google collects for advertising are governed by Google's policies.",
+          description:"May include IP address, cookies or similar device identifiers, page URLs, and approximate location used to serve and measure ads. Ad personalization and any data Mediavine or its advertising partners collect are governed by their policies.",
         },
         {
           label: "Privacy Policy:",
-          description: "https://policies.google.com/privacy",
+          description: "https://www.mediavine.com/privacy-policy/",
         },
       ],
     },
@@ -519,7 +519,7 @@ function PrivacyPage() {
       label: "Website analytics (Google Analytics, PostHog)",
     },
     {
-      label: "Display advertising (Google AdSense)",
+      label: "Display advertising (Mediavine)",
     },
     {
       label: "Transactional email delivery (Resend)",
@@ -665,7 +665,7 @@ function PrivacyPage() {
           label: "Object to certain uses of your personal information",
         },
         {
-          label:"Limit analytics tracking and personalized advertising through your browser's privacy settings, cookie controls, ad-blocking extensions, or Google Ads Settings",
+          label:"Limit analytics tracking and personalized advertising through your browser's privacy settings, cookie controls, or blocking extensions",
         },
         {
           label:"Unsubscribe from listing emails (weekly reports, claim invites, and follow-ups) using the link in those emails, or (for claimed listings you own) turn weekly reports off in Settings → Notifications. Quick Contact messages are not stopped by unsubscribe.",
@@ -689,7 +689,7 @@ function PrivacyPage() {
     },
     {
       title: "Third-Party Links and Services",
-      content:"Our directory, blog, and Shop pages contain links to third-party websites, businesses, and retailers (including Amazon). This Privacy Policy does not apply to those third-party sites or services. We are not responsible for the privacy practices or content of third-party websites. We encourage you to review the privacy policies of any third-party sites you visit. For third-party services we use to operate our website (such as Google Analytics, Google AdSense, PostHog, Cloudflare, Arcjet, Resend, Supabase, Twilio, Abstract API, Stripe, Redis, and Amazon Associates), see the Third-Party Services section above.",
+      content:"Our directory, blog, and Shop pages contain links to third-party websites, businesses, and retailers (including Amazon). This Privacy Policy does not apply to those third-party sites or services. We are not responsible for the privacy practices or content of third-party websites. We encourage you to review the privacy policies of any third-party sites you visit. For third-party services we use to operate our website (such as Google Analytics, Mediavine, PostHog, Cloudflare, Arcjet, Resend, Supabase, Twilio, Abstract API, Stripe, Redis, and Amazon Associates), see the Third-Party Services section above.",
     },
     {
       title: "International Data Transfers",
@@ -708,7 +708,7 @@ function PrivacyPage() {
     },
     {
       label: "Right to Opt-Out:",
-      description:"Opt-out of the sale of personal information. We do not sell personal information for money. Advertising partners such as Google AdSense may process data (for example cookies or device identifiers) to serve personalized ads, which may be considered a \"share\" under some privacy laws. You can limit personalized ads through Google Ads Settings, your browser controls, or by contacting us as described below.",
+      description:"Opt-out of the sale of personal information. We do not sell personal information for money. Our display-advertising partner, Mediavine, may process data (for example cookies or device identifiers) to serve personalized ads, which may be considered a \"share\" under some privacy laws. You can limit personalized ads through your browser controls or by contacting us as described below.",
     },
     {
       label: "Right to Non-Discrimination:",

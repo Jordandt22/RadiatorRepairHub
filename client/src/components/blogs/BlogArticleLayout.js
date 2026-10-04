@@ -3,14 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
-import AdSenseUnit from "@/components/ads/AdSenseUnit";
 import {
   BLOG_AUTHOR_AVATAR,
   BLOG_COVER_IMAGE,
 } from "@/components/blogs/blogConstants";
-
-/** Display unit above related products on blog articles */
-const BLOG_ARTICLE_DISPLAY_SLOT = "4106968175";
 
 function BlogArticleLayout({
   title,
@@ -65,11 +61,6 @@ function BlogArticleLayout({
         </div>
 
         {children}
-
-        <AdSenseUnit
-          slot={BLOG_ARTICLE_DISPLAY_SLOT}
-          className="mt-10 overflow-hidden rounded-lg"
-        />
 
         {relatedProductsSlot}
 

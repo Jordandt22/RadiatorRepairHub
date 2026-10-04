@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { BadgeCheck, BarChart3, Clock3, Flag, ImageIcon, MegaphoneOff, MessageSquare, Search } from "lucide-react";
+import { BadgeCheck, BarChart3, Clock3, Flag, ImageIcon, MessageSquare, Search } from "lucide-react";
 import PageHeader from "@/components/layout/Header/PageHeader";
 import FAQSection from "@/components/seo/FAQSection";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
@@ -32,12 +32,6 @@ const BENEFITS = [
     description:
       "Claimed businesses get a verified badge in search and on the listing page.",
     icon: Search,
-  },
-  {
-    title: "No Ads",
-    description:
-      "Claimed listings remove third-party display ads from your business page so customers see a cleaner listing.",
-    icon: MegaphoneOff,
   },
   {
     title: "Receive Quick Contact Inquiries",
