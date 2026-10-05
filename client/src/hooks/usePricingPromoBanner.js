@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
 
+/** Set true to show the bottom Featured promo again. */
+const PRICING_PROMO_BANNER_ENABLED = false;
+
 /** ISO timestamp of when the user dismissed; banner hides until 3 days after this */
 const STORAGE_KEY = "pricing-promo-banner-dismissed-at";
 const DISMISS_TTL_MS = 3 * 24 * 60 * 60 * 1000;
@@ -92,6 +95,7 @@ export function usePricingPromoBanner() {
   const isChecking = authLoading || (isSignedIn && !ownershipChecked);
   const eligible = !isChecking && !(isSignedIn && hasFeaturedListing);
   const visible =
+    PRICING_PROMO_BANNER_ENABLED &&
     mounted &&
     eligible &&
     !dismissed &&
