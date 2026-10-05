@@ -102,7 +102,7 @@ async function BlogPostPage({ params }) {
 
   const recommendedIds = resolveAffiliateProductIds(
     post.metadata.affiliateProducts?.recommended ?? []
-  ).slice(0, 2);
+  ).slice(0, 1);
   const relatedIds = resolveAffiliateProductIds(
     post.metadata.affiliateProducts?.related ?? []
   ).slice(0, 3);
@@ -170,9 +170,13 @@ async function BlogPostPage({ params }) {
           />
         }
       >
-        <div className="blog-prose">
+        {after ? (
           <MDXRemote source={before} components={mdxComponents} />
-        </div>
+        ) : (
+          <div className="journey-content">
+            <MDXRemote source={before} components={mdxComponents} />
+          </div>
+        )}
         <AffiliateProductsSection
           products={recommendedProducts}
           title="Recommended for this article"
@@ -180,7 +184,7 @@ async function BlogPostPage({ params }) {
           blogSlug={slug}
         />
         {after ? (
-          <div className="blog-prose">
+          <div className="journey-content">
             <MDXRemote source={after} components={mdxComponents} />
           </div>
         ) : null}
