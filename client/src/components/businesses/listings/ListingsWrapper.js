@@ -19,6 +19,7 @@ import { useFilters } from "@/contexts/FilterProvider";
 import Listings from "./Listings";
 import Pagination from "./Pagination";
 import GetListedListingsCta from "./GetListedListingsCta";
+import JourneySidebar from "@/components/layout/JourneySidebar";
 import PageErrorMessage from "@/components/status/Errors/PageErrorMessage";
 import ListingsSkeleton from "@/components/status/Skeletons/ListingsSkeleton";
 import BusinessCount from "@/components/content/BusinessCount";
@@ -124,34 +125,38 @@ export default function ListingsWrapper({
   const totalBusinesses = Number(businessesData?.totalBusinesses) || 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <p className="mb-6 text-sm text-muted-foreground">
-        <BusinessCount count={totalBusinesses} />
-      </p>
+    <div className="mx-auto flex w-full max-w-[2008px] justify-center gap-8 px-4 py-8 sm:px-6 lg:px-8">
+      <JourneySidebar />
+      <div className="w-full min-w-0 max-w-7xl">
+          <p className="mb-6 text-sm text-muted-foreground">
+            <BusinessCount count={totalBusinesses} />
+          </p>
 
-      <Listings
-        businesses={businessesData?.businesses}
-        data={businessesData}
-        page={page}
-        stateData={stateData}
-        cityData={cityData}
-        categoryData={categoryData}
-      />
+          <Listings
+            businesses={businessesData?.businesses}
+            data={businessesData}
+            page={page}
+            stateData={stateData}
+            cityData={cityData}
+            categoryData={categoryData}
+          />
 
-      {totalPages > 0 && (
-        <Pagination
-          totalPages={totalPages}
-          currentPage={page}
-          stateData={stateData}
-          cityData={cityData}
-          categoryData={categoryData}
-          totalBusinesses={businessesData?.totalBusinesses}
-          requestTotal={businessesData?.requestTotal}
-          limit={limit}
-        />
-      )}
+          {totalPages > 0 && (
+            <Pagination
+              totalPages={totalPages}
+              currentPage={page}
+              stateData={stateData}
+              cityData={cityData}
+              categoryData={categoryData}
+              totalBusinesses={businessesData?.totalBusinesses}
+              requestTotal={businessesData?.requestTotal}
+              limit={limit}
+            />
+          )}
 
-      <GetListedListingsCta />
+          <GetListedListingsCta />
+      </div>
+      <JourneySidebar />
     </div>
   );
 }

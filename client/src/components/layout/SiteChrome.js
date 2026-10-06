@@ -6,6 +6,7 @@ import PricingPromoBanner from "@/components/layout/PricingPromoBanner";
 import Footer from "@/components/layout/Footer/Footer";
 import BackToTop from "@/components/layout/BackToTop/BackToTop";
 import JourneyAdBlock from "@/components/layout/JourneyAdBlock";
+import JourneyFullNavigation from "@/components/layout/JourneyFullNavigation";
 
 const PROTECTED_PREFIXES = ["/dashboard", "/settings"];
 
@@ -28,6 +29,7 @@ export default function SiteChrome({
   if (hidePublicChrome) {
     return (
       <>
+        <JourneyFullNavigation />
         <JourneyAdBlock />
         {children}
       </>
@@ -36,6 +38,7 @@ export default function SiteChrome({
 
   return (
     <>
+      <JourneyFullNavigation />
       <header className="sticky top-0 z-50">
         <Navbar />
       </header>

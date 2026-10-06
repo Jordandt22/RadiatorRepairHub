@@ -52,7 +52,7 @@ function Footer({
   const smsHref = getBusinessPhoneSmsHref(phoneDigits);
 
   return (
-    <footer className="bg-foreground text-white">
+    <footer className="site-footer bg-foreground text-white">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-6 lg:gap-6">
           <div className="md:col-span-2 lg:col-span-2">
