@@ -7,6 +7,7 @@ import BusinessCount from "@/components/content/BusinessCount";
 import AnimatedStaggerRows from "@/components/ui/AnimatedStaggerRows";
 import StateSearch from "./StateSearch";
 import StateSort from "./StateSort";
+import JourneySidebar from "@/components/layout/JourneySidebar";
 
 function StateCard({ state }) {
   return (
@@ -62,7 +63,9 @@ function StatesGrid({
   }, [searchTerm, sort]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto flex w-full max-w-[2008px] justify-center gap-8 px-4 py-12 sm:px-6 lg:px-8">
+      <JourneySidebar />
+      <div className="w-full min-w-0 max-w-7xl">
       <p className="mb-6 text-sm text-muted-foreground">
         <span className="font-semibold text-green-700">
           {(filteredCount ?? states.length).toLocaleString()}
@@ -95,6 +98,8 @@ function StatesGrid({
           renderItem={(state) => <StateCard state={state} />}
         />
       )}
+      </div>
+      <JourneySidebar />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import PageHeader from "@/components/layout/Header/PageHeader";
+import JourneySidebar from "@/components/layout/JourneySidebar";
 import BlogsList from "./BlogsList";
 
 function BlogsPage({ posts = [] }) {
@@ -22,7 +23,9 @@ function BlogsPage({ posts = [] }) {
         }}
       />
 
-      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[1624px] justify-center gap-8 px-4 py-12 sm:px-6 lg:px-8">
+        <JourneySidebar />
+        <div className="w-full min-w-0 max-w-4xl">
         <BlogsList posts={posts} />
 
         <section className="mt-14 space-y-8 border-t border-border pt-10">
@@ -62,6 +65,8 @@ function BlogsPage({ posts = [] }) {
             </Link>
           </div>
         </section>
+        </div>
+        <JourneySidebar />
       </div>
     </div>
   );

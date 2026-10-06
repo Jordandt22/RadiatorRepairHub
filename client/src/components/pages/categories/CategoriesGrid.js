@@ -23,6 +23,7 @@ import BusinessCount from "@/components/content/BusinessCount";
 import AnimatedStaggerRows from "@/components/ui/AnimatedStaggerRows";
 import CategorySearch from "./CategorySearch";
 import CategorySort from "./CategorySort";
+import JourneySidebar from "@/components/layout/JourneySidebar";
 
 const getCategoryIcon = (categoryName) => {
   const name = (categoryName || "").toLowerCase();
@@ -130,7 +131,9 @@ function CategoriesGrid({
   }, [searchTerm, sort]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto flex w-full max-w-[2008px] justify-center gap-8 px-4 py-12 sm:px-6 lg:px-8">
+      <JourneySidebar />
+      <div className="w-full min-w-0 max-w-7xl">
       <p className="mb-6 text-sm text-muted-foreground">
         <span className="font-semibold text-green-700">
           {(filteredCount ?? categories.length).toLocaleString()}
@@ -163,6 +166,8 @@ function CategoriesGrid({
           renderItem={(category) => <CategoryCard category={category} />}
         />
       )}
+      </div>
+      <JourneySidebar />
     </div>
   );
 }
