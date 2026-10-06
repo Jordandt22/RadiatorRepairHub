@@ -13,9 +13,9 @@ function backToTopPosition({ promoVisible, isBusinessPage, adsBlocked }) {
     return "bottom-6";
   }
 
-  if (promoVisible) return "bottom-44";
-  if (isBusinessPage) return "bottom-44 md:bottom-32";
-  return "bottom-32";
+  if (promoVisible) return "bottom-56 md:bottom-44";
+  if (isBusinessPage) return "bottom-56 md:bottom-32";
+  return "bottom-44 md:bottom-32";
 }
 
 const BackToTop = () => {
