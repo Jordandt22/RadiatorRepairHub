@@ -31,7 +31,7 @@ function engagementDateWindow(days = LOOKBACK_DAYS) {
 
 /**
  * Public directory engagement totals for marketing surfaces (pricing).
- * Returns phone clicks, page views, and searches for the last 30 days (LA).
+ * Returns lead actions, page views, and searches for the last 30 days (LA).
  */
 export const getPublicSiteEngagementStats = async (_req, res) => {
   const { key, interval } = getPublicSiteEngagementStatsKey();
@@ -74,8 +74,29 @@ export const getPublicSiteEngagementStats = async (_req, res) => {
       );
   }
 
+  const phoneClicksLast30Days = Number(
+    businessRes.data?.totals?.phone_clicks || 0
+  );
+  const directionsClicksLast30Days = Number(
+    businessRes.data?.totals?.directions_clicks || 0
+  );
+  const websiteClicksLast30Days = Number(
+    businessRes.data?.totals?.website_clicks || 0
+  );
+  const emailClicksLast30Days = Number(
+    businessRes.data?.totals?.email_clicks || 0
+  );
+
   const payload = {
-    phoneClicksLast30Days: Number(businessRes.data?.totals?.phone_clicks || 0),
+    phoneClicksLast30Days,
+    directionsClicksLast30Days,
+    websiteClicksLast30Days,
+    emailClicksLast30Days,
+    leadActionsLast30Days:
+      phoneClicksLast30Days +
+      directionsClicksLast30Days +
+      websiteClicksLast30Days +
+      emailClicksLast30Days,
     pageViewsLast30Days: Number(businessRes.data?.totals?.page_views || 0),
     searchesLast30Days: Number(searchRes.data?.totals?.searches || 0),
     lookbackDays: LOOKBACK_DAYS,

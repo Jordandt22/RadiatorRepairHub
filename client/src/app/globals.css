@@ -342,6 +342,10 @@ html {
   --chart-3: #5c6b7a;
   --chart-4: #5b7bcf;
   --chart-5: #c1cfda;
+  --lead-phone: #2b50aa;
+  --lead-directions: #1f7a4d;
+  --lead-website: #0090c1;
+  --lead-email: #b86e2a;
   --radius: 0.5rem;
   --sidebar: #ffffff;
   --sidebar-foreground: #1a2332;
@@ -379,6 +383,10 @@ html {
   --chart-3: #9aa9b7;
   --chart-4: #2b50aa;
   --chart-5: #1a2f4a;
+  --lead-phone: #6b8ad4;
+  --lead-directions: #3dbe7a;
+  --lead-website: #3db8e0;
+  --lead-email: #e0a15a;
   --sidebar: #1a2332;
   --sidebar-foreground: #eef2f6;
   --sidebar-primary: #6b8ad4;

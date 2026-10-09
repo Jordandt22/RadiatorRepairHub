@@ -13,6 +13,7 @@ import {
   getBusinessPhoneTelHref,
   getListingPhoneDigits,
 } from "@/lib/businessContactInfo";
+import { recordPhoneClick } from "@/lib/businessStats/phoneClickCooldown";
 import { trackBusinessStat } from "@/lib/businessStats/trackBusinessStat";
 import { cn } from "@/lib/utils";
 
@@ -94,19 +95,21 @@ export default function ListingBusinessCard({
   };
 
   const trackPhoneClick = () => {
-    posthog?.capture("business_phone_clicked", {
-      business_id: business?.id || undefined,
-      business_name: business?.title || undefined,
-      source: listingSource || undefined,
-      position,
-      placement: "listing_card",
-    });
-    if (!business?.id) return;
-    trackBusinessStat({
-      businessId: business.id,
-      event: "phone_click",
-      source: listingSource,
-      position,
+    recordPhoneClick(business?.id, () => {
+      posthog?.capture("business_phone_clicked", {
+        business_id: business?.id || undefined,
+        business_name: business?.title || undefined,
+        source: listingSource || undefined,
+        position,
+        placement: "listing_card",
+      });
+      if (!business?.id) return;
+      trackBusinessStat({
+        businessId: business.id,
+        event: "phone_click",
+        source: listingSource,
+        position,
+      });
     });
   };
 

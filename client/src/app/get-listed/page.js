@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import ContactForm from "@/components/pages/contact/ContactForm";
 import GetListedHeader from "@/components/pages/get-listed/GetListedHeader";
+import PricingStatsStrip from "@/components/pages/pricing/PricingStatsStrip";
+import { getPricingSiteStats } from "@/lib/analytics/pricingSiteStats";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
 import SitePhoneLinks from "@/components/contact/SitePhoneLinks";
 import {
@@ -68,6 +70,11 @@ const NEXT_STEPS = [
   "You receive an email confirmation when the listing goes live.",
 ];
 
+function visibleStat(value) {
+  const count = Number(value);
+  return Number.isFinite(count) && count > 0 ? count : null;
+}
+
 const RELATED_LINKS = [
   {
     title: "How to claim",
@@ -86,9 +93,19 @@ const RELATED_LINKS = [
   },
 ];
 
-const Page = () => {
+const Page = async () => {
   const businessEmail = getBusinessEmail();
   const hasPhone = Boolean(getBusinessPhoneDigits());
+  const siteStats = await getPricingSiteStats();
+  const searchesLast30Days = visibleStat(siteStats?.searchesLast30Days);
+  const visitorsLast30Days = visibleStat(siteStats?.visitorsLast30Days);
+  const leadActionsLast30Days = visibleStat(siteStats?.leadActionsLast30Days);
+  const listedBusinesses = visibleStat(siteStats?.listedBusinesses);
+  const showDirectoryStats =
+    searchesLast30Days != null ||
+    visitorsLast30Days != null ||
+    leadActionsLast30Days != null ||
+    listedBusinesses != null;
 
   const serviceSchema = {
     "@context": "https://schema.org",
@@ -133,6 +150,21 @@ const Page = () => {
                 drivers can find you when they need cooling system repair.
               </p>
             </div>
+
+            {showDirectoryStats ? (
+              <div className="mb-8">
+                <PricingStatsStrip
+                  searchesLast30Days={searchesLast30Days}
+                  visitorsLast30Days={visitorsLast30Days}
+                  leadActionsLast30Days={leadActionsLast30Days}
+                  phoneClicksLast30Days={siteStats?.phoneClicksLast30Days}
+                  directionsClicksLast30Days={siteStats?.directionsClicksLast30Days}
+                  websiteClicksLast30Days={siteStats?.websiteClicksLast30Days}
+                  emailClicksLast30Days={siteStats?.emailClicksLast30Days}
+                  listedBusinesses={listedBusinesses}
+                />
+              </div>
+            ) : null}
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {BENEFITS.map(({ title, description, icon: Icon }) => (
