@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Phone, Mail, Globe, ExternalLink } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
+import { recordPhoneClick } from "@/lib/businessStats/phoneClickCooldown";
 import { trackBusinessStat } from "@/lib/businessStats/trackBusinessStat";
 
 export default function BusinessContactLinks({
@@ -35,8 +36,10 @@ export default function BusinessContactLinks({
           <a
             href={`tel:${phone}`}
             onClick={() => {
-              capture("business_phone_clicked");
-              trackStat("phone_click");
+              recordPhoneClick(businessId, () => {
+                capture("business_phone_clicked");
+                trackStat("phone_click");
+              });
             }}
             className="text-sm text-foreground hover:text-interactive transition-colors font-semibold"
           >

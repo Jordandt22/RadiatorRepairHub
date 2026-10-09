@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { MapPin, MessageSquare, Phone, Share2 } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
+import { recordPhoneClick } from "@/lib/businessStats/phoneClickCooldown";
 import { trackBusinessStat } from "@/lib/businessStats/trackBusinessStat";
 import QuickContactDialog from "@/components/businesses/QuickContactDialog";
 import EmailListingDialog from "@/components/businesses/EmailListingDialog";
@@ -105,8 +106,10 @@ export default function BusinessHeroActions({
     <a
       href={`tel:${phone}`}
       onClick={() => {
-        capture("business_phone_clicked");
-        trackStat("phone_click");
+        recordPhoneClick(businessId, () => {
+          capture("business_phone_clicked");
+          trackStat("phone_click");
+        });
       }}
       className={callClass}
     >

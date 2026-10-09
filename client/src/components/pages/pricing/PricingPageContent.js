@@ -228,7 +228,11 @@ export default function PricingPageContent({ siteStats = null }) {
         {siteStats ? (
           <PricingStatsStrip
             visitorsLast30Days={siteStats.visitorsLast30Days}
+            leadActionsLast30Days={siteStats.leadActionsLast30Days}
             phoneClicksLast30Days={siteStats.phoneClicksLast30Days}
+            directionsClicksLast30Days={siteStats.directionsClicksLast30Days}
+            websiteClicksLast30Days={siteStats.websiteClicksLast30Days}
+            emailClicksLast30Days={siteStats.emailClicksLast30Days}
             pageViewsLast30Days={siteStats.pageViewsLast30Days}
             listedBusinesses={siteStats.listedBusinesses}
           />

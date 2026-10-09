@@ -412,9 +412,9 @@ export const getAdminDashboardStatsKey = () => ({
   interval: 60 * 5,
 });
 
-/** Public pricing/home engagement strip (phone clicks, page views, searches, 30d). */
+/** Public pricing/Get Listed engagement (lead actions, page views, searches, 30d). */
 export const getPublicSiteEngagementStatsKey = () => ({
-  key: "PUBLIC_SITE_ENGAGEMENT_STATS?V:2&DAYS:30",
+  key: "PUBLIC_SITE_ENGAGEMENT_STATS?V:3&DAYS:30",
   interval: 60 * 60,
 });
 
