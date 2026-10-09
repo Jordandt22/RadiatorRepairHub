@@ -14,7 +14,7 @@ function backToTopPosition({ promoVisible, isBusinessPage, adsBlocked }) {
   }
 
   if (promoVisible) return "bottom-56 md:bottom-44";
-  if (isBusinessPage) return "bottom-56 md:bottom-32";
+  if (isBusinessPage) return "bottom-20 md:bottom-6";
   return "bottom-44 md:bottom-32";
 }
 
