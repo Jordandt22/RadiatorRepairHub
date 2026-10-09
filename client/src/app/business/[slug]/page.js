@@ -32,6 +32,7 @@ import ListingBadges from "@/components/businesses/ListingBadges";
 import ErrorDisplay from "@/components/status/Errors/ErrorDisplay";
 import BreadcrumbList from "@/components/seo/BreadcrumbList";
 import DirectoryDisclaimer from "@/components/content/DirectoryDisclaimer";
+import JourneySidebar from "@/components/layout/JourneySidebar";
 import AffiliateProductsSection from "@/components/blogs/AffiliateProductsSection";
 import BusinessPageViewTracker from "@/components/businesses/stats/BusinessPageViewTracker";
 import NearbyBusinesses from "@/components/businesses/NearbyBusinesses";
@@ -333,7 +334,9 @@ async function Page({ params }) {
             placement="sticky"
           />
 
-          <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 md:px-6 md:py-8 lg:px-8">
+          <div className="mx-auto flex w-full max-w-[2008px] justify-center gap-8 px-3 py-4 sm:px-4 md:px-6 md:py-8 lg:px-8">
+            <JourneySidebar />
+            <div className="w-full min-w-0 max-w-7xl">
             <ListingFeaturedCta
               businessId={business.id}
               businessSlug={business.slug}
@@ -695,6 +698,8 @@ async function Page({ params }) {
             <RelatedBlogsSection posts={relatedBlogPosts} />
 
             <DirectoryDisclaimer className="mt-10" />
+            </div>
+            <JourneySidebar />
           </div>
         </div>
         </OwnerListingViewProvider>
