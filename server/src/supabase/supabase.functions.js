@@ -61,6 +61,7 @@ const formatBusinessListings = (data) => {
     delete business.features.business_id;
     business.is_claimed = Boolean(business?.is_claimed);
     business.is_featured = Boolean(business?.is_featured);
+    business.is_partner = Boolean(business?.is_partner);
     attachPrimaryImageId(business);
 
     if (business?.secondary_categories) {
@@ -106,6 +107,7 @@ const formatFullBusiness = (business, { includeGallery = false } = {}) => {
 
   business.is_claimed = Boolean(business?.is_claimed);
   business.is_featured = Boolean(business?.is_featured);
+  business.is_partner = Boolean(business?.is_partner);
   business.last_edited_at = business.last_edited_at ?? null;
   const rawImages = Array.isArray(business.business_images)
     ? business.business_images
@@ -183,6 +185,8 @@ export const getPaidFeaturedBusinesses = async ({
     query = query.or(orFilter);
   }
 
+  query = query.order("is_partner", { ascending: false });
+
   for (const [column, options] of orders) {
     query = query.order(column, options);
   }
@@ -210,6 +214,8 @@ export const getTopVerifiedBusinesses = async () => {
     .select(featuredListingSelect)
     .eq("is_claimed", true)
     .gte("reviews_count", FEATURED_CLAIMED_MIN_REVIEWS)
+    .order("is_partner", { ascending: false })
+    .order("is_featured", { ascending: false })
     .order("total_score", { ascending: false })
     .order("reviews_count", { ascending: false })
     .limit(FEATURED_LIMIT);
@@ -300,7 +306,7 @@ export const getBusinessClaimFlags = async (business_id) => {
 
   const { data, error } = await supabase
     .from("businesses")
-    .select("is_claimed, is_featured, owner_uid")
+    .select("is_claimed, is_featured, is_partner, owner_uid")
     .eq("id", business_id)
     .maybeSingle();
 
@@ -316,6 +322,7 @@ export const getBusinessClaimFlags = async (business_id) => {
     data: {
       is_claimed: Boolean(data.is_claimed),
       is_featured: Boolean(data.is_featured),
+      is_partner: Boolean(data.is_partner),
       owner_uid: data.owner_uid ?? null,
     },
     error: null,
@@ -915,6 +922,7 @@ export const getBusinessesByState = async (state_id, page, limit) => {
     .from("businesses")
     .select(listingBusinessSelect)
     .eq("state_id", state_id)
+    .order("is_partner", { ascending: false })
     .order("is_featured", { ascending: false })
     .order("is_claimed", { ascending: false })
     .order("reviews_count", { ascending: false })
@@ -955,6 +963,7 @@ export const getBusinessesByCity = async (city_id, state_id, page, limit) => {
     .select(listingBusinessSelect)
     .eq("city_id", city_id)
     .eq("state_id", state_id)
+    .order("is_partner", { ascending: false })
     .order("is_featured", { ascending: false })
     .order("is_claimed", { ascending: false })
     .order("reviews_count", { ascending: false })
@@ -991,10 +1000,12 @@ export const searchBusinesses = async (
     }
   });
 
-  // All sorts: paid Featured first. 5 / default: Verified. 1–4: metric only. Legacy 6 aliases to Verified.
-  businessesQuery = businessesQuery.order("is_featured", {
-    ascending: false,
-  });
+  // All sorts: Partner first, then paid Featured. 5 / default: Verified. 1–4: metric only. Legacy 6 aliases to Verified.
+  businessesQuery = businessesQuery
+    .order("is_partner", { ascending: false })
+    .order("is_featured", {
+      ascending: false,
+    });
 
   switch (sort_option) {
     // Most Reviews
@@ -1428,7 +1439,7 @@ export const getListingReports = async (page, limit, status = null) => {
 };
 
 const ADMIN_BUSINESS_SELECT =
-  "id, title, slug, email, phone, phone_status, phone_line_type, phone_carrier, phone_line_type_checked_at, address, website, is_claimed, is_featured, is_test, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
+  "id, title, slug, email, phone, phone_status, phone_line_type, phone_carrier, phone_line_type_checked_at, address, website, is_claimed, is_featured, is_partner, is_test, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
 const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, phone_status, phone_status_marked_at, phone_line_type, phone_carrier, phone_line_type_checked_at, cdn_stored, cdn_stored_attempts, hide_default_image, default_image_sort_order, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at, sort_order)`;
 
@@ -1554,6 +1565,7 @@ export const getAdminBusinesses = async (
   {
     claimed = null,
     featured = null,
+    partnered = null,
     recent = null,
     q = null,
     stateCode = null,
@@ -1659,6 +1671,10 @@ export const getAdminBusinesses = async (
       .eq("is_claimed", true)
       .gte("last_edited_at", recentlyEditedSinceIso())
       .order("last_edited_at", { ascending: false, nullsFirst: false });
+  } else if (partnered === true) {
+    query = query
+      .eq("is_partner", true)
+      .order("last_edited_at", { ascending: false, nullsFirst: false });
   } else if (featured === true) {
     query = query
       .eq("is_featured", true)
@@ -1745,7 +1761,10 @@ export const getAdminBusinesses = async (
 
   const withOwners = await withOwnerEmails(data);
   const businesses =
-    claimed === true || featured === true || recent === true
+    claimed === true ||
+    featured === true ||
+    partnered === true ||
+    recent === true
       ? await withClaimInviteTypes(withOwners)
       : withOwners;
 
@@ -1758,6 +1777,7 @@ export const getAdminBusinesses = async (
 export const exportAdminBusinesses = async ({
   claimed = null,
   featured = null,
+  partnered = null,
   recent = null,
   q = null,
   stateCode = null,
@@ -1826,6 +1846,10 @@ export const exportAdminBusinesses = async ({
       next = next
         .eq("is_claimed", true)
         .gte("last_edited_at", recentlyEditedSinceIso())
+        .order("last_edited_at", { ascending: false, nullsFirst: false });
+    } else if (partnered === true) {
+      next = next
+        .eq("is_partner", true)
         .order("last_edited_at", { ascending: false, nullsFirst: false });
     } else if (featured === true) {
       next = next
@@ -2458,15 +2482,25 @@ export const countUncheckedPhoneLineTypeBusinesses = async () => {
   return { count: count ?? 0, error };
 };
 
+/** `.in(id)` is a GET query string. Batches stay under the hosted API size limit. */
+const PHONE_LINE_TYPE_ID_CHUNK_SIZE = 50;
+
 export const listPhoneLineTypeJobBusinesses = async (ids) => {
   if (!ids?.length) return { data: [], error: null };
 
-  const { data, error } = await supabase
-    .from("businesses")
-    .select("id, phone, phone_line_type_checked_at")
-    .in("id", ids);
+  const rows = [];
+  for (let i = 0; i < ids.length; i += PHONE_LINE_TYPE_ID_CHUNK_SIZE) {
+    const chunk = ids.slice(i, i + PHONE_LINE_TYPE_ID_CHUNK_SIZE);
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("id, phone, phone_line_type_checked_at")
+      .in("id", chunk);
 
-  return { data: data ?? [], error };
+    if (error) return { data: null, error };
+    rows.push(...(data ?? []));
+  }
+
+  return { data: rows, error: null };
 };
 
 /**
@@ -2728,6 +2762,7 @@ export const unclaimBusinessesByIds = async (ids) => {
       owner_uid: null,
       is_claimed: false,
       is_featured: false,
+      is_partner: false,
     })
     .in("id", ids)
     .eq("is_claimed", true)
@@ -4361,6 +4396,16 @@ export const generateSignupConfirmationLink = async ({
   return { data, error };
 };
 
+export const generateRecoveryLink = async ({ email, redirectTo }) => {
+  const { data, error } = await adminAuthClient.generateLink({
+    type: "recovery",
+    email,
+    options: redirectTo ? { redirectTo } : undefined,
+  });
+
+  return { data, error };
+};
+
 export const deleteAuthUser = async (uid) => {
   const { data, error } = await adminAuthClient.deleteUser(uid);
   return { data, error };
@@ -4377,6 +4422,7 @@ export const unclaimBusinessesByOwnerUid = async (ownerUid) => {
       owner_uid: null,
       is_claimed: false,
       is_featured: false,
+      is_partner: false,
     })
     .eq("owner_uid", ownerUid)
     .select("id, slug");
@@ -4402,6 +4448,7 @@ export const unclaimOwnedBusiness = async (businessId, ownerUid) => {
       owner_uid: null,
       is_claimed: false,
       is_featured: false,
+      is_partner: false,
     })
     .eq("id", businessId)
     .eq("owner_uid", ownerUid)
@@ -4841,7 +4888,7 @@ export const getOwnedBusinesses = async (ownerUid, accessToken) => {
   const { data, error } = await client
     .from("businesses")
     .select(
-      "id, title, slug, address, email, notification_email, weekly_digest_enabled, image_url, hide_default_image, place_id, cdn_stored, last_edited_at, is_featured, is_claimed, business_images(image_id, is_primary, is_hidden)"
+      "id, title, slug, address, email, notification_email, weekly_digest_enabled, image_url, hide_default_image, place_id, cdn_stored, last_edited_at, is_featured, is_partner, is_claimed, business_images(image_id, is_primary, is_hidden)"
     )
     .eq("owner_uid", ownerUid)
     .eq("is_claimed", true)
@@ -4856,6 +4903,7 @@ export const getOwnedBusinesses = async (ownerUid, accessToken) => {
       attachPrimaryImageId({
         ...business,
         is_featured: Boolean(business?.is_featured),
+        is_partner: Boolean(business?.is_partner),
         is_claimed: Boolean(business?.is_claimed),
       })
     ),
@@ -4868,7 +4916,7 @@ export const getOwnedBusiness = async (businessId, ownerUid, accessToken) => {
   const { data, error } = await client
     .from("businesses")
     .select(
-      "id, owner_uid, title, slug, phone, email, website, description, image_url, hide_default_image, default_image_sort_order, notification_email, weekly_digest_enabled, last_edited_at, is_claimed, is_featured"
+      "id, owner_uid, title, slug, phone, email, website, description, image_url, hide_default_image, default_image_sort_order, notification_email, weekly_digest_enabled, last_edited_at, is_claimed, is_featured, is_partner"
     )
     .eq("id", businessId)
     .eq("owner_uid", ownerUid)
@@ -6985,6 +7033,11 @@ export const applyStripeSubscriptionStateRpc = async ({
   currentPeriodEnd,
   cancelAtPeriodEnd,
 }) => {
+  const partnerPriceId =
+    process.env.STRIPE_PARTNER_LISTING_PRICE_ID ||
+    process.env.STRIPE_PARTNERED_LISTING_PRICE_ID ||
+    null;
+
   const { data, error } = await supabase.rpc("apply_stripe_subscription_state", {
     p_stripe_subscription_id: stripeSubscriptionId,
     p_stripe_customer_id: stripeCustomerId ?? "",
@@ -6994,9 +7047,28 @@ export const applyStripeSubscriptionStateRpc = async ({
     p_status: status,
     p_current_period_end: currentPeriodEnd ?? null,
     p_cancel_at_period_end: Boolean(cancelAtPeriodEnd),
+    p_partner_price_id: partnerPriceId,
   });
 
   return { data, error };
+};
+
+export const claimUnclaimedBusinessRpc = async (businessId, uid, phone) => {
+  const { data, error } = await supabase.rpc("claim_unclaimed_business", {
+    p_business_id: businessId,
+    p_uid: uid,
+    p_phone: phone ?? null,
+  });
+
+  return { data: Boolean(data), error };
+};
+
+export const getAuthUserIdByEmailRpc = async (email) => {
+  const { data, error } = await supabase.rpc("auth_user_id_by_email", {
+    p_email: email,
+  });
+
+  return { data: data ?? null, error };
 };
 
 export const getDigestBusinessesByIds = async (ids) => {

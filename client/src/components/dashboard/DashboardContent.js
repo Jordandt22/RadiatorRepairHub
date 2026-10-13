@@ -22,7 +22,7 @@ function DashboardContentInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, onTabChange] = useQueryTab(
-    ["inbox", "analytics", "insights"],
+    ["analytics", "insights"],
     "my-businesses"
   );
 
@@ -103,9 +103,6 @@ function DashboardContentInner() {
           >
             My Businesses
           </TabsTrigger>
-          <TabsTrigger value="inbox" className={tabsTriggerClassNames}>
-            Inbox
-          </TabsTrigger>
           <TabsTrigger value="analytics" className={tabsTriggerClassNames}>
             Analytics
           </TabsTrigger>
@@ -161,15 +158,6 @@ function DashboardContentInner() {
               </div>
             )}
           </section>
-        </TabsContent>
-
-        <TabsContent value="inbox" className="min-w-0">
-          <div className="rounded-lg border border-dashed border-border bg-card px-6 py-10 text-center">
-            <p className="font-medium text-foreground">Coming soon</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              View and manage Quick Contact inquiries from customers.
-            </p>
-          </div>
         </TabsContent>
 
         <TabsContent value="analytics" className="min-w-0">

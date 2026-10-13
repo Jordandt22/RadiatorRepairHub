@@ -102,6 +102,7 @@ export function buildBusinessExportFilename({
   source = "businesses",
   claimed = null,
   featured = null,
+  partnered = null,
   recent = null,
   websiteFilter = null,
   emailFilter = null,
@@ -120,6 +121,7 @@ export function buildBusinessExportFilename({
   const parts = [source === "websites" ? "businesses" : "businesses"];
 
   if (recent) parts.push("recent");
+  else if (partnered) parts.push("partnered");
   else if (featured) parts.push("featured");
   else if (claimed) parts.push("claimed");
 

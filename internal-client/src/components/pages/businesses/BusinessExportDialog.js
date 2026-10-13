@@ -44,6 +44,7 @@ function buildExportBody({
   if (filters?.q) body.q = filters.q;
   if (filters?.claimed === true) body.claimed = true;
   if (filters?.featured === true) body.featured = true;
+  if (filters?.partnered === true) body.partnered = true;
   if (filters?.recent === true) body.recent = true;
   if (filters?.stateCode) body.state_code = filters.stateCode;
   if (filters?.citySlug) body.city_slug = filters.citySlug;
@@ -86,6 +87,7 @@ export default function BusinessExportDialog({
         source,
         claimed: filters.claimed === true,
         featured: filters.featured === true,
+        partnered: filters.partnered === true,
         recent: filters.recent === true,
         websiteFilter: filters.websiteFilter ?? null,
         emailFilter: filters.emailFilter ?? null,

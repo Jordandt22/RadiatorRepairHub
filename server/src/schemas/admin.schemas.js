@@ -356,6 +356,15 @@ export const GetAdminBusinessesQuerySchema = Yup.object({
     })
     .nullable()
     .optional(),
+  partnered: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return null;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .nullable()
+    .optional(),
   q: Yup.string()
     .transform((value) => {
       if (value == null) return null;
@@ -467,6 +476,7 @@ export const ExportAdminBusinessesSchema = Yup.object({
   claimed: optionalAdminBoolBody,
   recent: optionalAdminBoolBody,
   featured: optionalAdminBoolBody,
+  partnered: optionalAdminBoolBody,
   q: Yup.string()
     .transform((value) => {
       if (value == null) return null;

@@ -1,13 +1,22 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
-import { MapPin, Star, Send, MoveRight } from "lucide-react";
+import { MapPin, MoveRight, Phone, Star } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
-import QuickContactDialog from "@/components/businesses/QuickContactDialog";
 import ListingBadges from "@/components/businesses/ListingBadges";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { BUSINESS_CARD_IMAGE_SIZES } from "@/lib/images";
+import {
+  formatBusinessPhoneDisplay,
+  getBusinessPhoneTelHref,
+  getListingPhoneDigits,
+} from "@/lib/businessContactInfo";
+import { recordPhoneClick } from "@/lib/businessStats/phoneClickCooldown";
 import { trackBusinessStat } from "@/lib/businessStats/trackBusinessStat";
+import { cn } from "@/lib/utils";
 
 function DetailedBusinessCard({
   business,
@@ -16,6 +25,16 @@ function DetailedBusinessCard({
   position,
   imageSizes = BUSINESS_CARD_IMAGE_SIZES,
 }) {
+  const posthog = usePostHog();
+  const description =
+    typeof business?.description === "string" ? business.description.trim() : "";
+  const showDescription =
+    (Boolean(business?.is_featured) || Boolean(business?.is_partner)) &&
+    Boolean(description);
+  const phoneDigits = getListingPhoneDigits(business?.phone);
+  const phoneDisplay = formatBusinessPhoneDisplay(phoneDigits);
+  const phoneHref = getBusinessPhoneTelHref(phoneDigits);
+
   const trackListingClick = () => {
     if (!business?.id || !listingSource) return;
     trackBusinessStat({
@@ -25,6 +44,26 @@ function DetailedBusinessCard({
       position,
     });
   };
+
+  const trackPhoneClick = () => {
+    recordPhoneClick(business?.id, () => {
+      posthog?.capture("business_phone_clicked", {
+        business_id: business?.id || undefined,
+        business_name: business?.title || undefined,
+        source: listingSource || undefined,
+        position,
+        placement: "detailed_card",
+      });
+      if (!business?.id) return;
+      trackBusinessStat({
+        businessId: business.id,
+        event: "phone_click",
+        source: listingSource,
+        position,
+      });
+    });
+  };
+
   return (
     <div className="card-lift-hover flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card">
       {/* Business Image */}
@@ -73,9 +112,15 @@ function DetailedBusinessCard({
           </div>
         </div>
 
-        <p className="mb-4 line-clamp-3 flex-1 text-sm leading-relaxed text-muted-foreground">
-          {business.description}
-        </p>
+        {showDescription ? (
+          <div className="mb-4 min-h-0 flex-1">
+            <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+              {description}
+            </p>
+          </div>
+        ) : (
+          <div className="flex-1" />
+        )}
 
         <div className="mb-4 min-h-[1.75rem]">
           <div className="flex flex-wrap gap-2">
@@ -100,26 +145,19 @@ function DetailedBusinessCard({
         </div>
 
         <div className="mt-auto flex min-w-0 flex-wrap items-center justify-between gap-2 border-t border-border pt-4">
-          <QuickContactDialog
-            businessId={business.id}
-            businessName={business.title}
-            email={business.email}
-            emailStatus={business.email_status}
-            phone={business.phone}
-            isClaimed={Boolean(business.is_claimed)}
-            trigger={
-              <Button
-                type="button"
-                className="h-9 gap-1.5 cursor-pointer px-8"
-              />
-            }
-          >
-            <Send className="size-3.5" />
-            Contact
-          </QuickContactDialog>
+          {phoneHref && phoneDisplay ? (
+            <a
+              href={phoneHref}
+              onClick={trackPhoneClick}
+              className={cn(buttonVariants({ size: "sm" }), "rounded-full px-4! py-2!")}
+            >
+              <Phone className="size-3.5 shrink-0" aria-hidden="true" />
+              {phoneDisplay}
+            </a>
+          ) : null}
           <Link
             href={`/business/${business.slug}`}
-            className="ml-auto inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground px-4 py-2 rounded-full text-sm font-medium hover:bg-tint duration-300"
+            className="ml-auto inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground px-4 py-1 rounded-full text-sm font-medium hover:bg-tint duration-300"
             onClick={trackListingClick}
           >
             View Details

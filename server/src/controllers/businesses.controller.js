@@ -2280,9 +2280,14 @@ export const updateBusinessContact = async (req, res) => {
   if (business) {
     await invalidateBusinessCache(business);
   }
-  if (emailChanged) {
+  if (emailChanged || websiteChanged) {
     await deleteCacheDataByPrefix("FEATURED_BUSINESSES");
     await deleteCacheDataByPrefix("SEARCHED_BUSINESSES");
+    await deleteCacheData(getTopVerifiedBusinessesKey().key);
+    await revalidateClientCache({
+      paths: ["/"],
+      tags: ["top-verified", "business-listings"],
+    });
   }
 
   return res.status(200).json(
@@ -2938,6 +2943,7 @@ export const getBusiness = async (req, res) => {
   let phoneLineTypeCheckedAt = business?.phone_line_type_checked_at ?? null;
   let isClaimed = Boolean(business?.is_claimed);
   let isFeatured = Boolean(business?.is_featured);
+  let isPartner = Boolean(business?.is_partner);
   let ownerUid = business?.owner_uid ?? null;
 
   if (business?.id) {
@@ -2968,6 +2974,7 @@ export const getBusiness = async (req, res) => {
     if (!claimFlagsError && claimFlags) {
       isClaimed = claimFlags.is_claimed;
       isFeatured = claimFlags.is_featured;
+      isPartner = claimFlags.is_partner;
       ownerUid = claimFlags.owner_uid;
     }
   }
@@ -3082,6 +3089,7 @@ export const getBusiness = async (req, res) => {
       search_position_incentive: searchPositionIncentive,
       is_claimed: isClaimed,
       is_featured: isFeatured,
+      is_partner: isPartner,
       owner_uid: ownerUid,
       has_duplicate_email: isShared,
       has_duplicate_phone: isPhoneShared,

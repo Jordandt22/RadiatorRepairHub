@@ -18,7 +18,7 @@ import {
 
 const faqTitle = composeTitle("Radiator Repair FAQ");
 const faqDescription = composeDescription(
-  "Answers about radiator repair, finding shops near you, claiming a listing, Featured upgrades, and using RadiatorRepairHub."
+  "Answers about radiator repair, finding shops near you, claiming a listing, Featured and Partner plans, and using RadiatorRepairHub."
 );
 
 export const metadata = buildPageMetadata({

@@ -129,6 +129,7 @@ import {
   createPhoneLineTypeJobHandler,
   deletePhoneLineTypeJobsHandler,
 } from "../../controllers/admin/phoneLineTypeJobs.controller.js";
+import { createPartnerCheckoutSession } from "../../controllers/partnerCheckout.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
 import {
   LoginAdminSchema,
@@ -419,6 +420,12 @@ adminRouter.get(
   paramsValidator(GetAdminBusinessParamsSchema),
   queryValidator(GetAdminBusinessStatsQuerySchema),
   serverErrorCatcherWrapper(getBusinessCompetitorInsights)
+);
+
+adminRouter.post(
+  "/businesses/:id/partner-checkout",
+  paramsValidator(GetAdminBusinessParamsSchema),
+  serverErrorCatcherWrapper(createPartnerCheckoutSession)
 );
 
 adminRouter.get(

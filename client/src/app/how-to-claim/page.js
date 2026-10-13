@@ -15,7 +15,7 @@ import {
 const pageTitle = composeTitle("How to Claim Your Business");
 const pageDescription = composeDescription(
   "Claim your radiator repair listing for free.",
-  "Learn eligibility, email or phone verification, what you can edit, shop photos, analytics, and optional Featured upgrades."
+  "Learn eligibility, email or phone verification, what you can edit, shop photos, analytics, and optional Featured or Partner plans."
 );
 
 export const metadata = buildPageMetadata({
@@ -123,17 +123,22 @@ function buildClaimFaqs(supportEmail) {
     {
       question: "Is claiming free?",
       answer:
-        "Yes. Claiming your business listing on RadiatorRepairHub is free. Featured is a separate optional paid upgrade for claimed listings—see Featured listing pricing for details.",
+        "Yes. Claiming your business listing on RadiatorRepairHub is free. Featured is a separate optional paid upgrade for claimed listings—see Featured listing pricing for details. Partner is a separate paid plan we may offer by Checkout link.",
     },
     {
       question: "What is a Featured listing?",
       answer:
-        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, up to 10 shop photos (claimed listings include 3), full listing analytics, and competitor insights for your city. Claiming stays free; only Featured is paid.",
+        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, up to 10 shop photos (claimed listings include 3), full listing analytics, and competitor insights for your city. Claiming stays free. Featured is billed yearly through Stripe. Canceling in Settings stops future renewals. Unclaiming the listing or deleting your account cancels the subscription immediately, and fees already paid are not refunded.",
+    },
+    {
+      question: "What is a Partner listing?",
+      answer:
+        "Partner is an optional paid plan for a specific listing. It is not offered on the public pricing page. We may send you a one-time Stripe Checkout link that collects the email and phone you enter. After payment is confirmed, we create or reuse an account and claim the listing if it is still unclaimed. A live Partner plan includes Featured directory benefits and a Partnered badge, billed monthly at the price shown at checkout. Canceling in Settings stops future renewals. Unclaiming the listing or deleting your account cancels the subscription immediately, and fees already paid are not refunded.",
     },
     {
       question: "Can I see how customers find my listing?",
       answer:
-        "Yes. After you claim, sign in to your dashboard and open Analytics. Claimed listings include page views, impressions, and impressions by source. Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source, plus competitor insights that show how every shop in your city is performing and where you rank. We may also email a weekly activity report; manage the notification email or turn reports off in Settings → Notifications. Stats are not live and can take a few minutes to appear.",
+        "Yes. After you claim, sign in to your dashboard and open Analytics. Claimed listings include page views, impressions, and impressions by source. Featured and Partner listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source, plus competitor insights that show how every shop in your city is performing and where you rank. We may also email a weekly activity report; manage the notification email or turn reports off in Settings → Notifications. Stats are not live and can take a few minutes to appear.",
     },
   ];
 }
@@ -432,7 +437,7 @@ export default function HowToClaimPage() {
       <FAQSection
         faqs={faqs}
         title="Claiming FAQ"
-        description="Answers about verification codes, contact info, mistaken claims, cost, shop photos, analytics, and Featured upgrades."
+        description="Answers about verification codes, contact info, mistaken claims, cost, shop photos, analytics, and Featured or Partner plans."
         includeSchema={true}
       />
 

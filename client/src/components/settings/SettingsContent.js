@@ -502,7 +502,7 @@ function AccountDeleteSection() {
       <p className="mt-2 text-xs text-muted-foreground">
         Deletes your login account only. Your business listing information stays
         on RadiatorRepairHub, but listings you own become unclaimed and any
-        Featured subscription is canceled immediately. Featured fees already
+        Featured or Partner subscription is canceled immediately. Fees already
         paid are not refunded.
       </p>
 
@@ -520,9 +520,10 @@ function AccountDeleteSection() {
             <DialogDescription>
               This deletes your RadiatorRepairHub account only, not your
               business listing information. Listings you own will become
-              unclaimed, Featured status will be removed, and any active
-              Featured subscription will be canceled immediately with no refund
-              for the current billing period. This can NOT be reverted.
+              unclaimed, Featured and Partner status will be removed, and any
+              active Featured or Partner subscription will be canceled
+              immediately with no refund for the current billing period. This
+              can NOT be reverted.
             </DialogDescription>
           </DialogHeader>
 
@@ -700,8 +701,8 @@ function PaymentsSettingsPanel() {
               Subscriptions
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Featured listing plans billed through Stripe. Fees are
-              non-refundable for the current billing period.
+              Featured and Partner listing plans billed through Stripe. Fees
+              are non-refundable for the current billing period.
             </p>
           </div>
           <Button

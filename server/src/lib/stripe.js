@@ -10,6 +10,10 @@ export const stripe = new Stripe(stripeSecretKey);
 
 export const FEATURED_PRICE_ID = process.env.STRIPE_FEATURED_LISTING_PRICE_ID;
 
+export const PARTNER_PRICE_ID =
+  process.env.STRIPE_PARTNER_LISTING_PRICE_ID ||
+  process.env.STRIPE_PARTNERED_LISTING_PRICE_ID;
+
 export const LIVE_SUBSCRIPTION_STATUSES = [
   "active",
   "trialing",

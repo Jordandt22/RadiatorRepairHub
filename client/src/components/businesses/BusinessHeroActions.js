@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { MapPin, MessageSquare, Phone, Share2 } from "lucide-react";
+import { cloneElement, useState } from "react";
+import { Globe, MapPin, MessageSquare, Phone, Share2 } from "lucide-react";
+import { getListingWebsiteHref } from "@/lib/businessContactInfo";
 import { usePostHog } from "posthog-js/react";
 import { recordPhoneClick } from "@/lib/businessStats/phoneClickCooldown";
 import { trackBusinessStat } from "@/lib/businessStats/trackBusinessStat";
@@ -10,7 +11,7 @@ import EmailListingDialog from "@/components/businesses/EmailListingDialog";
 import { useToast } from "@/contexts/ToastProvider";
 
 const heroBtn =
-  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-colors";
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-1.5 md:py-2.5 text-sm font-medium transition-colors";
 const stickyBtn =
   "inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-sm font-medium transition-colors";
 
@@ -21,6 +22,8 @@ export default function BusinessHeroActions({
   email,
   emailStatus = null,
   isClaimed = false,
+  isPartner = false,
+  website = null,
   mapsHref,
   placement = "hero",
   shareUrl = null,
@@ -45,8 +48,11 @@ export default function BusinessHeroActions({
   };
 
   const callClass = isHero
-    ? `${heroBtn} bg-white text-primary hover:bg-white/90`
+    ? `${heroBtn} bg-primary text-primary-foreground hover:bg-primary/90`
     : `${stickyBtn} bg-primary text-primary-foreground hover:bg-primary/90`;
+  const websiteClass = isHero
+    ? `${heroBtn} border border-primary bg-tint text-primary hover:bg-tint/80`
+    : `${stickyBtn} border border-primary bg-tint text-primary hover:bg-tint/80`;
   const secondaryClass = isHero
     ? `${heroBtn} border border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/15`
     : `${stickyBtn} border border-border bg-card text-foreground hover:bg-muted`;
@@ -101,6 +107,24 @@ export default function BusinessHeroActions({
       setIsSharing(false);
     }
   };
+
+  const websiteHref = isPartner ? getListingWebsiteHref(website) : null;
+
+  const websiteButton = websiteHref ? (
+    <a
+      href={websiteHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => {
+        capture("business_website_clicked");
+        trackStat("website_click");
+      }}
+      className={websiteClass}
+    >
+      <Globe className="size-4 shrink-0" aria-hidden="true" />
+      {isHero ? "Visit Website" : "Website"}
+    </a>
+  ) : null;
 
   const callButton = phone ? (
     <a
@@ -174,12 +198,20 @@ export default function BusinessHeroActions({
     />
   ) : null;
 
+  const hideInHeroOnMobile = (node) => {
+    if (!isHero || !node) return node;
+    return cloneElement(node, {
+      className: `${node.props.className} max-md:hidden`,
+    });
+  };
+
   if (isHero) {
     return (
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        {callButton}
+        {hideInHeroOnMobile(callButton)}
+        {hideInHeroOnMobile(websiteButton)}
         {messageButton}
-        {directionsButton}
+        {hideInHeroOnMobile(directionsButton)}
         {shareButton}
         {saveButton}
       </div>
@@ -190,6 +222,7 @@ export default function BusinessHeroActions({
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-3 py-3 backdrop-blur-sm md:hidden">
       <div className="mx-auto flex max-w-7xl items-center gap-2">
         {callButton}
+        {websiteButton}
         {messageButton}
         {directionsButton}
       </div>

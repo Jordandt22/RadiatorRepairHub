@@ -11,7 +11,7 @@ import {
 export const metadata = buildPageMetadata({
   title: composeTitle("Privacy Policy"),
   description: composeDescription(
-    "How RadiatorRepairHub collects and uses personal information for our directory, forms, claims, Featured billing, listing saves, analytics, Mediavine ads, and affiliate links."
+    "How RadiatorRepairHub collects and uses personal information for our directory, forms, claims, Featured and Partner billing, listing saves, analytics, Mediavine ads, and affiliate links."
   ),
   keywords:
     "privacy policy, data protection, personal information, GDPR, CCPA, privacy rights, data security",
@@ -25,7 +25,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date(2026, 9, 3).toLocaleDateString("en-US", {
+  const lastUpdated = new Date(2026, 9, 13).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -93,11 +93,15 @@ function PrivacyPage() {
         },
         {
           label: "Account Information:",
-          description:"Email address, password (stored in hashed form), and account profile details for business owners who create an account through the claim process or sign in to manage claimed listings. We may also store which businesses your account owns or manages, an optional per-listing notification email for RadiatorRepairHub reports, a weekly activity report preference (on or off), email suppression records when you unsubscribe from listing emails (weekly reports and claim-related outreach), and a Stripe customer identifier if you start Featured listing checkout. If you unclaim a listing or delete your account, we clear ownership links for affected listings and cancel any related Featured subscription as described in our Terms of Service.",
+          description:"Email address, password (stored in hashed form), and account profile details for business owners who create an account through the claim process, through Partner Checkout, or by signing in to manage claimed listings. We may also store which businesses your account owns or manages, the phone number entered during Partner Checkout (stored on the account, not as the public listing phone), an optional per-listing notification email for RadiatorRepairHub reports, a weekly activity report preference (on or off), email suppression records when you unsubscribe from listing emails (weekly reports and claim-related outreach), and a Stripe customer identifier if you start Featured or Partner checkout. If you unclaim a listing or delete your account, we clear ownership links for affected listings and cancel any related Featured or Partner subscription as described in our Terms of Service.",
         },
         {
           label: "Featured Listing Billing Information:",
           description:"When you purchase or manage a Featured listing upgrade, payment card and billing details are collected and processed by Stripe on Stripe-hosted Checkout and Customer Portal pages. We do not store your full payment card number on our servers. We may store subscription-related records such as Stripe customer ID, subscription ID, price ID, subscription status, current period end, cancel-at-period-end or cancel-at scheduling flags, and the business listing associated with the subscription so we can apply or remove Featured status and show billing status in your account Settings. Stripe may also calculate applicable taxes at checkout. If you enter a promotion or discount code at Checkout, Stripe processes that code under its coupon rules; we may receive related discount or invoice details in Stripe webhook events. We may receive Stripe webhook events about checkout and subscription status changes to keep Featured placement in sync. Starting Featured checkout or managing a subscription is also subject to our Terms of Service.",
+        },
+        {
+          label: "Partner Listing Billing Information:",
+          description:"When you complete a Partner Checkout link we send for a specific listing, Stripe collects the email address and phone number you enter, plus payment card and billing details, on Stripe-hosted Checkout. We do not store your full payment card number on our servers. We use the checkout email to create an owner account or to attach the listing to an existing account, store the checkout phone number on that account, and claim the listing if it is still unclaimed. We may store the same kinds of subscription records described for Featured so we can apply or remove Partner status (which also includes Featured placement) and show billing status in account Settings. We may email you a password-setup or sign-in message after payment, and we may email our team when a Partner purchase is completed. We may receive Stripe webhook events about checkout and subscription status changes. Starting Partner checkout or managing a subscription is also subject to our Terms of Service.",
         },
       ],
     },
@@ -247,11 +251,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Send transactional emails, including general Contact and Get Listed confirmations and admin notifications, Quick Contact acknowledgments and status updates, forwarding inquiries to listed businesses, business claim verification emails and codes, listing-live notices, weekly listing activity digest emails, email-yourself listing save messages, and internal admin notifications for listing reports, completed claims, and Featured listing purchases.",
+          description:"Send transactional emails, including general Contact and Get Listed confirmations and admin notifications, Quick Contact acknowledgments and status updates, forwarding inquiries to listed businesses, business claim verification emails and codes, listing-live notices, weekly listing activity digest emails, email-yourself listing save messages, and internal admin notifications for listing reports, completed claims, and Featured or Partner listing purchases.",
         },
         {
           label: "Data Collected:",
-          description:"Name, email address, phone number, inquiry subject, Google listing links, vehicle information, issue details, urgency, message content, claim verification details, listing request details, listing report details, email-yourself listing save details (recipient email, optional name, and listing link), optional owner/employee notification emails for weekly reports, aggregated listing activity used in weekly digest emails, unsubscribe requests, and Featured purchase notification details (such as business name, owner email, listing link, and Stripe subscription identifiers) needed to process and deliver those emails.",
+          description:"Name, email address, phone number, inquiry subject, Google listing links, vehicle information, issue details, urgency, message content, claim verification details, listing request details, listing report details, email-yourself listing save details (recipient email, optional name, and listing link), optional owner/employee notification emails for weekly reports, aggregated listing activity used in weekly digest emails, unsubscribe requests, and Featured or Partner purchase notification details (such as business name, owner email, listing link, and Stripe subscription identifiers), plus Partner password-setup or sign-in emails, needed to process and deliver those emails.",
         },
         {
           label: "Privacy Policy:",
@@ -268,11 +272,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Database hosting, authentication, and backend data storage for our directory, Contact and Get Listed submissions, Quick Contact messages, user accounts, business claim requests, listing photo records, Featured listing subscription records, weekly activity report preferences and delivery records, listing reports, optional site feedback survey responses, and related operational records.",
+          description:"Database hosting, authentication, and backend data storage for our directory, Contact and Get Listed submissions, Quick Contact messages, user accounts, business claim requests, listing photo records, Featured and Partner listing subscription records, weekly activity report preferences and delivery records, listing reports, optional site feedback survey responses, and related operational records.",
         },
         {
           label: "Data Collected:",
-          description:"Contact and Get Listed submission data; Quick Contact submission data; account credentials and ownership links; claim-request records; listing photo records (image identifiers, primary/hidden/visibility flags, and linked business IDs; image files themselves are stored with Cloudflare Images); Featured subscription records (including Stripe identifiers, status, period end, cancel scheduling flags, and linked business/owner IDs); optional notification emails and weekly digest preferences on claimed listings; email suppression records for weekly report unsubscribes; digest delivery/history records used to avoid duplicate weekly sends; listing report data (including reporter contact details and suggested corrections); site feedback survey answers (how you found us, whether you found what you were looking for, optional comments, form type, and related business identifiers when applicable); associated business identifiers; and operational metadata such as timestamps and processing status.",
+          description:"Contact and Get Listed submission data; Quick Contact submission data; account credentials and ownership links; claim-request records; listing photo records (image identifiers, primary/hidden/visibility flags, and linked business IDs; image files themselves are stored with Cloudflare Images); Featured and Partner subscription records (including Stripe identifiers, status, period end, cancel scheduling flags, checkout phone when collected for Partner, and linked business/owner IDs); optional notification emails and weekly digest preferences on claimed listings; email suppression records for weekly report unsubscribes; digest delivery/history records used to avoid duplicate weekly sends; listing report data (including reporter contact details and suggested corrections); site feedback survey answers (how you found us, whether you found what you were looking for, optional comments, form type, and related business identifiers when applicable); associated business identifiers; and operational metadata such as timestamps and processing status.",
         },
         {
           label: "Privacy Policy:",
@@ -352,11 +356,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Process payments and subscriptions for optional Featured listing upgrades, including Checkout, invoices, tax calculation where enabled, promotion or discount codes where offered, and the customer billing portal used to manage or cancel subscriptions. Stripe also sends us webhook events so we can sync subscription status and Featured placement.",
+          description:"Process payments and subscriptions for optional Featured listing upgrades and Partner listing plans, including Checkout, invoices, tax calculation where enabled, promotion or discount codes where offered, phone number collection on Partner Checkout, and the customer billing portal used to manage or cancel subscriptions. Stripe also sends us webhook events so we can sync subscription status and Featured or Partner placement.",
         },
         {
           label: "Data Collected:",
-          description:"Payment method details, billing name and address, email, tax-related information, and subscription metadata as collected by Stripe. We receive and store Stripe identifiers and subscription status events (for example customer ID, subscription ID, status, period end, and cancel scheduling) so we can apply or remove Featured placement on the associated listing. Full card numbers are handled by Stripe, not stored in our databases.",
+          description:"Payment method details, billing name and address, email, phone number when Partner Checkout collects it, tax-related information, and subscription metadata as collected by Stripe. We receive and store Stripe identifiers and subscription status events (for example customer ID, subscription ID, status, period end, and cancel scheduling) so we can apply or remove Featured or Partner placement on the associated listing. Full card numbers are handled by Stripe, not stored in our databases.",
         },
         {
           label: "Privacy Policy:",
@@ -449,6 +453,10 @@ function PrivacyPage() {
           description:"Process optional paid Featured upgrades through Stripe (including promotion or discount codes where offered), apply or remove Featured placement based on subscription status (including canceling Featured when a listing is unclaimed or an account is deleted), show billing status in account Settings, confirm checkout status after payment using Stripe session details, and send internal admin notifications when a Featured subscription is purchased.",
         },
         {
+          label: "Partner Listing Billing:",
+          description:"Process optional paid Partner plans through a Stripe Checkout link we send, collect the checkout email and phone, create or reuse an owner account, claim the listing when it is still unclaimed, apply or remove Partner and included Featured placement based on subscription status (including canceling the subscription immediately when the listing is unclaimed or the account is deleted), show billing status in account Settings, and send the owner and our team email after a completed purchase.",
+        },
+        {
           label: "Affiliate Recommendations:",
           description:"Display Tools & Supplies and related product recommendations, measure affiliate link clicks, and participate in the Amazon Associates program.",
         },
@@ -532,7 +540,7 @@ function PrivacyPage() {
         "Automated verification calls and phone number checks for business claims (Twilio)",
     },
     {
-      label: "Payment and subscription processing for Featured listings (Stripe)",
+      label: "Payment and subscription processing for Featured and Partner listings (Stripe)",
     },
     {
       label: "Affiliate product referrals (Amazon Associates)",
@@ -596,15 +604,15 @@ function PrivacyPage() {
     },
     {
       label: "Account Information:",
-      description:"Account credentials and ownership records are retained while your account remains active. If you delete your account, we remove or anonymize account credentials and clear ownership links on affected listings, except where we must retain limited records for security, dispute resolution, tax, accounting, or legal obligations. Deleting your account cancels any active Featured subscription in Stripe; related Featured billing records we store may still be retained as described under Featured Listing Billing Records.",
+      description:"Account credentials and ownership records are retained while your account remains active. If you delete your account, we remove or anonymize account credentials and clear ownership links on affected listings, except where we must retain limited records for security, dispute resolution, tax, accounting, or legal obligations. Deleting your account cancels any active Featured or Partner subscription in Stripe; related billing records we store may still be retained as described under Featured and Partner Listing Billing Records.",
     },
     {
       label: "Weekly Activity Report Preferences:",
       description:"Optional notification emails and weekly report on/off preferences are retained while the related listing or account relationship remains active and may be cleared or updated when you change Settings or unclaim a listing. Email suppression records from unsubscribe requests are retained while needed to honor your opt-out (typically while the listing remains in our directory or until you re-enable reports). Digest delivery/history records used to prevent duplicate weekly sends are retained for operational purposes for up to 2 years, then deleted or aggregated.",
     },
     {
-      label: "Featured Listing Billing Records:",
-      description:"Subscription records linked to Featured upgrades (including Stripe identifiers and status history we store) are retained while the subscription is active and for up to 7 years after it ends, or longer if required for tax, accounting, chargeback, or legal obligations. This may include records that remain after you unclaim a listing or delete your account. Payment card details are retained by Stripe under Stripe's policies, not in our card vault.",
+      label: "Featured and Partner Listing Billing Records:",
+      description:"Subscription records linked to Featured upgrades and Partner plans (including Stripe identifiers, checkout email and phone where collected, and status history we store) are retained while the subscription is active and for up to 7 years after it ends, or longer if required for tax, accounting, chargeback, or legal obligations. This may include records that remain after you unclaim a listing or delete your account. Payment card details are retained by Stripe under Stripe's policies, not in our card vault.",
     },
     {
       label: "Listing Photos:",

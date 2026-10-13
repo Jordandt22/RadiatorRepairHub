@@ -39,6 +39,23 @@ export function getBusinessPhoneTelHref(digits = getBusinessPhoneDigits()) {
   return `tel:+1${digits}`;
 }
 
+/** Absolute http(s) URL for a listing website, or null when it is missing or invalid. */
+export function getListingWebsiteHref(website) {
+  if (!website || typeof website !== "string") return null;
+  const trimmed = website.trim();
+  if (!trimmed) return null;
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+  try {
+    const parsed = new URL(withProtocol);
+    if (!["http:", "https:"].includes(parsed.protocol)) return null;
+    return parsed.href;
+  } catch {
+    return null;
+  }
+}
+
 export function getBusinessPhoneSmsHref(digits = getBusinessPhoneDigits()) {
   if (!digits) return null;
   return `sms:+1${digits}`;

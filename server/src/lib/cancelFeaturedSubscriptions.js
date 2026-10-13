@@ -14,6 +14,7 @@ import {
   deleteCacheDataByPrefix,
   getBusinessByIdKey,
   getBusinessBySlugKey,
+  getTopVerifiedBusinessesKey,
 } from "../redis/redis.js";
 import { supabase } from "../supabase/supabase.js";
 
@@ -22,6 +23,7 @@ const TERMINAL_STATUSES = new Set(["canceled", "incomplete_expired"]);
 async function invalidateFeaturedCaches(businessId) {
   await deleteCacheDataByPrefix("FEATURED_BUSINESSES");
   await deleteCacheDataByPrefix("SEARCHED_BUSINESSES");
+  await deleteCacheData(getTopVerifiedBusinessesKey().key);
 
   if (!businessId) return;
 
@@ -68,7 +70,7 @@ async function clearBusinessFeaturedFlag(businessId) {
   if (!businessId) return;
   await supabase
     .from("businesses")
-    .update({ is_featured: false })
+    .update({ is_featured: false, is_partner: false })
     .eq("id", businessId);
 }
 

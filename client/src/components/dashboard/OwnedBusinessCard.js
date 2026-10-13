@@ -73,7 +73,7 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
   };
 
   return (
-    <article className="card-lift-hover flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card">
+    <article className="flex h-full flex-col overflow-hidden rounded-lg border-2 border-border/50 bg-card transition-all duration-200 hover:shadow-xl hover:border-primary">
       <Link
         href={`/business/${business.slug}`}
         className="block min-h-0 flex-1"
@@ -108,13 +108,33 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
       </Link>
 
       <div className="mt-auto space-y-2 border-t border-border px-5 py-3">
-        {business.is_featured ? (
+        {business.is_partner ? (
           <Link
             href="/settings?tab=payments"
             className={buttonVariants({
               variant: "outline",
               size: "sm",
-              className: "w-full",
+              className: "w-full bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
+            })}
+            onClick={() =>
+              posthog?.capture("featured_cta_clicked", {
+                source: "dashboard",
+                cta: "manage_partner",
+                business_id: business.id,
+                business_slug: business.slug || undefined,
+                business_name: business.title || undefined,
+              })
+            }
+          >
+            Partnered · Manage
+          </Link>
+        ) : business.is_featured ? (
+          <Link
+            href="/settings?tab=payments"
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "w-full bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
             })}
             onClick={() =>
               posthog?.capture("featured_cta_clicked", {
@@ -133,7 +153,7 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
             href={`/pricing?business=${encodeURIComponent(business.id)}`}
             className={buttonVariants({
               size: "sm",
-              className: "w-full",
+              className: "w-full bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
             })}
             onClick={() =>
               posthog?.capture("featured_cta_clicked", {
@@ -189,8 +209,8 @@ export default function OwnedBusinessCard({ business, onUnclaimed }) {
                 {business.title}
               </span>
               ? You will lose owner access to edit this listing. If the listing
-              is Featured, that subscription is canceled immediately and fees
-              already paid are not refunded. The business page stays on
+              is Featured or Partnered, that subscription is canceled immediately
+              and fees already paid are not refunded. The business page stays on
               RadiatorRepairHub and can be claimed again later.
             </DialogDescription>
           </DialogHeader>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, MoveRight, Phone } from "lucide-react";
+import { Globe, MapPin, MoveRight, Phone } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import OpenStatus from "@/components/businesses/status/OpenStatus";
 import BusinessImage from "@/components/businesses/BusinessImage";
@@ -12,6 +12,7 @@ import {
   formatBusinessPhoneDisplay,
   getBusinessPhoneTelHref,
   getListingPhoneDigits,
+  getListingWebsiteHref,
 } from "@/lib/businessContactInfo";
 import { recordPhoneClick } from "@/lib/businessStats/phoneClickCooldown";
 import { trackBusinessStat } from "@/lib/businessStats/trackBusinessStat";
@@ -66,17 +67,21 @@ export default function ListingBusinessCard({
 }) {
   const posthog = usePostHog();
   const isFeatured = Boolean(business?.is_featured);
+  const isPartner = Boolean(business?.is_partner);
   const isClaimed = Boolean(business?.is_claimed);
   const showMedia = isClaimed || isFeatured;
-  const showDescription = showMedia;
+  const showDescription = isFeatured || isPartner;
   const phoneDigits = getListingPhoneDigits(business?.phone);
   const phoneDisplay = formatBusinessPhoneDisplay(phoneDigits);
   const phoneHref = getBusinessPhoneTelHref(phoneDigits);
+  const websiteHref = isPartner ? getListingWebsiteHref(business?.website) : null;
   const description =
     typeof business?.description === "string"
       ? business.description.trim()
       : "";
-  const about = description || buildAboutFallback(business);
+  const about = showDescription
+    ? description || buildAboutFallback(business)
+    : "";
   const reviewsCount = Number(business?.reviews_count) || 0;
   const cityHref =
     business?.state?.code && business?.city?.slug
@@ -110,6 +115,21 @@ export default function ListingBusinessCard({
         source: listingSource,
         position,
       });
+    });
+  };
+
+  const trackWebsiteClick = () => {
+    posthog?.capture("business_website_clicked", {
+      business_id: business?.id || undefined,
+      business_name: business?.title || undefined,
+      source: listingSource || undefined,
+      position,
+      placement: "listing_card",
+    });
+    if (!business?.id) return;
+    trackBusinessStat({
+      businessId: business.id,
+      event: "website_click",
     });
   };
 
@@ -236,11 +256,27 @@ export default function ListingBusinessCard({
                 {phoneDisplay}
               </a>
             ) : null}
+            {websiteHref ? (
+              <a
+                href={websiteHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={trackWebsiteClick}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "lg" }),
+                  "rounded-full border-primary bg-tint text-primary hover:bg-tint/80 hover:text-primary dark:bg-tint"
+                )}
+              >
+                <Globe className="size-4 shrink-0" aria-hidden="true" />
+                Visit Website
+              </a>
+            ) : null}
             <Link
               href={`/business/${business.slug}`}
               className={cn(
                 buttonVariants({ variant: "outline", size: "lg" }),
-                "rounded-full"
+                "rounded-full",
+                isPartner && "w-full justify-center sm:w-auto"
               )}
               prefetch={false}
               onClick={trackListingClick}
