@@ -32,6 +32,17 @@ const PUBLIC_PHONE_LINE_TYPE_LABELS = {
   personal: "Personal",
 };
 
+/**
+ * Line type already stored for this listing. Null means Lookup should run:
+ * the row was never checked, or a check finished without a type.
+ */
+export function storedPhoneLineType(row) {
+  if (!row?.phone_line_type_checked_at) return null;
+  const lineType =
+    typeof row.phone_line_type === "string" ? row.phone_line_type.trim() : "";
+  return lineType || null;
+}
+
 /** Customer-facing label. Unknown and non-callable types stay hidden. */
 export function publicPhoneLineTypeLabel(lineType) {
   if (!lineType) return null;

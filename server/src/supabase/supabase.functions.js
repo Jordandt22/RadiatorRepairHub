@@ -1387,7 +1387,7 @@ export const getBusinessClaimInfo = async (business_id) => {
   const { data, error } = await supabase
     .from("businesses")
     .select(
-      "id, title, slug, email, phone, timezone, is_claimed, email_status, phone_status, hours:business_hours(day_of_week, is_closed, hours)"
+      "id, title, slug, email, phone, timezone, is_claimed, email_status, phone_status, phone_line_type, phone_line_type_checked_at, hours:business_hours(day_of_week, is_closed, hours)"
     )
     .eq("id", business_id)
     .single();
