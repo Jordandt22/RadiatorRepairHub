@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import { SCORE_TIER_IDS, REVIEW_TIER_IDS, EMAIL_FILTER_IDS, WEBSITE_FILTER_IDS } from "../lib/adminBusinessTiers.js";
+import { SCORE_TIER_IDS, REVIEW_TIER_IDS, EMAIL_FILTER_IDS, WEBSITE_FILTER_IDS, PHONE_FILTER_IDS, PHONE_STATUS_FILTER_IDS, PHONE_LINE_TYPE_FILTER_IDS } from "../lib/adminBusinessTiers.js";
 import { normalizeWebsiteUrl } from "../lib/websiteReachability.js";
 import { getPasswordStrengthError } from "../lib/password.js";
 import {
@@ -424,6 +424,33 @@ export const GetAdminBusinessesQuerySchema = Yup.object({
     .nullable()
     .oneOf([...WEBSITE_FILTER_IDS, null], "Invalid website filter")
     .optional(),
+  phone_filter: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...PHONE_FILTER_IDS, null], "Invalid phone filter")
+    .optional(),
+  phone_status: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...PHONE_STATUS_FILTER_IDS, null], "Invalid phone status")
+    .optional(),
+  phone_line_type: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...PHONE_LINE_TYPE_FILTER_IDS, null], "Invalid phone line type")
+    .optional(),
 });
 
 const optionalAdminBoolBody = Yup.boolean()
@@ -507,6 +534,33 @@ export const ExportAdminBusinessesSchema = Yup.object({
     })
     .nullable()
     .oneOf([...WEBSITE_FILTER_IDS, null], "Invalid website filter")
+    .optional(),
+  phone_filter: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...PHONE_FILTER_IDS, null], "Invalid phone filter")
+    .optional(),
+  phone_status: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...PHONE_STATUS_FILTER_IDS, null], "Invalid phone status")
+    .optional(),
+  phone_line_type: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...PHONE_LINE_TYPE_FILTER_IDS, null], "Invalid phone line type")
     .optional(),
   fields: Yup.array()
     .of(
@@ -796,6 +850,33 @@ export const UpdateBusinessPhoneSchema = Yup.object({
     .trim()
     .required("Phone is required")
     .test("valid-phone", "Please enter a valid phone number", isValidPhone),
+});
+
+export const CheckBusinessPhoneLineTypeSchema = Yup.object({
+  business_id: Yup.string()
+    .uuid("Invalid business ID")
+    .required("Business ID is required"),
+});
+
+export const CreatePhoneLineTypeJobSchema = Yup.object({
+  limit: Yup.number()
+    .integer("Limit must be an integer")
+    .min(50, "Limit must be at least 50")
+    .max(500, "Limit cannot exceed 500")
+    .optional(),
+});
+
+export const GetPhoneLineTypeJobParamsSchema = Yup.object({
+  jobId: Yup.string()
+    .uuid("Invalid job id")
+    .required("Job id is required"),
+});
+
+export const DeletePhoneLineTypeJobsSchema = Yup.object({
+  job_ids: Yup.array()
+    .of(Yup.string().uuid("Invalid job id").required())
+    .min(1, "At least one job id is required")
+    .required("Job ids are required"),
 });
 
 export const UpdateBusinessListingSchema = Yup.object({

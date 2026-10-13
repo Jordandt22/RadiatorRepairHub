@@ -29,6 +29,15 @@ import { processEnrichJob } from "./ingest/handlers/enrichJob.js";
 import { processInsertJob } from "./ingest/handlers/insertJob.js";
 import { processCdnUploadJob } from "./cdn-upload/handlers/cdnUploadJob.js";
 import { processEmailScrapeJob } from "./email-scrape/handlers/emailScrapeJob.js";
+import { processPhoneLineTypeJob } from "./phone-line-type/handler.js";
+import {
+  PHONE_LINE_TYPE_JOB_LOCK_DURATION_MS,
+  PHONE_LINE_TYPE_STALLED_INTERVAL_MS,
+} from "./lib/phoneLineType.js";
+import {
+  closePhoneLineTypeQueue,
+  PHONE_LINE_TYPE_QUEUE_NAME,
+} from "./phone-line-type/queues.js";
 import {
   OUTREACH_DISPATCH_QUEUE_NAME,
   OUTREACH_SEND_QUEUE_NAME,
@@ -98,6 +107,17 @@ const emailScrapeWorker = new Worker(
   }
 );
 
+const phoneLineTypeWorker = new Worker(
+  PHONE_LINE_TYPE_QUEUE_NAME,
+  processPhoneLineTypeJob,
+  {
+    connection,
+    concurrency: 1,
+    lockDuration: PHONE_LINE_TYPE_JOB_LOCK_DURATION_MS,
+    stalledInterval: PHONE_LINE_TYPE_STALLED_INTERVAL_MS,
+  }
+);
+
 const apifyScrapeWorker = new Worker(
   APIFY_SCRAPE_QUEUE_NAME,
   processApifyScrapeCityJob,
@@ -148,6 +168,7 @@ attachLogging(enrichWorker, "ingest-enrich");
 attachLogging(insertWorker, "ingest-insert");
 attachLogging(cdnUploadWorker, "cdn-upload");
 attachLogging(emailScrapeWorker, "email-scrape");
+attachLogging(phoneLineTypeWorker, "phone-line-type");
 attachLogging(apifyScrapeWorker, "apify-scrape-city");
 attachLogging(outreachDispatchWorker, "outreach-dispatch");
 attachLogging(outreachSendWorker, "outreach-send");
@@ -160,6 +181,7 @@ logger.info(
       ...Object.values(QUEUE_NAMES),
       CDN_UPLOAD_QUEUE_NAME,
       EMAIL_SCRAPE_QUEUE_NAME,
+      PHONE_LINE_TYPE_QUEUE_NAME,
       APIFY_SCRAPE_QUEUE_NAME,
       OUTREACH_DISPATCH_QUEUE_NAME,
       OUTREACH_SEND_QUEUE_NAME,
@@ -216,6 +238,7 @@ async function shutdown() {
     insertWorker.close(),
     cdnUploadWorker.close(),
     emailScrapeWorker.close(),
+    phoneLineTypeWorker.close(),
     apifyScrapeWorker.close(),
     outreachDispatchWorker.close(),
     outreachSendWorker.close(),
@@ -225,6 +248,7 @@ async function shutdown() {
     closeDigestQueues(),
     closeApifyScrapeQueue(),
     closeEmailScrapeQueue(),
+    closePhoneLineTypeQueue(),
   ]);
   process.exit(0);
 }

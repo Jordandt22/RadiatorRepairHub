@@ -49,6 +49,7 @@ import {
   clearBusinessPhones,
   markBusinessPhoneStatus,
   updateBusinessPhone,
+  checkBusinessPhoneLineType,
   updateBusinessListing,
   updateBusinessCategories,
   unclaimBusinesses,
@@ -121,6 +122,13 @@ import {
   createApifyScrapeJobHandler,
   deleteApifyScrapeJobsHandler,
 } from "../../controllers/admin/admin.controller.js";
+import {
+  getPhoneLineTypePendingCount,
+  getPhoneLineTypeJobs,
+  getPhoneLineTypeJobById,
+  createPhoneLineTypeJobHandler,
+  deletePhoneLineTypeJobsHandler,
+} from "../../controllers/admin/phoneLineTypeJobs.controller.js";
 import { serverErrorCatcherWrapper } from "../../helpers/wrappers.js";
 import {
   LoginAdminSchema,
@@ -170,6 +178,10 @@ import {
   ClearBusinessPhonesSchema,
   MarkBusinessPhoneStatusSchema,
   UpdateBusinessPhoneSchema,
+  CheckBusinessPhoneLineTypeSchema,
+  CreatePhoneLineTypeJobSchema,
+  GetPhoneLineTypeJobParamsSchema,
+  DeletePhoneLineTypeJobsSchema,
   UpdateBusinessListingSchema,
   UpdateBusinessCategoriesSchema,
   UnclaimBusinessesSchema,
@@ -461,6 +473,40 @@ adminRouter.patch(
   "/businesses/phone",
   bodyValidator(UpdateBusinessPhoneSchema),
   serverErrorCatcherWrapper(updateBusinessPhone)
+);
+
+adminRouter.post(
+  "/businesses/phone-line-type",
+  bodyValidator(CheckBusinessPhoneLineTypeSchema),
+  serverErrorCatcherWrapper(checkBusinessPhoneLineType)
+);
+
+adminRouter.get(
+  "/phone-line-type/pending-count",
+  serverErrorCatcherWrapper(getPhoneLineTypePendingCount)
+);
+
+adminRouter.get(
+  "/phone-line-type/jobs",
+  serverErrorCatcherWrapper(getPhoneLineTypeJobs)
+);
+
+adminRouter.get(
+  "/phone-line-type/jobs/:jobId",
+  paramsValidator(GetPhoneLineTypeJobParamsSchema),
+  serverErrorCatcherWrapper(getPhoneLineTypeJobById)
+);
+
+adminRouter.post(
+  "/phone-line-type/jobs",
+  bodyValidator(CreatePhoneLineTypeJobSchema),
+  serverErrorCatcherWrapper(createPhoneLineTypeJobHandler)
+);
+
+adminRouter.delete(
+  "/phone-line-type/jobs",
+  bodyValidator(DeletePhoneLineTypeJobsSchema),
+  serverErrorCatcherWrapper(deletePhoneLineTypeJobsHandler)
 );
 
 adminRouter.patch(

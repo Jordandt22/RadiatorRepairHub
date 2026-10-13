@@ -53,6 +53,9 @@ import {
   clearBusinessPhones as clearPhonesOnBusinesses,
   updateBusinessesPhoneStatus as patchBusinessesPhoneStatus,
   updateBusinessPhone as patchBusinessPhone,
+  getBusinessPhoneSnapshot,
+  saveBusinessPhoneLineTypes,
+  clearBusinessPhoneLineTypes,
   getClaimRequestById as fetchClaimRequestById,
   getClaimConsentEventsByClaimRequestId as fetchClaimConsentEvents,
   updateBusinessListing as patchBusinessListing,
@@ -254,6 +257,13 @@ import {
   getDigestSchedulerState,
   reconcileDigestScheduler,
 } from "../../digest-scheduler/scheduler.js";
+import { logger } from "../../lib/logger.js";
+import { normalizeClaimPhone } from "../../lib/claimPhone.js";
+import { lookupPhoneLineType } from "../../twilio/lookup.js";
+import {
+  phoneLineChanged,
+  refreshPhoneLineType,
+} from "../../phone-line-type/refresh.js";
 const { ACCESS_DENIED, SERVER_ERROR, SUPABASE_ERROR, YUP_ERROR, ROUTE_NOT_FOUND } =
   errorCodes;
 
@@ -2138,6 +2148,19 @@ export const getBusinesses = async (req, res) => {
     req.query.website_filter.trim()
       ? req.query.website_filter.trim()
       : null;
+  const phoneFilter =
+    typeof req.query.phone_filter === "string" && req.query.phone_filter.trim()
+      ? req.query.phone_filter.trim()
+      : null;
+  const phoneStatus =
+    typeof req.query.phone_status === "string" && req.query.phone_status.trim()
+      ? req.query.phone_status.trim()
+      : null;
+  const phoneLineType =
+    typeof req.query.phone_line_type === "string" &&
+    req.query.phone_line_type.trim()
+      ? req.query.phone_line_type.trim()
+      : null;
 
   const { key, interval } = getAdminBusinessesKey(
     page,
@@ -2152,7 +2175,10 @@ export const getBusinesses = async (req, res) => {
     reviewsTier,
     emailFilter,
     websiteFilter,
-    recent
+    recent,
+    phoneFilter,
+    phoneStatus,
+    phoneLineType
   );
   const cachedData = await getCacheData(key);
   if (cachedData) {
@@ -2174,6 +2200,9 @@ export const getBusinesses = async (req, res) => {
       reviewsTier,
       emailFilter,
       websiteFilter,
+      phoneFilter,
+      phoneStatus,
+      phoneLineType,
     }
   );
   if (error) {
@@ -2222,6 +2251,9 @@ export const getBusinesses = async (req, res) => {
     reviews_tier: reviewsTier,
     email_filter: emailFilter,
     website_filter: websiteFilter,
+    phone_filter: phoneFilter,
+    phone_status: phoneStatus,
+    phone_line_type: phoneLineType,
   };
 
   await cacheData(key, interval, compiledData);
@@ -2268,6 +2300,18 @@ export const exportBusinesses = async (req, res) => {
     typeof body.website_filter === "string" && body.website_filter.trim()
       ? body.website_filter.trim()
       : null;
+  const phoneFilter =
+    typeof body.phone_filter === "string" && body.phone_filter.trim()
+      ? body.phone_filter.trim()
+      : null;
+  const phoneStatus =
+    typeof body.phone_status === "string" && body.phone_status.trim()
+      ? body.phone_status.trim()
+      : null;
+  const phoneLineType =
+    typeof body.phone_line_type === "string" && body.phone_line_type.trim()
+      ? body.phone_line_type.trim()
+      : null;
   const fields = Array.isArray(body.fields) ? body.fields : [];
   const statsRange =
     typeof body.stats_range === "string" && body.stats_range.trim()
@@ -2287,6 +2331,9 @@ export const exportBusinesses = async (req, res) => {
     reviewsTier,
     emailFilter,
     websiteFilter,
+    phoneFilter,
+    phoneStatus,
+    phoneLineType,
   });
 
   if (error) {
@@ -3163,6 +3210,20 @@ export const updateBusinessPhone = async (req, res) => {
   const { business_id, phone } = req.body;
   const normalizedPhone = String(phone).trim();
 
+  const { data: before, error: beforeError } =
+    await getBusinessPhoneSnapshot(business_id);
+  if (beforeError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error loading the business phone.",
+          beforeError
+        )
+      );
+  }
+
   const { data, error } = await patchBusinessPhone(
     business_id,
     normalizedPhone
@@ -3193,6 +3254,16 @@ export const updateBusinessPhone = async (req, res) => {
     // best-effort cache cleanup
   }
 
+  if (phoneLineChanged(before?.phone, normalizedPhone)) {
+    const refreshed = await refreshPhoneLineType(business_id, normalizedPhone);
+    if (refreshed?.error) {
+      logger.warn(
+        { err: refreshed.error, businessId: business_id },
+        "Unable to save phone line type after phone update"
+      );
+    }
+  }
+
   await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
   await deleteCacheDataByPrefix("ADMIN_DASHBOARD");
   await deleteCacheDataByPrefix("ADMIN_LOCATIONS");
@@ -3205,6 +3276,83 @@ export const updateBusinessPhone = async (req, res) => {
       phone: data.phone,
     })
   );
+};
+
+export const checkBusinessPhoneLineType = async (req, res) => {
+  const { business_id } = req.body;
+  const { data: snapshot, error } = await getBusinessPhoneSnapshot(business_id);
+
+  if (error) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error loading the business phone.",
+          error
+        )
+      );
+  }
+
+  if (!snapshot) {
+    return res
+      .status(404)
+      .json(customErrorHandler(ROUTE_NOT_FOUND, "Business not found."));
+  }
+
+  const phoneE164 = normalizeClaimPhone(snapshot.phone);
+  if (!phoneE164) {
+    await clearBusinessPhoneLineTypes([business_id]);
+    return res
+      .status(422)
+      .json(
+        customErrorHandler(
+          YUP_ERROR,
+          "This business does not have a dialable phone number."
+        )
+      );
+  }
+
+  const lookup = await lookupPhoneLineType(phoneE164);
+  if (!lookup.ok) {
+    return res.status(lookup.error?.type === "config" ? 500 : 503).json(
+      customErrorHandler(
+        SERVER_ERROR,
+        lookup.error?.message ?? "Unable to check this phone number right now.",
+        lookup.error?.cause
+      )
+    );
+  }
+
+  const { data, error: saveError } = await saveBusinessPhoneLineTypes(
+    [business_id],
+    {
+      lineType: lookup.data.lineType,
+      carrier: lookup.data.carrier,
+    }
+  );
+
+  if (saveError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error saving the phone line type.",
+          saveError
+        )
+      );
+  }
+
+  try {
+    await invalidatePublicBusinessListingCaches(data?.length ? data : [snapshot]);
+  } catch {
+    // best-effort cache cleanup
+  }
+
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+
+  return res.status(200).json(successHandler(data?.[0] ?? null));
 };
 
 export const updateBusinessListing = async (req, res) => {
@@ -3242,6 +3390,20 @@ export const updateBusinessListing = async (req, res) => {
         .map((keyword) => String(keyword ?? "").trim())
         .filter(Boolean)
     : [];
+
+  const { data: before, error: beforeError } =
+    await getBusinessPhoneSnapshot(business_id);
+  if (beforeError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error loading the business phone.",
+          beforeError
+        )
+      );
+  }
 
   const { data, error } = await patchBusinessListing(business_id, {
     title: normalizedTitle,
@@ -3281,6 +3443,16 @@ export const updateBusinessListing = async (req, res) => {
     await invalidatePublicBusinessListingCaches([data]);
   } catch {
     // best-effort cache cleanup
+  }
+
+  if (phoneLineChanged(before?.phone, normalizedPhone)) {
+    const refreshed = await refreshPhoneLineType(business_id, normalizedPhone);
+    if (refreshed?.error) {
+      logger.warn(
+        { err: refreshed.error, businessId: business_id },
+        "Unable to save phone line type after listing update"
+      );
+    }
   }
 
   await deleteCacheDataByPrefix("ADMIN_BUSINESSES");

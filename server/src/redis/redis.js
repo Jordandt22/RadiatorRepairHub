@@ -374,9 +374,12 @@ export const getAdminBusinessesKey = (
   reviewsTier = null,
   emailFilter = null,
   websiteFilter = null,
-  recent = null
+  recent = null,
+  phoneFilter = null,
+  phoneStatus = null,
+  phoneLineType = null
 ) => ({
-  key: `ADMIN_BUSINESSES?V:11&PAGE:${page}&LIMIT:${limit}&CLAIMED:${
+  key: `ADMIN_BUSINESSES?V:12&PAGE:${page}&LIMIT:${limit}&CLAIMED:${
     claimed === true ? "true" : "all"
   }&FEATURED:${featured === true ? "true" : "all"}&RECENT:${
     recent === true ? "7d" : "all"
@@ -386,6 +389,8 @@ export const getAdminBusinessesKey = (
     scoreTier ?? ""
   }&REVIEWS:${reviewsTier ?? ""}&EMAIL:${emailFilter ?? ""}&WEBSITE:${
     websiteFilter ?? ""
+  }&PHONE:${phoneFilter ?? ""}&PHONE_STATUS:${phoneStatus ?? ""}&LINE:${
+    phoneLineType ?? ""
   }`,
   interval: 60 * 5,
 });

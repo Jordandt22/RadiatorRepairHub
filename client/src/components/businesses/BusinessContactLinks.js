@@ -5,6 +5,7 @@ import { Phone, Mail, Globe, ExternalLink } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { recordPhoneClick } from "@/lib/businessStats/phoneClickCooldown";
 import { trackBusinessStat } from "@/lib/businessStats/trackBusinessStat";
+import { publicPhoneLineTypeDetail } from "@/lib/businesses/phoneLineType";
 
 export default function BusinessContactLinks({
   businessId,
@@ -13,8 +14,10 @@ export default function BusinessContactLinks({
   email,
   website,
   emailUnderReview = false,
+  phoneLineType = null,
 }) {
   const posthog = usePostHog();
+  const phoneLineDetail = publicPhoneLineTypeDetail(phoneLineType);
 
   const capture = (event) => {
     posthog?.capture(event, {
@@ -31,20 +34,29 @@ export default function BusinessContactLinks({
   return (
     <div className="space-y-3 md:space-y-4">
       {phone ? (
-        <div className="flex items-center gap-2 md:gap-3">
-          <Phone className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground flex-shrink-0" />
-          <a
-            href={`tel:${phone}`}
-            onClick={() => {
-              recordPhoneClick(businessId, () => {
-                capture("business_phone_clicked");
-                trackStat("phone_click");
-              });
-            }}
-            className="text-sm text-foreground hover:text-interactive transition-colors font-semibold"
-          >
-            {phone}
-          </a>
+        <div className="flex items-start gap-2 md:gap-3">
+          <Phone className="mt-0.5 w-4 h-4 md:w-5 md:h-5 text-muted-foreground flex-shrink-0" />
+          <div className="min-w-0">
+            <a
+              href={`tel:${phone}`}
+              onClick={() => {
+                recordPhoneClick(businessId, () => {
+                  capture("business_phone_clicked");
+                  trackStat("phone_click");
+                });
+              }}
+              className="text-sm text-foreground hover:text-interactive transition-colors font-semibold"
+            >
+              {phone}
+            </a>
+
+          </div>
+          {phoneLineDetail ? (
+            <p className={`shrink-0 rounded-md px-2 py-1 text-sm ${phoneLineDetail.tone}`}>
+              <strong className="font-medium">{phoneLineDetail.label}</strong>
+              {phoneLineDetail.note ? ` · ${phoneLineDetail.note}` : null}
+            </p>
+          ) : null}
         </div>
       ) : (
         <div className="flex items-center gap-2 md:gap-3">

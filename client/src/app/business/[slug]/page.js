@@ -358,6 +358,7 @@ async function Page({ params }) {
                   phoneClaimEligible={Boolean(business.phone_claim_eligible)}
                   phoneClaimBlockReason={business.phone_claim_block_reason}
                   pendingClaim={business.pending_claim}
+                  searchPositionIncentive={business.search_position_incentive}
                 />
                 <AboutSection
                   businessId={business.id}
@@ -528,6 +529,7 @@ async function Page({ params }) {
                   website={business.website}
                   emailStatus={business.email_status}
                   isClaimed={Boolean(business.is_claimed)}
+                  phoneLineType={business.phone_line_type}
                 />
 
                 <BusinessHoursSection
@@ -551,6 +553,7 @@ async function Page({ params }) {
                   phoneClaimEligible={Boolean(business.phone_claim_eligible)}
                   phoneClaimBlockReason={business.phone_claim_block_reason}
                   pendingClaim={business.pending_claim}
+                  searchPositionIncentive={business.search_position_incentive}
                 />
 
                 <AmenitiesSection

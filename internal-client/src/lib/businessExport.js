@@ -25,6 +25,8 @@ export const BUSINESS_EXPORT_FIELDS = Object.freeze([
   { id: "lng", label: "Longitude", defaultSelected: false },
   { id: "email_status", label: "Email status", defaultSelected: false },
   { id: "phone_status", label: "Phone status", defaultSelected: false },
+  { id: "phone_line_type", label: "Phone line type", defaultSelected: false },
+  { id: "phone_carrier", label: "Phone carrier", defaultSelected: false },
   { id: "created_at", label: "Created at", defaultSelected: false },
   { id: "last_edited_at", label: "Last edited at", defaultSelected: false },
   { id: "impressions", label: "Impressions", defaultSelected: false, stats: true },
@@ -103,6 +105,9 @@ export function buildBusinessExportFilename({
   recent = null,
   websiteFilter = null,
   emailFilter = null,
+  phoneFilter = null,
+  phoneStatus = null,
+  phoneLineType = null,
   scoreTier = null,
   reviewsTier = null,
   stateCode = null,
@@ -127,6 +132,11 @@ export function buildBusinessExportFilename({
 
   if (emailFilter === "none") parts.push("no-email");
   else if (emailFilter === "has") parts.push("has-email");
+
+  if (phoneFilter === "none") parts.push("no-phone");
+  else if (phoneFilter === "has") parts.push("has-phone");
+  if (phoneStatus) parts.push(`phone-${slugifyFilenamePart(phoneStatus)}`);
+  if (phoneLineType) parts.push(`line-${slugifyFilenamePart(phoneLineType)}`);
 
   if (scoreTier) parts.push(`score-${slugifyFilenamePart(scoreTier)}`);
   if (reviewsTier) parts.push(`reviews-${slugifyFilenamePart(reviewsTier)}`);
