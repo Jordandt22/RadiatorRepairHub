@@ -82,6 +82,7 @@ function ContactInformationSectionContent({
   website: initialWebsite,
   emailStatus = null,
   isClaimed = false,
+  phoneLineType = null,
 }) {
   const router = useRouter();
   const posthog = usePostHog();
@@ -199,6 +200,7 @@ function ContactInformationSectionContent({
         email={initialEmail}
         website={initialWebsite}
         emailUnderReview={emailUnderReview}
+        phoneLineType={phoneLineType}
       />
 
       <div className="mt-4 md:mt-5 space-y-3">

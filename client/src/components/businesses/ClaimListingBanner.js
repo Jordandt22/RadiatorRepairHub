@@ -16,6 +16,7 @@ import {
 import { useIsSignedIn } from "@/lib/auth/useIsSignedIn";
 import { useOwnerListingView } from "@/contexts/OwnerListingViewProvider";
 import { cn } from "@/lib/utils";
+import { formatSearchPositionIncentiveCopy } from "@/lib/businesses/searchPositionIncentive";
 import ClaimListingDialog from "./ClaimListingDialog";
 
 function findOwnedBusiness(businesses, businessId) {
@@ -40,6 +41,7 @@ export default function ClaimListingBanner({
   phoneClaimEligible: initialPhoneClaimEligible = false,
   phoneClaimBlockReason: initialPhoneClaimBlockReason = null,
   pendingClaim: initialPendingClaim = null,
+  searchPositionIncentive: initialSearchPositionIncentive = null,
 }) {
   const posthog = usePostHog();
   const { isSignedIn, isLoading: authLoading } = useIsSignedIn();
@@ -60,6 +62,9 @@ export default function ClaimListingBanner({
     initialPhoneClaimBlockReason
   );
   const [pendingClaim, setPendingClaim] = useState(initialPendingClaim);
+  const [searchPositionIncentive, setSearchPositionIncentive] = useState(
+    initialSearchPositionIncentive
+  );
 
   useEffect(() => {
     let active = true;
@@ -88,6 +93,7 @@ export default function ClaimListingBanner({
           setPhoneClaimEligible(Boolean(business.phone_claim_eligible));
           setPhoneClaimBlockReason(business.phone_claim_block_reason ?? null);
           setPendingClaim(business.pending_claim ?? null);
+          setSearchPositionIncentive(business.search_position_incentive ?? null);
         } else if (ownedBusiness) {
           setIsClaimed(true);
         }
@@ -101,6 +107,7 @@ export default function ClaimListingBanner({
         setPhoneClaimEligible(initialPhoneClaimEligible);
         setPhoneClaimBlockReason(initialPhoneClaimBlockReason);
         setPendingClaim(initialPendingClaim);
+        setSearchPositionIncentive(initialSearchPositionIncentive);
       } finally {
         if (active) setMetaReady(true);
       }
@@ -126,6 +133,7 @@ export default function ClaimListingBanner({
     initialPendingClaim,
     initialPhoneClaimBlockReason,
     initialPhoneClaimEligible,
+    initialSearchPositionIncentive,
     isSignedIn,
   ]);
 
@@ -160,6 +168,9 @@ export default function ClaimListingBanner({
 
   const eligible =
     initiallyEligible && metaReady && !pendingClaim && claimable;
+  const incentiveCopy = formatSearchPositionIncentiveCopy(
+    searchPositionIncentive
+  );
 
   if (isOwner) return null;
   if (ownerLoading && !initialIsClaimed) return null;
@@ -198,9 +209,14 @@ export default function ClaimListingBanner({
             <p className="font-heading font-semibold text-foreground">
               Own this business?
             </p>
-            <p className="mt-0.5 text-sm text-muted-foreground max-w-sm">
-              Claim your free listing to update info, add shop photos, receive
-              Quick Contact inquiries, and show customers you&apos;re verified.
+            <p
+              className={cn(
+                "mt-0.5 text-sm text-muted-foreground",
+                incentiveCopy ? "max-w-xl" : "max-w-sm"
+              )}
+            >
+              {incentiveCopy ??
+                "Claim your free listing to update info, add shop photos, receive Quick Contact inquiries, and show customers you're verified."}
             </p>
           </div>
         </div>

@@ -28,6 +28,10 @@ import {
   dateKeyOffset,
   dateKeyStartIso,
 } from "../lib/businessStatsDate.js";
+import {
+  SEARCH_POSITION_INCENTIVE_DAYS,
+  qualifySearchPositionIncentive,
+} from "../lib/searchPositionIncentive.js";
 import { selectPublicGalleryImages, applyPublicCoverImage } from "../lib/businessImages.js";
 import {
   BUSINESS_NOT_FOUND_ERROR,
@@ -353,7 +357,9 @@ export const getBusinessPhoneStatus = async (business_id) => {
 
   const { data, error } = await supabase
     .from("businesses")
-    .select("phone, phone_status")
+    .select(
+      "phone, phone_status, phone_line_type, phone_carrier, phone_line_type_checked_at"
+    )
     .eq("id", business_id)
     .maybeSingle();
 
@@ -369,6 +375,9 @@ export const getBusinessPhoneStatus = async (business_id) => {
     data: {
       phone: data.phone ?? null,
       phone_status: data.phone_status ?? null,
+      phone_line_type: data.phone_line_type ?? null,
+      phone_carrier: data.phone_carrier ?? null,
+      phone_line_type_checked_at: data.phone_line_type_checked_at ?? null,
     },
     error: null,
   };
@@ -1419,12 +1428,12 @@ export const getListingReports = async (page, limit, status = null) => {
 };
 
 const ADMIN_BUSINESS_SELECT =
-  "id, title, slug, email, phone, address, website, is_claimed, is_featured, is_test, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
+  "id, title, slug, email, phone, phone_status, phone_line_type, phone_carrier, phone_line_type_checked_at, address, website, is_claimed, is_featured, is_test, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
-const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, phone_status, phone_status_marked_at, cdn_stored, cdn_stored_attempts, hide_default_image, default_image_sort_order, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at, sort_order)`;
+const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, phone_status, phone_status_marked_at, phone_line_type, phone_carrier, phone_line_type_checked_at, cdn_stored, cdn_stored_attempts, hide_default_image, default_image_sort_order, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at, sort_order)`;
 
 const ADMIN_BUSINESS_EXPORT_SELECT =
-  "id, title, slug, email, phone, address, website, is_claimed, is_featured, total_score, reviews_count, last_edited_at, created_at, place_id, description, latitude, longitude, email_status, phone_status, city:cities(name, slug), state:states(name, code), postal_code:postal_codes(code), primary_category:primary_categories(name, slug)";
+  "id, title, slug, email, phone, address, website, is_claimed, is_featured, total_score, reviews_count, last_edited_at, created_at, place_id, description, latitude, longitude, email_status, phone_status, phone_line_type, phone_carrier, city:cities(name, slug), state:states(name, code), postal_code:postal_codes(code), primary_category:primary_categories(name, slug)";
 
 const ADMIN_BUSINESS_EXPORT_PAGE_SIZE = 1000;
 
@@ -1510,6 +1519,35 @@ function recentlyEditedSinceIso(days = ADMIN_RECENTLY_EDITED_DAYS) {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 }
 
+function applyAdminPhoneFilters(
+  query,
+  { phoneFilter = null, phoneStatus = null, phoneLineType = null } = {}
+) {
+  let next = query;
+
+  if (phoneFilter === "has") {
+    next = next.not("phone", "is", null).neq("phone", "");
+  } else if (phoneFilter === "none") {
+    next = next.or("phone.is.null,phone.eq.");
+  }
+
+  if (phoneStatus) {
+    next = next.eq("phone_status", phoneStatus);
+  }
+
+  if (phoneLineType === "unchecked") {
+    next = next.is("phone_line_type_checked_at", null);
+  } else if (phoneLineType === "empty") {
+    next = next
+      .not("phone_line_type_checked_at", "is", null)
+      .is("phone_line_type", null);
+  } else if (phoneLineType) {
+    next = next.eq("phone_line_type", phoneLineType);
+  }
+
+  return next;
+}
+
 export const getAdminBusinesses = async (
   page,
   limit,
@@ -1525,6 +1563,9 @@ export const getAdminBusinesses = async (
     reviewsTier = null,
     emailFilter = null,
     websiteFilter = null,
+    phoneFilter = null,
+    phoneStatus = null,
+    phoneLineType = null,
   } = {}
 ) => {
   let location = null;
@@ -1672,6 +1713,12 @@ export const getAdminBusinesses = async (
     query = query.or("website.is.null,website.eq.");
   }
 
+  query = applyAdminPhoneFilters(query, {
+    phoneFilter,
+    phoneStatus,
+    phoneLineType,
+  });
+
   const sanitized = sanitizeAdminBusinessSearch(q);
   if (sanitized) {
     query = query.or(
@@ -1720,6 +1767,9 @@ export const exportAdminBusinesses = async ({
   reviewsTier = null,
   emailFilter = null,
   websiteFilter = null,
+  phoneFilter = null,
+  phoneStatus = null,
+  phoneLineType = null,
 } = {}) => {
   let location = null;
 
@@ -1830,6 +1880,12 @@ export const exportAdminBusinesses = async ({
     } else if (websiteFilter === "none") {
       next = next.or("website.is.null,website.eq.");
     }
+
+    next = applyAdminPhoneFilters(next, {
+      phoneFilter,
+      phoneStatus,
+      phoneLineType,
+    });
 
     const sanitized = sanitizeAdminBusinessSearch(q);
     if (sanitized) {
@@ -2243,6 +2299,9 @@ export const clearBusinessPhones = async (ids) => {
       phone: null,
       phone_status: "unable_to_find",
       phone_status_marked_at: new Date().toISOString(),
+      phone_line_type: null,
+      phone_carrier: null,
+      phone_line_type_checked_at: null,
     })
     .in("id", ids)
     .not("phone", "is", null)
@@ -2324,6 +2383,90 @@ export const updateBusinessesEmailStatus = async (ids, emailStatus) => {
     .select("id, slug, email_status, email_status_marked_at");
 
   return { data, error };
+};
+
+export const getBusinessPhoneSnapshot = async (id) => {
+  if (!id) return { data: null, error: null };
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, slug, phone")
+    .eq("id", id)
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const saveBusinessPhoneLineTypes = async (
+  ids,
+  { lineType = null, carrier = null } = {}
+) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({
+      phone_line_type: lineType ?? null,
+      phone_carrier: carrier ?? null,
+      phone_line_type_checked_at: new Date().toISOString(),
+    })
+    .in("id", ids)
+    .select(
+      "id, slug, phone, phone_line_type, phone_carrier, phone_line_type_checked_at"
+    );
+
+  return { data, error };
+};
+
+export const clearBusinessPhoneLineTypes = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({
+      phone_line_type: null,
+      phone_carrier: null,
+      phone_line_type_checked_at: null,
+    })
+    .in("id", ids)
+    .select("id, slug, phone_line_type, phone_carrier, phone_line_type_checked_at");
+
+  return { data, error };
+};
+
+export const listUncheckedPhoneLineTypeBusinesses = async (limit = 25) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, phone")
+    .not("phone", "is", null)
+    .neq("phone", "")
+    .is("phone_line_type_checked_at", null)
+    .order("id", { ascending: true })
+    .limit(limit);
+
+  return { data: data ?? [], error };
+};
+
+export const countUncheckedPhoneLineTypeBusinesses = async () => {
+  const { count, error } = await supabase
+    .from("businesses")
+    .select("id", { count: "exact", head: true })
+    .not("phone", "is", null)
+    .neq("phone", "")
+    .is("phone_line_type_checked_at", null);
+
+  return { count: count ?? 0, error };
+};
+
+export const listPhoneLineTypeJobBusinesses = async (ids) => {
+  if (!ids?.length) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, phone, phone_line_type_checked_at")
+    .in("id", ids);
+
+  return { data: data ?? [], error };
 };
 
 /**
@@ -4863,6 +5006,36 @@ function avgPosition(sum, count) {
   if (!count) return null;
   return Math.round((sum / count) * 10) / 10;
 }
+
+/**
+ * Claim-banner incentive from search impressions only.
+ * Null when the listing is on the first page or the sample is too small.
+ */
+export const getSearchPositionIncentive = async (businessId) => {
+  if (!businessId) return { data: null, error: null };
+
+  const today = businessStatDateKey();
+  const startDate = dateKeyOffset(today, -(SEARCH_POSITION_INCENTIVE_DAYS - 1));
+  const { data, error } = await supabase
+    .from("business_stats")
+    .select("impressions_search, search_position_sum")
+    .eq("business_id", businessId)
+    .gte("stat_date", startDate);
+
+  if (error) return { data: null, error };
+
+  let impressions = 0;
+  let positionSum = 0;
+  for (const row of data ?? []) {
+    impressions += Number(row.impressions_search) || 0;
+    positionSum += Number(row.search_position_sum) || 0;
+  }
+
+  return {
+    data: qualifySearchPositionIncentive(impressions, positionSum),
+    error: null,
+  };
+};
 
 function clickThroughRate(clicks, impressions) {
   if (!impressions) return null;

@@ -52,6 +52,9 @@ function buildExportBody({
   if (filters?.reviewsTier) body.reviews_tier = filters.reviewsTier;
   if (filters?.emailFilter) body.email_filter = filters.emailFilter;
   if (filters?.websiteFilter) body.website_filter = filters.websiteFilter;
+  if (filters?.phoneFilter) body.phone_filter = filters.phoneFilter;
+  if (filters?.phoneStatus) body.phone_status = filters.phoneStatus;
+  if (filters?.phoneLineType) body.phone_line_type = filters.phoneLineType;
   if (includeStats) body.stats_range = statsRange;
 
   return body;
@@ -86,6 +89,9 @@ export default function BusinessExportDialog({
         recent: filters.recent === true,
         websiteFilter: filters.websiteFilter ?? null,
         emailFilter: filters.emailFilter ?? null,
+        phoneFilter: filters.phoneFilter ?? null,
+        phoneStatus: filters.phoneStatus ?? null,
+        phoneLineType: filters.phoneLineType ?? null,
         scoreTier: filters.scoreTier ?? null,
         reviewsTier: filters.reviewsTier ?? null,
         stateCode: filters.stateCode ?? null,

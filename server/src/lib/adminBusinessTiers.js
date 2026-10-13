@@ -24,10 +24,42 @@ export const WEBSITE_FILTERS = [
   { id: "none", label: "No website" },
 ];
 
+export const PHONE_FILTERS = [
+  { id: "has", label: "Has phone" },
+  { id: "none", label: "No phone" },
+];
+
+export const PHONE_STATUS_FILTERS = [
+  { id: "not_checked", label: "Not checked" },
+  { id: "checked", label: "Checked" },
+  { id: "suspicious", label: "Suspicious" },
+  { id: "unable_to_find", label: "Unable to find" },
+];
+
+export const PHONE_LINE_TYPE_FILTERS = [
+  { id: "unchecked", label: "Not checked" },
+  { id: "empty", label: "Checked, no type" },
+  { id: "landline", label: "Landline" },
+  { id: "mobile", label: "Mobile" },
+  { id: "fixedVoip", label: "Fixed VoIP" },
+  { id: "nonFixedVoip", label: "Non-fixed VoIP" },
+  { id: "tollFree", label: "Toll-free" },
+  { id: "personal", label: "Personal" },
+  { id: "unknown", label: "Unknown" },
+  { id: "premium", label: "Premium" },
+  { id: "sharedCost", label: "Shared cost" },
+  { id: "uan", label: "UAN" },
+  { id: "voicemail", label: "Voicemail" },
+  { id: "pager", label: "Pager" },
+];
+
 export const SCORE_TIER_IDS = SCORE_TIERS.map((t) => t.id);
 export const REVIEW_TIER_IDS = REVIEW_TIERS.map((t) => t.id);
 export const EMAIL_FILTER_IDS = EMAIL_FILTERS.map((t) => t.id);
 export const WEBSITE_FILTER_IDS = WEBSITE_FILTERS.map((t) => t.id);
+export const PHONE_FILTER_IDS = PHONE_FILTERS.map((t) => t.id);
+export const PHONE_STATUS_FILTER_IDS = PHONE_STATUS_FILTERS.map((t) => t.id);
+export const PHONE_LINE_TYPE_FILTER_IDS = PHONE_LINE_TYPE_FILTERS.map((t) => t.id);
 
 export function getScoreTier(id) {
   return SCORE_TIERS.find((t) => t.id === id) ?? null;

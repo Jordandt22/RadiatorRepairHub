@@ -41,6 +41,9 @@ import {
   getBusinessEmailStatus,
   getBusinessPhoneStatus,
   getBusinessClaimFlags,
+  getSearchPositionIncentive,
+  saveBusinessPhoneLineTypes,
+  clearBusinessPhoneLineTypes,
   insertClaimRequest,
   getPendingClaimRequest,
   updateClaimRequestStatus,
@@ -147,6 +150,7 @@ import {
 import { CALL_WINDOW_LABEL } from "../lib/claimCallWindow.js";
 import { PHONE_CLAIM_CONSENT_VERSION } from "../lib/claimConsent.js";
 import { isCallableLineType, lookupPhoneLineType } from "../twilio/lookup.js";
+import { logger } from "../lib/logger.js";
 import {
   checkVoiceVerification,
   startVoiceVerification,
@@ -583,6 +587,25 @@ const startPhoneClaim = async (req, res, business) => {
           lookup.error?.message ??
             "Phone verification is unavailable right now.",
           lookup.error?.cause
+        )
+      );
+  }
+
+  const { error: lineTypeError } = await saveBusinessPhoneLineTypes(
+    [business.id],
+    {
+      lineType: lookup.data.lineType,
+      carrier: lookup.data.carrier,
+    }
+  );
+  if (lineTypeError) {
+    return res
+      .status(500)
+      .json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error saving the phone line type.",
+          lineTypeError
         )
       );
   }
@@ -2108,6 +2131,7 @@ export const updateBusinessContact = async (req, res) => {
   const phoneChanged = phoneDigits(normalizedPhone) !== phoneDigits(existingPhone);
   const emailChanged = (normalizedEmail || null) !== (existingEmail || null);
   const websiteChanged = (normalizedWebsite || null) !== (existingWebsite || null);
+  let phoneLineLookup = null;
 
   if (phoneChanged) {
     const phoneE164 = normalizeClaimPhone(normalizedPhone);
@@ -2139,6 +2163,20 @@ export const updateBusinessContact = async (req, res) => {
         customErrorHandler(YUP_ERROR, {
           phone: "Please enter a valid phone number.",
         })
+      );
+    }
+
+    phoneLineLookup = lookup.data;
+    const { error: clearLineTypeError } = await clearBusinessPhoneLineTypes([
+      businessId,
+    ]);
+    if (clearLineTypeError) {
+      return res.status(500).json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error saving the phone line type.",
+          clearLineTypeError
+        )
       );
     }
   }
@@ -2217,6 +2255,25 @@ export const updateBusinessContact = async (req, res) => {
           updateError
         )
       );
+  }
+
+  if (phoneLineLookup) {
+    const { error: lineTypeError } = await saveBusinessPhoneLineTypes(
+      [businessId],
+      {
+        lineType: phoneLineLookup.lineType,
+        carrier: phoneLineLookup.carrier,
+      }
+    );
+    if (lineTypeError) {
+      return res.status(500).json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "There was an error saving the phone line type.",
+          lineTypeError
+        )
+      );
+    }
   }
 
   const { data: business } = await getBusinessById(businessId);
@@ -2876,6 +2933,9 @@ export const getBusiness = async (req, res) => {
   let emailStatus = business?.email_status ?? null;
   let phone = business?.phone ?? null;
   let phoneStatus = business?.phone_status ?? null;
+  let phoneLineType = business?.phone_line_type ?? null;
+  let phoneCarrier = business?.phone_carrier ?? null;
+  let phoneLineTypeCheckedAt = business?.phone_line_type_checked_at ?? null;
   let isClaimed = Boolean(business?.is_claimed);
   let isFeatured = Boolean(business?.is_featured);
   let ownerUid = business?.owner_uid ?? null;
@@ -2897,6 +2957,9 @@ export const getBusiness = async (req, res) => {
       if (livePhone.phone_status != null) {
         phoneStatus = livePhone.phone_status;
       }
+      phoneLineType = livePhone.phone_line_type ?? null;
+      phoneCarrier = livePhone.phone_carrier ?? null;
+      phoneLineTypeCheckedAt = livePhone.phone_line_type_checked_at ?? null;
     }
 
     // Always refresh claim/Featured flags so stale Redis cannot keep Verified.
@@ -2954,6 +3017,20 @@ export const getBusiness = async (req, res) => {
         isPhoneUnderReview: isPhoneUnderReview(phoneStatus),
       });
 
+  let searchPositionIncentive = null;
+  if (!isClaimed && business?.id) {
+    const { data: incentive, error: incentiveError } =
+      await getSearchPositionIncentive(business.id);
+    if (incentiveError) {
+      logger.warn(
+        { err: incentiveError, businessId: business.id },
+        "Unable to load search position incentive"
+      );
+    } else {
+      searchPositionIncentive = incentive;
+    }
+  }
+
   let pendingClaim = null;
   if (!isClaimed && business?.id) {
     const { data: pending, error: pendingError } = await getPendingClaimRequest(
@@ -2999,6 +3076,10 @@ export const getBusiness = async (req, res) => {
       last_edited_at: lastEditedAt,
       email_status: emailStatus,
       phone_status: phoneStatus,
+      phone_line_type: phoneLineType,
+      phone_carrier: phoneCarrier,
+      phone_line_type_checked_at: phoneLineTypeCheckedAt,
+      search_position_incentive: searchPositionIncentive,
       is_claimed: isClaimed,
       is_featured: isFeatured,
       owner_uid: ownerUid,

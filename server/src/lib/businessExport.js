@@ -38,6 +38,8 @@ export const BUSINESS_EXPORT_FIELD_IDS = Object.freeze([
   "lng",
   "email_status",
   "phone_status",
+  "phone_line_type",
+  "phone_carrier",
   "created_at",
   "last_edited_at",
   "impressions",
@@ -91,6 +93,8 @@ const FIELD_HEADERS = Object.freeze({
   lng: "Longitude",
   email_status: "Email status",
   phone_status: "Phone status",
+  phone_line_type: "Phone line type",
+  phone_carrier: "Phone carrier",
   created_at: "Created at",
   last_edited_at: "Last edited at",
   impressions: "Impressions",
@@ -198,6 +202,10 @@ function getFieldValue(fieldId, business, statsById) {
       return business.email_status ?? "";
     case "phone_status":
       return business.phone_status ?? "";
+    case "phone_line_type":
+      return business.phone_line_type ?? "";
+    case "phone_carrier":
+      return business.phone_carrier ?? "";
     case "created_at":
       return business.created_at ?? "";
     case "last_edited_at":

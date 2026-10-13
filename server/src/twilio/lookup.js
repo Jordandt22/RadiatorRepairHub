@@ -51,6 +51,8 @@ export async function lookupPhoneLineType(phoneE164) {
       error: {
         type: "api",
         status: error?.status ?? null,
+        code: error?.code ?? null,
+        retryAfterSeconds: readRetryAfterSeconds(error),
         message: "Unable to verify this phone number right now.",
         cause: error,
       },
@@ -70,6 +72,17 @@ export async function lookupPhoneLineType(phoneE164) {
   }
 
   return { ok: true, data: result, cached: false };
+}
+
+function readRetryAfterSeconds(error) {
+  const headers = error?.headers ?? error?.response?.headers ?? null;
+  if (!headers) return null;
+  const raw =
+    typeof headers.get === "function"
+      ? headers.get("retry-after")
+      : (headers["retry-after"] ?? headers["Retry-After"]);
+  const seconds = Number(raw);
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
 }
 
 /** True when Lookup says this line can receive an automated claim call. */

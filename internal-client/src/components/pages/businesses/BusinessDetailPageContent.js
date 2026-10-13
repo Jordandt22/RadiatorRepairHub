@@ -52,6 +52,7 @@ export default function BusinessDetailPageContent() {
   const [categoriesError, setCategoriesError] = useState(null);
   const [markStatusError, setMarkStatusError] = useState(null);
   const [markPhoneStatusError, setMarkPhoneStatusError] = useState(null);
+  const [checkLineTypeError, setCheckLineTypeError] = useState(null);
   const activeTab = resolveBusinessDetailTab(searchParams.get("tab"));
 
   useEffect(() => {
@@ -228,6 +229,37 @@ export default function BusinessDetailPageContent() {
     },
   });
 
+  const checkLineTypeMutation = useMutation({
+    mutationFn: async () => {
+      const result = await fetchApi("/admin/businesses/phone-line-type", {
+        method: "POST",
+        accessToken,
+        body: JSON.stringify({ business_id: id }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to check line type");
+      }
+
+      return result.data;
+    },
+    onMutate: () => {
+      setCheckLineTypeError(null);
+    },
+    onSuccess: async () => {
+      setCheckLineTypeError(null);
+      await queryClient.invalidateQueries({ queryKey: ["admin-business", id] });
+    },
+    onError: (err) => {
+      setCheckLineTypeError(err.message || "Failed to check line type");
+    },
+  });
+
   if (!isReady || !accessToken) {
     return null;
   }
@@ -348,6 +380,9 @@ export default function BusinessDetailPageContent() {
           onMarkStatus={(phoneStatus) =>
             markPhoneStatusMutation.mutateAsync(phoneStatus)
           }
+          checkLineTypePending={checkLineTypeMutation.isPending}
+          checkLineTypeError={checkLineTypeError}
+          onCheckLineType={() => checkLineTypeMutation.mutate()}
         />
       ) : null}
 

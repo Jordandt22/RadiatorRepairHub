@@ -25,6 +25,7 @@ import {
   MailXIcon,
   PhoneOffIcon,
   PhoneIcon,
+  SmartphoneIcon,
   MailSearchIcon,
   UsersIcon,
   FlaskConicalIcon,
@@ -106,6 +107,11 @@ const data = {
           icon: <GlobeIcon />,
         },
         {
+          title: "Phone Numbers",
+          url: "/phone-numbers?tab=businesses",
+          icon: <SmartphoneIcon />,
+        },
+        {
           title: "Locations",
           url: "/locations?tab=states",
           icon: <MapPinIcon />,
@@ -162,6 +168,11 @@ const data = {
       title: "Phone Cleaner",
       url: "/phone-cleaner?tab=cleaner",
       icon: <PhoneOffIcon />,
+    },
+    {
+      title: "Line Type",
+      url: "/phone-line-type",
+      icon: <SmartphoneIcon />,
     },
     {
       title: "Email Cleaner",

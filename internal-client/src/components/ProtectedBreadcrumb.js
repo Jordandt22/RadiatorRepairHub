@@ -30,8 +30,10 @@ const SEGMENT_LABELS = {
   outreach: "Outreach",
   "email-cleaner": "Email Cleaner",
   "phone-cleaner": "Phone Cleaner",
+  "phone-line-type": "Line Type",
   "email-scrape": "Email Scrape",
   websites: "Websites",
+  "phone-numbers": "Phone Numbers",
   users: "Users",
   testing: "Testing",
   "affiliate-programs": "Affiliate Programs",
@@ -59,7 +61,9 @@ const SEGMENT_HREF = {
   batch: "/add-businesses?tab=groups",
   "upload-photos": "/upload-photos?tab=jobs",
   "email-scrape": "/email-scrape?tab=jobs",
+  "phone-line-type": "/phone-line-type",
   websites: "/websites?tab=businesses",
+  "phone-numbers": "/phone-numbers?tab=businesses",
   users: "/users",
   "claim-requests": "/claim-requests?tab=pending",
   testing: "/testing?tab=businesses",
@@ -96,6 +100,9 @@ function formatSegment(segment, index, segments) {
   }
   if (index === 2 && parent === "upload-photos" && segments[1] === "batch") {
     return "Details";
+  }
+  if (index === 1 && parent === "phone-line-type") {
+    return "Job";
   }
   if (index === 1 && parent === "email-scrape") {
     if (segment === "batch") return "Batch";
