@@ -56,6 +56,8 @@ function buildExportBody({
   if (filters?.phoneFilter) body.phone_filter = filters.phoneFilter;
   if (filters?.phoneStatus) body.phone_status = filters.phoneStatus;
   if (filters?.phoneLineType) body.phone_line_type = filters.phoneLineType;
+  if (filters?.phoneReach) body.phone_reach = filters.phoneReach;
+  if (filters?.claimFilter) body.claim_filter = filters.claimFilter;
   if (includeStats) body.stats_range = statsRange;
 
   return body;
@@ -94,6 +96,8 @@ export default function BusinessExportDialog({
         phoneFilter: filters.phoneFilter ?? null,
         phoneStatus: filters.phoneStatus ?? null,
         phoneLineType: filters.phoneLineType ?? null,
+        phoneReach: filters.phoneReach ?? null,
+        claimFilter: filters.claimFilter ?? null,
         scoreTier: filters.scoreTier ?? null,
         reviewsTier: filters.reviewsTier ?? null,
         stateCode: filters.stateCode ?? null,

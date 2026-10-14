@@ -109,6 +109,8 @@ export function buildBusinessExportFilename({
   phoneFilter = null,
   phoneStatus = null,
   phoneLineType = null,
+  phoneReach = null,
+  claimFilter = null,
   scoreTier = null,
   reviewsTier = null,
   stateCode = null,
@@ -139,6 +141,10 @@ export function buildBusinessExportFilename({
   else if (phoneFilter === "has") parts.push("has-phone");
   if (phoneStatus) parts.push(`phone-${slugifyFilenamePart(phoneStatus)}`);
   if (phoneLineType) parts.push(`line-${slugifyFilenamePart(phoneLineType)}`);
+  if (phoneReach === "call_only") parts.push("call-only");
+  else if (phoneReach === "both") parts.push("both");
+  if (claimFilter === "claimed" && !claimed) parts.push("claimed");
+  else if (claimFilter === "unclaimed") parts.push("unclaimed");
 
   if (scoreTier) parts.push(`score-${slugifyFilenamePart(scoreTier)}`);
   if (reviewsTier) parts.push(`reviews-${slugifyFilenamePart(reviewsTier)}`);

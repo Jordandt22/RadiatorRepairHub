@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import { SCORE_TIER_IDS, REVIEW_TIER_IDS, EMAIL_FILTER_IDS, WEBSITE_FILTER_IDS, PHONE_FILTER_IDS, PHONE_STATUS_FILTER_IDS, PHONE_LINE_TYPE_FILTER_IDS } from "../lib/adminBusinessTiers.js";
+import { SCORE_TIER_IDS, REVIEW_TIER_IDS, EMAIL_FILTER_IDS, WEBSITE_FILTER_IDS, PHONE_FILTER_IDS, PHONE_STATUS_FILTER_IDS, PHONE_LINE_TYPE_FILTER_IDS, PHONE_REACH_FILTER_IDS, CLAIM_FILTER_IDS } from "../lib/adminBusinessTiers.js";
 import { normalizeWebsiteUrl } from "../lib/websiteReachability.js";
 import { getPasswordStrengthError } from "../lib/password.js";
 import {
@@ -460,6 +460,24 @@ export const GetAdminBusinessesQuerySchema = Yup.object({
     .nullable()
     .oneOf([...PHONE_LINE_TYPE_FILTER_IDS, null], "Invalid phone line type")
     .optional(),
+  phone_reach: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...PHONE_REACH_FILTER_IDS, null], "Invalid phone reach")
+    .optional(),
+  claim_filter: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...CLAIM_FILTER_IDS, null], "Invalid claim filter")
+    .optional(),
 });
 
 const optionalAdminBoolBody = Yup.boolean()
@@ -571,6 +589,24 @@ export const ExportAdminBusinessesSchema = Yup.object({
     })
     .nullable()
     .oneOf([...PHONE_LINE_TYPE_FILTER_IDS, null], "Invalid phone line type")
+    .optional(),
+  phone_reach: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...PHONE_REACH_FILTER_IDS, null], "Invalid phone reach")
+    .optional(),
+  claim_filter: Yup.string()
+    .transform((value) => {
+      if (value == null) return null;
+      const trimmed = String(value).trim();
+      return trimmed === "" ? null : trimmed;
+    })
+    .nullable()
+    .oneOf([...CLAIM_FILTER_IDS, null], "Invalid claim filter")
     .optional(),
   fields: Yup.array()
     .of(

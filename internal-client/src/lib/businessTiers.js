@@ -24,6 +24,16 @@ export const WEBSITE_FILTERS = [
   { id: "none", label: "No website" },
 ];
 
+export const CLAIM_FILTERS = [
+  { id: "claimed", label: "Claimed" },
+  { id: "unclaimed", label: "Unclaimed" },
+];
+
+export const PHONE_REACH_FILTERS = [
+  { id: "call_only", label: "Call Only" },
+  { id: "both", label: "Both" },
+];
+
 export const PHONE_FILTERS = [
   { id: "has", label: "Has phone" },
   { id: "none", label: "No phone" },

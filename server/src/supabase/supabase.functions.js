@@ -9,6 +9,7 @@ import {
 import {
   getScoreTier,
   getReviewTier,
+  PHONE_REACH_LINE_TYPES,
   SCORE_TIERS,
   REVIEW_TIERS,
 } from "../lib/adminBusinessTiers.js";
@@ -1532,7 +1533,12 @@ function recentlyEditedSinceIso(days = ADMIN_RECENTLY_EDITED_DAYS) {
 
 function applyAdminPhoneFilters(
   query,
-  { phoneFilter = null, phoneStatus = null, phoneLineType = null } = {}
+  {
+    phoneFilter = null,
+    phoneStatus = null,
+    phoneLineType = null,
+    phoneReach = null,
+  } = {}
 ) {
   let next = query;
 
@@ -1546,6 +1552,11 @@ function applyAdminPhoneFilters(
     next = next.eq("phone_status", phoneStatus);
   }
 
+  const reachTypes = PHONE_REACH_LINE_TYPES[phoneReach];
+  if (reachTypes?.length) {
+    next = next.in("phone_line_type", reachTypes);
+  }
+
   if (phoneLineType === "unchecked") {
     next = next.is("phone_line_type_checked_at", null);
   } else if (phoneLineType === "empty") {
@@ -1557,6 +1568,16 @@ function applyAdminPhoneFilters(
   }
 
   return next;
+}
+
+function applyAdminClaimFilter(query, claimFilter) {
+  if (claimFilter === "claimed") {
+    return query.eq("is_claimed", true);
+  }
+  if (claimFilter === "unclaimed") {
+    return query.or("is_claimed.eq.false,is_claimed.is.null");
+  }
+  return query;
 }
 
 export const getAdminBusinesses = async (
@@ -1578,6 +1599,8 @@ export const getAdminBusinesses = async (
     phoneFilter = null,
     phoneStatus = null,
     phoneLineType = null,
+    phoneReach = null,
+    claimFilter = null,
   } = {}
 ) => {
   let location = null;
@@ -1689,6 +1712,8 @@ export const getAdminBusinesses = async (
       .order("reviews_count", { ascending: false });
   }
 
+  query = applyAdminClaimFilter(query, claimFilter);
+
   if (location?.type === "state") {
     query = query.eq("state_id", location.id);
   } else if (location?.type === "city") {
@@ -1733,6 +1758,7 @@ export const getAdminBusinesses = async (
     phoneFilter,
     phoneStatus,
     phoneLineType,
+    phoneReach,
   });
 
   const sanitized = sanitizeAdminBusinessSearch(q);
@@ -1790,6 +1816,8 @@ export const exportAdminBusinesses = async ({
   phoneFilter = null,
   phoneStatus = null,
   phoneLineType = null,
+  phoneReach = null,
+  claimFilter = null,
 } = {}) => {
   let location = null;
 
@@ -1865,6 +1893,8 @@ export const exportAdminBusinesses = async ({
         .order("reviews_count", { ascending: false });
     }
 
+    next = applyAdminClaimFilter(next, claimFilter);
+
     if (location?.type === "state") {
       next = next.eq("state_id", location.id);
     } else if (location?.type === "city") {
@@ -1909,6 +1939,7 @@ export const exportAdminBusinesses = async ({
       phoneFilter,
       phoneStatus,
       phoneLineType,
+      phoneReach,
     });
 
     const sanitized = sanitizeAdminBusinessSearch(q);

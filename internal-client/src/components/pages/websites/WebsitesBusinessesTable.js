@@ -14,6 +14,8 @@ import {
 import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
 import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
+import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
+import PhoneLineTypeBadge from "@/components/pages/businesses/PhoneLineTypeBadge";
 
 function websiteHref(website) {
   const trimmed = String(website || "").trim();
@@ -53,7 +55,7 @@ function WebsitesBusinessesEmptyState({ hasSearch = false }) {
         </p>
         <p className="text-sm text-muted-foreground">
           {hasSearch
-            ? "No businesses matched your search or website filter. Try different keywords."
+            ? "No businesses matched your search or filters. Try different keywords."
             : "Businesses will appear here once listings are available."}
         </p>
       </div>
@@ -67,10 +69,13 @@ function WebsitesBusinessesTableView({ businesses }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[32%]">Business</TableHead>
-            <TableHead className="w-[10%]">Score</TableHead>
-            <TableHead className="w-[10%] text-right">Reviews</TableHead>
-            <TableHead className="w-[36%]">Website</TableHead>
+            <TableHead className="w-[22%]">Business</TableHead>
+            <TableHead className="w-[8%]">Score</TableHead>
+            <TableHead className="w-[8%] text-right">Reviews</TableHead>
+            <TableHead className="w-[22%]">Website</TableHead>
+            <TableHead className="w-[14%]">Phone</TableHead>
+            <TableHead className="w-[14%]">Line type</TableHead>
+            <TableHead className="w-[12%]">Claimed</TableHead>
             <TableHead className="w-24 text-right">
               <span className="sr-only">Actions</span>
             </TableHead>
@@ -96,6 +101,15 @@ function WebsitesBusinessesTableView({ businesses }) {
               </TableCell>
               <TableCell className="max-w-0">
                 <WebsiteCell website={row.website} />
+              </TableCell>
+              <TableCell className="max-w-0 whitespace-nowrap">
+                <span className="block truncate text-sm">{row.phone || "—"}</span>
+              </TableCell>
+              <TableCell className="whitespace-nowrap">
+                <PhoneLineTypeBadge row={row} />
+              </TableCell>
+              <TableCell className="whitespace-nowrap">
+                <BusinessClaimedBadge isClaimed={Boolean(row.is_claimed)} />
               </TableCell>
               <TableCell className="whitespace-nowrap text-right">
                 <Button
@@ -136,8 +150,11 @@ function WebsitesBusinessesCardList({ businesses }) {
             <div className="flex flex-wrap items-center gap-2">
               <BusinessScoreBadge score={row.total_score} />
               <BusinessReviewsBadge count={row.reviews_count} />
+              <PhoneLineTypeBadge row={row} />
+              <BusinessClaimedBadge isClaimed={Boolean(row.is_claimed)} />
             </div>
             <WebsiteCell website={row.website} />
+            <p className="truncate text-sm">{row.phone || "—"}</p>
             <Button
               variant="outline"
               size="sm"

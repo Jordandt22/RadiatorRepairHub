@@ -14,7 +14,12 @@ import { debounce } from "@/lib/debounce";
 import { replaceTab, subscribeToDashboardTab } from "@/lib/dashboardTab";
 import { ensureQueryParam } from "@/lib/urlQueryState";
 import useUrlQueryState from "@/hooks/useUrlQueryState";
-import { WEBSITE_FILTERS } from "@/lib/businessTiers";
+import {
+  CLAIM_FILTERS,
+  PHONE_LINE_TYPE_FILTERS,
+  PHONE_REACH_FILTERS,
+  WEBSITE_FILTERS,
+} from "@/lib/businessTiers";
 import WebsitesFilterTabs, {
   VALID_TABS,
 } from "@/components/pages/websites/WebsitesFilterTabs";
@@ -45,6 +50,9 @@ export default function WebsitesPageContent() {
     q,
     page,
     website: websiteFilter,
+    claim: claimFilter,
+    reach: phoneReach,
+    lineType: phoneLineType,
     setField,
   } = useUrlQueryState(
     {
@@ -55,6 +63,21 @@ export default function WebsitesPageContent() {
         param: "website",
         options: WEBSITE_FILTERS,
       },
+      claim: {
+        type: "option",
+        param: "claim",
+        options: CLAIM_FILTERS,
+      },
+      reach: {
+        type: "option",
+        param: "reach",
+        options: PHONE_REACH_FILTERS,
+      },
+      lineType: {
+        type: "option",
+        param: "line_type",
+        options: PHONE_LINE_TYPE_FILTERS,
+      },
     },
     { pathname: "/websites" },
   );
@@ -64,6 +87,9 @@ export default function WebsitesPageContent() {
 
   const searchQuery = (q || "").trim();
   const websiteFilterId = websiteFilter?.id ?? null;
+  const claimFilterId = claimFilter?.id ?? null;
+  const phoneReachId = phoneReach?.id ?? null;
+  const phoneLineTypeId = phoneLineType?.id ?? null;
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -126,6 +152,9 @@ export default function WebsitesPageContent() {
       page,
       searchQuery,
       websiteFilterId,
+      claimFilterId,
+      phoneReachId,
+      phoneLineTypeId,
     ],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -137,6 +166,15 @@ export default function WebsitesPageContent() {
       }
       if (websiteFilterId) {
         params.set("website_filter", websiteFilterId);
+      }
+      if (claimFilterId) {
+        params.set("claim_filter", claimFilterId);
+      }
+      if (phoneReachId) {
+        params.set("phone_reach", phoneReachId);
+      }
+      if (phoneLineTypeId) {
+        params.set("phone_line_type", phoneLineTypeId);
       }
 
       const result = await fetchApi(
@@ -206,7 +244,13 @@ export default function WebsitesPageContent() {
 
   const totalPages = data?.totalPages ?? 0;
   const showInitialSkeleton = isLoading && !isPlaceholderData && !data;
-  const hasSearch = Boolean(searchQuery || websiteFilterId);
+  const hasSearch = Boolean(
+    searchQuery ||
+      websiteFilterId ||
+      claimFilterId ||
+      phoneReachId ||
+      phoneLineTypeId,
+  );
 
   return (
     <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-4 py-4 md:gap-4 md:px-8 md:py-6">
@@ -218,6 +262,12 @@ export default function WebsitesPageContent() {
           onSearchChange={handleSearchChange}
           websiteFilter={websiteFilter}
           onWebsiteFilterChange={handleWebsiteFilterChange}
+          claimFilter={claimFilter}
+          onClaimFilterChange={(value) => setField("claim", value)}
+          phoneReach={phoneReach}
+          onPhoneReachChange={(value) => setField("reach", value)}
+          phoneLineType={phoneLineType}
+          onPhoneLineTypeChange={(value) => setField("lineType", value)}
           onExportClick={() => setExportOpen(true)}
           onRefresh={() => refreshMutation.mutate()}
           refreshPending={refreshMutation.isPending || isFetching}
@@ -255,6 +305,9 @@ export default function WebsitesPageContent() {
         filters={{
           q: searchQuery || null,
           websiteFilter: websiteFilterId,
+          claimFilter: claimFilterId,
+          phoneReach: phoneReachId,
+          phoneLineType: phoneLineTypeId,
         }}
       />
     </div>

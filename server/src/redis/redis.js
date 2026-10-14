@@ -378,9 +378,11 @@ export const getAdminBusinessesKey = (
   recent = null,
   phoneFilter = null,
   phoneStatus = null,
-  phoneLineType = null
+  phoneLineType = null,
+  phoneReach = null,
+  claimFilter = null
 ) => ({
-  key: `ADMIN_BUSINESSES?V:13&PAGE:${page}&LIMIT:${limit}&CLAIMED:${
+  key: `ADMIN_BUSINESSES?V:15&PAGE:${page}&LIMIT:${limit}&CLAIMED:${
     claimed === true ? "true" : "all"
   }&FEATURED:${featured === true ? "true" : "all"}&PARTNERED:${
     partnered === true ? "true" : "all"
@@ -394,7 +396,7 @@ export const getAdminBusinessesKey = (
     websiteFilter ?? ""
   }&PHONE:${phoneFilter ?? ""}&PHONE_STATUS:${phoneStatus ?? ""}&LINE:${
     phoneLineType ?? ""
-  }`,
+  }&REACH:${phoneReach ?? ""}&CLAIM_FILTER:${claimFilter ?? ""}`,
   interval: 60 * 5,
 });
 
