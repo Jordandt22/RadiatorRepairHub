@@ -1,6 +1,7 @@
 export const EMAIL_SUPPRESSION_TYPES = Object.freeze({
   WEEKLY_DIGEST: "weekly_digest",
   BUSINESS_EMAIL: "business_email",
+  REVIEW_REQUEST: "review_request",
 });
 
 /** Types that block outreach + weekly digests (not Quick Contact). */

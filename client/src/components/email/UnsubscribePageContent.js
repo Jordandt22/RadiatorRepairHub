@@ -45,7 +45,9 @@ export default function UnsubscribePageContent() {
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-16">
       <h1 className="font-heading text-2xl font-bold text-foreground">
-        Unsubscribe from listing emails
+        {result?.type === "review_request"
+          ? "Unsubscribe from review emails"
+          : "Unsubscribe from listing emails"}
       </h1>
 
       {state === "loading" ? (
@@ -61,7 +63,20 @@ export default function UnsubscribePageContent() {
         </p>
       ) : null}
 
-      {state === "success" ? (
+      {state === "success" && result?.type === "review_request" ? (
+        <div className="mt-4 space-y-4 text-sm text-muted-foreground">
+          <p>
+            You won’t receive review emails for{" "}
+            <strong className="text-foreground">
+              {result?.businessName || "this shop"}
+            </strong>
+            {result?.email ? ` at ${result.email}` : ""}.
+          </p>
+          <p>Other shops can still email you a review link if you visit them.</p>
+        </div>
+      ) : null}
+
+      {state === "success" && result?.type !== "review_request" ? (
         <div className="mt-4 space-y-4 text-sm text-muted-foreground">
           <p>
             You won’t receive claim invites, follow-ups, or weekly reports for{" "}

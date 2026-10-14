@@ -36,6 +36,11 @@ import {
 } from "../controllers/businesses.controller.js";
 import { serverErrorCatcherWrapper } from "../helpers/wrappers.js";
 import {
+  listReviewRequestsHandler,
+  saveReviewMessageTemplateHandler,
+  sendReviewRequestHandler,
+} from "../controllers/reviewRequests.controller.js";
+import {
   BusinessSlugSchema,
   SearchBusinessesSchema,
   ClaimBusinessSchema,
@@ -48,6 +53,9 @@ import {
   UnclaimOwnedBusinessSchema,
   OwnedBusinessIdParamsSchema,
   OwnedBusinessStatsQuerySchema,
+  SaveReviewMessageTemplateSchema,
+  ListReviewRequestsQuerySchema,
+  SendReviewRequestSchema,
   UpdateBusinessCategoriesSchema,
   UpdateBusinessAmenitiesSchema,
   UpdateBusinessAboutSchema,
@@ -128,6 +136,30 @@ businessesRouter.get(
   paramsValidator(OwnedBusinessIdParamsSchema),
   queryValidator(OwnedBusinessStatsQuerySchema),
   serverErrorCatcherWrapper(getOwnedBusinessStatsHandler)
+);
+
+businessesRouter.get(
+  "/owned/:businessId/review-requests",
+  authUser,
+  paramsValidator(OwnedBusinessIdParamsSchema),
+  queryValidator(ListReviewRequestsQuerySchema),
+  serverErrorCatcherWrapper(listReviewRequestsHandler)
+);
+
+businessesRouter.put(
+  "/owned/:businessId/review-message",
+  authUser,
+  paramsValidator(OwnedBusinessIdParamsSchema),
+  bodyValidator(SaveReviewMessageTemplateSchema),
+  serverErrorCatcherWrapper(saveReviewMessageTemplateHandler)
+);
+
+businessesRouter.post(
+  "/owned/:businessId/review-requests",
+  authUser,
+  paramsValidator(OwnedBusinessIdParamsSchema),
+  bodyValidator(SendReviewRequestSchema),
+  serverErrorCatcherWrapper(sendReviewRequestHandler)
 );
 
 businessesRouter.get(

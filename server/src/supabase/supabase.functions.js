@@ -4947,7 +4947,7 @@ export const getOwnedBusiness = async (businessId, ownerUid, accessToken) => {
   const { data, error } = await client
     .from("businesses")
     .select(
-      "id, owner_uid, title, slug, phone, email, website, description, image_url, hide_default_image, default_image_sort_order, notification_email, weekly_digest_enabled, last_edited_at, is_claimed, is_featured, is_partner"
+      "id, owner_uid, title, slug, phone, email, website, description, image_url, hide_default_image, default_image_sort_order, notification_email, weekly_digest_enabled, last_edited_at, is_claimed, is_featured, is_partner, place_id, timezone, review_message_template"
     )
     .eq("id", businessId)
     .eq("owner_uid", ownerUid)

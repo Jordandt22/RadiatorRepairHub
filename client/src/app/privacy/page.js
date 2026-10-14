@@ -25,7 +25,7 @@ function PrivacyPage() {
     day: "numeric",
     year: "numeric",
   });
-  const lastUpdated = new Date(2026, 9, 13).toLocaleDateString("en-US", {
+  const lastUpdated = new Date(2026, 9, 14).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -72,6 +72,10 @@ function PrivacyPage() {
           description:"We may email a weekly activity report summarizing the last 7 days of listing stats. Unclaimed listings with recent activity may receive impressions, page views, a note when someone clicked the phone button (without an exact count), and a claim offer, sent to the listing contact email when one is on file. Claimed owners receive dashboard-tier stats (basic for claimed; full metrics for Featured, including exact phone and other contact-click counts when applicable). For claimed listings we send to an optional notification email if set, otherwise the account email, otherwise the listing contact email. Claimed owners can set or clear a notification email, turn weekly reports off, or turn them back on in account Settings → Notifications. Weekly reports and claim-related listing emails (invites and follow-ups) include an unsubscribe link (and one-click unsubscribe where supported by the email client). Unsubscribing stores a suppression so we stop sending those listing emails to that address for that listing. Turning weekly reports off in Settings also stops weekly reports; customer Quick Contact messages are not blocked by unsubscribe.",
         },
         {
+          label: "Review Request Emails:",
+          description:"When a Featured or Partner shop owner emails a Google review link from the dashboard, we collect the customer name, email address, and message the owner enters, the shop, the review link, whether the send succeeded or failed, and the time. We send that email through Resend on behalf of the shop, from a RadiatorRepairHub address with the shop name shown. If the listing has an email address, replies go to that address. The email includes a Google review link, a line stating it was sent by RadiatorRepairHub, and an unsubscribe link the owner cannot remove. We do not track whether the email is opened or whether the review link is clicked. Unsubscribing stores a suppression for that shop and that address only, and we will not send that address another review email for that shop. An address already suppressed for that shop, including from listing-email unsubscribe, is also blocked. Other shops are not affected. Featured shops can send up to 20 successful review emails a month, and no shop can send more than 2 successful review emails to the same address in that month. The month follows the shop's time zone. Failed sends do not count.",
+        },
+        {
           label: "Listing Report (Report Info) Submissions:",
           description:"When you use Report Info on a business listing, we collect your name (optional), email address, report reason, details you provide, the business you selected, and (when reporting wrong claim contact info) any suggested phone number or email you submit so we can review and update listing contact details.",
         },
@@ -93,7 +97,7 @@ function PrivacyPage() {
         },
         {
           label: "Account Information:",
-          description:"Email address, password (stored in hashed form), and account profile details for business owners who create an account through the claim process, through Partner Checkout, or by signing in to manage claimed listings. We may also store which businesses your account owns or manages, the phone number entered during Partner Checkout (stored on the account, not as the public listing phone), an optional per-listing notification email for RadiatorRepairHub reports, a weekly activity report preference (on or off), email suppression records when you unsubscribe from listing emails (weekly reports and claim-related outreach), and a Stripe customer identifier if you start Featured or Partner checkout. If you unclaim a listing or delete your account, we clear ownership links for affected listings and cancel any related Featured or Partner subscription as described in our Terms of Service.",
+          description:"Email address, password (stored in hashed form), and account profile details for business owners who create an account through the claim process, through Partner Checkout, or by signing in to manage claimed listings. We may also store which businesses your account owns or manages, the phone number entered during Partner Checkout (stored on the account, not as the public listing phone), an optional per-listing notification email for RadiatorRepairHub reports, a weekly activity report preference (on or off), email suppression records when you unsubscribe from listing emails (weekly reports and claim-related outreach) or when a customer unsubscribes from review emails for one shop, and a Stripe customer identifier if you start Featured or Partner checkout. If you unclaim a listing or delete your account, we clear ownership links for affected listings and cancel any related Featured or Partner subscription as described in our Terms of Service.",
         },
         {
           label: "Featured Listing Billing Information:",
@@ -251,11 +255,11 @@ function PrivacyPage() {
         },
         {
           label: "Purpose:",
-          description:"Send transactional emails, including general Contact and Get Listed confirmations and admin notifications, Quick Contact acknowledgments and status updates, forwarding inquiries to listed businesses, business claim verification emails and codes, listing-live notices, weekly listing activity digest emails, email-yourself listing save messages, and internal admin notifications for listing reports, completed claims, and Featured or Partner listing purchases.",
+          description:"Send transactional emails, including general Contact and Get Listed confirmations and admin notifications, Quick Contact acknowledgments and status updates, forwarding inquiries to listed businesses, business claim verification emails and codes, listing-live notices, weekly listing activity digest emails, review request emails sent on behalf of a shop, email-yourself listing save messages, and internal admin notifications for listing reports, completed claims, and Featured or Partner listing purchases.",
         },
         {
           label: "Data Collected:",
-          description:"Name, email address, phone number, inquiry subject, Google listing links, vehicle information, issue details, urgency, message content, claim verification details, listing request details, listing report details, email-yourself listing save details (recipient email, optional name, and listing link), optional owner/employee notification emails for weekly reports, aggregated listing activity used in weekly digest emails, unsubscribe requests, and Featured or Partner purchase notification details (such as business name, owner email, listing link, and Stripe subscription identifiers), plus Partner password-setup or sign-in emails, needed to process and deliver those emails.",
+          description:"Name, email address, phone number, inquiry subject, Google listing links, vehicle information, issue details, urgency, message content, claim verification details, listing request details, listing report details, email-yourself listing save details (recipient email, optional name, and listing link), optional owner/employee notification emails for weekly reports, aggregated listing activity used in weekly digest emails, unsubscribe requests, customer name, email, and message for review request emails, and Featured or Partner purchase notification details (such as business name, owner email, listing link, and Stripe subscription identifiers), plus Partner password-setup or sign-in emails, needed to process and deliver those emails.",
         },
         {
           label: "Privacy Policy:",
@@ -276,7 +280,7 @@ function PrivacyPage() {
         },
         {
           label: "Data Collected:",
-          description:"Contact and Get Listed submission data; Quick Contact submission data; account credentials and ownership links; claim-request records; listing photo records (image identifiers, primary/hidden/visibility flags, and linked business IDs; image files themselves are stored with Cloudflare Images); Featured and Partner subscription records (including Stripe identifiers, status, period end, cancel scheduling flags, checkout phone when collected for Partner, and linked business/owner IDs); optional notification emails and weekly digest preferences on claimed listings; email suppression records for weekly report unsubscribes; digest delivery/history records used to avoid duplicate weekly sends; listing report data (including reporter contact details and suggested corrections); site feedback survey answers (how you found us, whether you found what you were looking for, optional comments, form type, and related business identifiers when applicable); associated business identifiers; and operational metadata such as timestamps and processing status.",
+          description:"Contact and Get Listed submission data; Quick Contact submission data; account credentials and ownership links; claim-request records; listing photo records (image identifiers, primary/hidden/visibility flags, and linked business IDs; image files themselves are stored with Cloudflare Images); Featured and Partner subscription records (including Stripe identifiers, status, period end, cancel scheduling flags, checkout phone when collected for Partner, and linked business/owner IDs); optional notification emails and weekly digest preferences on claimed listings; review request records (customer name, email, message, review link, send status, and time) when an owner emails a review link; email suppression records for weekly report unsubscribes and for review-request unsubscribes for one shop; digest delivery/history records used to avoid duplicate weekly sends; listing report data (including reporter contact details and suggested corrections); site feedback survey answers (how you found us, whether you found what you were looking for, optional comments, form type, and related business identifiers when applicable); associated business identifiers; and operational metadata such as timestamps and processing status.",
         },
         {
           label: "Privacy Policy:",
@@ -449,6 +453,10 @@ function PrivacyPage() {
           description:"Send optional weekly emails with aggregated listing activity to listing contact emails (for eligible unclaimed listings) or to claimed owners using the notification, account, or listing email as described above; send claim invites and follow-ups to eligible listing contacts; honor unsubscribe and in-account opt-out preferences for those listing emails (not Quick Contact); and keep limited delivery and suppression records so we do not re-send unwanted messages.",
         },
         {
+          label: "Review Request Emails:",
+          description:"Send a review email on behalf of a Featured or Partner shop when the owner submits a customer name, email, and message; include a Google review link, a RadiatorRepairHub disclosure, and an unsubscribe link; store the send so the owner can see it in the dashboard; enforce the monthly shop limit and the two-email limit per address; and block further review emails to an address that is suppressed for that shop.",
+        },
+        {
           label: "Featured Listing Billing:",
           description:"Process optional paid Featured upgrades through Stripe (including promotion or discount codes where offered), apply or remove Featured placement based on subscription status (including canceling Featured when a listing is unclaimed or an account is deleted), show billing status in account Settings, confirm checkout status after payment using Stripe session details, and send internal admin notifications when a Featured subscription is purchased.",
         },
@@ -608,7 +616,7 @@ function PrivacyPage() {
     },
     {
       label: "Weekly Activity Report Preferences:",
-      description:"Optional notification emails and weekly report on/off preferences are retained while the related listing or account relationship remains active and may be cleared or updated when you change Settings or unclaim a listing. Email suppression records from unsubscribe requests are retained while needed to honor your opt-out (typically while the listing remains in our directory or until you re-enable reports). Digest delivery/history records used to prevent duplicate weekly sends are retained for operational purposes for up to 2 years, then deleted or aggregated.",
+      description:"Optional notification emails and weekly report on/off preferences are retained while the related listing or account relationship remains active and may be cleared or updated when you change Settings or unclaim a listing. Email suppression records from unsubscribe requests are retained while needed to honor the opt-out (typically while the listing remains in our directory, or, for weekly reports, until the owner turns reports back on). A review-email unsubscribe is not cleared by turning weekly reports back on. Review request records are retained while the listing remains in our directory so the owner can see past sends and so we can enforce send limits. Digest delivery/history records used to prevent duplicate weekly sends are retained for operational purposes for up to 2 years, then deleted or aggregated.",
     },
     {
       label: "Featured and Partner Listing Billing Records:",
@@ -677,6 +685,9 @@ function PrivacyPage() {
         },
         {
           label:"Unsubscribe from listing emails (weekly reports, claim invites, and follow-ups) using the link in those emails, or (for claimed listings you own) turn weekly reports off in Settings → Notifications. Quick Contact messages are not stopped by unsubscribe.",
+        },
+        {
+          label:"Unsubscribe from review emails for one shop using the link in that email. That stop applies only to that shop and that address.",
         },
       ],
     },

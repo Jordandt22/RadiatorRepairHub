@@ -7,6 +7,8 @@ import { fetchOwnedBusinesses } from "@/lib/api/ownedBusinesses";
 import OwnedBusinessCard from "@/components/dashboard/OwnedBusinessCard";
 import BusinessAnalyticsPanel from "@/components/dashboard/BusinessAnalyticsPanel";
 import BusinessInsightsPanel from "@/components/dashboard/BusinessInsightsPanel";
+import AutomationPanel from "@/components/dashboard/AutomationPanel";
+import { SelectMenu } from "@/components/ui/select-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { buttonVariants } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastProvider";
@@ -22,7 +24,7 @@ function DashboardContentInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, onTabChange] = useQueryTab(
-    ["analytics", "insights"],
+    ["analytics", "insights", "automation"],
     "my-businesses"
   );
 
@@ -80,6 +82,12 @@ function DashboardContentInner() {
   };
 
   const tabsTriggerClassNames ="px-6 cursor-pointer transition-colors duration-200";
+  const dashboardTabs = [
+    { value: "my-businesses", label: "My Businesses" },
+    { value: "analytics", label: "Analytics" },
+    { value: "insights", label: "Insights" },
+    { value: "automation", label: "Automations" },
+  ];
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
       <div>
@@ -96,19 +104,24 @@ function DashboardContentInner() {
         onValueChange={onTabChange}
         className="min-w-0 w-full gap-6"
       >
-        <TabsList>
-          <TabsTrigger
-            value="my-businesses"
-            className={tabsTriggerClassNames}
-          >
-            My Businesses
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className={tabsTriggerClassNames}>
-            Analytics
-          </TabsTrigger>
-          <TabsTrigger value="insights" className={tabsTriggerClassNames}>
-            Insights
-          </TabsTrigger>
+        <SelectMenu
+          className="w-full sm:hidden"
+          triggerClassName="w-full"
+          aria-label="Dashboard section"
+          value={activeTab}
+          onValueChange={onTabChange}
+          options={dashboardTabs}
+        />
+        <TabsList className="hidden sm:inline-flex">
+          {dashboardTabs.map((tab) => (
+            <TabsTrigger
+              key={tab.value}
+              value={tab.value}
+              className={tabsTriggerClassNames}
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         <TabsContent value="my-businesses" className="min-w-0">
@@ -169,6 +182,13 @@ function DashboardContentInner() {
 
         <TabsContent value="insights" className="min-w-0">
           <BusinessInsightsPanel
+            businesses={businesses}
+            initialBusinessId={searchParams.get("business") || ""}
+          />
+        </TabsContent>
+
+        <TabsContent value="automation" className="min-w-0">
+          <AutomationPanel
             businesses={businesses}
             initialBusinessId={searchParams.get("business") || ""}
           />

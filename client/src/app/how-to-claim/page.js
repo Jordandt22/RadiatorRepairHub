@@ -66,7 +66,7 @@ const BENEFITS = [
   {
     title: "Featured Placement",
     description:
-      "Claiming is free. Optional paid Featured listings add a Featured badge, search priority, up to 10 shop photos, and full listing analytics with competitor insights.",
+      "Claiming is free. Optional paid Featured listings add a Featured badge, search priority, up to 10 shop photos, full listing analytics with competitor insights, a Google review code, and 20 review emails a month, up to 2 per address.",
     icon: Flag,
     cta: { href: "/pricing", label: "Get Featured" },
     fullRow: true,
@@ -128,7 +128,7 @@ function buildClaimFaqs(supportEmail) {
     {
       question: "What is a Featured listing?",
       answer:
-        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, up to 10 shop photos (claimed listings include 3), full listing analytics, and competitor insights for your city. Claiming stays free. Featured is billed yearly through Stripe. Canceling in Settings stops future renewals. Unclaiming the listing or deleting your account cancels the subscription immediately, and fees already paid are not refunded.",
+        "Featured is an optional paid upgrade after you claim. It adds a Featured badge, higher placement in search and browse results, up to 10 shop photos (claimed listings include 3), full listing analytics, and competitor insights for your city. Featured owners can print a Google review code and email a review link, up to 20 review emails a month, and no more than 2 to the same address. Each review email includes an unsubscribe link that stops further review emails from that shop to that address. Claiming stays free. Featured is billed yearly through Stripe. Canceling in Settings stops future renewals. Unclaiming the listing or deleting your account cancels the subscription immediately, and fees already paid are not refunded.",
     },
     {
       question: "What is a Partner listing?",
@@ -382,7 +382,8 @@ export default function HowToClaimPage() {
               </h3>
               <p className="mb-6 text-muted-foreground">
                 After you claim, upgrade to Featured for a badge, search priority,
-                extra shop photos, and full listing analytics with competitor insights.
+                extra shop photos, full listing analytics with competitor insights,
+                a Google review code, and 20 review emails a month, up to 2 per address.
               </p>
               <Link
                 href="/pricing"

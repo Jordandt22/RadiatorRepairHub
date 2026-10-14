@@ -16,7 +16,7 @@ export const PRICING_FAQS = [
     id: "pricing-what-featured",
     question: "What do I get with a Featured listing?",
     answer:
-      "Featured adds a Featured badge, priority placement in search and on state, city, category, and postal code pages, up to 10 shop photos (claimed listings include 3), full listing analytics, and competitor insights for other public shops in your city. Claiming stays free; Featured is the optional paid upgrade.",
+      "Featured adds a Featured badge, priority placement in search and on state, city, category, and postal code pages, up to 10 shop photos (claimed listings include 3), full listing analytics, and competitor insights for other public shops in your city. Featured owners can also print a Google review code and email a review link, up to 20 review emails a month, and no more than 2 to the same address. Each review email includes an unsubscribe link that stops further review emails from that shop to that address. Claiming stays free; Featured is the optional paid upgrade.",
   },
   {
     id: "pricing-cost",
