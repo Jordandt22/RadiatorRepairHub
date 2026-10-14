@@ -1,7 +1,7 @@
 import React from "react";
 import { getBusinessOpenStatus } from "@/lib/businessHours";
 
-function OpenStatus({ hours, timezone }) {
+function OpenStatus({ hours, timezone, className }) {
   const businessStatus = getBusinessOpenStatus(hours, timezone);
 
   return (
@@ -21,7 +21,7 @@ function OpenStatus({ hours, timezone }) {
             : "bg-border"
           }`}
       />
-      <span className="min-w-0 truncate text-xs sm:text-sm font-medium">{businessStatus.status}</span>
+      <span className={`min-w-0 truncate text-xs font-medium ${className}`}>{businessStatus.status}</span>
     </div>
   );
 }

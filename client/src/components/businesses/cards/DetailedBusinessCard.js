@@ -28,9 +28,7 @@ function DetailedBusinessCard({
   const posthog = usePostHog();
   const description =
     typeof business?.description === "string" ? business.description.trim() : "";
-  const showDescription =
-    (Boolean(business?.is_featured) || Boolean(business?.is_partner)) &&
-    Boolean(description);
+  const showDescription = Boolean(description);
   const phoneDigits = getListingPhoneDigits(business?.phone);
   const phoneDisplay = formatBusinessPhoneDisplay(phoneDigits);
   const phoneHref = getBusinessPhoneTelHref(phoneDigits);
