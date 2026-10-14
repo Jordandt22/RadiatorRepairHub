@@ -112,6 +112,7 @@ export const createPartnerCheckoutSession = async (req, res) => {
     billing_address_collection: "required",
     automatic_tax: { enabled: true },
     managed_payments: { enabled: false },
+    allow_promotion_codes: true,
     metadata,
     subscription_data: {
       metadata,
