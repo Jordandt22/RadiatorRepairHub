@@ -15,11 +15,18 @@ import { formatDate } from "@/components/pages/dashboard/formatDate";
 import { isManagedListingTab } from "@/components/pages/businesses/BusinessFilterTabs";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
 import BusinessFeaturedBadge from "@/components/pages/businesses/BusinessFeaturedBadge";
+import BusinessPartnerBadge from "@/components/pages/businesses/BusinessPartnerBadge";
 import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
 import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
 import BusinessTitleLink from "@/components/pages/businesses/BusinessTitleLink";
 import BusinessesEmptyState from "@/components/pages/businesses/BusinessesEmptyState";
 import ClaimInviteTypeBadge from "@/components/pages/businesses/ClaimInviteTypeBadge";
+
+function ListingStatusBadges({ isClaimed, isFeatured, isPartner }) {
+  if (isPartner) return <BusinessPartnerBadge />;
+  if (isFeatured) return <BusinessFeaturedBadge isFeatured />;
+  return <BusinessClaimedBadge isClaimed={isClaimed} />;
+}
 
 function OwnerEmailCell({ ownerEmail, ownerUid }) {
   if (!ownerEmail) {
@@ -176,10 +183,11 @@ function BusinessesTableView({
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <div className="flex flex-col items-start gap-1">
-                    <BusinessClaimedBadge isClaimed={Boolean(row.is_claimed)} />
-                    {Boolean(row.is_featured) ? (
-                      <BusinessFeaturedBadge isFeatured />
-                    ) : null}
+                    <ListingStatusBadges
+                      isClaimed={Boolean(row.is_claimed)}
+                      isFeatured={Boolean(row.is_featured)}
+                      isPartner={Boolean(row.is_partner)}
+                    />
                   </div>
                 </TableCell>
                 {showLastEdited ? (
@@ -275,10 +283,11 @@ function BusinessesCardList({
                   showSlug={false}
                 />
                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                  <BusinessClaimedBadge isClaimed={Boolean(row.is_claimed)} />
-                  {Boolean(row.is_featured) ? (
-                    <BusinessFeaturedBadge isFeatured />
-                  ) : null}
+                  <ListingStatusBadges
+                    isClaimed={Boolean(row.is_claimed)}
+                    isFeatured={Boolean(row.is_featured)}
+                    isPartner={Boolean(row.is_partner)}
+                  />
                   {showScore ? (
                     <BusinessScoreBadge score={row.total_score} />
                   ) : null}

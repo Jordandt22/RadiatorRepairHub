@@ -25,6 +25,7 @@ import BusinessDetailTabs, {
 import BusinessListingCategoriesEditDialog from "@/components/pages/businesses/BusinessListingCategoriesEditDialog";
 import BusinessListingEditDialog from "@/components/pages/businesses/BusinessListingEditDialog";
 import BusinessSubscriptionsSection from "@/components/pages/businesses/BusinessSubscriptionsSection";
+import PartnerCheckoutSection from "@/components/pages/businesses/PartnerCheckoutSection";
 
 function formatListingError(error) {
   const message = error?.message;
@@ -318,7 +319,14 @@ export default function BusinessDetailPageContent() {
             {data.title ?? "Business"}
           </h1>
           <BusinessClaimedBadge isClaimed={isClaimed} />
-          <BusinessFeaturedBadge isFeatured={isFeatured} />
+          {data.is_partner ? null : (
+            <BusinessFeaturedBadge isFeatured={isFeatured} />
+          )}
+          {data.is_partner ? (
+            <span className="inline-flex items-center rounded-full bg-purple-600 px-2.5 py-0.5 text-xs font-medium text-white">
+              Partnered
+            </span>
+          ) : null}
         </div>
         {data.slug ? (
           <p className="text-sm text-muted-foreground">{data.slug}</p>
@@ -356,7 +364,16 @@ export default function BusinessDetailPageContent() {
       ) : null}
 
       {activeTab === "listing" ? (
-        <BusinessSubscriptionsSection subscriptions={subscriptions} />
+        <>
+          <PartnerCheckoutSection
+            businessId={data.id}
+            isClaimed={isClaimed}
+            subscriptions={subscriptions}
+            accessToken={accessToken}
+            logout={logout}
+          />
+          <BusinessSubscriptionsSection subscriptions={subscriptions} />
+        </>
       ) : null}
 
       {activeTab === "email" ? (

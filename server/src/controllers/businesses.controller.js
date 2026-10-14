@@ -149,6 +149,7 @@ import {
 } from "../lib/claimPhone.js";
 import { CALL_WINDOW_LABEL } from "../lib/claimCallWindow.js";
 import { PHONE_CLAIM_CONSENT_VERSION } from "../lib/claimConsent.js";
+import { storedPhoneLineType } from "../lib/phoneLineType.js";
 import { isCallableLineType, lookupPhoneLineType } from "../twilio/lookup.js";
 import { logger } from "../lib/logger.js";
 import {
@@ -576,41 +577,51 @@ const startPhoneClaim = async (req, res, business) => {
       );
   }
 
-  const lookup = await lookupPhoneLineType(eligibility.phoneE164);
+  // A stored type skips Lookup. A missing type is an unchecked or failed row.
+  const storedLineType = storedPhoneLineType(business);
+  let lineType = storedLineType;
+  let phoneValid = Boolean(storedLineType);
 
-  if (!lookup.ok) {
-    return res
-      .status(lookup.error?.type === "config" ? 500 : 503)
-      .json(
-        customErrorHandler(
-          SERVER_ERROR,
-          lookup.error?.message ??
-            "Phone verification is unavailable right now.",
-          lookup.error?.cause
-        )
-      );
-  }
+  if (!storedLineType) {
+    const lookup = await lookupPhoneLineType(eligibility.phoneE164);
 
-  const { error: lineTypeError } = await saveBusinessPhoneLineTypes(
-    [business.id],
-    {
-      lineType: lookup.data.lineType,
-      carrier: lookup.data.carrier,
+    if (!lookup.ok) {
+      return res
+        .status(lookup.error?.type === "config" ? 500 : 503)
+        .json(
+          customErrorHandler(
+            SERVER_ERROR,
+            lookup.error?.message ??
+              "Phone verification is unavailable right now.",
+            lookup.error?.cause
+          )
+        );
     }
-  );
-  if (lineTypeError) {
-    return res
-      .status(500)
-      .json(
-        customErrorHandler(
-          SUPABASE_ERROR,
-          "There was an error saving the phone line type.",
-          lineTypeError
-        )
-      );
+
+    const { error: lineTypeError } = await saveBusinessPhoneLineTypes(
+      [business.id],
+      {
+        lineType: lookup.data.lineType,
+        carrier: lookup.data.carrier,
+      }
+    );
+    if (lineTypeError) {
+      return res
+        .status(500)
+        .json(
+          customErrorHandler(
+            SUPABASE_ERROR,
+            "There was an error saving the phone line type.",
+            lineTypeError
+          )
+        );
+    }
+
+    lineType = lookup.data.lineType;
+    phoneValid = lookup.data.valid;
   }
 
-  if (!lookup.data.valid || !isCallableLineType(lookup.data.lineType)) {
+  if (!phoneValid || !isCallableLineType(lineType)) {
     return res
       .status(422)
       .json(
@@ -2280,9 +2291,14 @@ export const updateBusinessContact = async (req, res) => {
   if (business) {
     await invalidateBusinessCache(business);
   }
-  if (emailChanged) {
+  if (emailChanged || websiteChanged) {
     await deleteCacheDataByPrefix("FEATURED_BUSINESSES");
     await deleteCacheDataByPrefix("SEARCHED_BUSINESSES");
+    await deleteCacheData(getTopVerifiedBusinessesKey().key);
+    await revalidateClientCache({
+      paths: ["/"],
+      tags: ["top-verified", "business-listings"],
+    });
   }
 
   return res.status(200).json(
@@ -2938,6 +2954,7 @@ export const getBusiness = async (req, res) => {
   let phoneLineTypeCheckedAt = business?.phone_line_type_checked_at ?? null;
   let isClaimed = Boolean(business?.is_claimed);
   let isFeatured = Boolean(business?.is_featured);
+  let isPartner = Boolean(business?.is_partner);
   let ownerUid = business?.owner_uid ?? null;
 
   if (business?.id) {
@@ -2968,6 +2985,7 @@ export const getBusiness = async (req, res) => {
     if (!claimFlagsError && claimFlags) {
       isClaimed = claimFlags.is_claimed;
       isFeatured = claimFlags.is_featured;
+      isPartner = claimFlags.is_partner;
       ownerUid = claimFlags.owner_uid;
     }
   }
@@ -2991,8 +3009,8 @@ export const getBusiness = async (req, res) => {
   }
 
   // Phone claim eligibility uses local filters, shared-phone, phone review
-  // status, and the local call window only. Twilio Lookup runs when a claim
-  // actually starts.
+  // status, and the local call window only. A claim start uses the stored
+  // line type, and calls Twilio Lookup only when that type is missing.
   const { isShared: isPhoneShared, error: sharedPhoneError } =
     await isBusinessPhoneShared(phone);
 
@@ -3082,6 +3100,7 @@ export const getBusiness = async (req, res) => {
       search_position_incentive: searchPositionIncentive,
       is_claimed: isClaimed,
       is_featured: isFeatured,
+      is_partner: isPartner,
       owner_uid: ownerUid,
       has_duplicate_email: isShared,
       has_duplicate_phone: isPhoneShared,

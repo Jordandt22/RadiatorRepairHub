@@ -2,6 +2,7 @@ import {
   BadgeCheckIcon,
   Building2Icon,
   ClockIcon,
+  HandshakeIcon,
   SearchIcon,
   StarIcon,
 } from "lucide-react";
@@ -22,6 +23,12 @@ const EMPTY_BY_TAB = {
     title: "No featured businesses",
     description:
       "Featured listings will appear here once an owner purchases a Featured plan.",
+  },
+  partnered: {
+    icon: HandshakeIcon,
+    title: "No partnered businesses",
+    description:
+      "Partnered listings will appear here once a Partner plan is active.",
   },
   edited: {
     icon: ClockIcon,

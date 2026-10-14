@@ -2,6 +2,7 @@ import {
   BadgeCheckIcon,
   ChevronDownIcon,
   ClockIcon,
+  HandshakeIcon,
   ListIcon,
   StarIcon,
 } from "lucide-react";
@@ -23,6 +24,7 @@ export const TAB_FILTERS = {
 
 export const LISTING_TAB_FILTERS = {
   ...TAB_FILTERS,
+  partnered: { claimed: null, featured: null, partnered: true, recent: null },
   edited: { claimed: true, featured: null, recent: true },
 };
 
@@ -37,13 +39,19 @@ export const VALID_TABS = Object.keys(TAB_FILTERS);
 export const VALID_LISTING_TABS = Object.keys(LISTING_TAB_FILTERS);
 
 export function isManagedListingTab(tab) {
-  return tab === "claimed" || tab === "featured" || tab === "edited";
+  return (
+    tab === "claimed" ||
+    tab === "featured" ||
+    tab === "partnered" ||
+    tab === "edited"
+  );
 }
 
 const TAB_OPTIONS = [
   { value: "all", label: "All", Icon: ListIcon },
   { value: "claimed", label: "Claimed", Icon: BadgeCheckIcon },
   { value: "featured", label: "Featured", Icon: StarIcon },
+  { value: "partnered", label: "Partnered", Icon: HandshakeIcon },
   { value: "edited", label: "Recently edited", Icon: ClockIcon },
 ];
 
@@ -51,10 +59,13 @@ export default function BusinessFilterTabs({
   value,
   onValueChange,
   includeEdited = false,
+  includePartnered = false,
 }) {
-  const options = includeEdited
-    ? TAB_OPTIONS
-    : TAB_OPTIONS.filter((tab) => tab.value !== "edited");
+  const options = TAB_OPTIONS.filter((tab) => {
+    if (tab.value === "edited" && !includeEdited) return false;
+    if (tab.value === "partnered" && !includePartnered) return false;
+    return true;
+  });
   const triggerClassName =
     "cursor-pointer hover:translate-y-[-2px] transition-all duration-200 px-6 rounded-full md:px-8";
   const activeTab =

@@ -98,6 +98,7 @@ import {
   getAdminDashboardStatsKey,
   getBusinessByIdKey,
   getBusinessBySlugKey,
+  getTopVerifiedBusinessesKey,
   deleteCacheData,
   deleteCacheDataByPrefix,
   clearReferenceCache,
@@ -2115,6 +2116,10 @@ export const getBusinesses = async (req, res) => {
       : null;
   const featured =
     req.query.featured === true || req.query.featured === "true" ? true : null;
+  const partnered =
+    req.query.partnered === true || req.query.partnered === "true"
+      ? true
+      : null;
   const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
   const q = rawQ ? rawQ.slice(0, 100) : null;
   const stateCode =
@@ -2161,12 +2166,21 @@ export const getBusinesses = async (req, res) => {
     req.query.phone_line_type.trim()
       ? req.query.phone_line_type.trim()
       : null;
+  const phoneReach =
+    typeof req.query.phone_reach === "string" && req.query.phone_reach.trim()
+      ? req.query.phone_reach.trim()
+      : null;
+  const claimFilter =
+    typeof req.query.claim_filter === "string" && req.query.claim_filter.trim()
+      ? req.query.claim_filter.trim()
+      : null;
 
   const { key, interval } = getAdminBusinessesKey(
     page,
     limit,
     claimed,
     featured,
+    partnered,
     q,
     stateCode,
     citySlug,
@@ -2178,7 +2192,9 @@ export const getBusinesses = async (req, res) => {
     recent,
     phoneFilter,
     phoneStatus,
-    phoneLineType
+    phoneLineType,
+    phoneReach,
+    claimFilter
   );
   const cachedData = await getCacheData(key);
   if (cachedData) {
@@ -2191,6 +2207,7 @@ export const getBusinesses = async (req, res) => {
     {
       claimed,
       featured,
+      partnered,
       recent,
       q,
       stateCode,
@@ -2203,6 +2220,8 @@ export const getBusinesses = async (req, res) => {
       phoneFilter,
       phoneStatus,
       phoneLineType,
+      phoneReach,
+      claimFilter,
     }
   );
   if (error) {
@@ -2243,6 +2262,7 @@ export const getBusinesses = async (req, res) => {
     limit,
     claimed,
     featured,
+    partnered,
     q,
     state_code: stateCode,
     city_slug: citySlug,
@@ -2254,6 +2274,8 @@ export const getBusinesses = async (req, res) => {
     phone_filter: phoneFilter,
     phone_status: phoneStatus,
     phone_line_type: phoneLineType,
+    phone_reach: phoneReach,
+    claim_filter: claimFilter,
   };
 
   await cacheData(key, interval, compiledData);
@@ -2270,6 +2292,8 @@ export const exportBusinesses = async (req, res) => {
       : null;
   const featured =
     body.featured === true || body.featured === "true" ? true : null;
+  const partnered =
+    body.partnered === true || body.partnered === "true" ? true : null;
   const rawQ = typeof body.q === "string" ? body.q.trim() : "";
   const q = rawQ ? rawQ.slice(0, 100) : null;
   const stateCode =
@@ -2312,6 +2336,14 @@ export const exportBusinesses = async (req, res) => {
     typeof body.phone_line_type === "string" && body.phone_line_type.trim()
       ? body.phone_line_type.trim()
       : null;
+  const phoneReach =
+    typeof body.phone_reach === "string" && body.phone_reach.trim()
+      ? body.phone_reach.trim()
+      : null;
+  const claimFilter =
+    typeof body.claim_filter === "string" && body.claim_filter.trim()
+      ? body.claim_filter.trim()
+      : null;
   const fields = Array.isArray(body.fields) ? body.fields : [];
   const statsRange =
     typeof body.stats_range === "string" && body.stats_range.trim()
@@ -2322,6 +2354,7 @@ export const exportBusinesses = async (req, res) => {
   const { data, error } = await fetchExportAdminBusinesses({
     claimed,
     featured,
+    partnered,
     recent,
     q,
     stateCode,
@@ -2334,6 +2367,8 @@ export const exportBusinesses = async (req, res) => {
     phoneFilter,
     phoneStatus,
     phoneLineType,
+    phoneReach,
+    claimFilter,
   });
 
   if (error) {
@@ -2985,6 +3020,7 @@ const invalidatePublicBusinessListingCaches = async (businesses = []) => {
   }
   await deleteCacheDataByPrefix("FEATURED_BUSINESSES");
   await deleteCacheDataByPrefix("SEARCHED_BUSINESSES");
+  await deleteCacheData(getTopVerifiedBusinessesKey().key);
 };
 
 export const markBusinessEmailStatus = async (req, res) => {

@@ -850,6 +850,135 @@ export const OWNER_FEATURED_THANK_YOU_MESSAGE = Object.freeze({
   },
 });
 
+export const ADMIN_PARTNER_PURCHASED_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Partner listing purchased${businessName ? `: ${businessName}` : ""}`,
+  html: (
+    businessName,
+    {
+      email,
+      phone,
+      businessPageUrl,
+      stripeSubscriptionId,
+      stripeCustomerId,
+      status,
+      createdAccount,
+    } = {}
+  ) => `
+  <p>A Partner listing subscription was purchased on RadiatorRepairHub.</p>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 160px;">Business:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(businessName ?? "N/A")}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Owner email:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(email ?? "N/A")}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Checkout phone:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(phone ?? "N/A")}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Account:</td>
+      <td style="padding: 8px 0;">${createdAccount ? "New account" : "Existing account"}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Listing:</td>
+      <td style="padding: 8px 0;"><a href="${escapeEmailHtml(businessPageUrl ?? "#")}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl ?? "N/A")}</a></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Subscription status:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(status ?? "N/A")}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Stripe subscription:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(stripeSubscriptionId ?? "N/A")}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Stripe customer:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(stripeCustomerId ?? "N/A")}</td>
+    </tr>
+  </table>
+  `,
+});
+
+export const ADMIN_PARTNER_CLAIM_CONFLICT_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Partner checkout needs a refund${businessName ? `: ${businessName}` : ""}`,
+  html: (
+    businessName,
+    { email, businessPageUrl, stripeSubscriptionId, stripeCustomerId } = {}
+  ) => `
+  <p>A Partner checkout was paid, but the listing is already claimed by someone else. The listing was not changed. Refund this charge in the Stripe Dashboard.</p>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold; width: 160px;">Business:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(businessName ?? "N/A")}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Checkout email:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(email ?? "N/A")}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Listing:</td>
+      <td style="padding: 8px 0;"><a href="${escapeEmailHtml(businessPageUrl ?? "#")}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl ?? "N/A")}</a></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Stripe subscription:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(stripeSubscriptionId ?? "N/A")}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; font-weight: bold;">Stripe customer:</td>
+      <td style="padding: 8px 0;">${escapeEmailHtml(stripeCustomerId ?? "N/A")}</td>
+    </tr>
+  </table>
+  `,
+});
+
+export const OWNER_PARTNER_SET_PASSWORD_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Set your password for ${businessName ?? "your Partner listing"}`,
+  html: (businessName, { setPasswordUrl, businessPageUrl, signInUrl } = {}) => `
+  <p>Hi there,</p>
+
+  <p>Thanks for joining RadiatorRepairHub as a Partner. <strong>${escapeEmailHtml(businessName ?? "Your shop")}</strong> is claimed and your Partner listing is active.</p>
+
+  <p>Set a password to sign in:<br>
+  <a href="${escapeEmailHtml(setPasswordUrl ?? "#")}" style="color: #1a73e8;">Set your password</a></p>
+
+  <p>After that, sign in here:<br>
+  <a href="${escapeEmailHtml(signInUrl ?? "#")}" style="color: #1a73e8;">${escapeEmailHtml(signInUrl ?? "")}</a></p>
+
+  <p>View your listing:<br>
+  <a href="${escapeEmailHtml(businessPageUrl ?? "#")}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl ?? "")}</a></p>
+
+  <p>Your Partner listing includes Featured placement and a Partner badge. You can manage billing from Settings after you sign in.</p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
+export const OWNER_PARTNER_SIGN_IN_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Your Partner listing is active${businessName ? `: ${businessName}` : ""}`,
+  html: (businessName, { signInUrl, businessPageUrl } = {}) => `
+  <p>Hi there,</p>
+
+  <p><strong>${escapeEmailHtml(businessName ?? "Your shop")}</strong> is now a Partner listing on RadiatorRepairHub. This listing was added to your existing account.</p>
+
+  <p>Sign in to manage it:<br>
+  <a href="${escapeEmailHtml(signInUrl ?? "#")}" style="color: #1a73e8;">${escapeEmailHtml(signInUrl ?? "")}</a></p>
+
+  <p>View your listing:<br>
+  <a href="${escapeEmailHtml(businessPageUrl ?? "#")}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl ?? "")}</a></p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
 // Thank-you email sent to the business owner after a successful claim
 export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
   subject: (businessName) =>

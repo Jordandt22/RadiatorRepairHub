@@ -2,7 +2,12 @@ import { ClipboardListIcon, RefreshCwIcon, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { WEBSITE_FILTERS } from "@/lib/businessTiers";
+import {
+  CLAIM_FILTERS,
+  PHONE_LINE_TYPE_FILTERS,
+  PHONE_REACH_FILTERS,
+  WEBSITE_FILTERS,
+} from "@/lib/businessTiers";
 import BusinessTierCombobox from "@/components/pages/businesses/BusinessTierCombobox";
 
 function ActionButton({
@@ -36,6 +41,12 @@ export default function WebsitesBusinessesActions({
   onSearchChange,
   websiteFilter = null,
   onWebsiteFilterChange,
+  claimFilter = null,
+  onClaimFilterChange,
+  phoneReach = null,
+  onPhoneReachChange,
+  phoneLineType = null,
+  onPhoneLineTypeChange,
   onExportClick,
   onRefresh,
   refreshPending = false,
@@ -52,6 +63,39 @@ export default function WebsitesBusinessesActions({
             placeholder="All websites"
             ariaLabel="Filter by website"
             inputName="rrh-website-filter"
+            disabled={refreshPending}
+          />
+        </div>
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-36 md:max-w-44">
+          <BusinessTierCombobox
+            items={CLAIM_FILTERS}
+            value={claimFilter}
+            onValueChange={onClaimFilterChange}
+            placeholder="Claimed or not"
+            ariaLabel="Filter by claimed or unclaimed"
+            inputName="rrh-claim-filter"
+            disabled={refreshPending}
+          />
+        </div>
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-36 md:max-w-44">
+          <BusinessTierCombobox
+            items={PHONE_REACH_FILTERS}
+            value={phoneReach}
+            onValueChange={onPhoneReachChange}
+            placeholder="All phones"
+            ariaLabel="Filter by call only or both"
+            inputName="rrh-phone-reach-filter"
+            disabled={refreshPending}
+          />
+        </div>
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-40 md:max-w-52">
+          <BusinessTierCombobox
+            items={PHONE_LINE_TYPE_FILTERS}
+            value={phoneLineType}
+            onValueChange={onPhoneLineTypeChange}
+            placeholder="All line types"
+            ariaLabel="Filter by line type"
+            inputName="rrh-phone-line-type-filter"
             disabled={refreshPending}
           />
         </div>

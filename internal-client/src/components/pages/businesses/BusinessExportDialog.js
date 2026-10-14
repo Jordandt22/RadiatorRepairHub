@@ -44,6 +44,7 @@ function buildExportBody({
   if (filters?.q) body.q = filters.q;
   if (filters?.claimed === true) body.claimed = true;
   if (filters?.featured === true) body.featured = true;
+  if (filters?.partnered === true) body.partnered = true;
   if (filters?.recent === true) body.recent = true;
   if (filters?.stateCode) body.state_code = filters.stateCode;
   if (filters?.citySlug) body.city_slug = filters.citySlug;
@@ -55,6 +56,8 @@ function buildExportBody({
   if (filters?.phoneFilter) body.phone_filter = filters.phoneFilter;
   if (filters?.phoneStatus) body.phone_status = filters.phoneStatus;
   if (filters?.phoneLineType) body.phone_line_type = filters.phoneLineType;
+  if (filters?.phoneReach) body.phone_reach = filters.phoneReach;
+  if (filters?.claimFilter) body.claim_filter = filters.claimFilter;
   if (includeStats) body.stats_range = statsRange;
 
   return body;
@@ -86,12 +89,15 @@ export default function BusinessExportDialog({
         source,
         claimed: filters.claimed === true,
         featured: filters.featured === true,
+        partnered: filters.partnered === true,
         recent: filters.recent === true,
         websiteFilter: filters.websiteFilter ?? null,
         emailFilter: filters.emailFilter ?? null,
         phoneFilter: filters.phoneFilter ?? null,
         phoneStatus: filters.phoneStatus ?? null,
         phoneLineType: filters.phoneLineType ?? null,
+        phoneReach: filters.phoneReach ?? null,
+        claimFilter: filters.claimFilter ?? null,
         scoreTier: filters.scoreTier ?? null,
         reviewsTier: filters.reviewsTier ?? null,
         stateCode: filters.stateCode ?? null,

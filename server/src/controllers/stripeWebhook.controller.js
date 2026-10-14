@@ -12,11 +12,17 @@ import {
 import {
   applyStripeSubscriptionStateRpc,
 } from "../supabase/supabase.functions.js";
+import { fulfillPartnerCheckout } from "../lib/fulfillPartnerCheckout.js";
+import {
+  isPartnerCheckout,
+  getPartnerPriceId,
+} from "../lib/partnerCheckout.js";
 import {
   deleteCacheData,
   deleteCacheDataByPrefix,
   getBusinessByIdKey,
   getBusinessBySlugKey,
+  getTopVerifiedBusinessesKey,
 } from "../redis/redis.js";
 import { supabase, adminAuthClient } from "../supabase/supabase.js";
 import { resendClient } from "../resend/resend.js";
@@ -33,6 +39,7 @@ const { SERVER_ERROR } = errorCodes;
 async function invalidateFeaturedCaches(businessId) {
   await deleteCacheDataByPrefix("FEATURED_BUSINESSES");
   await deleteCacheDataByPrefix("SEARCHED_BUSINESSES");
+  await deleteCacheData(getTopVerifiedBusinessesKey().key);
 
   if (!businessId) return;
 
@@ -251,30 +258,40 @@ export const handleStripeWebhook = async (req, res) => {
       const session = event.data.object;
       if (session.mode === "subscription" && session.subscription) {
         const subscription = await retrieveSubscription(session.subscription);
-        const applied = await applySubscription(subscription, {
-          businessId: session.metadata?.business_id || session.client_reference_id,
-          ownerUid: session.metadata?.owner_uid,
+        const partnerCheckout = isPartnerCheckout({
+          plan: session.metadata?.plan || subscription.metadata?.plan,
+          priceId: getSubscriptionPriceId(subscription),
+          partnerPriceId: getPartnerPriceId(),
         });
 
-        // Purchase notification only on checkout completion (not renewals).
-        try {
-          const purchaseContext = await notifyAdminFeaturedPurchase({
-            businessId: applied.businessId,
-            ownerUid: applied.ownerUid,
-            subscription,
-            customerEmail: session.customer_details?.email || session.customer_email,
+        if (partnerCheckout) {
+          await fulfillPartnerCheckout({ session, subscription });
+        } else {
+          const applied = await applySubscription(subscription, {
+            businessId: session.metadata?.business_id || session.client_reference_id,
+            ownerUid: session.metadata?.owner_uid,
           });
-          await notifyOwnerFeaturedThankYou({
-            businessId: applied.businessId,
-            ownerUid: applied.ownerUid,
-            customerEmail: session.customer_details?.email || session.customer_email,
-            context: purchaseContext,
-          });
-        } catch (emailError) {
-          logger.error(
-            { err: emailError, type: event.type },
-            "Featured purchase email failed"
-          );
+
+          // Purchase notification only on checkout completion (not renewals).
+          try {
+            const purchaseContext = await notifyAdminFeaturedPurchase({
+              businessId: applied.businessId,
+              ownerUid: applied.ownerUid,
+              subscription,
+              customerEmail: session.customer_details?.email || session.customer_email,
+            });
+            await notifyOwnerFeaturedThankYou({
+              businessId: applied.businessId,
+              ownerUid: applied.ownerUid,
+              customerEmail: session.customer_details?.email || session.customer_email,
+              context: purchaseContext,
+            });
+          } catch (emailError) {
+            logger.error(
+              { err: emailError, type: event.type },
+              "Featured purchase email failed"
+            );
+          }
         }
       }
     } else if (

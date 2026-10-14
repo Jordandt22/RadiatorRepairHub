@@ -36,6 +36,17 @@ export const PHONE_STATUS_FILTERS = [
   { id: "unable_to_find", label: "Unable to find" },
 ];
 
+/** Call Only is landline or toll-free. Both is a number that can be called or texted. */
+export const PHONE_REACH_FILTERS = [
+  { id: "call_only", label: "Call Only" },
+  { id: "both", label: "Both" },
+];
+
+export const PHONE_REACH_LINE_TYPES = {
+  call_only: ["landline", "tollFree"],
+  both: ["mobile", "fixedVoip", "nonFixedVoip"],
+};
+
 export const PHONE_LINE_TYPE_FILTERS = [
   { id: "unchecked", label: "Not checked" },
   { id: "empty", label: "Checked, no type" },
@@ -60,6 +71,14 @@ export const WEBSITE_FILTER_IDS = WEBSITE_FILTERS.map((t) => t.id);
 export const PHONE_FILTER_IDS = PHONE_FILTERS.map((t) => t.id);
 export const PHONE_STATUS_FILTER_IDS = PHONE_STATUS_FILTERS.map((t) => t.id);
 export const PHONE_LINE_TYPE_FILTER_IDS = PHONE_LINE_TYPE_FILTERS.map((t) => t.id);
+export const PHONE_REACH_FILTER_IDS = PHONE_REACH_FILTERS.map((t) => t.id);
+
+export const CLAIM_FILTERS = [
+  { id: "claimed", label: "Claimed" },
+  { id: "unclaimed", label: "Unclaimed" },
+];
+
+export const CLAIM_FILTER_IDS = CLAIM_FILTERS.map((t) => t.id);
 
 export function getScoreTier(id) {
   return SCORE_TIERS.find((t) => t.id === id) ?? null;

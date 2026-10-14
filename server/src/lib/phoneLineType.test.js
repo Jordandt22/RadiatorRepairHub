@@ -9,7 +9,32 @@ import {
   paceWaitMs,
   PHONE_LINE_TYPE_MIN_INTERVAL_MS,
   publicPhoneLineTypeLabel,
+  storedPhoneLineType,
 } from "./phoneLineType.js";
+
+test("storedPhoneLineType skips Lookup only when a type was saved", () => {
+  assert.equal(
+    storedPhoneLineType({
+      phone_line_type: "mobile",
+      phone_line_type_checked_at: "2026-10-13T00:00:00.000Z",
+    }),
+    "mobile"
+  );
+  assert.equal(
+    storedPhoneLineType({
+      phone_line_type: null,
+      phone_line_type_checked_at: "2026-10-13T00:00:00.000Z",
+    }),
+    null
+  );
+  assert.equal(
+    storedPhoneLineType({
+      phone_line_type: "landline",
+      phone_line_type_checked_at: null,
+    }),
+    null
+  );
+});
 
 test("publicPhoneLineTypeLabel maps callable types and hides the rest", () => {
   assert.equal(publicPhoneLineTypeLabel("landline"), "Landline");

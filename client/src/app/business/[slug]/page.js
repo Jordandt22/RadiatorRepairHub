@@ -38,7 +38,8 @@ import BusinessPageViewTracker from "@/components/businesses/stats/BusinessPageV
 import NearbyBusinesses from "@/components/businesses/NearbyBusinesses";
 import RelatedBlogsSection from "@/components/businesses/RelatedBlogsSection";
 import HideWhenListingOwner from "@/components/businesses/HideWhenListingOwner";
-import {  buildTwitterCard,
+import {
+  buildTwitterCard,
   composeDescription,
   composeTitle,
   DEFAULT_OG_IMAGE,
@@ -111,27 +112,24 @@ export async function generateMetadata({ params }) {
     const displayImage = getBusinessDisplayImage(business);
     const ogImages = displayImage
       ? [
-          {
-            url: displayImage,
-            width: 1200,
-            height: 630,
-            alt: business.title,
-          },
-        ]
+        {
+          url: displayImage,
+          width: 1200,
+          height: 630,
+          alt: business.title,
+        },
+      ]
       : [DEFAULT_OG_IMAGE];
 
     return {
       title,
       description,
       keywords: business.keywords
-        ? `${business.keywords.join(", ")}, radiator repair, ${
-            business.title
-          }, ${business.city.name}, ${business.state.name}`
-        : `${business.title}, radiator repair, ${business.city.name}, ${
-            business.state.name
-          }, auto repair, cooling system repair, ${
-            business.primary_category?.name || "automotive services"
-          }`,
+        ? `${business.keywords.join(", ")}, radiator repair, ${business.title
+        }, ${business.city.name}, ${business.state.name}`
+        : `${business.title}, radiator repair, ${business.city.name}, ${business.state.name
+        }, auto repair, cooling system repair, ${business.primary_category?.name || "automotive services"
+        }`,
       openGraph: {
         title,
         description,
@@ -188,8 +186,8 @@ async function Page({ params }) {
       business.is_claimed
         ? []
         : fetchActiveAffiliateProductsByAliases(
-            FEATURED_AFFILIATE_PRODUCT_ALIASES
-          ).then((res) => res.data?.products ?? []),
+          FEATURED_AFFILIATE_PRODUCT_ALIASES
+        ).then((res) => res.data?.products ?? []),
       fetchBusinessesInCity(business.city?.id, 4, business.id),
     ]);
 
@@ -218,11 +216,11 @@ async function Page({ params }) {
       { name: "Categories", url: "/categories" },
       ...(business.primary_category
         ? [
-            {
-              name: business.primary_category.name,
-              url: `/category/${business.primary_category.slug}`,
-            },
-          ]
+          {
+            name: business.primary_category.name,
+            url: `/category/${business.primary_category.slug}`,
+          },
+        ]
         : []),
       {
         name: business.city.name,
@@ -263,448 +261,453 @@ async function Page({ params }) {
         <BusinessPageViewTracker key="business-page-view" businessId={business.id} />
 
         <OwnerListingViewProvider key="business-owner-view" businessId={business.id}>
-        <div className="min-h-screen bg-background pb-24 md:pb-32">
-          <BusinessHeroBanner
-            heroImage={heroImage}
-            alt={`${business.title} - Radiator Repair Services in ${business.city.name}, ${business.state.name}`}
-            top={
-              <div className="mx-auto hidden w-full max-w-7xl px-4 pt-6 sm:px-6 md:block md:pt-8 lg:px-8">
-                <BreadcrumbList
-                  items={breadcrumbItems}
-                  navStyles="w-fit max-w-full rounded-lg bg-black/40 p-2 pl-4 pr-6 text-sm backdrop-blur-sm"
-                />
-              </div>
-            }
-          >
-            <div className="mx-auto w-full max-w-7xl px-4 pb-8 text-white sm:px-6 md:pb-10 lg:px-8">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-heading text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-5xl">
-                  {business.title}
-                </h1>
-              </div>
-
-              {business.local_note ? (
-                <p className="mt-3 max-w-3xl text-sm italic text-white/80 md:text-base">
-                  {business.local_note}
-                </p>
-              ) : null}
-
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <div className="flex items-center">
-                  <Star className="h-4 w-4 fill-current text-yellow-400 md:h-5 md:w-5" />
-                  <span className="ml-1 text-base font-semibold md:text-lg">
-                    {business.total_score}
-                  </span>
-                </div>
-                <span className="mr-2 text-sm text-white/85 md:text-base">
-                  ({business.reviews_count.toLocaleString()} reviews)
-                </span>
-                <OpenStatus
-                  hours={business.hours}
-                  timezone={business.timezone}
-                />
-                <ListingBadges business={business} size="md" />
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center gap-3 md:mt-5">
-                <BusinessHeroActions
-                  businessId={business.id}
-                  businessName={business.title}
-                  phone={business.phone}
-                  email={business.email}
-                  emailStatus={business.email_status}
-                  isClaimed={Boolean(business.is_claimed)}
-                  mapsHref={directionsHref}
-                  shareUrl={shareUrl}
-                  placement="hero"
-                />
-              </div>
-            </div>
-          </BusinessHeroBanner>
-
-          <BusinessHeroActions
-            businessId={business.id}
-            businessName={business.title}
-            phone={business.phone}
-            email={business.email}
-            emailStatus={business.email_status}
-            isClaimed={Boolean(business.is_claimed)}
-            mapsHref={directionsHref}
-            shareUrl={shareUrl}
-            placement="sticky"
-          />
-
-          <div className="mx-auto flex w-full max-w-[2008px] justify-center gap-8 px-3 py-4 sm:px-4 md:px-6 md:py-8 lg:px-8">
-            <JourneySidebar />
-            <div className="w-full min-w-0 max-w-7xl">
-            <ListingFeaturedCta
-              businessId={business.id}
-              businessSlug={business.slug}
-              businessName={business.title}
-            />
-            <OwnerListingViewBar />
-            <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
-              <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-8">
-                <ClaimListingBanner
-                  placement="desktop"
-                  businessId={business.id}
-                  businessSlug={business.slug}
-                  businessName={business.title}
-                  email={business.email}
-                  emailStatus={business.email_status}
-                  isClaimed={Boolean(business.is_claimed)}
-                  hasDuplicateEmail={Boolean(business.has_duplicate_email)}
-                  phone={business.phone}
-                  phoneClaimEligible={Boolean(business.phone_claim_eligible)}
-                  phoneClaimBlockReason={business.phone_claim_block_reason}
-                  pendingClaim={business.pending_claim}
-                  searchPositionIncentive={business.search_position_incentive}
-                />
-                <AboutSection
-                  businessId={business.id}
-                  businessSlug={business.slug}
-                  businessName={business.title}
-                  description={business.description || ""}
-                />
-
-                <PhotosSection
-                  businessId={business.id}
-                  businessSlug={business.slug}
-                  businessName={business.title}
-                  images={business.images || []}
-                  primaryImageId={business.primary_image_id}
-                  imageUrl={business.image_url}
-                  hideDefaultImage={Boolean(business.hide_default_image)}
-                  cdnStored={Boolean(business.cdn_stored)}
-                />
-
-                <ServiceCategoriesSection
-                  businessId={business.id}
-                  businessSlug={business.slug}
-                  businessName={business.title}
-                  primaryCategory={business.primary_category}
-                  secondaryCategories={business.secondary_categories || []}
-                />
-
-                <div className="order-5 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
-                  <BusinessSectionHeader
-                    title="Location"
-                    titleClassName="text-xl font-semibold tracking-tight text-foreground font-heading md:text-2xl"
+          <div className="min-h-screen bg-background pb-24 md:pb-32">
+            <BusinessHeroBanner
+              heroImage={heroImage}
+              alt={`${business.title} - Radiator Repair Services in ${business.city.name}, ${business.state.name}`}
+              top={
+                <div className="mx-auto hidden w-full max-w-7xl px-4 pt-6 sm:px-6 md:block md:pt-8 lg:px-8">
+                  <BreadcrumbList
+                    items={breadcrumbItems}
+                    navStyles="w-fit max-w-full rounded-lg bg-black/40 p-2 pl-4 pr-6 text-sm backdrop-blur-sm"
                   />
-                  <div className="space-y-3 md:space-y-4">
-                    <div className="flex items-start gap-2 md:gap-3">
-                      <MapPin className="mt-1 h-4 w-4 shrink-0 text-muted-foreground md:h-5 md:w-5" />
-                      <p className="break-words text-sm text-foreground md:text-base">
-                        {business.address}
-                      </p>
-                    </div>
+                </div>
+              }
+            >
+              <div className="mx-auto w-full max-w-7xl px-4 pb-4 text-white sm:px-8 md:pb-8 lg:px-12">
+                {business.is_partner || business.is_featured || business.is_claimed ? (
+                  <ListingBadges business={business} size="md" className="mb-3" />
+                ) : null}
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="font-heading text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
+                    {business.title}
+                  </h1>
+                </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Link
-                        href={cityHref}
-                        className="rounded-full bg-tint px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-secondary md:px-5"
-                      >
-                        Radiator Repair in {business.city.name}
-                      </Link>
-                      <Link
-                        href={stateHref}
-                        className="rounded-full bg-tint px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-secondary md:px-5"
-                      >
-                        {business.state.name} services
-                      </Link>
-                    </div>
+                {business.local_note ? (
+                  <p className="mt-2 max-w-3xl text-sm italic text-white/80">
+                    {business.local_note}
+                  </p>
+                ) : null}
 
-                    {mapsQuery ? (
-                      <div className="h-64 w-full overflow-hidden rounded-lg md:h-96">
-                        {process.env.GOOGLE_MAPS_API_KEY ? (
-                          <iframe
-                            src={`https://www.google.com/maps/embed/v1/place?key=${process.env.GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(mapsQuery)}`}
-                            width="100%"
-                            height="100%"
-                            style={{ border: 0 }}
-                            allowFullScreen=""
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                            title={`Map showing location of ${business.title}`}
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center bg-muted px-6 text-center">
-                            <a
-                              href={mapsHref}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 font-medium text-interactive hover:text-primary"
-                            >
-                              <MapPin className="h-5 w-5" />
-                              View {business.address || business.title} on
-                              Google Maps
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    ) : null}
-
-                    {mapsHref ? (
-                      <div className="pt-2">
-                        <a
-                          href={mapsHref}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                          Open in Google Maps
-                        </a>
-                      </div>
-                    ) : null}
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <div className="hidden md:flex items-center">
+                    <Star className="h-4 w-4 fill-current text-yellow-400 md:h-5 md:w-5" />
+                    <span className="ml-1 text-base font-semibold md:text-lg">
+                      {business.total_score}
+                    </span>
                   </div>
+                  <span className="hidden md:inline-block mr-2 text-sm text-white/85 md:text-base">
+                    ({business.reviews_count.toLocaleString()} reviews)
+                  </span>
+                  <OpenStatus
+                    hours={business.hours}
+                    timezone={business.timezone}
+                  />
+                </div>
+
+                <div className="md:mt-2 flex flex-wrap items-center gap-3">
+                  <BusinessHeroActions
+                    businessId={business.id}
+                    businessName={business.title}
+                    phone={business.phone}
+                    email={business.email}
+                    emailStatus={business.email_status}
+                    isClaimed={Boolean(business.is_claimed)}
+                    isPartner={Boolean(business.is_partner)}
+                    website={business.website}
+                    mapsHref={directionsHref}
+                    shareUrl={shareUrl}
+                    placement="hero"
+                  />
                 </div>
               </div>
+            </BusinessHeroBanner>
 
-              <div className="contents lg:flex lg:flex-col lg:gap-6">
-                <div className="order-1 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
-                  <h2 className="mb-3 font-heading text-xl font-semibold tracking-tight text-foreground md:mb-4 md:text-2xl">
-                    Customer Reviews
-                  </h2>
-                  <div className="text-center">
-                    <div className="mb-2 flex flex-col items-center justify-center gap-4">
-                      <span className="rounded-md bg-muted px-4 py-2 text-3xl font-bold text-foreground">
-                        {business.total_score}
-                      </span>
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-6 w-6 ${
-                              i < Math.floor(business.total_score)
-                                ? "fill-current text-yellow-400"
-                                : "text-border"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Based on {business.reviews_count.toLocaleString()}{" "}
-                      verified reviews
-                      {business.url ? " from Google" : null}.
-                    </p>
+            <BusinessHeroActions
+              businessId={business.id}
+              businessName={business.title}
+              phone={business.phone}
+              email={business.email}
+              emailStatus={business.email_status}
+              isClaimed={Boolean(business.is_claimed)}
+              isPartner={Boolean(business.is_partner)}
+              website={business.website}
+              mapsHref={directionsHref}
+              shareUrl={shareUrl}
+              placement="sticky"
+            />
 
-                    {business.url ? (
-                      <Link
-                        href={business.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-4 flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                      >
-                        View all reviews
-                        <ExternalLink className="size-4" />
-                      </Link>
-                    ) : null}
-
-                    <ClaimBusinessButton
+            <div className="mx-auto flex w-full max-w-[2008px] justify-center gap-8 px-3 py-4 sm:px-4 md:px-6 md:py-8 lg:px-8">
+              <JourneySidebar />
+              <div className="w-full min-w-0 max-w-7xl">
+                <ListingFeaturedCta
+                  businessId={business.id}
+                  businessSlug={business.slug}
+                  businessName={business.title}
+                />
+                <OwnerListingViewBar />
+                <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
+                  <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-8">
+                    <ClaimListingBanner
+                      placement="desktop"
                       businessId={business.id}
                       businessSlug={business.slug}
                       businessName={business.title}
                       email={business.email}
                       emailStatus={business.email_status}
                       isClaimed={Boolean(business.is_claimed)}
-                      isFeatured={Boolean(business.is_featured)}
                       hasDuplicateEmail={Boolean(business.has_duplicate_email)}
-                      lastEditedAt={business.last_edited_at}
                       phone={business.phone}
                       phoneClaimEligible={Boolean(business.phone_claim_eligible)}
                       phoneClaimBlockReason={business.phone_claim_block_reason}
                       pendingClaim={business.pending_claim}
+                      searchPositionIncentive={business.search_position_incentive}
+                    />
+                    <AboutSection
+                      businessId={business.id}
+                      businessSlug={business.slug}
+                      businessName={business.title}
+                      description={business.description || ""}
+                    />
+
+                    <PhotosSection
+                      businessId={business.id}
+                      businessSlug={business.slug}
+                      businessName={business.title}
+                      images={business.images || []}
+                      primaryImageId={business.primary_image_id}
+                      imageUrl={business.image_url}
+                      hideDefaultImage={Boolean(business.hide_default_image)}
+                      cdnStored={Boolean(business.cdn_stored)}
+                    />
+
+                    <ServiceCategoriesSection
+                      businessId={business.id}
+                      businessSlug={business.slug}
+                      businessName={business.title}
+                      primaryCategory={business.primary_category}
+                      secondaryCategories={business.secondary_categories || []}
+                    />
+
+                    <div className="order-5 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-3">
+                      <BusinessSectionHeader
+                        title="Location"
+                        titleClassName="text-xl font-semibold tracking-tight text-foreground font-heading md:text-2xl"
+                      />
+                      <div className="space-y-3 md:space-y-4">
+                        <div className="flex items-start gap-2 md:gap-3">
+                          <MapPin className="mt-1 h-4 w-4 shrink-0 text-muted-foreground md:h-5 md:w-5" />
+                          <p className="break-words text-sm text-foreground md:text-base">
+                            {business.address}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            href={cityHref}
+                            className="rounded-full bg-tint px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-secondary md:px-5"
+                          >
+                            Radiator Repair in {business.city.name}
+                          </Link>
+                          <Link
+                            href={stateHref}
+                            className="rounded-full bg-tint px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-secondary md:px-5"
+                          >
+                            {business.state.name} services
+                          </Link>
+                        </div>
+
+                        {mapsQuery ? (
+                          <div className="h-64 w-full overflow-hidden rounded-lg md:h-96">
+                            {process.env.GOOGLE_MAPS_API_KEY ? (
+                              <iframe
+                                src={`https://www.google.com/maps/embed/v1/place?key=${process.env.GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(mapsQuery)}`}
+                                width="100%"
+                                height="100%"
+                                style={{ border: 0 }}
+                                allowFullScreen=""
+                                loading="lazy"
+                                referrerPolicy="no-referrer-when-downgrade"
+                                title={`Map showing location of ${business.title}`}
+                              />
+                            ) : (
+                              <div className="flex h-full items-center justify-center bg-muted px-6 text-center">
+                                <a
+                                  href={mapsHref}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-2 font-medium text-interactive hover:text-primary"
+                                >
+                                  <MapPin className="h-5 w-5" />
+                                  View {business.address || business.title} on
+                                  Google Maps
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        ) : null}
+
+                        {mapsHref ? (
+                          <div className="pt-2">
+                            <a
+                              href={mapsHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              Open in Google Maps
+                            </a>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="contents lg:flex lg:flex-col lg:gap-6">
+                    <div className="order-1 rounded-lg border border-border bg-card p-4 md:p-6 lg:order-1">
+                      <h2 className="mb-3 font-heading text-xl font-semibold tracking-tight text-foreground md:mb-4 md:text-2xl">
+                        Customer Reviews
+                      </h2>
+                      <div className="text-center">
+                        <div className="mb-2 flex flex-col items-center justify-center gap-4">
+                          <span className="rounded-md bg-muted px-4 py-2 text-3xl font-bold text-foreground">
+                            {business.total_score}
+                          </span>
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-6 w-6 ${i < Math.floor(business.total_score)
+                                  ? "fill-current text-yellow-400"
+                                  : "text-border"
+                                  }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Based on {business.reviews_count.toLocaleString()}{" "}
+                          verified reviews
+                          {business.url ? " from Google" : null}.
+                        </p>
+
+                        {business.url ? (
+                          <Link
+                            href={business.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-4 flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                          >
+                            View all reviews
+                            <ExternalLink className="size-4" />
+                          </Link>
+                        ) : null}
+
+                        <ClaimBusinessButton
+                          businessId={business.id}
+                          businessSlug={business.slug}
+                          businessName={business.title}
+                          email={business.email}
+                          emailStatus={business.email_status}
+                          isClaimed={Boolean(business.is_claimed)}
+                          isFeatured={Boolean(business.is_featured)}
+                          hasDuplicateEmail={Boolean(business.has_duplicate_email)}
+                          lastEditedAt={business.last_edited_at}
+                          phone={business.phone}
+                          phoneClaimEligible={Boolean(business.phone_claim_eligible)}
+                          phoneClaimBlockReason={business.phone_claim_block_reason}
+                          pendingClaim={business.pending_claim}
+                        />
+                      </div>
+                    </div>
+
+                    <ContactInformationSection
+                      businessId={business.id}
+                      businessSlug={business.slug}
+                      businessName={business.title}
+                      phone={business.phone}
+                      email={business.email}
+                      website={business.website}
+                      emailStatus={business.email_status}
+                      isClaimed={Boolean(business.is_claimed)}
+                      phoneLineType={business.phone_line_type}
+                    />
+
+                    <BusinessHoursSection
+                      businessId={business.id}
+                      businessSlug={business.slug}
+                      businessName={business.title}
+                      hours={business.hours || []}
+                      timezone={business.timezone}
+                    />
+
+                    <ClaimListingBanner
+                      placement="mobile"
+                      businessId={business.id}
+                      businessSlug={business.slug}
+                      businessName={business.title}
+                      email={business.email}
+                      emailStatus={business.email_status}
+                      isClaimed={Boolean(business.is_claimed)}
+                      hasDuplicateEmail={Boolean(business.has_duplicate_email)}
+                      phone={business.phone}
+                      phoneClaimEligible={Boolean(business.phone_claim_eligible)}
+                      phoneClaimBlockReason={business.phone_claim_block_reason}
+                      pendingClaim={business.pending_claim}
+                      searchPositionIncentive={business.search_position_incentive}
+                    />
+
+                    <AmenitiesSection
+                      businessId={business.id}
+                      businessSlug={business.slug}
+                      businessName={business.title}
+                      features={business.features || {}}
                     />
                   </div>
                 </div>
 
-                <ContactInformationSection
-                  businessId={business.id}
-                  businessSlug={business.slug}
-                  businessName={business.title}
-                  phone={business.phone}
-                  email={business.email}
-                  website={business.website}
-                  emailStatus={business.email_status}
-                  isClaimed={Boolean(business.is_claimed)}
-                  phoneLineType={business.phone_line_type}
-                />
-
-                <BusinessHoursSection
-                  businessId={business.id}
-                  businessSlug={business.slug}
-                  businessName={business.title}
-                  hours={business.hours || []}
-                  timezone={business.timezone}
-                />
-
-                <ClaimListingBanner
-                  placement="mobile"
-                  businessId={business.id}
-                  businessSlug={business.slug}
-                  businessName={business.title}
-                  email={business.email}
-                  emailStatus={business.email_status}
-                  isClaimed={Boolean(business.is_claimed)}
-                  hasDuplicateEmail={Boolean(business.has_duplicate_email)}
-                  phone={business.phone}
-                  phoneClaimEligible={Boolean(business.phone_claim_eligible)}
-                  phoneClaimBlockReason={business.phone_claim_block_reason}
-                  pendingClaim={business.pending_claim}
-                  searchPositionIncentive={business.search_position_incentive}
-                />
-
-                <AmenitiesSection
-                  businessId={business.id}
-                  businessSlug={business.slug}
-                  businessName={business.title}
-                  features={business.features || {}}
-                />
-              </div>
-            </div>
-
-            <section className="mt-10 border-t border-border pt-10">
-              <h2 className="mb-4 font-heading text-xl font-semibold tracking-tight text-foreground md:text-2xl">
-                Explore nearby
-              </h2>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <Link
-                  href={cityHref}
-                  className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
-                >
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
-                    <MapPinned
-                      className="h-6 w-6 text-primary"
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
-                        {business.city.name}
-                      </h3>
-                      <ArrowRight
-                        className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
-                        aria-hidden="true"
-                      />
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      More radiator repair shops in this city
-                    </p>
-                  </div>
-                </Link>
-                <Link
-                  href={stateHref}
-                  className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
-                >
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
-                    <MapPin
-                      className="h-6 w-6 text-primary"
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
-                        {business.state.name}
-                      </h3>
-                      <ArrowRight
-                        className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
-                        aria-hidden="true"
-                      />
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Browse shops across the state
-                    </p>
-                  </div>
-                </Link>
-                {categoryHref ? (
-                  <Link
-                    href={categoryHref}
-                    className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
-                  >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
-                      <Tags
-                        className="h-6 w-6 text-primary"
-                        aria-hidden="true"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
-                          {business.primary_category.name}
-                        </h3>
-                        <ArrowRight
-                          className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
+                <section className="mt-10 border-t border-border pt-10">
+                  <h2 className="mb-4 font-heading text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+                    Explore nearby
+                  </h2>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <Link
+                      href={cityHref}
+                      className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
+                    >
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
+                        <MapPinned
+                          className="h-6 w-6 text-primary"
                           aria-hidden="true"
                         />
                       </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Similar businesses in this category
-                      </p>
-                    </div>
-                  </Link>
-                ) : (
-                  <Link
-                    href="/search"
-                    className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
-                  >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
-                      <Search
-                        className="h-6 w-6 text-primary"
-                        aria-hidden="true"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
-                          Search directory
-                        </h3>
-                        <ArrowRight
-                          className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
+                            {business.city.name}
+                          </h3>
+                          <ArrowRight
+                            className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          More radiator repair shops in this city
+                        </p>
+                      </div>
+                    </Link>
+                    <Link
+                      href={stateHref}
+                      className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
+                    >
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
+                        <MapPin
+                          className="h-6 w-6 text-primary"
                           aria-hidden="true"
                         />
                       </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Find radiator repair near you
-                      </p>
-                    </div>
-                  </Link>
-                )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
+                            {business.state.name}
+                          </h3>
+                          <ArrowRight
+                            className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Browse shops across the state
+                        </p>
+                      </div>
+                    </Link>
+                    {categoryHref ? (
+                      <Link
+                        href={categoryHref}
+                        className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
+                      >
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
+                          <Tags
+                            className="h-6 w-6 text-primary"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
+                              {business.primary_category.name}
+                            </h3>
+                            <ArrowRight
+                              className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            Similar businesses in this category
+                          </p>
+                        </div>
+                      </Link>
+                    ) : (
+                      <Link
+                        href="/search"
+                        className="group flex items-start gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-interactive"
+                      >
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint">
+                          <Search
+                            className="h-6 w-6 text-primary"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
+                              Search directory
+                            </h3>
+                            <ArrowRight
+                              className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            Find radiator repair near you
+                          </p>
+                        </div>
+                      </Link>
+                    )}
+                  </div>
+                </section>
+
+                <HideWhenListingOwner>
+                  <NearbyBusinesses
+                    businesses={nearbyBusinesses}
+                    cityName={business.city.name}
+                    cityHref={cityHref}
+                  />
+                </HideWhenListingOwner>
+
+                {!business.is_claimed && featuredProducts.length > 0 ? (
+                  <HideWhenListingOwner>
+                    <AffiliateProductsSection
+                      products={featuredProducts}
+                      title="Recommended Amazon Tools & Supplies"
+                      description={`Optional DIY supplies recommended by RadiatorRepairHub. These products are not sold, endorsed, or affiliated with ${business?.title ?? "this business"}.`}
+                      descriptionVariant="notice"
+                      disclosure="Product links are RadiatorRepairHub Amazon Associate recommendations. As an Amazon Associate, RadiatorRepairHub earns from qualifying purchases. This shop is not responsible for these products or purchases."
+                      variant="related"
+                      layout="carousel"
+                    />
+                  </HideWhenListingOwner>
+                ) : null}
+
+                <RelatedBlogsSection posts={relatedBlogPosts} />
+
+                <DirectoryDisclaimer className="mt-10" />
               </div>
-            </section>
-
-            <HideWhenListingOwner>
-              <NearbyBusinesses
-                businesses={nearbyBusinesses}
-                cityName={business.city.name}
-                cityHref={cityHref}
-              />
-            </HideWhenListingOwner>
-
-            {!business.is_claimed && featuredProducts.length > 0 ? (
-              <HideWhenListingOwner>
-                <AffiliateProductsSection
-                  products={featuredProducts}
-                  title="Recommended Amazon Tools & Supplies"
-                  description={`Optional DIY supplies recommended by RadiatorRepairHub. These products are not sold, endorsed, or affiliated with ${business?.title ?? "this business"}.`}
-                  descriptionVariant="notice"
-                  disclosure="Product links are RadiatorRepairHub Amazon Associate recommendations. As an Amazon Associate, RadiatorRepairHub earns from qualifying purchases. This shop is not responsible for these products or purchases."
-                  variant="related"
-                  layout="carousel"
-                />
-              </HideWhenListingOwner>
-            ) : null}
-
-            <RelatedBlogsSection posts={relatedBlogPosts} />
-
-            <DirectoryDisclaimer className="mt-10" />
+              <JourneySidebar />
             </div>
-            <JourneySidebar />
           </div>
-        </div>
         </OwnerListingViewProvider>
       </>
     );

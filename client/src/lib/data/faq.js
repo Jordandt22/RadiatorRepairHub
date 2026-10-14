@@ -153,7 +153,7 @@ export const FAQ_ITEMS = [
     id: "get-listed",
     question: "How can I get my business listed on RadiatorRepairHub?",
     answer:
-      "If your shop is not listed yet, submit your information through our Get Listed page. If you are already in the directory, claim your listing from the business page instead of submitting a duplicate. Listings are free to add and claim. Featured is an optional paid upgrade after you claim.",
+      "If your shop is not listed yet, submit your information through our Get Listed page. If you are already in the directory, claim your listing from the business page instead of submitting a duplicate. Listings are free to add and claim. Featured is an optional paid upgrade after you claim. Partner is a separate paid plan we may offer by Checkout link.",
   },
   {
     id: "claim-listing",
@@ -171,13 +171,19 @@ export const FAQ_ITEMS = [
     id: "featured-listing",
     question: "What is a Featured listing?",
     answer:
-      "Featured is an optional paid upgrade for claimed listings. It adds a Featured badge, higher placement in search and browse results (including state, city, category, and postal pages), up to 10 shop photos (claimed listings include 3), full listing analytics (listing clicks, CTR, average position, contact clicks, and source breakdown), and competitor insights for other public shops in your city. Claiming stays free; only Featured is paid (currently billed yearly through Stripe). You can cancel anytime to stop future renewals; fees for the current billing period are non-refundable. See Featured listing pricing for current rates and how to upgrade.",
+      "Featured is an optional paid upgrade for claimed listings. It adds a Featured badge, higher placement in search and browse results (including state, city, category, and postal pages), up to 10 shop photos (claimed listings include 3), full listing analytics (listing clicks, CTR, average position, contact clicks, and source breakdown), and competitor insights for other public shops in your city. Claiming stays free. Featured is billed yearly through Stripe. You can cancel in Settings to stop future renewals; Featured generally continues until the end of the paid period. Unclaiming the listing or deleting your account cancels the subscription immediately, and fees already paid are not refunded. See Featured listing pricing for current rates and how to upgrade.",
+  },
+  {
+    id: "partner-listing",
+    question: "What is a Partner listing?",
+    answer:
+      "Partner is an optional paid plan for a specific listing. It is not offered on the public pricing page. We may send you a one-time Stripe Checkout link. Checkout collects the email and phone you enter there. After payment is confirmed, we create an account for that email or attach the listing to an existing account, and we claim the listing if it is still unclaimed. A new account gets an email to set a password. A live Partner plan includes Featured directory benefits (placement, up to 10 shop photos, full listing analytics, and competitor insights) and a Partnered badge. It is billed monthly through Stripe at the price shown at checkout. Applicable taxes may be added. Canceling in Settings stops future renewals, and Partner generally continues until the end of the paid period. Unclaiming the listing or deleting your account cancels the subscription immediately, and fees already paid are not refunded. Any additional services included with that purchase are described on the Checkout page. See the Terms of Service for the full Partner terms.",
   },
   {
     id: "listing-analytics",
     question: "Can I see how customers find my listing?",
     answer:
-      "Yes. After you claim, sign in to your dashboard and open Analytics. Claimed listings include page views, impressions, and impressions by source. Featured listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source. We may also email a weekly activity report with the same tier of stats; claimed owners can change the notification email or turn reports off in Settings → Notifications. Weekly reports and claim-related listing emails include an unsubscribe link that stops those messages for that address (Quick Contact inquiries are not blocked). Stats are not live and can take a few minutes to appear.",
+      "Yes. After you claim, sign in to your dashboard and open Analytics. Claimed listings include page views, impressions, and impressions by source. Featured and Partner listings unlock full analytics, including listing clicks, CTR, average position, contact clicks, and clicks by source. We may also email a weekly activity report with the same tier of stats; claimed owners can change the notification email or turn reports off in Settings → Notifications. Weekly reports and claim-related listing emails include an unsubscribe link that stops those messages for that address (Quick Contact inquiries are not blocked). Stats are not live and can take a few minutes to appear.",
   },
   {
     id: "report-listing",
@@ -255,7 +261,7 @@ export const FAQ_SECTIONS = [
   {
     id: "business-listings",
     title: "Business Owners & Listings",
-    description: "Get listed, claim your shop, listing analytics, weekly activity reports, Featured upgrades, and report listing issues.",
+    description: "Get listed, claim your shop, listing analytics, weekly activity reports, Featured upgrades, Partner plans, and report listing issues.",
     faqIds: [
       "verify-businesses",
       "get-listed",
@@ -263,6 +269,7 @@ export const FAQ_SECTIONS = [
       "cant-claim",
       "listing-analytics",
       "featured-listing",
+      "partner-listing",
       "report-listing",
     ],
   },

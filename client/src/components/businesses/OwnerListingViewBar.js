@@ -8,7 +8,7 @@ const tabsTriggerClassNames =
   "px-5 cursor-pointer transition-colors duration-200";
 
 const hintClassNames =
-  "w-full px-4 py-1 text-center text-sm text-primary bg-primary/20 rounded-full md:w-auto md:text-left";
+  "w-full px-4 py-1 text-center text-sm text-primary bg-primary/20 rounded-md md:rounded-full md:w-auto md:text-left";
 
 export default function OwnerListingViewBar() {
   const { isOwner, view, setView } = useOwnerListingView();
