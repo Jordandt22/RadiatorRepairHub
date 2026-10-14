@@ -3,11 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  CircleDollarSign,
+  CircleHelp,
   Home,
   LayoutDashboard,
   LifeBuoy,
+  Scale,
   Search,
   Settings,
+  Shield,
 } from "lucide-react";
 import {
   SidebarGroup,
@@ -40,6 +44,26 @@ const MAIN_ITEMS = [
     title: "Search",
     url: "/search",
     icon: Search,
+  },
+  {
+    title: "Pricing",
+    url: "/pricing",
+    icon: CircleDollarSign,
+  },
+  {
+    title: "FAQ",
+    url: "/faq",
+    icon: CircleHelp,
+  },
+  {
+    title: "Privacy Policy",
+    url: "/privacy",
+    icon: Shield,
+  },
+  {
+    title: "Terms of Service",
+    url: "/terms",
+    icon: Scale,
   },
   {
     title: "Support",

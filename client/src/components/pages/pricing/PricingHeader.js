@@ -11,7 +11,7 @@ function PricingHeader() {
     <PageHeader
       breadcrumbItems={breadcrumbItems}
       pageTitle="Featured Listings"
-      pageDescription="Stand out when drivers search for radiator repairs and increase your leads. Featured shops get a badge, higher placement, extra shop photos, full listing analytics, and competitor insights."
+      pageDescription="Stand out when drivers search for radiator repairs and increase your leads. Featured shops get a badge, higher placement, extra shop photos, full listing analytics, competitor insights, a Google review code, and 20 review emails a month, up to 2 per address."
       headerLink={{
         href: "/how-to-claim",
         label: "Need to claim first?",

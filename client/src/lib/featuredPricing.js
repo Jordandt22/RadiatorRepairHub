@@ -24,6 +24,7 @@ export const FEATURED_PLAN_FEATURES = [
   "Up to 10 shop photos",
   "Full analytics: clicks, CTR, position, and contact stats",
   "Competitor insights for shops in your city",
+  "Google Reviews Email Automation System",
 ];
 
 export function featuredPriceValidUntil(fromDate = new Date()) {

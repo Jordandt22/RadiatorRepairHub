@@ -35,6 +35,19 @@ test("still verifies legacy weekly_digest unsubscribe tokens", () => {
   assert.equal(verified.payload.type, "weekly_digest");
 });
 
+test("signs a review request unsubscribe for one shop", () => {
+  process.env.UNSUBSCRIBE_TOKEN_SECRET = "test-unsubscribe-secret";
+  const token = signUnsubscribeToken({
+    businessId: "11111111-1111-1111-1111-111111111111",
+    email: "Customer@Example.com",
+    type: "review_request",
+  });
+  const verified = verifyUnsubscribeToken(token);
+  assert.equal(verified.ok, true);
+  assert.equal(verified.payload.email, "customer@example.com");
+  assert.equal(verified.payload.type, "review_request");
+});
+
 test("rejects tampered and expired tokens", () => {
   process.env.UNSUBSCRIBE_TOKEN_SECRET = "test-unsubscribe-secret";
   const token = signUnsubscribeToken({

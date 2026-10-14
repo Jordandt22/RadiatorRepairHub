@@ -3,10 +3,12 @@ import {
   errorCodes,
   successHandler,
 } from "../helpers/customErrorHandler.js";
+import { EMAIL_SUPPRESSION_TYPES } from "../lib/emailSuppressionTypes.js";
 import { verifyUnsubscribeToken } from "../lib/unsubscribeToken.js";
 import {
   getBusinessTitleById,
   insertBulkEmailSuppressions,
+  insertEmailSuppression,
   disableWeeklyDigestForBusiness,
 } from "../supabase/supabase.functions.js";
 
@@ -26,6 +28,30 @@ async function applyUnsubscribe(token) {
   }
   if (!business) {
     return { ok: false, status: 404, reason: "business_not_found" };
+  }
+
+  if (type === EMAIL_SUPPRESSION_TYPES.REVIEW_REQUEST) {
+    const { error } = await insertEmailSuppression({
+      businessId,
+      email,
+      suppressionType: EMAIL_SUPPRESSION_TYPES.REVIEW_REQUEST,
+      source: "unsubscribe_link",
+    });
+    if (error) {
+      return { ok: false, status: 500, error };
+    }
+
+    return {
+      ok: true,
+      data: {
+        businessId: business.id,
+        businessName: business.title,
+        businessSlug: business.slug,
+        isClaimed: Boolean(business.is_claimed),
+        email,
+        type,
+      },
+    };
   }
 
   // One unsubscribe stops outreach + weekly digests for this address.

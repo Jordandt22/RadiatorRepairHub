@@ -159,6 +159,43 @@ export const OwnedBusinessIdParamsSchema = Yup.object({
   businessId: Yup.string().trim().uuid("Invalid business ID").required(),
 });
 
+export const SaveReviewMessageTemplateSchema = Yup.object({
+  messageTemplate: Yup.string()
+    .nullable()
+    .transform((value, originalValue) => {
+      if (originalValue === null) return null;
+      return typeof originalValue === "string" ? originalValue.trim() : value;
+    })
+    .max(2000, "Message must be 2,000 characters or fewer")
+    .test(
+      "review-message-template",
+      "Enter a message.",
+      (value) => value === null || (typeof value === "string" && value.length > 0)
+    ),
+});
+
+export const ListReviewRequestsQuerySchema = Yup.object({
+  page: Yup.number().integer().min(1).max(100).optional(),
+});
+
+export const SendReviewRequestSchema = Yup.object({
+  customerName: Yup.string()
+    .trim()
+    .min(1, "Enter the customer's name")
+    .max(120, "Name must be 120 characters or fewer")
+    .required("Enter the customer's name"),
+  customerEmail: Yup.string()
+    .trim()
+    .email("Enter a valid email address")
+    .max(320, "Email must be 320 characters or fewer")
+    .required("Enter the customer's email"),
+  message: Yup.string()
+    .trim()
+    .min(1, "Enter a message")
+    .max(2000, "Message must be 2,000 characters or fewer")
+    .required("Enter a message"),
+});
+
 const OWNED_STATS_DAY_OPTIONS = [1, 7, 30, "all"];
 
 export const OwnedBusinessStatsQuerySchema = Yup.object({
