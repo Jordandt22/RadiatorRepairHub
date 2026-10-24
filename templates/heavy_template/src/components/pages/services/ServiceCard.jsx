@@ -12,7 +12,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { CHROME } from "@/lib/chrome";
-import { card, cardHover, h3, muted } from "@/lib/ui";
+import { h3 } from "@/lib/ui";
 
 const ICONS = {
   thermometer: Thermometer,
@@ -25,6 +25,8 @@ const ICONS = {
   gauge: Gauge,
 };
 
+const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
+
 export function ServiceCard({
   service,
   href,
@@ -35,37 +37,58 @@ export function ServiceCard({
   const body = (
     <>
       {image ? (
-        <div className="relative -mx-5 -mt-5 mb-4 aspect-16/9 overflow-hidden border-b border-line">
-          <Image
-            src={image.src}
-            alt={image.alt}
-            fill
-            sizes="(min-width: 1024px) 24rem, (min-width: 640px) 50vw, 100vw"
-            className="object-cover"
-          />
+        <Image
+          src={image.src}
+          alt=""
+          fill
+          sizes="(min-width: 1024px) 24rem, (min-width: 640px) 50vw, 100vw"
+          className={`object-cover transition-transform duration-700 ${ease} [@media(hover:hover)]:group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100`}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-surface" />
+      )}
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/15"
+        aria-hidden
+      />
+      <div className="relative flex h-full min-h-60 flex-col justify-end p-4">
+        {Icon ? (
+          <span className="mb-2 inline-flex size-9 items-center justify-center rounded-card bg-accent text-white">
+            <Icon size={18} strokeWidth={1.5} aria-hidden />
+          </span>
+        ) : null}
+        <Heading className={`${h3} text-white`}>{service.title}</Heading>
+        <div
+          className={`grid grid-rows-[1fr] transition-[grid-template-rows] duration-500 ${ease} motion-reduce:transition-none [@media(hover:hover)]:grid-rows-[0fr] [@media(hover:hover)]:group-hover:grid-rows-[1fr] [@media(hover:hover)]:group-focus-within:grid-rows-[1fr]`}
+        >
+          <div className="overflow-hidden">
+            <p
+              className={`m-0 pt-2 text-sm text-white/85 transition-opacity duration-500 ${ease} motion-reduce:transition-none [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100`}
+            >
+              {service.description}
+            </p>
+            {href ? (
+              <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-white">
+                {CHROME.learnMore}
+                <ArrowRight aria-hidden size={16} strokeWidth={2} />
+              </span>
+            ) : null}
+          </div>
         </div>
-      ) : null}
-      {Icon ? (
-        <span className="mb-3 inline-flex size-11 items-center justify-center rounded-card bg-accent text-white">
-          <Icon size={24} strokeWidth={1.5} aria-hidden />
-        </span>
-      ) : null}
-      <Heading className={`${h3} text-ink`}>{service.title}</Heading>
-      <p className={`${muted} m-0`}>{service.description}</p>
+      </div>
     </>
   );
 
+  const className =
+    "group relative block h-full overflow-hidden rounded-card border border-line text-inherit no-underline!";
+
   if (href) {
     return (
-      <Link className={`${card} ${cardHover} block h-full text-inherit no-underline!`} href={href}>
+      <Link className={`${className} cursor-pointer`} href={href}>
         {body}
-        <span className="mt-4 inline-flex items-center gap-1.5 font-semibold text-accent">
-          {CHROME.learnMore}
-          <ArrowRight aria-hidden size={18} strokeWidth={2} />
-        </span>
       </Link>
     );
   }
 
-  return <article className={`${card} ${cardHover} h-full`}>{body}</article>;
+  return <article className={className}>{body}</article>;
 }

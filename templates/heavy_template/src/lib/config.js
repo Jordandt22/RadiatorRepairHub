@@ -7,7 +7,7 @@ export function homeTrust(c = config) {
     return c.trust.slice(0, 4);
 }
 export function homeServices(c = config) {
-    return c.services.slice(0, 8);
+    return c.services.slice(0, 6);
 }
 /** Heavy shows every review; ReviewsSection paginates past the first three. */
 export function homeReviews(c = config) {

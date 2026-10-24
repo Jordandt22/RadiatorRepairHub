@@ -2,22 +2,30 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { CHROME } from "@/lib/chrome";
 import { getConfig, homeServices } from "@/lib/config";
-import { cardHover, cardShell, eyebrow, grid3, h2, h3, muted, section, wrap } from "@/lib/ui";
+import { eyebrow, grid3, h2, muted, section, wrap } from "@/lib/ui";
 import { StaggerChildren } from "@/components/motion/StaggerChildren";
 import { ServiceCard } from "./ServiceCard";
 
+const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
+
 /** Last tile of the grid: the jobs the list does not name. */
-function AskTile() {
+function AskTile({ heading: Heading = "h3" }) {
   return (
     <Link
-      className={`${cardShell} ${cardHover} flex h-full flex-col justify-between border-accent bg-accent text-white! no-underline!`}
+      className="group relative flex h-full min-h-60 cursor-pointer flex-col justify-between overflow-hidden rounded-card border border-accent p-4 text-white! no-underline! hover:scale-98 transition-all duration-300"
       href="/contact"
     >
-      <div>
-        <h3 className={h3}>{CHROME.missingService}</h3>
-        <p className="m-0 text-white/85">{CHROME.askATechBody}</p>
+      <div
+        className={`absolute inset-0 bg-accent transition-transform duration-700 ${ease} [@media(hover:hover)]:group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100`}
+        aria-hidden
+      />
+      <div className="relative">
+        <Heading className="mb-1.5 text-xl font-semibold leading-snug text-balance">
+          {CHROME.missingService}
+        </Heading>
+        <p className="m-0 text-sm text-white/85">{CHROME.askATechBody}</p>
       </div>
-      <span className="mt-4 inline-flex items-center gap-1.5 font-semibold">
+      <span className="relative mt-4 inline-flex items-center gap-1.5 font-semibold">
         {CHROME.contactUs}
         <ArrowRight aria-hidden size={18} strokeWidth={2} />
       </span>
@@ -54,17 +62,18 @@ export function ServiceGrid({ all = false, className = "" }) {
               <ServiceCard
                 service={service}
                 heading={all ? "h2" : "h3"}
-                image={all ? photos[i % photos.length] : undefined}
+                image={photos.length ? photos[i % photos.length] : undefined}
                 href={!all && service.slug ? `/services#${service.slug}` : undefined}
               />
             </div>
           ))}
-          <AskTile key="ask" />
+          {all ? <AskTile heading="h2" key="ask" /> : null}
         </StaggerChildren>
         {all ? null : (
           <p className="mt-6">
-            <Link className="font-semibold" href="/services">
+            <Link className="inline-flex items-center gap-1.5 font-semibold" href="/services">
               {CHROME.seeAllServices}
+              <ArrowRight aria-hidden size={18} strokeWidth={2} />
             </Link>
           </p>
         )}
