@@ -32,7 +32,7 @@ export function SiteHeader() {
               key={item.href}
               href={item.href}
               aria-current={pathname === item.href ? "page" : undefined}
-              className="inline-flex items-center font-medium text-ink no-underline aria-[current=page]:text-accent hover:text-accent-hover hover:bg-accent/10 rounded-md px-2 py-1 transition-all duration-200"
+              className="inline-flex items-center text-ink no-underline aria-[current=page]:font-medium aria-[current=page]:text-accent hover:text-accent-hover hover:bg-accent/10 rounded-md px-2 py-1 transition-all duration-200"
             >
               {item.label}
             </Link>
@@ -66,7 +66,8 @@ export function SiteHeader() {
             key={item.href}
             href={item.href}
             onClick={() => setOpen(false)}
-            className="min-h-11 py-3 text-ink no-underline"
+            aria-current={pathname === item.href ? "page" : undefined}
+            className="min-h-11 py-3 text-ink no-underline aria-[current=page]:font-medium aria-[current=page]:text-accent"
           >
             {item.label}
           </Link>

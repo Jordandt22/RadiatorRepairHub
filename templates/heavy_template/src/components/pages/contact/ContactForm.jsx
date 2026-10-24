@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { SendHorizontal } from "lucide-react";
+import { ChevronDown, SendHorizontal } from "lucide-react";
 import { CHROME } from "@/lib/chrome";
 import { getConfig } from "@/lib/config";
 import { callLabel, telHref } from "@/lib/phone";
@@ -8,7 +8,152 @@ import { btnPrimary, muted } from "@/lib/ui";
 import { FieldError } from "./FieldError";
 
 const fieldClass =
-  "min-h-12 rounded-card border border-line bg-surface px-3 py-2.5 font-inherit text-ink placeholder:text-ink-muted placeholder:opacity-100 ring-0! outline-none! focus:border-accent transition-colors duration-200";
+  "min-h-12 rounded-card border border-line bg-surface px-3 py-2.5 font-inherit text-ink placeholder:text-ink-muted placeholder:opacity-100 ring-0! outline-none! hover:border-accent/20 focus:border-accent focus:hover:border-accent transition-colors duration-200";
+
+function ServiceSelect({
+  id,
+  services,
+  placeholder,
+  name,
+  disabled,
+  className,
+  describedBy,
+  invalid,
+  onValueChange,
+  inputRef,
+}) {
+  const [value, setValue] = useState("");
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const rootRef = useRef(null);
+  const listId = `${id}-list`;
+  const selectedIndex = services.findIndex((item) => item.title === value);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    function onPointerDown(event) {
+      if (!rootRef.current?.contains(event.target)) setOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const option = document.getElementById(`${id}-option-${active}`);
+    option?.scrollIntoView({ block: "nearest" });
+  }, [active, id, open]);
+
+  function choose(next) {
+    setValue(next);
+    setOpen(false);
+    onValueChange?.();
+  }
+
+  function onKeyDown(event) {
+    if (disabled) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      if (!open) {
+        setActive(selectedIndex >= 0 ? selectedIndex : 0);
+        setOpen(true);
+      } else {
+        setActive((index) => Math.min(services.length - 1, index + 1));
+      }
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!open) {
+        setActive(selectedIndex >= 0 ? selectedIndex : services.length - 1);
+        setOpen(true);
+      } else {
+        setActive((index) => Math.max(0, index - 1));
+      }
+    } else if (event.key === "Home" && open) {
+      event.preventDefault();
+      setActive(0);
+    } else if (event.key === "End" && open) {
+      event.preventDefault();
+      setActive(services.length - 1);
+    } else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      if (open) choose(services[active].title);
+      else {
+        setActive(selectedIndex >= 0 ? selectedIndex : 0);
+        setOpen(true);
+      }
+    } else if (event.key === "Escape" && open) {
+      event.preventDefault();
+      setOpen(false);
+    } else if (event.key === "Tab") {
+      setOpen(false);
+    }
+  }
+
+  return (
+    <div className="relative" ref={rootRef}>
+      <input type="hidden" name={name} value={value} />
+      <button
+        ref={inputRef}
+        id={id}
+        type="button"
+        disabled={disabled}
+        aria-required="true"
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listId}
+        aria-activedescendant={open ? `${id}-option-${active}` : undefined}
+        className={`${className} flex w-full cursor-pointer items-center justify-between gap-2 text-left disabled:cursor-not-allowed disabled:opacity-60`}
+        onClick={(event) => {
+          if (event.detail === 0) return;
+          setActive(selectedIndex >= 0 ? selectedIndex : 0);
+          setOpen((current) => !current);
+        }}
+        onKeyDown={onKeyDown}
+      >
+        <span className={value ? "text-ink" : "text-ink-muted"}>
+          {value || placeholder}
+        </span>
+        <ChevronDown
+          size={16}
+          strokeWidth={2}
+          aria-hidden
+          className={`shrink-0 transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180 text-accent" : "text-ink-muted"}`}
+        />
+      </button>
+      {open ? (
+        <ul
+          id={listId}
+          role="listbox"
+          aria-label={placeholder}
+          className="absolute top-full z-30 mt-1 max-h-72 w-full list-none overflow-auto border border-line bg-surface p-1 shadow-[0_16px_40px_rgba(0,0,0,0.85)]"
+        >
+          {services.map((item, index) => {
+            const selected = item.title === value;
+            const highlighted = index === active;
+            return (
+              <li
+                key={item.slug ?? item.title}
+                id={`${id}-option-${index}`}
+                role="option"
+                aria-selected={selected}
+                className={`cursor-pointer px-3 py-2 text-sm ${highlighted ? "bg-accent/15" : ""} ${selected ? "font-medium text-accent" : "text-ink"}`}
+                onMouseEnter={() => setActive(index)}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  choose(item.title);
+                }}
+              >
+                {item.title}
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
 
 const SUBMIT_COOLDOWN_MS = 2000;
 const FIELD_ORDER = ["name", "phone", "email", "service", "vehicle", "issue"];
@@ -149,7 +294,7 @@ export function ContactForm() {
 
   const submitting = status === "submitting";
   const inputClass = (name, extra = "") =>
-    `${fieldClass} ${extra} ${fieldErrors[name] ? "border-accent" : ""}`.trim();
+    `${fieldClass} ${extra} ${fieldErrors[name] ? "border-accent hover:border-accent" : ""}`.trim();
 
   function fieldProps(name) {
     const errorId = fieldErrors[name] ? `${name}-error` : undefined;
@@ -165,6 +310,8 @@ export function ContactForm() {
       onChange: () => clearFieldError(name),
     };
   }
+
+  const serviceField = requireService ? fieldProps("service") : null;
 
   return (
     <form className="relative grid gap-3.5" onSubmit={onSubmit} noValidate>
@@ -215,24 +362,22 @@ export function ContactForm() {
         <FieldError id="email-error" message={fieldErrors.email} />
       </label>
       {requireService ? (
-        <label className="grid gap-1 text-sm font-medium">
-          Service
-          <select
-            {...fieldProps("service")}
-            aria-required="true"
-            defaultValue=""
-          >
-            <option value="" disabled>
-              {CHROME.placeholders.service}
-            </option>
-            {services.map((item) => (
-              <option key={item.slug ?? item.title} value={item.title}>
-                {item.title}
-              </option>
-            ))}
-          </select>
+        <div className="grid gap-1 text-sm font-medium">
+          <label htmlFor="contact-service">Service</label>
+          <ServiceSelect
+            id="contact-service"
+            services={services}
+            placeholder={CHROME.placeholders.service}
+            inputRef={serviceField.ref}
+            className={serviceField.className}
+            name={serviceField.name}
+            disabled={serviceField.disabled}
+            invalid={serviceField["aria-invalid"]}
+            describedBy={serviceField["aria-describedby"]}
+            onValueChange={serviceField.onChange}
+          />
           <FieldError id="service-error" message={fieldErrors.service} />
-        </label>
+        </div>
       ) : null}
       <label className="grid gap-1 text-sm font-medium">
         Vehicle model

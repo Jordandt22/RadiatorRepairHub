@@ -4,6 +4,7 @@ import { googleReviewsHref, googleWriteReviewHref } from "@/lib/maps";
 import { btnPrimary, btnRow, btnSecondary, eyebrow, h2, wrap } from "@/lib/ui";
 import { StarRow } from "@/components/pages/shared/StarRow";
 import { ReviewCarousel } from "./ReviewCarousel";
+import { ReviewQrButton } from "./ReviewQrButton";
 
 export function ReviewsSection() {
   const config = getConfig();
@@ -23,14 +24,19 @@ export function ReviewsSection() {
       id="reviews"
     >
       <div className={wrap}>
-        <p className={eyebrow}>{CHROME.eyebrow.reviews}</p>
-        <h2 className={h2}>{CHROME.heading.reviews}</h2>
-        {subline ? (
-          <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <StarRow rating={reviews.rating} />
-            <span className="text-ink-muted tabular-nums">{subline}</span>
-          </p>
-        ) : null}
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className={eyebrow}>{CHROME.eyebrow.reviews}</p>
+            <h2 className={h2}>{CHROME.heading.reviews}</h2>
+            {subline ? (
+              <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <StarRow rating={reviews.rating} />
+                <span className="text-ink-muted tabular-nums">{subline}</span>
+              </p>
+            ) : null}
+          </div>
+          <ReviewQrButton url={writeHref} />
+        </div>
 
         <ReviewCarousel items={items} />
 

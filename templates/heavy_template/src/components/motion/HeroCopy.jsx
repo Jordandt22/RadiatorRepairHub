@@ -8,7 +8,15 @@ import { GetAQuoteLink } from "@/components/pages/shared/GetAQuoteLink";
 const eyebrowClass =
   "mb-2 text-sm font-semibold tracking-[0.12em] text-accent uppercase";
 
-export function HeroCopy({ eyebrow, headline, subheadline, callHref, callText, showSecondaryCta }) {
+export function HeroCopy({
+  eyebrow,
+  headline,
+  subheadline,
+  callHref,
+  callText,
+  showSecondaryCta,
+  children,
+}) {
   const reduce = useReducedMotion();
 
   const content = [
@@ -30,7 +38,12 @@ export function HeroCopy({ eyebrow, headline, subheadline, callHref, callText, s
   ];
 
   if (reduce) {
-    return <div>{content}</div>;
+    return (
+      <div>
+        {content}
+        {children}
+      </div>
+    );
   }
 
   return (
@@ -44,6 +57,7 @@ export function HeroCopy({ eyebrow, headline, subheadline, callHref, callText, s
           {child}
         </motion.div>
       ))}
+      {children ? <motion.div variants={heroFadeUpItem}>{children}</motion.div> : null}
     </motion.div>
   );
 }

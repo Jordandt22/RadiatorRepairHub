@@ -22,7 +22,7 @@ export function StarRow({ rating }) {
             </span>
             {fill > 0 ? (
               <span
-                className="absolute inset-y-0 left-0 overflow-hidden text-highlight"
+                className="absolute inset-y-0 left-0 overflow-hidden text-[#fbbc04]"
                 style={{ width: `${fill * 100}%` }}
               >
                 <StarIcon />

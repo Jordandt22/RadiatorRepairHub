@@ -1,3 +1,4 @@
+import { Mail } from "lucide-react";
 import Link from "next/link";
 import { getConfig } from "@/lib/config";
 import { CHROME, NAV_ITEMS } from "@/lib/chrome";
@@ -11,12 +12,16 @@ export function SiteFooter() {
   const { shop, hours, seo, services } = config;
 
   return (
-    <footer className="border-t border-line bg-sunken py-10 pb-12 text-sm text-ink-muted [&_a]:text-ink-muted [&_a]:no-underline [&_a]:hover:text-ink [&_th]:border-line [&_td]:border-line">
+    <footer className="border-t border-line bg-sunken py-10 pb-12 text-sm text-ink-muted [&_a]:text-ink-muted [&_a]:no-underline [&_a]:hover:text-ink [&_a.contact-link]:text-accent [&_a.contact-link]:hover:text-accent-hover [&_th]:border-line [&_td]:border-line">
       <div className={`${wrap} grid gap-7 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]`}>
-        <div>
+        <div className="font-semibold">
           <NapBlock />
           <p>
-            <a href={`mailto:${shop.email}`} className="hover:underline">
+            <a
+              href={`mailto:${shop.email}`}
+              className="contact-link inline-flex items-center gap-2 hover:underline"
+            >
+              <Mail size={16} strokeWidth={2} aria-hidden />
               {shop.email}
             </a>
           </p>

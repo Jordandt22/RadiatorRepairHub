@@ -58,6 +58,33 @@
 html {
   scroll-behavior: smooth;
   color-scheme: dark;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-soft) transparent;
+}
+
+/* Thin thumb on the page black. Accent only while the pointer is on it. */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--accent-soft);
+  border: 2px solid transparent;
+  border-radius: var(--radius-card);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Barlow Condensed is display-only; body copy stays in Source Sans. */
@@ -65,6 +92,10 @@ h1,
 h2 {
   font-family: var(--font-family-display);
   letter-spacing: -0.02em;
+}
+
+button {
+  cursor: pointer;
 }
 
 /* Grain over the whole viewport. Decorative, never intercepts a tap. */

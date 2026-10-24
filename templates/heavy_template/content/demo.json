@@ -168,6 +168,7 @@
     ]
   },
   "location": {
+    "placeId": "ChIJF0I0pqg23YARXxTuXCmWkxg",
     "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=1840+W+Anaheim+St+Long+Beach+CA+90813",
     "embedUrl": "https://maps.google.com/maps?q=1840+W+Anaheim+St+Long+Beach+CA+90813&output=embed",
     "serviceAreas": ["Long Beach", "Signal Hill", "Wilmington", "San Pedro", "Lakewood"],

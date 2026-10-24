@@ -3,6 +3,7 @@ import { getConfig } from "@/lib/config";
 import { callLabel, telHref } from "@/lib/phone";
 import { wrap } from "@/lib/ui";
 import { HeroCopy } from "@/components/motion/HeroCopy";
+import { HeroPhoto } from "@/components/motion/HeroPhoto";
 import { GoogleRatingLine } from "./GoogleRatingLine";
 import { OpenBadge } from "@/components/pages/contact/OpenBadge";
 
@@ -15,7 +16,7 @@ export function Hero() {
     : shop.city;
 
   return (
-    <section className="pt-section pb-section md:pt-14 md:pb-section-lg" aria-label="Introduction">
+    <section className="overflow-x-clip pt-section pb-section md:pt-14 md:pb-section-lg" aria-label="Introduction">
       <div className={`${wrap} grid items-center gap-8 lg:grid-cols-2 lg:gap-12`}>
         <div>
           <OpenBadge className="mb-5" />
@@ -26,10 +27,11 @@ export function Hero() {
             callHref={telHref(shop)}
             callText={callLabel(shop)}
             showSecondaryCta={Boolean(hero.secondaryCta)}
-          />
-          <GoogleRatingLine className="mt-6" />
+          >
+            <GoogleRatingLine className="mt-6" />
+          </HeroCopy>
         </div>
-        <div className="relative aspect-4/3 overflow-hidden rounded-card border border-line max-lg:min-h-[40vh]">
+        <HeroPhoto className="relative aspect-4/3 overflow-hidden rounded-card border border-line max-lg:min-h-[40vh]">
           <Image
             src={hero.imagePath}
             alt={`${shop.name} shop floor: mechanic at an open hood, fluid shelves and shop windows behind`}
@@ -39,7 +41,7 @@ export function Hero() {
             unoptimized={svg}
             className="object-cover object-center"
           />
-        </div>
+        </HeroPhoto>
       </div>
     </section>
   );
