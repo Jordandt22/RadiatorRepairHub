@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { ArrowLeftRight, ArrowRight, ChevronLeft, ChevronRight, Lock, Save, Send, Star } from "lucide-react";
+import { ArrowLeftRight, ArrowRight, Car, Check, ChevronLeft, ChevronRight, Lock, Mail, Phone, Save, Search, Send, Star, User, Wrench, X } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import ReviewQrCode from "@/components/dashboard/ReviewQrCode";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/contexts/ToastProvider";
 import {
   fetchReviewRequests,
+  fetchWebsiteLeads,
   saveReviewMessageTemplate,
   sendReviewRequest,
 } from "@/lib/api/reviewRequests";
@@ -137,32 +138,382 @@ function FeaturedReviewLock({ business }) {
   );
 }
 
-function LeadFollowUp({ isPartner }) {
-  if (isPartner) {
+function leadIssuePreview(issue) {
+  return String(issue ?? "").replace(/\s+/g, " ").trim();
+}
+
+function leadTelHref(phone) {
+  const digits = String(phone ?? "").replace(/[^\d+]/g, "");
+  return digits ? `tel:${digits}` : "";
+}
+
+function leadStatusLabel(status) {
+  if (status === "review_sent") return "Review sent";
+  return "New";
+}
+
+function leadStatusClass(status) {
+  const base =
+    "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium";
+  if (status === "review_sent") {
+    return `${base} bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-400`;
+  }
+  return `${base} bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-400`;
+}
+
+const LEAD_SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "name_asc", label: "Name A–Z" },
+  { value: "name_desc", label: "Name Z–A" },
+];
+
+const LEAD_STATUS_OPTIONS = [
+  { value: "all", label: "All statuses" },
+  { value: "new", label: "New" },
+  { value: "review_sent", label: "Review sent" },
+];
+
+function LeadFollowUp({ business, onRequestReview, reloadKey = 0 }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [leads, setLeads] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("newest");
+  const [status, setStatus] = useState("all");
+  const [service, setService] = useState("all");
+  const [services, setServices] = useState([]);
+  const [openLeadIds, setOpenLeadIds] = useState(() => new Set());
+  const queryRef = useRef("");
+
+  useEffect(() => {
+    setSearch("");
+    setQuery("");
+    queryRef.current = "";
+    setSort("newest");
+    setStatus("all");
+    setService("all");
+    setServices([]);
+    setOpenLeadIds(new Set());
+    setPage(1);
+  }, [business.id]);
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      const next = search.trim();
+      if (queryRef.current === next) return;
+      queryRef.current = next;
+      setQuery(next);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [search]);
+
+  useEffect(() => {
+    if (!business?.is_partner) return undefined;
+    let mounted = true;
+    setLoading(true);
+    setError("");
+    fetchWebsiteLeads(business.id, { page, q: query, sort, status, service }).then(({ data, error: apiError }) => {
+      if (!mounted) return;
+      if (apiError) {
+        setError(errorText(apiError, "Unable to load website leads."));
+        setLeads([]);
+        setTotalPages(1);
+      } else {
+        const nextTotalPages = Math.max(1, Number(data?.pagination?.totalPages) || 1);
+        const nextServices = Array.isArray(data?.services) ? data.services : [];
+        setServices(nextServices);
+        if (page > nextTotalPages) {
+          setPage(nextTotalPages);
+        } else {
+          setLeads(Array.isArray(data?.leads) ? data.leads : []);
+          setTotalPages(nextTotalPages);
+          setError("");
+        }
+      }
+      setLoading(false);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [business.id, business.is_partner, page, query, sort, status, service, reloadKey]);
+
+  useEffect(() => {
+    setOpenLeadIds(new Set());
+  }, [page, query, sort, status, service]);
+
+  useEffect(() => {
+    if (service !== "all" && services.length > 0 && !services.includes(service)) {
+      setService("all");
+      setPage(1);
+    }
+  }, [service, services]);
+
+  if (!business.is_partner) {
     return (
-      <div className="rounded-lg border border-border bg-card px-5 py-6">
-        <h3 className="font-heading text-lg font-semibold text-foreground">
-          Lead follow-up
-        </h3>
-        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          Website lead follow-ups will show up here.
-        </p>
+      <div className="flex items-start gap-3 rounded-lg border border-border bg-card px-5 py-6">
+        <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+          <Lock className="size-5" aria-hidden="true" />
+        </span>
+        <div>
+          <h3 className="font-heading text-lg font-semibold text-foreground">
+            Lead follow-up
+          </h3>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Website lead follow-up comes with a Partner listing.
+          </p>
+        </div>
       </div>
     );
   }
 
+  const infoClassNames = "flex w-full items-center gap-1.5 rounded-md bg-primary/20 px-2 py-1 font-medium text-primary sm:w-auto";
+  const serviceClassNames = "flex w-full items-center gap-1.5 rounded-md bg-violet-100 px-2 py-1 font-medium text-violet-800 sm:w-auto dark:bg-violet-500/20 dark:text-violet-300";
+  const vehicleClassNames = "flex w-full items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 font-medium text-amber-800 sm:w-auto dark:bg-amber-500/20 dark:text-amber-300";
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-border bg-card px-5 py-6">
-      <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-        <Lock className="size-5" aria-hidden="true" />
-      </span>
-      <div>
+    <div className="rounded-lg border border-border bg-card">
+      <div className="border-b border-border px-5 py-3 bg-muted-foreground/5">
         <h3 className="font-heading text-lg font-semibold text-foreground">
-          Lead follow-up
+          Website Leads
         </h3>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Website lead follow-up comes with a Partner listing.
+        <p className="mt-1 text-sm text-muted-foreground">
+          Leads submitted from your website. After the job, send a review email to customers.
         </p>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          <label className="relative block w-full max-w-md">
+            <span className="sr-only">Search leads</span>
+            <Search
+              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search name, email, phone, or vehicle..."
+              maxLength={100}
+              className={`bg-card pl-9 text-sm ${search ? "pr-9" : ""}`}
+            />
+            {search ? (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute top-1/2 right-2 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center text-muted-foreground duration-200 hover:text-destructive"
+                aria-label="Clear lead search"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
+            ) : null}
+          </label>
+          <SelectMenu
+            id="lead-sort"
+            aria-label="Sort leads"
+            value={sort}
+            onValueChange={(value) => {
+              setSort(value);
+              setPage(1);
+            }}
+            options={LEAD_SORT_OPTIONS}
+            className="w-full sm:w-36"
+            triggerClassName="bg-card capitalize"
+          />
+          <SelectMenu
+            id="lead-status"
+            aria-label="Filter by status"
+            value={status}
+            onValueChange={(value) => {
+              setStatus(value);
+              setPage(1);
+            }}
+            options={LEAD_STATUS_OPTIONS}
+            className="w-full sm:w-40"
+            triggerClassName="bg-card capitalize"
+          />
+          <SelectMenu
+            id="lead-service"
+            aria-label="Filter by service"
+            value={services.includes(service) ? service : "all"}
+            onValueChange={(value) => {
+              setService(value);
+              setPage(1);
+            }}
+            options={[
+              { value: "all", label: "All services" },
+              ...services.map((name) => ({ value: name, label: name })),
+            ]}
+            className="w-full sm:w-48"
+            triggerClassName="bg-card capitalize"
+          />
+        </div>
+      </div>
+      <div>
+        {loading && leads.length === 0 ? (
+          <div role="status" aria-live="polite">
+            <p className="sr-only">Loading website leads.</p>
+            <div className="space-y-3 px-5 py-4">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
+          </div>
+        ) : error ? (
+          <p className="px-5 py-4 text-sm text-destructive">{error}</p>
+        ) : leads.length === 0 ? (
+          <p className="px-5 py-4 text-sm text-muted-foreground">
+            {query || status !== "all" || service !== "all"
+              ? "No leads match."
+              : "No website leads yet."}
+          </p>
+        ) : (
+          <ul className={`divide-y divide-border ${loading ? "opacity-60" : ""}`}>
+            {leads.map((lead) => (
+              <li key={lead.id} className="px-5 py-4 text-sm">
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="mb-2 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                      <p className="flex w-full items-center gap-1.5 rounded-md bg-foreground/10 px-2 py-1 font-medium text-foreground sm:w-auto">
+                        <User className="size-3.5 shrink-0" aria-hidden="true" />
+                        {lead.customerName}
+                      </p>
+                      {lead.customerEmail ? (
+                        <a
+                          href={`mailto:${lead.customerEmail}`}
+                          className={`${infoClassNames} cursor-pointer no-underline hover:bg-primary/30 transition-all duration-200`}
+                        >
+                          <Mail className="size-3.5 shrink-0" aria-hidden="true" />
+                          <span className="font-medium">{lead.customerEmail}</span>
+                        </a>
+                      ) : null}
+                      {leadTelHref(lead.customerPhone) ? (
+                        <a
+                          href={leadTelHref(lead.customerPhone)}
+                          className={`${infoClassNames} cursor-pointer no-underline hover:bg-primary/30 transition-all duration-200`}
+                        >
+                          <Phone className="size-3.5 shrink-0" aria-hidden="true" />
+                          <span className="font-medium">{lead.customerPhone}</span>
+                        </a>
+                      ) : (
+                        <p className={infoClassNames}>
+                          <Phone className="size-3.5 shrink-0" aria-hidden="true" />
+                          <span className="font-medium">{lead.customerPhone}</span>
+                        </p>
+                      )}
+                      <p className={serviceClassNames}>
+                        <Wrench className="size-3.5 shrink-0" aria-hidden="true" />
+                        <span className="font-medium capitalize">{lead.service}</span>
+                      </p>
+                      <p className={vehicleClassNames}>
+                        <Car className="size-3.5 shrink-0" aria-hidden="true" />
+                        <span className="font-medium">{lead.vehicle}</span>
+                      </p>
+                    </div>
+                    <div className="mt-2 w-xl max-w-full">
+                      <button
+                        type="button"
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-md bg-muted-foreground/5 px-2 py-1.5 text-left hover:bg-muted-foreground/15 transition-all duration-200"
+                        aria-expanded={openLeadIds.has(lead.id)}
+                        onClick={() => {
+                          setOpenLeadIds((current) => {
+                            const next = new Set(current);
+                            if (next.has(lead.id)) next.delete(lead.id);
+                            else next.add(lead.id);
+                            return next;
+                          });
+                        }}
+                      >
+                        <ChevronRight
+                          className={`size-4 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none ${openLeadIds.has(lead.id) ? "rotate-90" : ""}`}
+                          aria-hidden="true"
+                        />
+                        <span className="shrink-0 font-medium text-foreground">
+                          Customer&apos;s Message
+                        </span>
+                        {openLeadIds.has(lead.id) ? null : (
+                          <span className="min-w-0 truncate text-muted-foreground">
+                            {leadIssuePreview(lead.issue)}
+                          </span>
+                        )}
+                      </button>
+                      {openLeadIds.has(lead.id) ? (
+                        <p className="mt-1 whitespace-pre-wrap rounded-md bg-muted-foreground/5 p-3 leading-relaxed text-foreground">
+                          {lead.issue}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 flex-row items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                      <span className={leadStatusClass(lead.status)}>
+                        {lead.status === "review_sent" ? (
+                          <Check className="size-3 shrink-0" aria-hidden="true" />
+                        ) : (
+                          <span
+                            className="relative flex size-1.5 shrink-0"
+                            aria-hidden="true"
+                          >
+                            <span className="absolute inline-flex size-full animate-ping rounded-full bg-sky-500/60 motion-reduce:animate-none" />
+                            <span className="relative inline-flex size-1.5 rounded-full bg-sky-500" />
+                          </span>
+                        )}
+                        {leadStatusLabel(lead.status)}
+                      </span>
+                      {lead.createdAt ? (
+                        <span className="text-muted-foreground text-xs">
+                          {formatSentAt(lead.createdAt)}
+                        </span>
+                      ) : null}
+                    </div>
+                    {lead.customerEmail && lead.status !== "review_sent" ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => onRequestReview(lead)}
+                      >
+                        Request Review
+                        <ArrowRight aria-hidden="true" />
+                      </Button>
+                    ) : lead.reviewSentAt ? (
+                      <span className="rounded-sm bg-muted-foreground/10 text-foreground px-2 py-1 text-xs font-medium">
+                        Review sent on {formatSentAt(lead.reviewSentAt)}
+                      </span>
+                    ) : !lead.customerEmail ? (
+                      <span className="text-xs text-muted-foreground">
+                        No email on this lead
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-3">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={page <= 1 || loading}
+          onClick={() => setPage((current) => Math.max(1, current - 1))}
+        >
+          <ChevronLeft aria-hidden="true" />
+          Previous
+        </Button>
+        <p className="text-xs text-muted-foreground">
+          {page} of {totalPages}
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={page >= totalPages || loading}
+          onClick={() => setPage((current) => current + 1)}
+        >
+          Next
+          <ChevronRight aria-hidden="true" />
+        </Button>
       </div>
     </div>
   );
@@ -175,12 +526,14 @@ function ReviewEmailForm({
   messageTemplate = null,
   onTemplateChange,
   onSent,
+  prefill = null,
+  onLeadReviewed,
 }) {
   const { showCustomSuccess, showCustomError } = useToast();
   const builtinTemplate = defaultReviewMessageTemplate(business.title);
   const [step, setStep] = useState("edit");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState(() => prefill?.name ?? "");
+  const [email, setEmail] = useState(() => prefill?.email ?? "");
   const [savedTemplate, setSavedTemplate] = useState(messageTemplate);
   const [draftTemplate, setDraftTemplate] = useState(null);
   const [override, setOverride] = useState(null);
@@ -190,12 +543,12 @@ function ReviewEmailForm({
 
   useEffect(() => {
     setStep("edit");
-    setName("");
-    setEmail("");
+    setName(prefill?.name ?? "");
+    setEmail(prefill?.email ?? "");
     setDraftTemplate(null);
     setOverride(null);
     setErrors({});
-  }, [business.id, business.title]);
+  }, [business.id, business.title, prefill?.id, prefill?.name, prefill?.email]);
 
   useEffect(() => {
     setSavedTemplate(messageTemplate);
@@ -241,11 +594,13 @@ function ReviewEmailForm({
   const send = async () => {
     if (sending || blocked) return;
     setSending(true);
-    const { data, error } = await sendReviewRequest(business.id, {
+    const payload = {
       customerName: name.trim(),
       customerEmail: email.trim(),
       message: message.trim(),
-    });
+    };
+    if (prefill?.id) payload.websiteLeadId = prefill.id;
+    const { data, error } = await sendReviewRequest(business.id, payload);
     setSending(false);
     if (error || !data?.request) {
       const message = errorText(error, "Unable to send this review email.");
@@ -268,6 +623,7 @@ function ReviewEmailForm({
     setEmail("");
     setDraftTemplate(null);
     setOverride(null);
+    onLeadReviewed?.();
     onSent(data.usage);
   };
 
@@ -505,7 +861,7 @@ function SentEmailsSkeleton() {
   );
 }
 
-function ReviewFollowUp({ business }) {
+function ReviewFollowUp({ business, prefill = null, onLeadReviewed }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [requests, setRequests] = useState([]);
@@ -576,6 +932,8 @@ function ReviewFollowUp({ business }) {
               usage={usage}
               messageTemplate={messageTemplate}
               onTemplateChange={setMessageTemplate}
+              prefill={prefill}
+              onLeadReviewed={onLeadReviewed}
               onSent={(nextUsage) => {
                 if (nextUsage) setUsage(nextUsage);
                 setPage(1);
@@ -640,29 +998,29 @@ function ReviewFollowUp({ business }) {
             )}
           </div>
           <div className="mt-auto flex items-center justify-between gap-2 border-t border-border px-3 py-3">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page <= 1 || loading}
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
-              >
-                <ChevronLeft aria-hidden="true" />
-                Previous
-              </Button>
-              <p className="text-xs text-muted-foreground">
-                {page} of {totalPages}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages || loading}
-                onClick={() => setPage((current) => current + 1)}
-              >
-                Next
-                <ChevronRight aria-hidden="true" />
-              </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={page <= 1 || loading}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+            >
+              <ChevronLeft aria-hidden="true" />
+              Previous
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              {page} of {totalPages}
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages || loading}
+              onClick={() => setPage((current) => current + 1)}
+            >
+              Next
+              <ChevronRight aria-hidden="true" />
+            </Button>
           </div>
         </div>
 
@@ -733,6 +1091,8 @@ export default function AutomationPanel({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [selectedId, setSelectedId] = useState("");
+  const [reviewPrefill, setReviewPrefill] = useState(null);
+  const [leadReloadKey, setLeadReloadKey] = useState(0);
   const requestedSection = searchParams.get("section");
   const [section, setSection] = useState(
     requestedSection === "lead" || requestedSection === "review"
@@ -787,6 +1147,7 @@ export default function AutomationPanel({
 
   const onBusinessChange = (value) => {
     setSelectedId(value);
+    setReviewPrefill(null);
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", "automation");
     params.set("business", value);
@@ -839,10 +1200,28 @@ export default function AutomationPanel({
       {selected ? (
         <>
           <TabsContent value="lead">
-            <LeadFollowUp isPartner={Boolean(selected.is_partner)} />
+            <LeadFollowUp
+              business={selected}
+              reloadKey={leadReloadKey}
+              onRequestReview={(lead) => {
+                setReviewPrefill({
+                  id: lead.id,
+                  name: lead.customerName,
+                  email: lead.customerEmail,
+                });
+                onSectionChange("review");
+              }}
+            />
           </TabsContent>
           <TabsContent value="review">
-            <ReviewFollowUp business={selected} />
+            <ReviewFollowUp
+              business={selected}
+              prefill={reviewPrefill}
+              onLeadReviewed={() => {
+                setReviewPrefill(null);
+                setLeadReloadKey((value) => value + 1);
+              }}
+            />
           </TabsContent>
         </>
       ) : null}

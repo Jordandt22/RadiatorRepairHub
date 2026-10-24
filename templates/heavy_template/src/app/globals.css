@@ -1,0 +1,183 @@
+@import "tailwindcss";
+
+:root {
+  /* Page and bands share one black. Cards sit one step lighter so they still read. */
+  --bg: #141414;
+  --sunken: #141414;
+  --surface: #1c1c1c;
+  --surface-raised: #242424;
+  --ink: #f5f5f4;
+  --ink-muted: #a8a8a4;
+  --line: #2a2a2a;
+  --accent: #e31b16;
+  --accent-hover: #ff2d24;
+  --accent-soft: #3d3d3d;
+  --accent-ink: #ffffff;
+  --neutral: #737373;
+  --highlight: #ff3b30;
+  --hero-scrim: rgba(0, 0, 0, 0.72);
+  --font-family-sans: var(--font-source), system-ui, sans-serif;
+  --font-family-display: var(--font-barlow), var(--font-source), system-ui, sans-serif;
+  --font-family-body: var(--font-source), system-ui, sans-serif;
+  --radius-card: 2px;
+  --radius-btn: 2px;
+  --max: 80rem;
+}
+
+/* Maps :root vars → Tailwind utilities (bg-accent, text-ink, font-sans, …).
+   `inline` so classes use the CSS vars (incl. brand.accentColor / next/font). */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-sunken: var(--sunken);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-neutral: var(--neutral);
+  --color-highlight: var(--highlight);
+  --color-hero-scrim: var(--hero-scrim);
+  --font-sans: var(--font-family-sans);
+  --font-display: var(--font-family-display);
+  --font-body: var(--font-family-body);
+  --radius-card: 2px;
+  --radius-btn: 2px;
+  --max-width-content: var(--max);
+  --spacing-section: 3.5rem;
+  --spacing-section-lg: 5.5rem;
+  --spacing-gutter: 1.25rem;
+  --spacing-gutter-lg: 2rem;
+  --spacing-header: 4.5rem;
+  --spacing-header-lg: 6rem;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+/* Barlow Condensed is display-only; body copy stays in Source Sans. */
+h1,
+h2 {
+  font-family: var(--font-family-display);
+  letter-spacing: -0.02em;
+}
+
+/* Grain over the whole viewport. Decorative, never intercepts a tap. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  opacity: 0.12;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Shop-floor grid. One band only (home services) — see DESIGN.md §2. */
+.grid-lines {
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      color-mix(in srgb, var(--ink) 5%, transparent) 0 1px,
+      transparent 1px 4rem
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--ink) 5%, transparent) 0 1px,
+      transparent 1px 4rem
+    );
+}
+
+/* SCHEMA §14: 150–200ms route fade; chrome stays in layout (not animated). */
+.route-fade {
+  animation: route-fade-in 180ms ease;
+}
+
+@keyframes route-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Hero marquee: service names and city, looping. Static under reduced motion. */
+.marquee-track {
+  width: max-content;
+  animation: marquee-scroll 42s linear infinite;
+}
+
+@keyframes marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* FAQ answers ease open and closed. Native details stays usable without JS. */
+.faq-item {
+  interpolate-size: allow-keywords;
+}
+
+.faq-item::details-content {
+  height: 0;
+  overflow: clip;
+  opacity: 0;
+  transition:
+    height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.35s ease,
+    content-visibility 0.45s ease allow-discrete;
+}
+
+.faq-item[open]::details-content {
+  height: auto;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .route-fade {
+    animation: none;
+  }
+
+  /* One static centred line instead of a loop. */
+  .marquee-track {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: none;
+  }
+
+  .marquee-dup {
+    display: none;
+  }
+
+  .faq-item::details-content {
+    transition: none;
+  }
+}
+
+/* Prose / content links (utility-styled chrome links override with text-ink etc.) */
+main a {
+  color: var(--accent);
+}
+
+main a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

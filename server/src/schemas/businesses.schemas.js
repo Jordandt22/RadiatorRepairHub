@@ -178,6 +178,16 @@ export const ListReviewRequestsQuerySchema = Yup.object({
   page: Yup.number().integer().min(1).max(100).optional(),
 });
 
+export const ListWebsiteLeadsQuerySchema = Yup.object({
+  page: Yup.number().integer().min(1).max(100).optional(),
+  q: Yup.string().max(100).optional(),
+  sort: Yup.string()
+    .oneOf(["newest", "oldest", "name_asc", "name_desc"])
+    .optional(),
+  status: Yup.string().oneOf(["new", "review_sent"]).optional(),
+  service: Yup.string().max(200).optional(),
+});
+
 export const SendReviewRequestSchema = Yup.object({
   customerName: Yup.string()
     .trim()
@@ -194,6 +204,13 @@ export const SendReviewRequestSchema = Yup.object({
     .min(1, "Enter a message")
     .max(2000, "Message must be 2,000 characters or fewer")
     .required("Enter a message"),
+  websiteLeadId: Yup.string()
+    .transform((value, original) => {
+      if (original == null || String(original).trim() === "") return undefined;
+      return String(original).trim();
+    })
+    .notRequired()
+    .uuid("Invalid lead"),
 });
 
 const OWNED_STATS_DAY_OPTIONS = [1, 7, 30, "all"];

@@ -124,6 +124,33 @@ export default function BusinessDetailPageContent() {
     },
   });
 
+  const updateNotificationEmailMutation = useMutation({
+    mutationFn: async (notificationEmail) => {
+      const result = await fetchApi(
+        `/admin/businesses/${id}/notification-email`,
+        {
+          method: "PATCH",
+          accessToken,
+          body: JSON.stringify({ notificationEmail }),
+        }
+      );
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(formatListingError(result.error));
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin-business", id] });
+    },
+  });
+
   const updateCategoriesMutation = useMutation({
     mutationFn: async (payload) => {
       const result = await fetchApi("/admin/businesses/categories", {
@@ -360,6 +387,10 @@ export default function BusinessDetailPageContent() {
             setCategoriesError(null);
             setCategoriesOpen(true);
           }}
+          onSaveNotificationEmail={(notificationEmail) =>
+            updateNotificationEmailMutation.mutateAsync(notificationEmail)
+          }
+          notificationEmailSaving={updateNotificationEmailMutation.isPending}
         />
       ) : null}
 

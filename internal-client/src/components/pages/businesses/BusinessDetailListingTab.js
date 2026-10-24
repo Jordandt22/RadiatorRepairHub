@@ -1,6 +1,17 @@
+import { useState } from "react";
 import Link from "next/link";
 import { PencilIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
 import BusinessDetailCard from "@/components/pages/businesses/BusinessDetailCard";
 import BusinessFeaturedBadge from "@/components/pages/businesses/BusinessFeaturedBadge";
@@ -8,11 +19,69 @@ import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsB
 import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
 import { formatFullDate } from "@/components/pages/dashboard/formatDate";
 
+function NotificationEmailDialog({
+  open,
+  email,
+  saving,
+  error,
+  onOpenChange,
+  onEmailChange,
+  onSave,
+}) {
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (saving) return;
+        onOpenChange(next);
+      }}
+    >
+      <DialogContent className="sm:max-w-md" showCloseButton={!saving}>
+        <DialogHeader>
+          <DialogTitle>Notification email</DialogTitle>
+          <DialogDescription>
+            Leave this blank to send leads to the owner account email.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="notification-email">Email</Label>
+          <Input
+            id="notification-email"
+            type="email"
+            value={email}
+            onChange={(event) => onEmailChange(event.target.value)}
+            placeholder="owner@example.com"
+            autoComplete="off"
+          />
+          {error ? <p className="text-xs text-destructive">{error}</p> : null}
+        </div>
+        <DialogFooter>
+          <Button
+            type="button"
+            className="cursor-pointer"
+            disabled={saving}
+            onClick={onSave}
+          >
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function BusinessDetailListingTab({
   data,
   onEdit,
   onEditCategories,
+  onSaveNotificationEmail,
+  notificationEmailSaving = false,
 }) {
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notificationEmail, setNotificationEmail] = useState(
+    data.notification_email || ""
+  );
+  const [notificationError, setNotificationError] = useState("");
   const isClaimed = Boolean(data.is_claimed);
   const isFeatured = Boolean(data.is_featured);
   const hasOwner = Boolean(data.owner_uid);
@@ -209,6 +278,48 @@ export default function BusinessDetailListingTab({
                   View owner
                 </Link>
               )}
+            </BusinessDetailCard>
+            <BusinessDetailCard label="Notification email">
+              <div className="flex items-start justify-between gap-3">
+                <span className="min-w-0 break-all">
+                  {data.notification_email || (
+                    <span className="text-muted-foreground">Not set</span>
+                  )}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="cursor-pointer shrink-0"
+                  onClick={() => {
+                    setNotificationEmail(data.notification_email || "");
+                    setNotificationError("");
+                    setNotificationOpen(true);
+                  }}
+                >
+                  <PencilIcon />
+                  Edit
+                </Button>
+              </div>
+              <NotificationEmailDialog
+                open={notificationOpen}
+                email={notificationEmail}
+                saving={notificationEmailSaving}
+                error={notificationError}
+                onOpenChange={setNotificationOpen}
+                onEmailChange={setNotificationEmail}
+                onSave={async () => {
+                  setNotificationError("");
+                  try {
+                    await onSaveNotificationEmail(notificationEmail.trim());
+                    setNotificationOpen(false);
+                  } catch (err) {
+                    setNotificationError(
+                      err.message || "Unable to save the notification email."
+                    );
+                  }
+                }}
+              />
             </BusinessDetailCard>
             <BusinessDetailCard label="Owner UID">
               <Link

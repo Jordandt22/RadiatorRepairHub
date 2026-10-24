@@ -33,6 +33,7 @@ import {
   HardDriveIcon,
   Table2Icon,
   GlobeIcon,
+  KeyRound as KeyRoundIcon,
   InboxIcon,
   ActivityIcon,
   ServerIcon,
@@ -105,6 +106,11 @@ const data = {
           title: "Websites",
           url: "/websites?tab=businesses",
           icon: <GlobeIcon />,
+        },
+        {
+          title: "Partner Sites",
+          url: "/partner-sites",
+          icon: <KeyRoundIcon />,
         },
         {
           title: "Phone Numbers",

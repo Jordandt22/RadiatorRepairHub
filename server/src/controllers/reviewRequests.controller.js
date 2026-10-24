@@ -15,6 +15,7 @@ import {
   zonedMonthStart,
 } from "../lib/reviewRequest.js";
 import { sendReviewRequestEmail } from "../lib/reviewRequestSend.js";
+import { markWebsiteLeadReviewSent } from "./website-leads.controller.js";
 
 const { ACCESS_DENIED, SUPABASE_ERROR, SERVER_ERROR, YUP_ERROR, TOO_MANY_REQUESTS } =
   errorCodes;
@@ -375,6 +376,16 @@ export const sendReviewRequestHandler = async (req, res) => {
         "Unable to send this review email."
       )
     );
+  }
+
+  const websiteLeadId =
+    typeof req.body.websiteLeadId === "string" ? req.body.websiteLeadId.trim() : "";
+  if (websiteLeadId) {
+    await markWebsiteLeadReviewSent({
+      businessId: business.id,
+      leadId: websiteLeadId,
+      customerEmail,
+    });
   }
 
   const sentCount = count + 1;

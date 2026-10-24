@@ -1,0 +1,222 @@
+{
+  "shop": {
+    "name": "Iron Bay Radiator & Cooling",
+    "tagline": "Radiator, recore, and A/C in Long Beach",
+    "phone": "5625550198",
+    "phoneDisplay": "(562) 555-0198",
+    "email": "service@ironbayradiator.example",
+    "address": "1840 W Anaheim St",
+    "city": "Long Beach",
+    "state": "CA",
+    "zip": "90813"
+  },
+  "hours": {
+    "mon": "7:30 AM - 5:30 PM",
+    "tue": "7:30 AM - 5:30 PM",
+    "wed": "7:30 AM - 5:30 PM",
+    "thu": "7:30 AM - 5:30 PM",
+    "fri": "7:30 AM - 5:30 PM",
+    "sat": "8:00 AM - 2:00 PM",
+    "sun": "Closed",
+    "notes": "Fleet accounts: call before 9:00 AM for same-day bay time.",
+    "timezone": "America/Los_Angeles"
+  },
+  "brand": {
+    "accentColor": "#E31B16",
+    "logoPath": "/images/demo/logo.svg",
+    "theme": "dark"
+  },
+  "features": {
+    "showEmailInHeader": true,
+    "showHoursInHeader": true,
+    "showBackToTop": true,
+    "embedMap": true,
+    "showServiceAreas": true
+  },
+  "hero": {
+    "headline": "Radiator repair when the temperature gauge climbs",
+    "subheadline": "Recore, tanks, A/C, heater cores, and fleet cooling. Long Beach shop, honest clock time.",
+    "imagePath": "/images/demo/hero.jpg",
+    "primaryCta": {
+      "label": "Call (562) 555-0198",
+      "href": "tel:+15625550198"
+    },
+    "secondaryCta": {
+      "label": "Get a quote",
+      "href": "/contact"
+    }
+  },
+  "services": [
+    {
+      "title": "Radiator repair",
+      "description": "Overheating on the 405 or a sweet smell from the vents — we pressure-test, repair tanks, or replace the core.",
+      "icon": "thermometer",
+      "slug": "radiator-repair"
+    },
+    {
+      "title": "Recore and tanks",
+      "description": "If the tanks and fittings are good, we recore instead of selling you a box-store radiator.",
+      "icon": "refresh-cw",
+      "slug": "recore"
+    },
+    {
+      "title": "Cooling flush",
+      "description": "Flush, fill, and test so a new recore isn't sitting in dirty coolant.",
+      "icon": "droplets",
+      "slug": "flush"
+    },
+    {
+      "title": "A/C service",
+      "description": "Charge, leak check, and condenser work so the cabin actually gets cold.",
+      "icon": "snowflake",
+      "slug": "ac"
+    },
+    {
+      "title": "Heater cores",
+      "description": "No heat, fogged glass, or wet carpet — we find the core leak and replace it right.",
+      "icon": "flame",
+      "slug": "heater-cores"
+    },
+    {
+      "title": "Fleet cooling",
+      "description": "Work vans and light trucks — scheduled recore and same-week turnaround when we can.",
+      "icon": "truck",
+      "slug": "fleet"
+    },
+    {
+      "title": "Diagnostics",
+      "description": "Gauge up, fan inop, or a mystery overheat — we test before we quote a radiator.",
+      "icon": "wrench",
+      "slug": "diagnostics"
+    }
+  ],
+  "faq": [
+    {
+      "question": "How long does a radiator recore take?",
+      "answer": "Most passenger recore jobs are same-day or next morning once the core is on the bench. Fleet work and hard-to-source tanks take longer. You'll get a time estimate before we start."
+    },
+    {
+      "question": "Do I need an appointment, or can I walk in?",
+      "answer": "Walk-ins are welcome. If every bay is full we'll still look at it and tell you when we can pull it in. Fleet drop-offs: call before 9:00 AM and we'll hold bay time."
+    },
+    {
+      "question": "Repair, recore, or replace — how do you decide?",
+      "answer": "We pressure-test first. Small leaks and tank work usually repair. A soft or clogged core gets recored when the tanks are worth keeping. If the unit is finished we'll say so and price a replacement against the recore."
+    },
+    {
+      "question": "Do you work on fleet vehicles and A/C too?",
+      "answer": "Yes. Passenger cars, work vans, and light trucks, plus A/C and heater cores. Bring the vehicle or just the radiator and we'll tell you which makes more sense."
+    },
+    {
+      "question": "Is the work under warranty?",
+      "answer": "12-month workmanship on recore and A/C jobs. Ask at pickup if you want it in writing."
+    }
+  ],
+  "about": {
+    "mission": "Iron Bay has cooled Long Beach engines for 32 years. We show you the leak, price the recore against a new unit, and call if the job grows.",
+    "bullets": [
+      "Drop off and tell us what you're seeing",
+      "We pressure-test and confirm the core",
+      "You approve the path — recore or replace",
+      "We fix it and check the system before you leave"
+    ],
+    "yearsInBusiness": 32,
+    "warranty": "12-month workmanship on recore and A/C jobs"
+  },
+  "trust": [
+    { "label": "Years", "value": "32", "description": "Long Beach since 1994" },
+    { "label": "Honest diagnostics", "value": "100%", "description": "We test before we quote" },
+    { "label": "Turnaround", "value": "Same-day", "description": "When the bay is open" },
+    { "label": "Fleet", "value": "Welcome", "description": "Vans and light trucks" }
+  ],
+  "reviews": {
+    "googleUrl": "https://maps.google.com/?q=Iron+Bay+Radiator+Long+Beach",
+    "rating": 4.9,
+    "count": 86,
+    "items": [
+      {
+        "author": "Diego M.",
+        "quote": "Fleet van was cooking on Anaheim. They recored it the same day and sent photos of the core. Fair price.",
+        "rating": 5
+      },
+      {
+        "author": "Priya S.",
+        "quote": "Heater core job was explained in plain English. No mystery fees.",
+        "rating": 5
+      },
+      {
+        "author": "Chris L.",
+        "quote": "A/C actually blows cold now. They found the leak instead of just adding dye and hoping.",
+        "rating": 5
+      },
+      {
+        "author": "Anita K.",
+        "quote": "Third radiator shop we called. First one that said recore was enough. That's who we use now.",
+        "rating": 5
+      }
+    ]
+  },
+  "gallery": {
+    "enabled": true,
+    "images": [
+      { "src": "/images/demo/gallery-01.jpg", "alt": "Iron Bay Radiator bays, two lifts, cores on the bench" },
+      { "src": "/images/demo/gallery-02.jpg", "alt": "Copper-brass recore on the bench at Iron Bay" },
+      { "src": "/images/demo/gallery-03.jpg", "alt": "Pressure tester on a passenger radiator" },
+      { "src": "/images/demo/gallery-04.jpg", "alt": "Shop exterior on W Anaheim St at dusk" },
+      { "src": "/images/demo/gallery-05.jpg", "alt": "Heater core ready for install" },
+      { "src": "/images/demo/gallery-06.jpg", "alt": "Fleet van in the driveway waiting on cooling work" }
+    ]
+  },
+  "location": {
+    "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=1840+W+Anaheim+St+Long+Beach+CA+90813",
+    "embedUrl": "https://maps.google.com/maps?q=1840+W+Anaheim+St+Long+Beach+CA+90813&output=embed",
+    "serviceAreas": ["Long Beach", "Signal Hill", "Wilmington", "San Pedro", "Lakewood"],
+    "lat": 33.7828,
+    "lng": -118.2137
+  },
+  "contact": {
+    "siteId": "iron-bay-demo",
+    "formAction": "",
+    "socials": {}
+  },
+  "seo": {
+    "title": "Iron Bay Radiator & Cooling | Long Beach, CA",
+    "description": "Radiator repair, recore, A/C, heater cores, and fleet cooling in Long Beach. Call (562) 555-0198.",
+    "keywords": [
+      "radiator repair Long Beach",
+      "radiator recore",
+      "auto AC Long Beach",
+      "heater cores",
+      "fleet cooling"
+    ],
+    "rrhListingUrl": "",
+    "ogImage": "/images/demo/og.jpg",
+    "favicon": "/favicon.svg",
+    "pages": {
+      "home": {
+        "title": "Iron Bay Radiator & Cooling | Long Beach, CA",
+        "description": "Radiator repair, recore, A/C, heater cores, and fleet cooling in Long Beach. Call (562) 555-0198."
+      },
+      "services": {
+        "title": "Services | Iron Bay Radiator & Cooling | Long Beach, CA",
+        "description": "Radiator repair, recore, A/C, heater cores, fleet cooling, and diagnostics. Call (562) 555-0198."
+      },
+      "about": {
+        "title": "About | Iron Bay Radiator & Cooling | Long Beach, CA",
+        "description": "Long Beach radiator and cooling shop for 32 years. Recore, A/C, and fleet work."
+      },
+      "contact": {
+        "title": "Contact | Iron Bay Radiator & Cooling | Long Beach, CA",
+        "description": "Call (562) 555-0198 or send a quote. 1840 W Anaheim St, Long Beach, CA 90813."
+      },
+      "privacy": {
+        "title": "Privacy | Iron Bay Radiator & Cooling",
+        "description": "How Iron Bay Radiator & Cooling uses information you send through this site."
+      },
+      "terms": {
+        "title": "Terms | Iron Bay Radiator & Cooling",
+        "description": "Terms of use for the Iron Bay Radiator & Cooling website."
+      }
+    }
+  }
+}

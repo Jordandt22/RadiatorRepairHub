@@ -37,6 +37,7 @@ import {
   exportAdminBusinesses as fetchExportAdminBusinesses,
   getAdminExportBusinessStats as fetchAdminExportBusinessStats,
   getAdminBusinessById as fetchAdminBusinessById,
+  updateAdminBusinessNotificationEmail as patchAdminBusinessNotificationEmail,
   getAdminBusinessExists as fetchAdminBusinessExists,
   getBusinessStatsForAdmin as fetchBusinessStatsForAdmin,
   getCompetitorInsightsForAdmin as fetchCompetitorInsightsForAdmin,
@@ -2453,6 +2454,48 @@ export const getBusinessById = async (req, res) => {
     successHandler({
       ...data,
       gallery_images: formatAdminGalleryImages(data),
+    })
+  );
+};
+
+export const updateBusinessNotificationEmail = async (req, res) => {
+  const { id } = req.params;
+  const raw = req.body?.notificationEmail;
+  const notificationEmail =
+    raw == null || String(raw).trim() === ""
+      ? null
+      : String(raw).trim().toLowerCase();
+
+  const { data, error } = await patchAdminBusinessNotificationEmail(
+    id,
+    notificationEmail
+  );
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res
+        .status(404)
+        .json(customErrorHandler(SUPABASE_ERROR, "Business not found.", error));
+    }
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error updating the notification email.",
+        error
+      )
+    );
+  }
+
+  if (!data) {
+    return res
+      .status(404)
+      .json(customErrorHandler(SUPABASE_ERROR, "Business not found."));
+  }
+
+  return res.status(200).json(
+    successHandler({
+      id: data.id,
+      notificationEmail: data.notification_email,
     })
   );
 };

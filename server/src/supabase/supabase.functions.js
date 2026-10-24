@@ -1442,7 +1442,7 @@ export const getListingReports = async (page, limit, status = null) => {
 const ADMIN_BUSINESS_SELECT =
   "id, title, slug, email, phone, phone_status, phone_line_type, phone_carrier, phone_line_type_checked_at, address, website, is_claimed, is_featured, is_partner, is_test, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
-const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, email_status, email_status_marked_at, phone_status, phone_status_marked_at, phone_line_type, phone_carrier, phone_line_type_checked_at, cdn_stored, cdn_stored_attempts, hide_default_image, default_image_sort_order, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at, sort_order)`;
+const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, notification_email, email_status, email_status_marked_at, phone_status, phone_status_marked_at, phone_line_type, phone_carrier, phone_line_type_checked_at, cdn_stored, cdn_stored_attempts, hide_default_image, default_image_sort_order, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at, sort_order)`;
 
 const ADMIN_BUSINESS_EXPORT_SELECT =
   "id, title, slug, email, phone, address, website, is_claimed, is_featured, total_score, reviews_count, last_edited_at, created_at, place_id, description, latitude, longitude, email_status, phone_status, phone_line_type, phone_carrier, city:cities(name, slug), state:states(name, code), postal_code:postal_codes(code), primary_category:primary_categories(name, slug)";
@@ -7247,6 +7247,20 @@ export const disableWeeklyDigestForBusiness = async (businessId) => {
     .eq("id", businessId)
     .select("id, weekly_digest_enabled, is_claimed")
     .maybeSingle();
+  return { data, error };
+};
+
+export const updateAdminBusinessNotificationEmail = async (
+  businessId,
+  notificationEmail
+) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({ notification_email: notificationEmail })
+    .eq("id", businessId)
+    .select("id, notification_email")
+    .maybeSingle();
+
   return { data, error };
 };
 
