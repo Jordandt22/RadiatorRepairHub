@@ -5,6 +5,10 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import http from "http";
 import { logger } from "./lib/logger.js";
+import {
+  isFixedBrowserOrigin,
+  isPartnerSiteOriginAllowed,
+} from "./lib/partnerSiteCors.js";
 import { arcjetMiddleware } from "./middleware/arcjet.mw.js";
 
 // Routes
@@ -13,6 +17,7 @@ import locationRouter from "./routes/location.routes.js";
 import categoriesRouter from "./routes/categories.routes.js";
 import contactMessagesRouter from "./routes/contact-messages.routes.js";
 import contactInquiriesRouter from "./routes/contact-inquiries.routes.js";
+import templateLeadsRouter from "./routes/template-leads.routes.js";
 import listingRequestsRouter from "./routes/listing-requests.routes.js";
 import listingReportsRouter from "./routes/listing-reports.routes.js";
 import listingSavesRouter from "./routes/listing-saves.routes.js";
@@ -30,14 +35,20 @@ import emailUnsubscribeRouter from "./routes/email-unsubscribe.routes.js";
 const app = express();
 
 // Middleware
-const { NODE_ENV, API_VERSION, PORT, WEB_URL, INTERNAL_CLIENT_URL } = process.env;
+const { NODE_ENV, API_VERSION, PORT } = process.env;
 const notProduction = NODE_ENV !== "production";
 app.use(helmet());
 app.use(
   cors({
-    origin: notProduction
-      ? ["http://localhost:3000", "http://localhost:3001"]
-      : [WEB_URL, INTERNAL_CLIENT_URL],
+    origin(origin, callback) {
+      if (!origin || isFixedBrowserOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+      isPartnerSiteOriginAllowed(origin)
+        .then((allowed) => callback(null, allowed))
+        .catch(() => callback(null, false));
+    },
   })
 );
 // Stripe webhooks need the raw body — mount before JSON parsing and Arcjet.
@@ -102,6 +113,9 @@ app.use(`/v${API_VERSION}/api/contact-messages`, contactMessagesRouter);
 
 // Routes for Contact Inquiries (site contact form)
 app.use(`/v${API_VERSION}/api/contact-inquiries`, contactInquiriesRouter);
+
+// Routes for client-website template contact forms
+app.use(`/v${API_VERSION}/api/template-leads`, templateLeadsRouter);
 
 // Routes for Listing Requests (get listed)
 app.use(`/v${API_VERSION}/api/listing-requests`, listingRequestsRouter);

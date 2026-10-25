@@ -61,7 +61,7 @@ function SelectMenu({
                 key={option.value}
                 value={option.value}
                 className={cn(
-                  "cursor-pointer",
+                  "cursor-pointer capitalize",
                   option.value === value && "bg-tint text-primary"
                 )}
               >

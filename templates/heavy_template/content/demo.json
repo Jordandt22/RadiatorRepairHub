@@ -1,0 +1,234 @@
+{
+  "shop": {
+    "name": "Iron Bay Auto Repair",
+    "tagline": "Diagnostics, brakes, and maintenance in Long Beach",
+    "phone": "5625550198",
+    "phoneDisplay": "(562) 555-0198",
+    "email": "service@ironbayauto.example",
+    "address": "1840 W Anaheim St",
+    "city": "Long Beach",
+    "state": "CA",
+    "zip": "90813"
+  },
+  "hours": {
+    "mon": "7:30 AM - 5:30 PM",
+    "tue": "7:30 AM - 5:30 PM",
+    "wed": "7:30 AM - 5:30 PM",
+    "thu": "7:30 AM - 5:30 PM",
+    "fri": "7:30 AM - 5:30 PM",
+    "sat": "8:00 AM - 2:00 PM",
+    "sun": "Closed",
+    "notes": "",
+    "timezone": "America/Los_Angeles"
+  },
+  "brand": {
+    "accentColor": "#E31B16",
+    "logoPath": "/images/demo/logo.svg",
+    "theme": "dark"
+  },
+  "features": {
+    "showEmailInHeader": true,
+    "showHoursInHeader": true,
+    "showBackToTop": true,
+    "embedMap": true,
+    "showServiceAreas": true
+  },
+  "hero": {
+    "headline": "Repair when the car starts acting up",
+    "subheadline": "Brakes, diagnostics, maintenance, and A/C. Long Beach shop, honest clock time.",
+    "imagePath": "/images/demo/hero.jpg",
+    "primaryCta": {
+      "label": "Call (562) 555-0198",
+      "href": "tel:+15625550198"
+    },
+    "secondaryCta": {
+      "label": "Get a quote",
+      "href": "/contact"
+    }
+  },
+  "services": [
+    {
+      "title": "Diagnostics",
+      "description": "Check-engine light, a noise, or a car that just feels wrong. We read the codes, then test the part they point at before we quote anything.",
+      "icon": "gauge",
+      "slug": "diagnostics"
+    },
+    {
+      "title": "Brake service",
+      "description": "Squeal, a pull, or a soft pedal. We measure the pads and rotors and quote only what is worn.",
+      "icon": "disc",
+      "slug": "brakes"
+    },
+    {
+      "title": "Oil and fluids",
+      "description": "Oil changes, plus coolant and brake fluid when they are due. We show you the level and the condition before we fill.",
+      "icon": "droplets",
+      "slug": "fluids"
+    },
+    {
+      "title": "A/C service",
+      "description": "Warm air, a weak blow, or a sweet smell from the vents. We find the leak, then charge the system.",
+      "icon": "snowflake",
+      "slug": "ac"
+    },
+    {
+      "title": "Batteries and starting",
+      "description": "Slow crank or a no-start. We load-test the battery and check the charging system before we sell you one.",
+      "icon": "zap",
+      "slug": "batteries"
+    },
+    {
+      "title": "Belts and hoses",
+      "description": "Squeal on startup, or a hose that looks damp. We replace the belt, tensioner, or hose that is cracked and leave the rest.",
+      "icon": "wrench",
+      "slug": "belts-and-hoses"
+    },
+    {
+      "title": "Suspension and steering",
+      "description": "A clunk over bumps, a pull in the wheel, or uneven tire wear. We check the joints, the struts, and the alignment.",
+      "icon": "car",
+      "slug": "suspension"
+    }
+  ],
+  "faq": [
+    {
+      "question": "Do I need an appointment, or can I walk in?",
+      "answer": "Walk-ins are welcome. If every bay is full we will still look at it and tell you when we can pull it in. Diagnostics and brake jobs are usually the same day or the next morning. Bigger jobs get a finish time before we keep the car."
+    },
+    {
+      "question": "How do you decide what to repair?",
+      "answer": "We test first and show you what we found. You get a price before we start. If the job grows, we call before we keep going."
+    },
+    {
+      "question": "What should I bring?",
+      "answer": "Bring the vehicle, plus the year, make, and what it is doing. If a light is on, leave it on. A previous estimate helps if you have one. You do not need a diagnosis."
+    },
+    {
+      "question": "Do you work on cars and light trucks?",
+      "answer": "Yes. Daily drivers and light trucks, domestic and import. We do not do bodywork, paint, or heavy diesel. If a job is outside the shop, we say so before we take it in."
+    },
+    {
+      "question": "Is the work under warranty?",
+      "answer": "12-month workmanship on our labor. Parts carry the manufacturer's warranty. Ask at pickup if you want the labor warranty in writing."
+    }
+  ],
+  "about": {
+    "mission": "Iron Bay opened on W Anaheim Street in 1994. The cars picked up computers and the tools picked up scanners. The job stayed the same: find the problem, show it, and price it before anything comes apart. The bays are set up for daily drivers and work trucks. Bodywork and heavy diesel go to the shops that do that work all day.",
+    "visit": "You can wait or drop the car off. Brakes and diagnostics are usually the same day or the next morning. If the price changes after we open it up, we call before we continue.",
+    "bullets": [
+      "Drop off and tell us what you're seeing. You know the car.",
+      "We test it and show you what we found.",
+      "You approve the price before we start.",
+      "We fix it and check it before you leave."
+    ],
+    "yearsInBusiness": 32,
+    "warranty": "12-month workmanship on repairs"
+  },
+  "trust": [
+    { "label": "Years", "value": "32", "description": "Long Beach since 1994" },
+    { "label": "Honest diagnostics", "value": "100%", "description": "We test before we quote" },
+    { "label": "Turnaround", "value": "Same-day", "description": "When the bay is open" },
+    { "label": "Warranty", "value": "12 mo", "description": "Workmanship on repairs" }
+  ],
+  "reviews": {
+    "googleUrl": "https://maps.google.com/?q=Iron+Bay+Auto+Repair+Long+Beach",
+    "rating": 4.9,
+    "count": 86,
+    "items": [
+      {
+        "author": "Diego M.",
+        "quote": "Brake job was done the same day. They showed me the worn pad and the price before they started. The car stopped pulling on the way home.",
+        "rating": 5
+      },
+      {
+        "author": "Priya S.",
+        "quote": "Check-engine light explained in plain English. They tested the sensor the code named before they sold me the part. No mystery fees.",
+        "rating": 5
+      },
+      {
+        "author": "Chris L.",
+        "quote": "A/C blows cold now. They found the leak at the condenser and showed me the part before they replaced it.",
+        "rating": 5
+      },
+      {
+        "author": "Anita K.",
+        "quote": "Third shop we called. They said the noise was a worn belt and showed me the crack. We have used them since.",
+        "rating": 5
+      },
+      {
+        "author": "Marcus T.",
+        "quote": "Brought the truck in for a slow start. The load test showed a loose connection, so they cleaned it and sent me out the same morning.",
+        "rating": 5
+      },
+      {
+        "author": "Elena R.",
+        "quote": "Oil change was straightforward. They pointed out a soft hose and waited for a yes before they replaced it. I picked the car up before lunch.",
+        "rating": 5
+      }
+    ]
+  },
+  "gallery": {
+    "enabled": true,
+    "images": [
+      { "src": "/images/demo/gallery-01.jpg", "alt": "Mechanic checking an open engine bay with a work light" },
+      { "src": "/images/demo/gallery-02.jpg", "alt": "Mechanic kneeling at a wheel on a lift, impact wrench on the floor" },
+      { "src": "/images/demo/gallery-03.jpg", "alt": "Mechanic under a car on a lift, inspecting the suspension" },
+      { "src": "/images/demo/gallery-04.jpg", "alt": "Mechanic working in an open engine bay, fluid shelves behind him" },
+      { "src": "/images/demo/gallery-05.jpg", "alt": "Mechanic checking the oil with the dipstick, hood open" },
+      { "src": "/images/demo/gallery-06.jpg", "alt": "Mechanic fitting a wheel on a light-colored car in the bay" }
+    ]
+  },
+  "location": {
+    "placeId": "ChIJf-3USvtU2YART2bIqzTlc78",
+    "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=1840+W+Anaheim+St+Long+Beach+CA+90813",
+    "embedUrl": "https://maps.google.com/maps?cid=13795622097949058639&z=15&output=embed",
+    "serviceAreas": ["Long Beach", "Signal Hill", "Wilmington", "San Pedro", "Lakewood"],
+    "lat": 33.7828,
+    "lng": -118.2137
+  },
+  "contact": {
+    "siteId": "iron-bay-demo",
+    "formAction": "",
+    "socials": {}
+  },
+  "seo": {
+    "title": "Iron Bay Auto Repair | Long Beach, CA",
+    "description": "Auto repair in Long Beach. Diagnostics, brakes, maintenance, and A/C. Call (562) 555-0198.",
+    "keywords": [
+      "auto repair Long Beach",
+      "brake repair Long Beach",
+      "oil change Long Beach",
+      "check engine light Long Beach",
+      "car AC repair Long Beach"
+    ],
+    "rrhListingUrl": "https://radiatorrepairhub.com/business/t-p-auto-repair-c2458c18-aa75-4957-adb6-ba9ed15dd60b",
+    "ogImage": "/images/demo/og.jpg",
+    "favicon": "/favicon.svg",
+    "pages": {
+      "home": {
+        "title": "Iron Bay Auto Repair | Long Beach, CA",
+        "description": "Auto repair in Long Beach. Diagnostics, brakes, maintenance, and A/C. Call (562) 555-0198."
+      },
+      "services": {
+        "title": "Auto Repair in Long Beach | Iron Bay Auto Repair",
+        "description": "Auto repair in Long Beach. Diagnostics, brakes, oil changes, and A/C. Call (562) 555-0198."
+      },
+      "about": {
+        "title": "About | Iron Bay Auto Repair | Long Beach, CA",
+        "description": "Long Beach auto repair shop for 32 years. Diagnostics, brakes, and maintenance."
+      },
+      "contact": {
+        "title": "Contact | Iron Bay Auto Repair | Long Beach, CA",
+        "description": "Call (562) 555-0198 or send a quote. 1840 W Anaheim St, Long Beach, CA 90813."
+      },
+      "privacy": {
+        "title": "Privacy | Iron Bay Auto Repair",
+        "description": "How Iron Bay Auto Repair uses information you send through this site."
+      },
+      "terms": {
+        "title": "Terms | Iron Bay Auto Repair",
+        "description": "Terms of use for the Iron Bay Auto Repair website."
+      }
+    }
+  }
+}

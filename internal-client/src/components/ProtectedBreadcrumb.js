@@ -33,6 +33,7 @@ const SEGMENT_LABELS = {
   "phone-line-type": "Line Type",
   "email-scrape": "Email Scrape",
   websites: "Websites",
+  "partner-sites": "Partner Sites",
   "phone-numbers": "Phone Numbers",
   users: "Users",
   testing: "Testing",

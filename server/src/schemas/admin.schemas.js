@@ -801,6 +801,15 @@ export const MarkBusinessEmailStatusSchema = Yup.object({
     .required("Status is required"),
 });
 
+export const UpdateAdminBusinessNotificationEmailSchema = Yup.object({
+  notificationEmail: Yup.string()
+    .trim()
+    .email("Enter a valid email address.")
+    .max(254, "Enter a valid email address.")
+    .nullable()
+    .transform((value) => (value === "" ? null : value)),
+});
+
 export const UpdateBusinessEmailSchema = Yup.object({
   business_id: Yup.string()
     .uuid("Invalid business ID")

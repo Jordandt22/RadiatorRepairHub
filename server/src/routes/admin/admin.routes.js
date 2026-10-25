@@ -32,6 +32,7 @@ import {
   getBusinesses,
   exportBusinesses,
   getBusinessById,
+  updateBusinessNotificationEmail,
   hideBusinessImage,
   deleteBusinessImage,
   getBusinessStats,
@@ -176,6 +177,7 @@ import {
   ClearBusinessEmailsSchema,
   MarkBusinessEmailStatusSchema,
   UpdateBusinessEmailSchema,
+  UpdateAdminBusinessNotificationEmailSchema,
   ClearBusinessPhonesSchema,
   MarkBusinessPhoneStatusSchema,
   UpdateBusinessPhoneSchema,
@@ -241,6 +243,14 @@ import {
   queryValidator,
 } from "../../middleware/validators.js";
 import { authAdmin } from "../../middleware/admin.mw.js";
+import {
+  listPartnerSitesHandler,
+  updatePartnerSiteHandler,
+} from "../../controllers/admin/partner-sites.controller.js";
+import {
+  PartnerSiteParamsSchema,
+  UpdatePartnerSiteSchema,
+} from "../../schemas/partner-sites.schemas.js";
 
 const ingestUpload = multer({
   storage: multer.memoryStorage(),
@@ -257,6 +267,18 @@ adminRouter.post(
 
 // All routes below require a valid admin JWT.
 adminRouter.use(authAdmin);
+
+adminRouter.get(
+  "/partner-sites",
+  serverErrorCatcherWrapper(listPartnerSitesHandler)
+);
+
+adminRouter.patch(
+  "/partner-sites/:businessId",
+  paramsValidator(PartnerSiteParamsSchema),
+  bodyValidator(UpdatePartnerSiteSchema),
+  serverErrorCatcherWrapper(updatePartnerSiteHandler)
+);
 
 adminRouter.get(
   "/contact-messages",
@@ -432,6 +454,13 @@ adminRouter.get(
   "/businesses/:id",
   paramsValidator(GetAdminBusinessParamsSchema),
   serverErrorCatcherWrapper(getBusinessById)
+);
+
+adminRouter.patch(
+  "/businesses/:id/notification-email",
+  paramsValidator(GetAdminBusinessParamsSchema),
+  bodyValidator(UpdateAdminBusinessNotificationEmailSchema),
+  serverErrorCatcherWrapper(updateBusinessNotificationEmail)
 );
 
 adminRouter.patch(

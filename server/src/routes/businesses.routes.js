@@ -40,6 +40,7 @@ import {
   saveReviewMessageTemplateHandler,
   sendReviewRequestHandler,
 } from "../controllers/reviewRequests.controller.js";
+import { listWebsiteLeadsHandler } from "../controllers/website-leads.controller.js";
 import {
   BusinessSlugSchema,
   SearchBusinessesSchema,
@@ -55,6 +56,7 @@ import {
   OwnedBusinessStatsQuerySchema,
   SaveReviewMessageTemplateSchema,
   ListReviewRequestsQuerySchema,
+  ListWebsiteLeadsQuerySchema,
   SendReviewRequestSchema,
   UpdateBusinessCategoriesSchema,
   UpdateBusinessAmenitiesSchema,
@@ -136,6 +138,14 @@ businessesRouter.get(
   paramsValidator(OwnedBusinessIdParamsSchema),
   queryValidator(OwnedBusinessStatsQuerySchema),
   serverErrorCatcherWrapper(getOwnedBusinessStatsHandler)
+);
+
+businessesRouter.get(
+  "/owned/:businessId/website-leads",
+  authUser,
+  paramsValidator(OwnedBusinessIdParamsSchema),
+  queryValidator(ListWebsiteLeadsQuerySchema),
+  serverErrorCatcherWrapper(listWebsiteLeadsHandler)
 );
 
 businessesRouter.get(
