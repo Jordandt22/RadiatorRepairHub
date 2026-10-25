@@ -8,14 +8,14 @@ import { OpensInNewTab } from "@/components/pages/shared/OpensInNewTab";
 import { wrap } from "@/lib/ui";
 
 const itemClass =
-  "inline-flex min-h-6 items-center gap-1.5 text-ink-muted hover:text-ink hover:underline";
+  "inline-flex min-h-6 items-center gap-1.5 text-ink hover:text-ink hover:underline";
 
 export function UtilityHeader() {
   const config = getConfig();
   const { shop, features, hours } = config;
   const showEmail = features?.showEmailInHeader && shop.email?.trim();
   return (
-    <nav className="bg-sunken text-sm tracking-[0.01em] border-b border-line" aria-label="Shop contact">
+    <nav className="bg-accent/30 text-sm tracking-[0.01em]" aria-label="Shop contact">
       <div className={`${wrap} flex flex-wrap items-center gap-x-6 gap-y-2 py-2.5`}>
         <a href={telHref(shop)} className={`${itemClass} max-sm:hidden`}>
           <Phone size={20} strokeWidth={1.5} aria-hidden />

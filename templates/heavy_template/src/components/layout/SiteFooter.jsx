@@ -25,7 +25,7 @@ export function SiteFooter() {
               {shop.email}
             </a>
           </p>
-          <p>
+          <p className="mt-6">
             <RrhLink url={seo.rrhListingUrl} />
           </p>
         </div>

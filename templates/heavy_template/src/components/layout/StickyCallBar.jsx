@@ -17,7 +17,7 @@ export function StickyCallBar() {
   if (!phone && !directions) return null;
 
   return (
-    <div className="fixed inset-x-2 bottom-2 z-30 rounded-md p-2 bg-sunken/90 backdrop-blur-md flex h-14 flex-row gap-2 justify-between items-center shadow-md md:hidden">
+    <div className="fixed inset-x-2 bottom-2 z-30 flex h-14 flex-row items-center justify-between gap-2 rounded-md bg-sunken/90 p-2 shadow-md md:hidden">
       {phone ? (
         <a className={`${action} h-full bg-accent text-white! rounded-md`} href={telHref(shop)}>
           <Phone aria-hidden size={18} strokeWidth={2} />

@@ -28,7 +28,7 @@ export function SiteHeader() {
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-bg/95 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-line bg-bg/95">
       <div className={`${wrap} flex items-center justify-between gap-4 py-2.5`}>
         <Link
           href="/"

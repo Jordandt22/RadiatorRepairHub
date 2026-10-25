@@ -26,7 +26,7 @@ export default function HomePage() {
       <ReviewsSection />
       <GalleryGrid />
       <ContactSection variant="home" />
-      <PageCta line={CHROME.ctaHome} />
+      <PageCta line={CHROME.ctaHome} imageSizes="(min-width: 1024px) 40rem, 100vw" />
     </>
   );
 }

@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 export const TEMPLATE_SITES = {
   "iron-bay-demo": {
     siteId: "iron-bay-demo",
-    shopName: "Iron Bay Radiator & Cooling",
+    shopName: "Iron Bay Auto Repair",
   },
 };
 

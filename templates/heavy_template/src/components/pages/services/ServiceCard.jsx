@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
+  Car,
+  Disc,
   Droplets,
   Flame,
   Gauge,
@@ -10,6 +12,7 @@ import {
   Thermometer,
   Truck,
   Wrench,
+  Zap,
 } from "lucide-react";
 import { CHROME } from "@/lib/chrome";
 import { h3 } from "@/lib/ui";
@@ -23,6 +26,9 @@ const ICONS = {
   truck: Truck,
   wrench: Wrench,
   gauge: Gauge,
+  disc: Disc,
+  zap: Zap,
+  car: Car,
 };
 
 const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";

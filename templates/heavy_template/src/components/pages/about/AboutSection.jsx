@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BadgeCheck, Car, Search, Wrench } from "lucide-react";
 import { CHROME } from "@/lib/chrome";
 import { getConfig } from "@/lib/config";
 import { callLabel, telHref } from "@/lib/phone";
@@ -18,6 +18,7 @@ import {
   wrap,
 } from "@/lib/ui";
 import { Reveal } from "@/components/motion/Reveal";
+import { StaggerChildren } from "@/components/motion/StaggerChildren";
 import { RrhLink } from "@/components/pages/shared/RrhLink";
 import { StarRow } from "@/components/pages/shared/StarRow";
 
@@ -61,34 +62,43 @@ function ProofRow({ config, showRating }) {
   );
 }
 
+/** Drop off, test, approve, fix. Only the four-step sequence gets an icon. */
+const STEP_ICONS = [Car, Search, BadgeCheck, Wrench];
+
 /**
  * The demo bullets are a real sequence (drop off, test, approve, fix), so they
  * are numbered. Swap to a plain grid if a client's bullets are not ordered.
  */
 function ProcessSteps({ bullets }) {
-  if (bullets.length !== 4) {
-    return (
-      <ul className="mt-8 grid list-none gap-4 p-0 sm:grid-cols-2">
-        {bullets.map((bullet) => (
-          <li className={`${card} border-l-4 border-l-accent`} key={bullet}>
-            {bullet}
-          </li>
-        ))}
-      </ul>
-    );
-  }
+  const sequenced = bullets.length === 4;
 
   return (
-    <ol className="mt-8 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
-      {bullets.map((bullet, i) => (
-        <li className={card} key={bullet}>
-          <p className="m-0 font-display text-3xl font-bold text-accent-text tabular-nums">
-            {i + 1}
-          </p>
-          <p className="mt-1 mb-0 font-medium">{bullet}</p>
-        </li>
-      ))}
-    </ol>
+    <StaggerChildren
+      className={`mt-8 grid gap-4 sm:grid-cols-2 ${sequenced ? "lg:grid-cols-4" : ""}`}
+      stagger={0.12}
+    >
+      {bullets.map((bullet, i) => {
+        const Icon = sequenced ? STEP_ICONS[i] : null;
+        return (
+          <article
+            className={sequenced ? card : `${card} border-l-4 border-l-accent`}
+            key={bullet}
+          >
+            {Icon ? (
+              <div className="flex items-center gap-3">
+                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm bg-accent text-white">
+                  <Icon size={18} strokeWidth={1.5} aria-hidden />
+                </span>
+                <p className="m-0 font-display text-3xl font-bold text-accent-text tabular-nums">
+                  {i + 1}
+                </p>
+              </div>
+            ) : null}
+            <p className={`mb-0 font-medium ${Icon ? "mt-3" : ""}`}>{bullet}</p>
+          </article>
+        );
+      })}
+    </StaggerChildren>
   );
 }
 
@@ -107,7 +117,8 @@ export function AboutSection({ teaser = false }) {
               {teaser ? CHROME.heading.about : `A ${shop.city} shop that earns its keep`}
             </h2>
             <p>{about.mission}</p>
-            <ProofRow config={config} showRating={!teaser} />
+            {!teaser && about.visit ? <p>{about.visit}</p> : null}
+            {teaser ? <ProofRow config={config} showRating={false} /> : null}
             <div className={`${btnRow} mt-8`}>
               <a className={btnPrimary} href={telHref(shop)}>
                 {callLabel(shop)}

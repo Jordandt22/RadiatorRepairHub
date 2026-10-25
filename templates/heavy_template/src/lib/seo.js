@@ -155,7 +155,6 @@ export function sameAs(config) {
     if (value && !urls.includes(value)) urls.push(value);
   };
   add(config.seo.rrhListingUrl);
-  add(config.location?.googleMapsUrl);
   add(config.reviews?.googleUrl);
   const s = config.contact?.socials ?? {};
   for (const v of [s.facebook, s.instagram, s.youtube, s.tiktok]) add(v);
@@ -199,9 +198,15 @@ export function jsonLdGraph(config, origin, breadcrumbs) {
   }
   const same = sameAs(config);
   if (same.length) autoRepair.sameAs = same;
-  if (location.serviceAreas?.length) {
-    autoRepair.areaServed = location.serviceAreas;
-  }
+  const areas = (location.serviceAreas ?? [])
+    .map((area) => (typeof area === "string" ? area.trim() : ""))
+    .filter(Boolean)
+    .map((name) => {
+      const city = { "@type": "City", name, addressCountry: "US" };
+      if (shop.state) city.addressRegion = shop.state;
+      return city;
+    });
+  if (areas.length) autoRepair.areaServed = areas;
   if (reviews?.rating != null && reviews?.count != null && reviews.count > 0) {
     autoRepair.aggregateRating = {
       "@type": "AggregateRating",

@@ -25,7 +25,7 @@ export default function AboutPage() {
       <TrustStrip />
       <AboutSection />
       <GalleryGrid />
-      <PageCta line={CHROME.ctaAbout} />
+      <PageCta line={CHROME.ctaAbout} heading={CHROME.ctaHeadingAbout} />
     </>
   );
 }

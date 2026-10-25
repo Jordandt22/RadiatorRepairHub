@@ -4,7 +4,7 @@ import { CountUp } from "@/components/motion/CountUp";
 
 /**
  * Four facts, hairline-separated on the sunken band. The Google rating lives
- * under the hero instead, so these stay years / honesty / turnaround / fleet.
+ * under the hero instead, so these stay years / honesty / turnaround / warranty.
  */
 export function TrustStrip() {
   const items = homeTrust(getConfig());

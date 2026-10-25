@@ -46,8 +46,23 @@ export default function TermsPage() {
               change if additional issues are found after inspection.
             </p>
             <p className={p}>
-              The company that hosts or provides this website template is not the repair shop and
-              is not a party to any work agreement between you and {shop.name}.
+              RadiatorRepairHub hosts this website and operates the contact form. It is not the
+              repair shop and is not a party to any work agreement between you and {shop.name}.
+            </p>
+
+            <h2 className={h2}>Messages and review emails</h2>
+            <p className={p}>
+              Submitting the form sends your request to {shop.name} through RadiatorRepairHub. If
+              you include an email address, you may receive a confirmation that the request was
+              received. That confirmation is not a quote, an appointment, or a promise that the
+              shop can take the job.
+            </p>
+            <p className={p}>
+              After a visit, {shop.name} may email you a request to leave a Google review, and may
+              send one follow-up to the same address. Those emails are sent by RadiatorRepairHub
+              on behalf of the shop. Each one includes an unsubscribe link. We send no more than
+              two review emails to the same address in a month. Leaving a review is optional and is
+              not a condition of any repair. Google’s terms apply to the review itself.
             </p>
 
             <h2 className={h2}>Acceptable use</h2>
@@ -72,9 +87,9 @@ export default function TermsPage() {
 
             <h2 className={h2}>Third-party links and tools</h2>
             <p className={p}>
-              This site may link to maps, review platforms, or other third-party sites. Those sites
-              have their own terms and privacy practices. We are not responsible for their content
-              or policies.
+              This site may link to maps, review platforms, or other third-party sites. A review email
+              links to Google’s review page. Those sites have their own terms and privacy practices.
+              We are not responsible for their content or policies.
             </p>
 
             <h2 className={h2}>Disclaimer of warranties</h2>
@@ -126,7 +141,7 @@ export default function TermsPage() {
           </article>
         </div>
       </section>
-      <PageCta line={CHROME.ctaContact} />
+      <PageCta line={CHROME.ctaContact} heading={CHROME.ctaHeadingContact} />
     </>
   );
 }

@@ -12,12 +12,16 @@ function Lightbox({ image, onClose }) {
 
   return (
     <PopupDialog labelledBy={titleId} closeLabel={CHROME.closePhoto} onClose={onClose}>
-      <figure className="m-0 max-w-[min(92vw,72rem)]">
-        <img
-          src={image.src}
-          alt={image.alt}
-          className="mx-auto block max-h-[min(82dvh,52rem)] w-auto max-w-full"
-        />
+      <figure className="m-0 w-[min(92vw,72rem)]">
+        <div className="relative h-[min(82dvh,52rem)] w-full">
+          <Image
+            src={image.src}
+            alt={image.alt}
+            fill
+            sizes="(min-width: 1152px) 72rem, 92vw"
+            className="object-contain"
+          />
+        </div>
         <figcaption id={titleId} className="mt-3 text-center text-sm text-ink">
           {image.alt}
         </figcaption>

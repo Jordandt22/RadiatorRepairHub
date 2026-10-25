@@ -19,7 +19,7 @@ export default function ContactPage() {
       <BreadcrumbJsonLd name={CHROME.nav.contact} path="/contact" />
       <PageBanner title={CHROME.nav.contact} subtitle={subtitle} />
       <ContactSection />
-      <PageCta line={CHROME.ctaContact} />
+      <PageCta line={CHROME.ctaContact} heading={CHROME.ctaHeadingContact} />
     </>
   );
 }

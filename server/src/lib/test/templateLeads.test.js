@@ -9,7 +9,7 @@ import {
 
 test("demo site is a known shop and unknown ids are not", () => {
   const site = getTemplateSite("iron-bay-demo");
-  assert.equal(site.shopName, "Iron Bay Radiator & Cooling");
+  assert.equal(site.shopName, "Iron Bay Auto Repair");
   assert.equal(site.ownerEmail, undefined);
   assert.equal(getTemplateSite("missing-shop"), null);
   assert.equal(getTemplateSite(""), null);

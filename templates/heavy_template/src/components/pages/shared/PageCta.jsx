@@ -6,11 +6,12 @@ import { btnPrimary, btnRow, btnSecondaryOnDark, h2, wrap } from "@/lib/ui";
 import { GetAQuoteLink } from "./GetAQuoteLink";
 
 /** Closing band: faded shop photo, one line, and the phone. On every route. */
-export function PageCta({ line, className = "" }) {
+export function PageCta({ line, heading, className = "", imageSizes = "100vw" }) {
   const { shop, hero } = getConfig();
   const svg = hero.imagePath.endsWith(".svg");
-  const heading =
-    hero.headline && hero.headline.length <= 48 ? hero.headline : CHROME.ctaHeading;
+  const title =
+    heading ||
+    (hero.headline && hero.headline.length <= 48 ? hero.headline : CHROME.ctaHeading);
 
   return (
     <section
@@ -20,7 +21,7 @@ export function PageCta({ line, className = "" }) {
         src={hero.imagePath}
         alt=""
         fill
-        sizes="100vw"
+        sizes={imageSizes}
         unoptimized={svg}
         className="object-cover object-center opacity-30"
       />
@@ -30,7 +31,7 @@ export function PageCta({ line, className = "" }) {
       />
       <div className={`${wrap} relative z-10 py-section md:py-section-lg`}>
         <div className="max-w-2xl">
-          <h2 className={`${h2} text-white`}>{heading}</h2>
+          <h2 className={`${h2} text-white`}>{title}</h2>
           <p className="text-white/85">{line}</p>
           <div className={`${btnRow} mt-6`}>
             <a className={btnPrimary} href={telHref(shop)}>

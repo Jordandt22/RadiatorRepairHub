@@ -17,7 +17,7 @@ const slide = {
 
 function Quote({ item }) {
   return (
-    <blockquote className={`${card} m-0 flex h-full flex-col justify-between transition-all duration-300 hover:z-10 hover:-translate-y-2 hover:border-[#fbbc04] hover:shadow-[0_16px_40px_rgba(0,0,0,0.85)] motion-reduce:transition-none motion-reduce:hover:translate-y-0`}>
+    <blockquote className={`${card} m-0 flex h-full flex-col justify-between transition-all duration-300 hover:z-10 hover:-translate-y-2 hover:border-accent hover:shadow-[0_16px_40px_rgba(0,0,0,0.85)] motion-reduce:transition-none motion-reduce:hover:translate-y-0`}>
       <p className="m-0 font-medium">“{item.quote}”</p>
       <footer className={`mt-4 text-sm font-semibold ${muted}`}>- {item.author}</footer>
     </blockquote>
@@ -73,7 +73,7 @@ export function ReviewCarousel({ items }) {
           </motion.div>
         </AnimatePresence>
       </div>
-      <div className="mt-6 flex items-center gap-3">
+      <div className="mt-6 flex justify-center md:justify-start items-center gap-3">
         <button
           type="button"
           className="inline-flex size-11 items-center justify-center rounded-btn border-2 border-ink/40 bg-transparent text-ink transition-colors hover:border-ink disabled:opacity-40"
@@ -83,6 +83,9 @@ export function ReviewCarousel({ items }) {
         >
           <ChevronLeft size={20} strokeWidth={2} aria-hidden />
         </button>
+        <p className={`m-0 text-sm tabular-nums ${muted}`}>
+          {page + 1} / {pages}
+        </p>
         <button
           type="button"
           className="inline-flex size-11 items-center justify-center rounded-btn border-2 border-ink/40 bg-transparent text-ink transition-colors hover:border-ink disabled:opacity-40"
@@ -92,9 +95,6 @@ export function ReviewCarousel({ items }) {
         >
           <ChevronRight size={20} strokeWidth={2} aria-hidden />
         </button>
-        <p className={`m-0 text-sm tabular-nums ${muted}`}>
-          {page + 1} / {pages}
-        </p>
       </div>
     </>
   );

@@ -23,7 +23,7 @@ export default function ServicesPage() {
       <ServicesIntro />
       <ServiceGrid all className="pt-8!" />
       <ServicesFaq />
-      <PageCta line={CHROME.ctaServices} />
+      <PageCta line={CHROME.ctaServices} heading={CHROME.ctaHeadingServices} />
     </>
   );
 }

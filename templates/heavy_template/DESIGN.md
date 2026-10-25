@@ -71,11 +71,10 @@ Do not add a light section to “break up” the dark. Contrast comes from photo
 
 ### Texture (locked)
 
-Three surface treatments, each in exactly one place. Stacking all three on every section reads as a kit of effects rather than a design.
+Two surface treatments, each in exactly one place. Stacking both on every section reads as a kit of effects rather than a design.
 
 | Texture | Where | How |
 |---------|-------|-----|
-| Grain | Whole viewport | `body::after`, fixed, `pointer-events: none`, opacity 0.12, `mix-blend-mode: overlay` |
 | Grid lines | Home services band **only** | `.grid-lines`, 4rem repeating hairlines at 5% ink |
 | Faded photo | `PageBanner` and `PageCta` only | Hero image at 30–35% under a black gradient |
 
@@ -525,7 +524,7 @@ Labels and `tel:` formatting: SCHEMA §3 and §5. Primary is always `Call {phone
 
 Fictional shop for outreach. **Canonical data:** [`content/demo.json`](content/demo.json) — Iron Bay Radiator & Cooling, Long Beach. Distinct from the minimal demo so side-by-side subdomains are not the same shop twice.
 
-Demo host: `heavy.radiatorrepairhub.com`. Placeholder images: hero, 6 gallery files, logo, og under `public/images/demo/`. `seo.rrhListingUrl` is empty until this fictional shop has its own RRH listing.
+Demo host: `heavy.radiatorrepairhub.com`. Placeholder images: hero, 6 gallery files, logo, og under `public/images/demo/`. `seo.rrhListingUrl` points at the T P Auto Repair listing as a placeholder.
 
 ---
 
@@ -569,4 +568,4 @@ Demo host: `heavy.radiatorrepairhub.com`. Placeholder images: hero, 6 gallery fi
 3. Empty optional fields omit UI (SCHEMA §7).  
 4. Test sticky call + back-to-top together on 375px; confirm `/contact` and hash sections clear sticky nav.  
 5. Critique pass: the risk on a near-black page is generic dark SaaS. The cures are real bay photography, Barlow on headlines only, and enamel `accent` rather than neon. Do not add a light band to “fix” it.  
-6. Textures are the locked set in §2. Do not stack grain, grid, and faded photo on one section.
+6. Textures are the locked set in §2. Do not stack the grid and the faded photo on one section.

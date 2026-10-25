@@ -27,7 +27,7 @@ export default function NotFound() {
           </div>
         </div>
       </section>
-      <PageCta line={CHROME.ctaContact} />
+      <PageCta line={CHROME.ctaContact} heading={CHROME.ctaHeadingContact} />
     </>
   );
 }
