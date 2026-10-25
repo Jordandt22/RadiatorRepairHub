@@ -12,7 +12,7 @@ export function SiteFooter() {
   const { shop, hours, seo, services } = config;
 
   return (
-    <footer className="border-t border-line bg-sunken py-10 pb-12 text-sm text-ink-muted [&_a]:text-ink-muted [&_a]:no-underline [&_a]:hover:text-ink [&_a.contact-link]:text-accent [&_a.contact-link]:hover:text-accent-hover [&_th]:border-line [&_td]:border-line">
+    <footer className="border-t border-line bg-sunken py-10 pb-12 text-sm text-ink-muted [&_a]:text-ink-muted [&_a]:no-underline [&_a]:hover:text-ink [&_a.contact-link]:text-accent-text [&_a.contact-link]:hover:text-accent-text [&_th]:border-line [&_td]:border-line">
       <div className={`${wrap} grid gap-7 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]`}>
         <div className="font-semibold">
           <NapBlock />
@@ -30,7 +30,7 @@ export function SiteFooter() {
           </p>
         </div>
         <div>
-          <p className={`${h3} text-white`}>{CHROME.heading.services}</p>
+          <h2 className={`${h3} text-white`}>{CHROME.heading.services}</h2>
           <ul className="m-0 list-none p-0">
             {services.slice(0, 6).map((service) => (
               <li key={service.slug ?? service.title} className="my-1.5">
@@ -45,11 +45,13 @@ export function SiteFooter() {
           </ul>
         </div>
         <div>
-          <p className={`${h3} text-white`}>Hours</p>
-          <HoursTable hours={hours} hightlightClass="bg-accent text-white" />
+          <h2 className={`${h3} text-white`} id="footer-hours">
+            Hours
+          </h2>
+          <HoursTable hours={hours} labelledBy="footer-hours" hightlightClass="bg-accent text-white" />
         </div>
         <div>
-          <p className={`${h3} text-white`}>Links</p>
+          <h2 className={`${h3} text-white`}>Links</h2>
           <ul className="m-0 list-none p-0">
             {NAV_ITEMS.map((item) => (
               <li key={item.href} className="my-1.5">

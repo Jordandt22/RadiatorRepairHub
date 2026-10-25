@@ -1,4 +1,5 @@
 import { MapPin, Phone } from "lucide-react";
+import { OpensInNewTab } from "@/components/pages/shared/OpensInNewTab";
 import { getConfig } from "@/lib/config";
 import { CHROME } from "@/lib/chrome";
 import { mapsHref } from "@/lib/maps";
@@ -32,6 +33,7 @@ export function StickyCallBar() {
         >
           <MapPin aria-hidden size={18} strokeWidth={2} />
           {CHROME.directions}
+          <OpensInNewTab />
         </a>
       ) : null}
     </div>

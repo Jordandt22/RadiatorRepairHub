@@ -1,4 +1,5 @@
 import { MapPin, Phone } from "lucide-react";
+import { OpensInNewTab } from "@/components/pages/shared/OpensInNewTab";
 import { getConfig } from "@/lib/config";
 import { mapsHref } from "@/lib/maps";
 import { phoneDisplay, telHref } from "@/lib/phone";
@@ -22,6 +23,7 @@ export function NapBlock() {
           <br />
           {`${shop.city}, ${shop.state} ${shop.zip}`}
         </span>
+        <OpensInNewTab />
       </a>
       {"\n"}
       <a

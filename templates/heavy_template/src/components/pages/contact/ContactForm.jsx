@@ -8,7 +8,7 @@ import { btnPrimary, muted } from "@/lib/ui";
 import { FieldError } from "./FieldError";
 
 const fieldClass =
-  "min-h-12 rounded-card border border-line bg-surface px-3 py-2.5 font-inherit text-ink placeholder:text-ink-muted placeholder:opacity-100 ring-0! outline-none! hover:border-accent/20 focus:border-accent focus:hover:border-accent transition-colors duration-200";
+  "min-h-12 rounded-card border-2 border-line/50 bg-surface px-3 py-2.5 font-inherit text-ink placeholder:text-ink-muted placeholder:opacity-100 outline-none! hover:border-accent/20 focus:border-accent-text focus:hover:border-accent-text transition-colors duration-200";
 
 function ServiceSelect({
   id,
@@ -119,7 +119,7 @@ function ServiceSelect({
           size={16}
           strokeWidth={2}
           aria-hidden
-          className={`shrink-0 transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180 text-accent" : "text-ink-muted"}`}
+          className={`shrink-0 transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180 text-accent-text" : "text-ink-muted"}`}
         />
       </button>
       {open ? (
@@ -138,7 +138,7 @@ function ServiceSelect({
                 id={`${id}-option-${index}`}
                 role="option"
                 aria-selected={selected}
-                className={`cursor-pointer px-3 py-2 text-sm ${highlighted ? "bg-accent/15" : ""} ${selected ? "font-medium text-accent" : "text-ink"}`}
+                className={`cursor-pointer px-3 py-2 text-sm ${highlighted ? "bg-accent/15" : ""} ${selected ? "font-medium text-accent-text" : "text-ink"}`}
                 onMouseEnter={() => setActive(index)}
                 onMouseDown={(event) => {
                   event.preventDefault();
@@ -188,11 +188,16 @@ export function ContactForm() {
   const [status, setStatus] = useState("idle");
   const [fieldErrors, setFieldErrors] = useState({});
   const errorRef = useRef(null);
+  const successRef = useRef(null);
   const fieldRefs = useRef({});
   const submittingRef = useRef(false);
   const lastSubmitAtRef = useRef(0);
   const focusErrorsRef = useRef(false);
   const requireService = Boolean(services?.length);
+
+  useEffect(() => {
+    if (status === "success") successRef.current?.focus();
+  }, [status]);
 
   useEffect(() => {
     if (!focusErrorsRef.current) return;
@@ -283,8 +288,14 @@ export function ContactForm() {
 
   if (status === "success") {
     return (
-      <div role="status" aria-live="polite" className="bg-accent/10 p-4 rounded-card border-2 border-accent/20">
-        <p className="mb-4 text-accent font-semibold">{CHROME.formSuccess}</p>
+      <div
+        ref={successRef}
+        tabIndex={-1}
+        role="status"
+        aria-live="polite"
+        className="bg-accent/10 p-4 rounded-card border-2 border-accent/20"
+      >
+        <p className="mb-4 text-accent-text font-semibold">{CHROME.formSuccess}</p>
         <a className={btnPrimary} href={telHref(shop)}>
           {callLabel(shop)}
         </a>
@@ -402,7 +413,7 @@ export function ContactForm() {
       </label>
       {status === "error" ? (
         <p
-          className="m-0 text-sm font-medium text-accent"
+          className="m-0 text-sm font-medium text-accent-text"
           ref={errorRef}
           tabIndex={-1}
           role="alert"

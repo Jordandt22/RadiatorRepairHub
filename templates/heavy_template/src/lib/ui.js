@@ -34,7 +34,7 @@ export const cardLink =
   `${card} block text-inherit no-underline!`;
 
 export const eyebrow =
-  "mb-2 text-sm font-semibold tracking-[0.12em] text-accent uppercase";
+  "mb-2 text-sm font-semibold tracking-[0.12em] text-accent-text uppercase";
 
 export const muted = "text-ink-muted text-sm md:text-base";
 

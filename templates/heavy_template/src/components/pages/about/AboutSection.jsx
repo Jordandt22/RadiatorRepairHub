@@ -82,7 +82,7 @@ function ProcessSteps({ bullets }) {
     <ol className="mt-8 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
       {bullets.map((bullet, i) => (
         <li className={card} key={bullet}>
-          <p className="m-0 font-display text-3xl font-bold text-accent tabular-nums">
+          <p className="m-0 font-display text-3xl font-bold text-accent-text tabular-nums">
             {i + 1}
           </p>
           <p className="mt-1 mb-0 font-medium">{bullet}</p>

@@ -21,7 +21,7 @@ export function TrustStrip() {
             <dd className="m-0 font-display text-[1.5rem] leading-none font-bold tabular-nums text-ink md:text-5xl">
               <CountUp value={item.value}>{item.value}</CountUp>
             </dd>
-            <dt className="mt-2 font-semibold text-accent text-sm md:text-base">{item.label}</dt>
+            <dt className="mt-2 font-semibold text-accent-text text-sm md:text-base">{item.label}</dt>
             {item.description ? (
               <p className={`mt-1 mb-0 text-xs md:text-sm ${muted}`}>{item.description}</p>
             ) : null}

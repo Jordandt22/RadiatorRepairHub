@@ -69,7 +69,9 @@ export default function RootLayout({ children }) {
           <UtilityHeader />
           <SiteHeader />
         </div>
-        <main id="content">{children}</main>
+        <main id="content" tabIndex={-1}>
+          {children}
+        </main>
         <SiteFooter />
         <StickyCallBar />
         {features?.showBackToTop ? <BackToTop /> : null}

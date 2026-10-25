@@ -5,6 +5,7 @@ import { googleReviewsHref, googleWriteReviewHref } from "@/lib/maps";
 import { btnPrimary, btnRow, btnSecondary, eyebrow, h2, wrap } from "@/lib/ui";
 import { StarRow } from "@/components/pages/shared/StarRow";
 import { ReviewCarousel } from "./ReviewCarousel";
+import { OpensInNewTab } from "@/components/pages/shared/OpensInNewTab";
 import { ReviewQrButton } from "./ReviewQrButton";
 
 export function ReviewsSection() {
@@ -52,6 +53,7 @@ export function ReviewsSection() {
               >
                 <Star aria-hidden size={18} strokeWidth={2} />
                 {CHROME.leaveReview}
+                <OpensInNewTab />
               </a>
             ) : null}
             {googleHref ? (
@@ -63,6 +65,7 @@ export function ReviewsSection() {
               >
                 {CHROME.viewAllOnGoogle}
                 <ArrowRight aria-hidden size={18} strokeWidth={2} />
+                <OpensInNewTab />
               </a>
             ) : null}
           </div>

@@ -6,7 +6,7 @@ import { btnPrimary, btnRow, btnSecondary, h1, muted } from "@/lib/ui";
 import { GetAQuoteLink } from "@/components/pages/shared/GetAQuoteLink";
 
 const eyebrowClass =
-  "mb-2 text-sm font-semibold tracking-[0.12em] text-accent uppercase";
+  "mb-2 text-sm font-semibold tracking-[0.12em] text-accent-text uppercase";
 
 export function HeroCopy({
   eyebrow,

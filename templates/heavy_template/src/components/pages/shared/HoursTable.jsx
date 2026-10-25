@@ -2,12 +2,17 @@ import { hoursRows, todayDayKey } from "@/lib/hours";
 
 export function HoursTable({
   hours,
-  hightlightClass = "bg-accent/15 text-accent",
+  labelledBy,
+  hightlightClass = "bg-accent/15 text-accent-text",
 }) {
   const today = todayDayKey(hours);
 
   return (
-    <table className="mt-4 w-full border-separate border-spacing-0 font-medium tabular-nums">
+    <table
+      className="mt-4 w-full border-separate border-spacing-0 font-medium tabular-nums"
+      aria-labelledby={labelledBy}
+    >
+      {labelledBy ? null : <caption className="sr-only">Hours</caption>}
       <tbody>
         {hoursRows(hours).map((row) => {
           const isToday = row.key === today;

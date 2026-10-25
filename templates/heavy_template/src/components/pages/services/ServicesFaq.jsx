@@ -35,7 +35,7 @@ export function ServicesFaq() {
                   size={22}
                   strokeWidth={2}
                   aria-hidden
-                  className="shrink-0 text-accent transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-open:rotate-45 motion-reduce:transition-none"
+                  className="shrink-0 text-accent-text transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-open:rotate-45 motion-reduce:transition-none"
                 />
               </summary>
               <div className="pb-4">

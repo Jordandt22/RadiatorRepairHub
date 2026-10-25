@@ -21,10 +21,11 @@ import { ContactForm } from "./ContactForm";
 import { MapEmbed } from "./MapEmbed";
 import { HoursTable } from "@/components/pages/shared/HoursTable";
 import { ServiceAreas } from "@/components/pages/shared/ServiceAreas";
+import { OpensInNewTab } from "@/components/pages/shared/OpensInNewTab";
 import { RrhLink } from "@/components/pages/shared/RrhLink";
 
 const linkClass =
-  "inline-flex items-center gap-2 text-accent no-underline hover:text-accent-hover hover:underline";
+  "inline-flex items-center gap-2 text-accent-text no-underline hover:underline";
 
 function CallUsCard({ shop }) {
   if (!shop.phone?.trim()) return null;
@@ -74,9 +75,10 @@ function HoursLocation({ config, heading }) {
           href={mapsHref(config)}
           rel="noopener noreferrer"
           target="_blank"
-          className="text-ink-muted no-underline hover:text-accent-hover hover:underline"
+          className="text-ink-muted no-underline hover:text-accent-text hover:underline"
         >
           {streetLine(config)}
+          <OpensInNewTab />
         </a>
       </p>
       <HoursTable hours={hours} />
@@ -92,6 +94,7 @@ function HoursLocation({ config, heading }) {
         >
           <MapPin aria-hidden size={18} strokeWidth={2} />
           {CHROME.directions}
+          <OpensInNewTab />
         </a>
         <a className={btnPrimary} href={telHref(shop)}>
           {callLabel(shop)}
@@ -127,6 +130,7 @@ export function ContactSection({ variant = "page" }) {
                 <li key={name}>
                   <a href={url} rel="noopener noreferrer" target="_blank" className="capitalize">
                     {name}
+                    <OpensInNewTab />
                   </a>
                 </li>
               ))}

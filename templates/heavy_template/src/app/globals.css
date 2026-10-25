@@ -11,6 +11,8 @@
   --line: #2a2a2a;
   --accent: #e31b16;
   --accent-hover: #ff2d24;
+  /* Text on the page black. The fill red is 3.9:1; this clears 4.5:1, including on the tinted hours row. */
+  --accent-text: #ff3b30;
   --accent-soft: #3d3d3d;
   --accent-ink: #ffffff;
   --neutral: #737373;
@@ -36,6 +38,7 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-accent-text: var(--accent-text);
   --color-accent-soft: var(--accent-soft);
   --color-accent-ink: var(--accent-ink);
   --color-neutral: var(--neutral);
@@ -194,13 +197,26 @@ body::after {
   }
 }
 
+/* Keep focused controls clear of the sticky header, and of the mobile call bar. */
+:focus {
+  scroll-margin-top: var(--spacing-header);
+  scroll-margin-bottom: 4.5rem;
+}
+
+@media (min-width: 768px) {
+  :focus {
+    scroll-margin-top: var(--spacing-header-lg);
+    scroll-margin-bottom: 0;
+  }
+}
+
 /* Prose / content links (utility-styled chrome links override with text-ink etc.) */
 main a {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 main a:hover {
-  color: var(--accent-hover);
+  color: var(--accent-text);
   text-decoration: underline;
 }
 
@@ -208,7 +224,8 @@ a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--accent);
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent-text);
   outline-offset: 2px;
 }

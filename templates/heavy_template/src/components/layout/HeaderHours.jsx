@@ -35,7 +35,7 @@ export function HeaderHours({ hours }) {
       {openLabel ? (
         <>
           <span aria-hidden>·</span>
-          <span className={status.open ? "font-semibold text-emerald-400" : "font-semibold text-accent"}>
+          <span className={status.open ? "font-semibold text-emerald-400" : "font-semibold text-accent-text"}>
             {openLabel}
           </span>
         </>

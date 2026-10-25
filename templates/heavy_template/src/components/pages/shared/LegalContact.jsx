@@ -4,6 +4,7 @@ import { CHROME } from "@/lib/chrome";
 import { getConfig } from "@/lib/config";
 import { mapsHref } from "@/lib/maps";
 import { phoneDisplay, telHref } from "@/lib/phone";
+import { OpensInNewTab } from "@/components/pages/shared/OpensInNewTab";
 import { btnPrimary, muted } from "@/lib/ui";
 
 /** Shop contact details + link to /contact for privacy & terms pages. */
@@ -30,6 +31,7 @@ export function LegalContact() {
             className="hover:underline"
           >
             {shop.address}, {shop.city}, {shop.state} {shop.zip}
+            <OpensInNewTab />
           </a>
         </p>
         <p className="mb-1">

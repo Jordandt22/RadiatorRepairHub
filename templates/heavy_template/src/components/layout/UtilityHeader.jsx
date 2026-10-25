@@ -4,9 +4,11 @@ import { getConfig } from "@/lib/config";
 import { mapsHref } from "@/lib/maps";
 import { callLabel, telHref } from "@/lib/phone";
 import { streetLine } from "@/lib/seo";
+import { OpensInNewTab } from "@/components/pages/shared/OpensInNewTab";
 import { wrap } from "@/lib/ui";
 
-const itemClass = "inline-flex items-center gap-1.5 text-ink-muted hover:text-ink hover:underline";
+const itemClass =
+  "inline-flex min-h-6 items-center gap-1.5 text-ink-muted hover:text-ink hover:underline";
 
 export function UtilityHeader() {
   const config = getConfig();
@@ -33,6 +35,7 @@ export function UtilityHeader() {
         >
           <MapPin size={20} strokeWidth={1.5} aria-hidden />
           {streetLine(config)}
+          <OpensInNewTab />
         </a>
         {features?.showHoursInHeader ? <HeaderHours hours={hours} /> : null}
       </div>

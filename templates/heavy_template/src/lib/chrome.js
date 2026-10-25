@@ -58,6 +58,7 @@ export const CHROME = {
     hoursOpen: "Open",
     hoursClosed: "Closed",
     skip: "Skip to content",
+    opensNewTab: "opens in a new tab",
     rrh: "View on RadiatorRepairHub",
     privacy: "Privacy",
     terms: "Terms",

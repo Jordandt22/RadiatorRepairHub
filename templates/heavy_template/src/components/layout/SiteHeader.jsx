@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { getConfig } from "@/lib/config";
 import { NAV_ITEMS } from "@/lib/chrome";
@@ -14,7 +14,19 @@ export function SiteHeader() {
   const config = getConfig();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const menuButtonRef = useRef(null);
   const { shop, brand } = config;
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (event) => {
+      if (event.key !== "Escape") return;
+      setOpen(false);
+      menuButtonRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-bg/95 backdrop-blur">
       <div className={`${wrap} flex items-center justify-between gap-4 py-2.5`}>
@@ -34,7 +46,7 @@ export function SiteHeader() {
               key={item.href}
               href={item.href}
               aria-current={pathname === item.href ? "page" : undefined}
-              className="inline-flex items-center text-ink no-underline aria-[current=page]:font-medium aria-[current=page]:text-accent hover:text-accent-hover hover:bg-accent/10 rounded-md px-2 py-1 transition-all duration-200"
+              className="inline-flex items-center text-ink no-underline aria-[current=page]:font-medium aria-[current=page]:text-accent-text hover:text-accent-hover hover:bg-accent/10 rounded-md px-2 py-1 transition-all duration-200"
             >
               {item.label}
             </Link>
@@ -46,8 +58,10 @@ export function SiteHeader() {
           </a>
           <button
             type="button"
+            ref={menuButtonRef}
             className="inline-flex h-12 w-11 cursor-pointer items-center justify-center border-0 bg-transparent text-ink touch-manipulation md:hidden"
             aria-expanded={open}
+            aria-controls="mobile-nav"
             aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((v) => !v)}
           >
@@ -70,6 +84,7 @@ export function SiteHeader() {
       </div>
       <nav
         className={`grid transition-[grid-template-rows] duration-300 ${ease} motion-reduce:transition-none md:hidden ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+        id="mobile-nav"
         aria-label="Mobile"
         aria-hidden={open ? undefined : true}
         inert={open ? undefined : true}
@@ -84,7 +99,7 @@ export function SiteHeader() {
                 href={item.href}
                 onClick={() => setOpen(false)}
                 aria-current={pathname === item.href ? "page" : undefined}
-                className="min-h-11 py-3 text-ink no-underline aria-[current=page]:font-medium aria-[current=page]:text-accent"
+                className="min-h-11 py-3 text-ink no-underline aria-[current=page]:font-medium aria-[current=page]:text-accent-text"
               >
                 {item.label}
               </Link>
