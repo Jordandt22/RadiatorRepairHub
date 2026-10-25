@@ -6,7 +6,7 @@ export const CHROME = {
         contact: "Contact",
     },
     getAQuote: "Get a Quote",
-    seeAllServices: "See all services",
+    seeAllServices: "See All Services",
     missingService: "Don't see your service?",
     askATechBody: "Tell us the year, make, and what it's doing. If it holds coolant or moves heat, we'll say if we can take it.",
     learnMore: "Learn more",
@@ -22,6 +22,7 @@ export const CHROME = {
     /** SCHEMA §5: heavy final-CTA heading when `hero.headline` is too long. */
     ctaHeading: "Ready to get it cooled down?",
     contactUs: "Contact the shop",
+    legalContact: "Contact Us",
     aboutMore: "More about us",
     directions: "Get Directions",
     viewAllOnGoogle: "View all on Google",

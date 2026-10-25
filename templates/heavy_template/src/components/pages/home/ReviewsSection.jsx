@@ -1,3 +1,4 @@
+import { ArrowRight, Star } from "lucide-react";
 import { CHROME } from "@/lib/chrome";
 import { getConfig, homeReviews } from "@/lib/config";
 import { googleReviewsHref, googleWriteReviewHref } from "@/lib/maps";
@@ -24,7 +25,7 @@ export function ReviewsSection() {
       id="reviews"
     >
       <div className={wrap}>
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col md:flex-row items-start justify-between gap-4">
           <div className="min-w-0">
             <p className={eyebrow}>{CHROME.eyebrow.reviews}</p>
             <h2 className={h2}>{CHROME.heading.reviews}</h2>
@@ -44,22 +45,24 @@ export function ReviewsSection() {
           <div className={`${btnRow} mt-8`}>
             {writeHref ? (
               <a
-                className={btnPrimary}
+                className={`${btnPrimary} gap-2`}
                 href={writeHref}
                 rel="noopener noreferrer"
                 target="_blank"
               >
+                <Star aria-hidden size={18} strokeWidth={2} />
                 {CHROME.leaveReview}
               </a>
             ) : null}
             {googleHref ? (
               <a
-                className={btnSecondary}
+                className={`${btnSecondary} gap-2`}
                 href={googleHref}
                 rel="noopener noreferrer"
                 target="_blank"
               >
                 {CHROME.viewAllOnGoogle}
+                <ArrowRight aria-hidden size={18} strokeWidth={2} />
               </a>
             ) : null}
           </div>

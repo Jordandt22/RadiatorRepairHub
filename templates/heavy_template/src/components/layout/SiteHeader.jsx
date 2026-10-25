@@ -8,6 +8,8 @@ import { NAV_ITEMS } from "@/lib/chrome";
 import { callLabel, telHref } from "@/lib/phone";
 import { btnPrimary, wrap } from "@/lib/ui";
 
+const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
+
 export function SiteHeader() {
   const config = getConfig();
   const pathname = usePathname();
@@ -18,7 +20,7 @@ export function SiteHeader() {
       <div className={`${wrap} flex items-center justify-between gap-4 py-2.5`}>
         <Link
           href="/"
-          className="flex min-w-0 items-center gap-2.5 font-semibold text-ink no-underline hover:text-ink hover:no-underline"
+          className="flex min-w-0 items-center gap-2.5 font-semibold text-ink no-underline transition-colors duration-200 hover:text-ink/75 hover:no-underline"
         >
           {brand.logoPath ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -49,36 +51,53 @@ export function SiteHeader() {
             aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((v) => !v)}
           >
-            {open ? (
-              <X size={24} strokeWidth={1.5} aria-hidden />
-            ) : (
-              <Menu size={24} strokeWidth={1.5} aria-hidden />
-            )}
+            <span className="relative size-6">
+              <Menu
+                size={24}
+                strokeWidth={1.5}
+                aria-hidden
+                className={`absolute inset-0 transition-all duration-300 ${ease} motion-reduce:transition-none ${open ? "rotate-90 opacity-0" : "opacity-100"}`}
+              />
+              <X
+                size={24}
+                strokeWidth={1.5}
+                aria-hidden
+                className={`absolute inset-0 transition-all duration-300 ${ease} motion-reduce:transition-none ${open ? "opacity-100" : "-rotate-90 opacity-0"}`}
+              />
+            </span>
           </button>
         </div>
       </div>
       <nav
-        className={`${wrap} flex-col border-t border-line pb-4 ${open ? "flex" : "hidden"} md:hidden`}
+        className={`grid transition-[grid-template-rows] duration-300 ${ease} motion-reduce:transition-none md:hidden ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
         aria-label="Mobile"
+        aria-hidden={open ? undefined : true}
+        inert={open ? undefined : true}
       >
-        {NAV_ITEMS.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={() => setOpen(false)}
-            aria-current={pathname === item.href ? "page" : undefined}
-            className="min-h-11 py-3 text-ink no-underline aria-[current=page]:font-medium aria-[current=page]:text-accent"
+        <div className="overflow-hidden">
+          <div
+            className={`${wrap} flex flex-col border-t border-line pb-4 transition-opacity duration-300 ${ease} motion-reduce:transition-none ${open ? "opacity-100" : "opacity-0"}`}
           >
-            {item.label}
-          </Link>
-        ))}
-        <a
-          className={`${btnPrimary} mt-2 w-full`}
-          href={telHref(shop)}
-          onClick={() => setOpen(false)}
-        >
-          {callLabel(shop)}
-        </a>
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                aria-current={pathname === item.href ? "page" : undefined}
+                className="min-h-11 py-3 text-ink no-underline aria-[current=page]:font-medium aria-[current=page]:text-accent"
+              >
+                {item.label}
+              </Link>
+            ))}
+            <a
+              className={`${btnPrimary} mt-2 w-full`}
+              href={telHref(shop)}
+              onClick={() => setOpen(false)}
+            >
+              {callLabel(shop)}
+            </a>
+          </div>
+        </div>
       </nav>
     </header>
   );

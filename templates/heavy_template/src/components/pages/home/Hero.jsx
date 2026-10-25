@@ -31,7 +31,7 @@ export function Hero() {
             <GoogleRatingLine className="mt-6" />
           </HeroCopy>
         </div>
-        <HeroPhoto className="relative aspect-4/3 overflow-hidden rounded-card border border-line max-lg:min-h-[40vh]">
+        <HeroPhoto className="relative h-[40vh] w-full min-w-0 overflow-hidden rounded-card border border-line lg:aspect-4/3 lg:h-auto">
           <Image
             src={hero.imagePath}
             alt={`${shop.name} shop floor: mechanic at an open hood, fluid shelves and shop windows behind`}

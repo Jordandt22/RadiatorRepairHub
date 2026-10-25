@@ -48,7 +48,7 @@ export function ServiceCard({
         <div className="absolute inset-0 bg-surface" />
       )}
       <div
-        className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/15"
+        className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/10"
         aria-hidden
       />
       <div className="relative flex h-full min-h-60 flex-col justify-end p-4">

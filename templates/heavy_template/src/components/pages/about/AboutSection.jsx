@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { CHROME } from "@/lib/chrome";
 import { getConfig } from "@/lib/config";
 import { callLabel, telHref } from "@/lib/phone";
@@ -29,20 +30,20 @@ function ProofRow({ config, showRating }) {
   const facts = [
     showRating && reviews?.rating != null
       ? {
-          label: "Google rating",
-          value: (
-            <span className="inline-flex items-center gap-2">
-              <StarRow rating={reviews.rating} />
-              <span className="tabular-nums">{reviews.rating}</span>
-            </span>
-          ),
-        }
+        label: "Google Rating",
+        value: (
+          <span className="inline-flex items-center gap-2">
+            <StarRow rating={reviews.rating} />
+            <span className="tabular-nums">{reviews.rating}</span>
+          </span>
+        ),
+      }
       : null,
     about?.yearsInBusiness != null
       ? {
-          label: `Years in ${shop.city}`,
-          value: <span className="tabular-nums">{about.yearsInBusiness}</span>,
-        }
+        label: `Years in ${shop.city}`,
+        value: <span className="tabular-nums">{about.yearsInBusiness}</span>,
+      }
       : null,
     about?.warranty ? { label: "Warranty", value: about.warranty } : null,
   ].filter(Boolean);
@@ -97,7 +98,7 @@ export function AboutSection({ teaser = false }) {
   const photo = gallery.images[0];
 
   return (
-    <section className={section} id={teaser ? "about" : undefined}>
+    <section className={`${section} overflow-x-clip`} id={teaser ? "about" : undefined}>
       <div className={wrap}>
         <div className={split}>
           <div>
@@ -112,13 +113,15 @@ export function AboutSection({ teaser = false }) {
                 {callLabel(shop)}
               </a>
               {teaser ? (
-                <Link className={btnSecondary} href="/about">
+                <Link className={`${btnSecondary} gap-2`} href="/about">
                   {CHROME.aboutMore}
+                  <ArrowRight aria-hidden size={18} strokeWidth={2} />
                 </Link>
               ) : (
                 <>
-                  <Link className={btnSecondary} href="/services">
+                  <Link className={`${btnSecondary} gap-2`} href="/services">
                     {CHROME.seeAllServices}
+                    <ArrowRight aria-hidden size={18} strokeWidth={2} />
                   </Link>
                   <RrhLink url={seo.rrhListingUrl} />
                 </>

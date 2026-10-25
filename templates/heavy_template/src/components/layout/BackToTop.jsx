@@ -17,7 +17,7 @@ export function BackToTop() {
 
   return (
     <a
-      className="fixed right-4 bottom-[4.25rem] z-40 inline-flex size-11 items-center justify-center rounded-btn bg-accent text-white no-underline shadow-sm transition-colors duration-200 hover:bg-accent-hover md:bottom-6"
+      className="fixed right-4 bottom-20 z-40 inline-flex size-11 items-center justify-center rounded-md bg-accent text-white no-underline shadow-sm transition-all duration-200 hover:scale-95 hover:bg-accent-hover md:bottom-6"
       href="#top"
       aria-label="Back to top"
     >

@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { CHROME } from "@/lib/chrome";
 import { getConfig } from "@/lib/config";
 import { mapsHref } from "@/lib/maps";
 import { phoneDisplay, telHref } from "@/lib/phone";
-import { muted } from "@/lib/ui";
+import { btnPrimary, muted } from "@/lib/ui";
 
 /** Shop contact details + link to /contact for privacy & terms pages. */
 export function LegalContact() {
@@ -12,12 +14,12 @@ export function LegalContact() {
     <div className="mt-10 border-t border-line pt-8">
       <h2 className="mb-2 text-xl font-semibold">Contact</h2>
       <p className={`mb-4 ${muted}`}>
-        Questions about this page? Reach the shop directly or use the{" "}
-        <Link href="/contact" className="text-ink underline underline-offset-2 hover:no-underline">
-          contact page
-        </Link>
-        .
+        Questions about this page? Reach the shop directly.
       </p>
+      <Link href="/contact" className={`${btnPrimary} mb-6 gap-2`}>
+        {CHROME.legalContact}
+        <ArrowRight aria-hidden size={18} strokeWidth={2} />
+      </Link>
       <address className="m-0 not-italic">
         <p className="mb-1 font-semibold">{shop.name}</p>
         <p className="mb-1">

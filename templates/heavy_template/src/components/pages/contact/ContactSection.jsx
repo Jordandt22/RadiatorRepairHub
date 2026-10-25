@@ -1,4 +1,4 @@
-import { Mail, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { CHROME } from "@/lib/chrome";
 import { getConfig } from "@/lib/config";
 import { mapsHref } from "@/lib/maps";
@@ -85,11 +85,12 @@ function HoursLocation({ config, heading }) {
       <MapEmbed className="mt-6" />
       <div className={`${btnRow} mt-5`}>
         <a
-          className={btnSecondary}
+          className={`${btnSecondary} gap-2`}
           href={mapsHref(config)}
           rel="noopener noreferrer"
           target="_blank"
         >
+          <MapPin aria-hidden size={18} strokeWidth={2} />
           {CHROME.directions}
         </a>
         <a className={btnPrimary} href={telHref(shop)}>

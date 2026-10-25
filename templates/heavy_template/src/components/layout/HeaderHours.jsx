@@ -29,7 +29,7 @@ export function HeaderHours({ hours }) {
     status.open === null ? null : status.open ? CHROME.hoursOpen : CHROME.hoursClosed;
 
   return (
-    <p className="m-0 ml-auto inline-flex items-center gap-1.5 text-ink-muted max-lg:hidden">
+    <p className="m-0 ml-auto inline-flex max-w-full items-center gap-1.5 text-ink-muted max-sm:ml-0">
       <Clock size={20} strokeWidth={1.5} aria-hidden />
       <span>{schedule}</span>
       {openLabel ? (

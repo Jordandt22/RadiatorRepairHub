@@ -15,9 +15,9 @@ export function ServicesIntro() {
     : null;
 
   return (
-    <section className="pt-section md:pt-section-lg">
+    <section className="pt-8 md:pt-section-lg">
       <div className={wrap}>
-        <p className="max-w-3xl text-lg leading-relaxed">
+        <p className="max-w-3xl text-sm md:text-lg leading-relaxed">
           {shop.name} works on cooling systems across {shop.city}, {shop.state} —{" "}
           {serviceList(config)}. {process} Nothing gets replaced because it was easier
           than testing it. Call {phoneDisplay(shop)} and we'll tell you what we would

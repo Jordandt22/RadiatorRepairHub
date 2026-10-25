@@ -13,9 +13,9 @@ export function UtilityHeader() {
   const { shop, features, hours } = config;
   const showEmail = features?.showEmailInHeader && shop.email?.trim();
   return (
-    <nav className="bg-sunken text-sm tracking-[0.01em]" aria-label="Shop contact">
+    <nav className="bg-sunken text-sm tracking-[0.01em] border-b border-line" aria-label="Shop contact">
       <div className={`${wrap} flex flex-wrap items-center gap-x-6 gap-y-2 py-2.5`}>
-        <a href={telHref(shop)} className={itemClass}>
+        <a href={telHref(shop)} className={`${itemClass} max-sm:hidden`}>
           <Phone size={20} strokeWidth={1.5} aria-hidden />
           {callLabel(shop)}
         </a>
