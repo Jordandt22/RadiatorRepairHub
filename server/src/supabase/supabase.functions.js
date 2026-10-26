@@ -163,7 +163,8 @@ export const getPaidFeaturedBusinesses = async ({
   let countQuery = supabase
     .from("businesses")
     .select("id", { count: "exact", head: true })
-    .eq("is_featured", true);
+    .eq("is_featured", true)
+    .eq("is_hidden", false);
 
   if (orFilter) {
     countQuery = countQuery.or(orFilter);
@@ -180,7 +181,8 @@ export const getPaidFeaturedBusinesses = async ({
       listingBusinessSelect +
         ", secondary_categories:business_secondary_categories(secondary_categories(*)), hours:business_hours(*)"
     )
-    .eq("is_featured", true);
+    .eq("is_featured", true)
+    .eq("is_hidden", false);
 
   if (orFilter) {
     query = query.or(orFilter);
@@ -214,6 +216,7 @@ export const getTopVerifiedBusinesses = async () => {
     .from("businesses")
     .select(featuredListingSelect)
     .eq("is_claimed", true)
+    .eq("is_hidden", false)
     .gte("reviews_count", FEATURED_CLAIMED_MIN_REVIEWS)
     .order("is_partner", { ascending: false })
     .order("is_featured", { ascending: false })
@@ -247,6 +250,7 @@ export const getBusinessBySlug = async (business_slug) => {
     .from("businesses")
     .select(fullBusinessSelect)
     .eq("slug", business_slug)
+    .eq("is_hidden", false)
     .maybeSingle();
 
   if (error) {
@@ -401,6 +405,7 @@ export const getBusinessSlugsForSitemap = async () => {
       .from("businesses")
       .select("slug, scraped_at")
       .eq("is_test", false)
+      .eq("is_hidden", false)
       .order("slug")
       .range(from, from + pageSize - 1);
 
@@ -437,6 +442,7 @@ export const getCitiesWithBusinessesForSitemap = async () => {
       .from("businesses")
       .select("city_id, scraped_at")
       .eq("is_test", false)
+      .eq("is_hidden", false)
       .not("city_id", "is", null)
       .order("id")
       .range(from, from + pageSize - 1);
@@ -519,6 +525,7 @@ export const getCityCategoryPairsForSitemap = async () => {
       .from("businesses")
       .select("city_id, primary_category_id, scraped_at")
       .eq("is_test", false)
+      .eq("is_hidden", false)
       .not("city_id", "is", null)
       .not("primary_category_id", "is", null)
       .order("id")
@@ -611,6 +618,7 @@ export const getStateCategoryPairsForSitemap = async () => {
       .from("businesses")
       .select("state_id, primary_category_id, scraped_at")
       .eq("is_test", false)
+      .eq("is_hidden", false)
       .not("state_id", "is", null)
       .not("primary_category_id", "is", null)
       .order("id")
@@ -691,6 +699,7 @@ export const getCategoryCountsForCity = async (city_id) => {
       .select("primary_category_id")
       .eq("city_id", city_id)
       .eq("is_test", false)
+      .eq("is_hidden", false)
       .not("primary_category_id", "is", null)
       .order("id")
       .range(from, from + pageSize - 1);
@@ -739,6 +748,7 @@ export const getCategoryCountsForState = async (state_id) => {
       .select("primary_category_id")
       .eq("state_id", state_id)
       .eq("is_test", false)
+      .eq("is_hidden", false)
       .not("primary_category_id", "is", null)
       .order("id")
       .range(from, from + pageSize - 1);
@@ -794,6 +804,7 @@ export const getCityCountsForCategory = async (
       .select("city_id")
       .eq("primary_category_id", category_id)
       .eq("is_test", false)
+      .eq("is_hidden", false)
       .not("city_id", "is", null);
 
     if (state_id) {
@@ -871,6 +882,7 @@ export const getStateCountsForCategory = async (category_id, limit = 12) => {
       .select("state_id")
       .eq("primary_category_id", category_id)
       .eq("is_test", false)
+      .eq("is_hidden", false)
       .not("state_id", "is", null)
       .order("id")
       .range(from, from + pageSize - 1);
@@ -913,7 +925,8 @@ export const countBusinessesByState = async (state_id) => {
   const { count, error } = await supabase
     .from("businesses")
     .select("*", { count: "exact", head: true })
-    .eq("state_id", state_id);
+    .eq("state_id", state_id)
+    .eq("is_hidden", false);
 
   return { count, error };
 };
@@ -923,6 +936,7 @@ export const getBusinessesByState = async (state_id, page, limit) => {
     .from("businesses")
     .select(listingBusinessSelect)
     .eq("state_id", state_id)
+    .eq("is_hidden", false)
     .order("is_partner", { ascending: false })
     .order("is_featured", { ascending: false })
     .order("is_claimed", { ascending: false })
@@ -953,7 +967,8 @@ export const countBusinessesByCity = async (city_id, state_id) => {
     .from("businesses")
     .select("*", { count: "exact", head: true })
     .eq("city_id", city_id)
-    .eq("state_id", state_id);
+    .eq("state_id", state_id)
+    .eq("is_hidden", false);
 
   return { count, error };
 };
@@ -964,6 +979,7 @@ export const getBusinessesByCity = async (city_id, state_id, page, limit) => {
     .select(listingBusinessSelect)
     .eq("city_id", city_id)
     .eq("state_id", state_id)
+    .eq("is_hidden", false)
     .order("is_partner", { ascending: false })
     .order("is_featured", { ascending: false })
     .order("is_claimed", { ascending: false })
@@ -986,7 +1002,8 @@ export const searchBusinesses = async (
 ) => {
   let businessesQuery = supabase
     .from("businesses")
-    .select(fullBusinessSelect, { count: "exact" });
+    .select(fullBusinessSelect, { count: "exact" })
+    .eq("is_hidden", false);
 
   // Applying Filters
   searchParams.map(({ key, value, filter }) => {
@@ -1202,7 +1219,9 @@ export const getAllPrimaryCategories = async () => {
 export const getPrimaryCategoryBusinessCounts = async () => {
   const [categoriesRes, businessesRes] = await Promise.all([
     getAllPrimaryCategories(),
-    fetchAllAdminRows("businesses", "primary_category_id"),
+    fetchAllAdminRows("businesses", "primary_category_id", (query) =>
+      query.eq("is_hidden", false)
+    ),
   ]);
 
   if (categoriesRes.error) {
@@ -1257,7 +1276,9 @@ export const getTopPrimaryCategoriesByBusinessCount = async (limit = 4) => {
 export const getStateBusinessCounts = async ({ codes, limit } = {}) => {
   const [statesRes, businessesRes] = await Promise.all([
     getAllStates(),
-    fetchAllAdminRows("businesses", "state_id"),
+    fetchAllAdminRows("businesses", "state_id", (query) =>
+      query.eq("is_hidden", false)
+    ),
   ]);
 
   if (statesRes.error) {
@@ -1326,6 +1347,7 @@ export const getCityBusinessCounts = async (state_id) => {
       .from("businesses")
       .select("city_id")
       .eq("state_id", state_id)
+      .eq("is_hidden", false)
       .range(start, start + ADMIN_LOCATION_PAGE_SIZE - 1);
 
     if (error) return { data: null, error };
@@ -1388,7 +1410,7 @@ export const getBusinessClaimInfo = async (business_id) => {
   const { data, error } = await supabase
     .from("businesses")
     .select(
-      "id, title, slug, email, phone, timezone, is_claimed, email_status, phone_status, phone_line_type, phone_line_type_checked_at, hours:business_hours(day_of_week, is_closed, hours)"
+      "id, title, slug, email, phone, timezone, is_claimed, is_hidden, email_status, phone_status, phone_line_type, phone_line_type_checked_at, hours:business_hours(day_of_week, is_closed, hours)"
     )
     .eq("id", business_id)
     .single();
@@ -1400,7 +1422,7 @@ export const getBusinessForListingSave = async (business_id) => {
   const { data, error } = await supabase
     .from("businesses")
     .select(
-      "id, title, slug, phone, address, city:cities(name, slug), state:states(name, code)"
+      "id, title, slug, phone, address, is_hidden, city:cities(name, slug), state:states(name, code)"
     )
     .eq("id", business_id)
     .single();
@@ -1440,7 +1462,7 @@ export const getListingReports = async (page, limit, status = null) => {
 };
 
 const ADMIN_BUSINESS_SELECT =
-  "id, title, slug, email, phone, phone_status, phone_line_type, phone_carrier, phone_line_type_checked_at, address, website, is_claimed, is_featured, is_partner, is_test, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
+  "id, title, slug, email, phone, phone_status, phone_line_type, phone_carrier, phone_line_type_checked_at, address, website, is_claimed, is_featured, is_partner, is_test, is_hidden, owner_uid, total_score, reviews_count, last_edited_at, created_at, image_url, place_id";
 
 const ADMIN_BUSINESS_DETAIL_SELECT = `${ADMIN_BUSINESS_SELECT}, description, title_tag, meta_description, local_note, keywords, notification_email, email_status, email_status_marked_at, phone_status, phone_status_marked_at, phone_line_type, phone_carrier, phone_line_type_checked_at, cdn_stored, cdn_stored_attempts, hide_default_image, default_image_sort_order, timezone, latitude, longitude, city:cities(id, name, slug), state:states(id, name, code), postal_code:postal_codes(id, code), primary_category:primary_categories(id, name, slug), secondary_categories:business_secondary_categories(secondary_categories(id, name, slug)), business_images(image_id, is_primary, is_hidden, created_at, sort_order)`;
 
@@ -1587,6 +1609,7 @@ export const getAdminBusinesses = async (
     claimed = null,
     featured = null,
     partnered = null,
+    hidden = null,
     recent = null,
     q = null,
     stateCode = null,
@@ -1706,6 +1729,10 @@ export const getAdminBusinesses = async (
     query = query
       .eq("is_claimed", true)
       .order("last_edited_at", { ascending: false, nullsFirst: false });
+  } else if (hidden === true) {
+    query = query
+      .eq("is_hidden", true)
+      .order("last_edited_at", { ascending: false, nullsFirst: false });
   } else {
     query = query
       .order("total_score", { ascending: false })
@@ -1804,6 +1831,7 @@ export const exportAdminBusinesses = async ({
   claimed = null,
   featured = null,
   partnered = null,
+  hidden = null,
   recent = null,
   q = null,
   stateCode = null,
@@ -1886,6 +1914,10 @@ export const exportAdminBusinesses = async ({
     } else if (claimed === true) {
       next = next
         .eq("is_claimed", true)
+        .order("last_edited_at", { ascending: false, nullsFirst: false });
+    } else if (hidden === true) {
+      next = next
+        .eq("is_hidden", true)
         .order("last_edited_at", { ascending: false, nullsFirst: false });
     } else {
       next = next
@@ -2808,15 +2840,20 @@ export const unclaimBusinessesByIds = async (ids) => {
 
 const ADMIN_LOCATION_PAGE_SIZE = 1000;
 
-const fetchAllAdminRows = async (table, selectCols) => {
+const fetchAllAdminRows = async (table, selectCols, applyFilters) => {
   const rows = [];
   let start = 0;
 
   for (;;) {
-    const { data, error } = await supabase
-      .from(table)
-      .select(selectCols)
-      .range(start, start + ADMIN_LOCATION_PAGE_SIZE - 1);
+    let query = supabase.from(table).select(selectCols);
+    if (typeof applyFilters === "function") {
+      query = applyFilters(query);
+    }
+
+    const { data, error } = await query.range(
+      start,
+      start + ADMIN_LOCATION_PAGE_SIZE - 1
+    );
 
     if (error) return { data: null, error };
 
@@ -4316,7 +4353,7 @@ export const getClaimRequestWithBusiness = async (claim_request_id) => {
   const { data, error } = await supabase
     .from("claim_requests")
     .select(
-      "claim_request_id, business_id, status, channel, attempts, resend_count, last_attempted_at, business:businesses(id, title, slug, email, phone, timezone, is_claimed, email_status, hours:business_hours(day_of_week, is_closed, hours))"
+      "claim_request_id, business_id, status, channel, attempts, resend_count, last_attempted_at, business:businesses(id, title, slug, email, phone, timezone, is_claimed, is_hidden, email_status, hours:business_hours(day_of_week, is_closed, hours))"
     )
     .eq("claim_request_id", claim_request_id)
     .maybeSingle();
@@ -4959,7 +4996,7 @@ export const getOwnedBusiness = async (businessId, ownerUid, accessToken) => {
 export const getBusinessOwnerAndTestFlag = async (businessId) => {
   const { data, error } = await supabase
     .from("businesses")
-    .select("id, owner_uid, is_test")
+    .select("id, owner_uid, is_test, is_hidden")
     .eq("id", businessId)
     .maybeSingle();
 
@@ -6394,6 +6431,7 @@ export const getNearbyBusinessRecommendations = async ({
   let query = supabase
     .from("businesses")
     .select("id, title, address, total_score, slug")
+    .eq("is_hidden", false)
     .or(orFilters.join(","))
     .order("total_score", { ascending: false })
     .limit(limit);
@@ -7247,6 +7285,17 @@ export const disableWeeklyDigestForBusiness = async (businessId) => {
     .eq("id", businessId)
     .select("id, weekly_digest_enabled, is_claimed")
     .maybeSingle();
+  return { data, error };
+};
+
+export const updateAdminBusinessHidden = async (businessId, isHidden) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({ is_hidden: Boolean(isHidden) })
+    .eq("id", businessId)
+    .select("id, slug, is_hidden")
+    .maybeSingle();
+
   return { data, error };
 };
 

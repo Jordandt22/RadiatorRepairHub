@@ -173,12 +173,16 @@ function validateFields(fields, { requireService }) {
   if (fields.name.trim().length < 2) errors.name = copy.name;
   if (!fields.phone.trim()) errors.phone = copy.phoneRequired;
   else if (!isValidPhone(fields.phone)) errors.phone = copy.phone;
-  if (fields.email.trim() && !isValidEmail(fields.email.trim())) {
-    errors.email = copy.email;
-  }
+  const email = fields.email.trim();
+  if (email.length > 254) errors.email = copy.emailMax;
+  else if (email && !isValidEmail(email)) errors.email = copy.email;
   if (requireService && !fields.service.trim()) errors.service = copy.service;
-  if (!fields.vehicle.trim()) errors.vehicle = copy.vehicle;
-  if (fields.issue.trim().length < 5) errors.issue = copy.issue;
+  const vehicle = fields.vehicle.trim();
+  if (!vehicle) errors.vehicle = copy.vehicle;
+  else if (vehicle.length > 120) errors.vehicle = copy.vehicleMax;
+  const issue = fields.issue.trim();
+  if (issue.length < 5) errors.issue = copy.issue;
+  else if (issue.length > 1000) errors.issue = copy.issueMax;
   return errors;
 }
 
@@ -368,6 +372,7 @@ export function ContactForm() {
           type="email"
           autoComplete="email"
           spellCheck={false}
+          maxLength={254}
           placeholder={CHROME.placeholders.email}
         />
         <FieldError id="email-error" message={fieldErrors.email} />
@@ -397,6 +402,7 @@ export function ContactForm() {
           type="text"
           autoComplete="off"
           aria-required="true"
+          maxLength={120}
           placeholder={CHROME.placeholders.vehicle}
         />
         <FieldError id="vehicle-error" message={fieldErrors.vehicle} />
@@ -407,6 +413,7 @@ export function ContactForm() {
           {...fieldProps("issue")}
           autoComplete="off"
           aria-required="true"
+          maxLength={1000}
           placeholder={CHROME.placeholders.issue}
         />
         <FieldError id="issue-error" message={fieldErrors.issue} />

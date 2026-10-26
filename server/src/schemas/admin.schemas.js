@@ -365,6 +365,15 @@ export const GetAdminBusinessesQuerySchema = Yup.object({
     })
     .nullable()
     .optional(),
+  hidden: Yup.boolean()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue == null) return null;
+      if (originalValue === "true" || originalValue === true) return true;
+      if (originalValue === "false" || originalValue === false) return false;
+      return value;
+    })
+    .nullable()
+    .optional(),
   q: Yup.string()
     .transform((value) => {
       if (value == null) return null;
@@ -495,6 +504,7 @@ export const ExportAdminBusinessesSchema = Yup.object({
   recent: optionalAdminBoolBody,
   featured: optionalAdminBoolBody,
   partnered: optionalAdminBoolBody,
+  hidden: optionalAdminBoolBody,
   q: Yup.string()
     .transform((value) => {
       if (value == null) return null;
@@ -799,6 +809,10 @@ export const MarkBusinessEmailStatusSchema = Yup.object({
   email_status: Yup.string()
     .oneOf(BUSINESS_EMAIL_STATUSES, "Invalid email status")
     .required("Status is required"),
+});
+
+export const UpdateAdminBusinessHiddenSchema = Yup.object({
+  isHidden: Yup.boolean().required("Hidden is required"),
 });
 
 export const UpdateAdminBusinessNotificationEmailSchema = Yup.object({

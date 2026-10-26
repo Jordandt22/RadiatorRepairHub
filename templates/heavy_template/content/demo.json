@@ -2,9 +2,9 @@
   "shop": {
     "name": "Iron Bay Auto Repair",
     "tagline": "Diagnostics, brakes, and maintenance in Long Beach",
-    "phone": "5625550198",
-    "phoneDisplay": "(562) 555-0198",
-    "email": "service@ironbayauto.example",
+    "phone": "4088095718",
+    "phoneDisplay": "(408) 809-5718",
+    "email": "team@radiatorrepairhub.com",
     "address": "1840 W Anaheim St",
     "city": "Long Beach",
     "state": "CA",
@@ -38,8 +38,8 @@
     "subheadline": "Brakes, diagnostics, maintenance, and A/C. Long Beach shop, honest clock time.",
     "imagePath": "/images/demo/hero.jpg",
     "primaryCta": {
-      "label": "Call (562) 555-0198",
-      "href": "tel:+15625550198"
+      "label": "Call (408) 809-5718",
+      "href": "tel:+14088095718"
     },
     "secondaryCta": {
       "label": "Get a quote",
@@ -193,7 +193,7 @@
   },
   "seo": {
     "title": "Iron Bay Auto Repair | Long Beach, CA",
-    "description": "Auto repair in Long Beach. Diagnostics, brakes, maintenance, and A/C. Call (562) 555-0198.",
+    "description": "Auto repair in Long Beach. Diagnostics, brakes, maintenance, and A/C. Call (408) 809-5718.",
     "keywords": [
       "auto repair Long Beach",
       "brake repair Long Beach",
@@ -201,17 +201,17 @@
       "check engine light Long Beach",
       "car AC repair Long Beach"
     ],
-    "rrhListingUrl": "https://radiatorrepairhub.com/business/t-p-auto-repair-c2458c18-aa75-4957-adb6-ba9ed15dd60b",
+    "rrhListingUrl": "https://radiatorrepairhub.com/business/rrh-test-business-4db57cf1",
     "ogImage": "/images/demo/og.jpg",
     "favicon": "/favicon.svg",
     "pages": {
       "home": {
         "title": "Iron Bay Auto Repair | Long Beach, CA",
-        "description": "Auto repair in Long Beach. Diagnostics, brakes, maintenance, and A/C. Call (562) 555-0198."
+        "description": "Auto repair in Long Beach. Diagnostics, brakes, maintenance, and A/C. Call (408) 809-5718."
       },
       "services": {
         "title": "Auto Repair in Long Beach | Iron Bay Auto Repair",
-        "description": "Auto repair in Long Beach. Diagnostics, brakes, oil changes, and A/C. Call (562) 555-0198."
+        "description": "Auto repair in Long Beach. Diagnostics, brakes, oil changes, and A/C. Call (408) 809-5718."
       },
       "about": {
         "title": "About | Iron Bay Auto Repair | Long Beach, CA",
@@ -219,7 +219,7 @@
       },
       "contact": {
         "title": "Contact | Iron Bay Auto Repair | Long Beach, CA",
-        "description": "Call (562) 555-0198 or send a quote. 1840 W Anaheim St, Long Beach, CA 90813."
+        "description": "Call (408) 809-5718 or send a quote. 1840 W Anaheim St, Long Beach, CA 90813."
       },
       "privacy": {
         "title": "Privacy | Iron Bay Auto Repair",

@@ -51,7 +51,7 @@ export const createListingSave = async (req, res) => {
   const { data: business, error: businessError } =
     await getBusinessForListingSave(businessId);
 
-  if (businessError || !business) {
+  if (businessError || !business || business.is_hidden) {
     return res
       .status(404)
       .json(

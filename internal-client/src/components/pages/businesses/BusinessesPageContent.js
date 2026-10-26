@@ -77,6 +77,7 @@ export default function BusinessesPageContent() {
   const claimedFilter = LISTING_TAB_FILTERS[activeTab]?.claimed ?? null;
   const featuredFilter = LISTING_TAB_FILTERS[activeTab]?.featured ?? null;
   const partneredFilter = LISTING_TAB_FILTERS[activeTab]?.partnered ?? null;
+  const hiddenFilter = LISTING_TAB_FILTERS[activeTab]?.hidden ?? null;
   const recentFilter = LISTING_TAB_FILTERS[activeTab]?.recent ?? null;
   const searchQuery = (q || "").trim();
   const scoreTierId = scoreTier?.id ?? null;
@@ -194,6 +195,9 @@ export default function BusinessesPageContent() {
       }
       if (partneredFilter === true) {
         params.set("partnered", "true");
+      }
+      if (hiddenFilter === true) {
+        params.set("hidden", "true");
       }
       if (searchQuery) {
         params.set("q", searchQuery);
@@ -360,6 +364,7 @@ export default function BusinessesPageContent() {
         onValueChange={handleTabChange}
         includeEdited
         includePartnered
+        includeHidden
       />
 
       <div className="mt-2 flex flex-col gap-3 md:mt-4 md:gap-4">
@@ -422,6 +427,7 @@ export default function BusinessesPageContent() {
           claimed: claimedFilter === true,
           featured: featuredFilter === true,
           partnered: partneredFilter === true,
+          hidden: hiddenFilter === true,
           recent: recentFilter === true,
           scoreTier: scoreTierId,
           reviewsTier: reviewsTierId,

@@ -34,7 +34,7 @@ export const createBusinessStatEvent = async (req, res) => {
       .json(customErrorHandler(ROUTE_NOT_FOUND, "Business not found."));
   }
 
-  if (business.is_test) {
+  if (business.is_test || business.is_hidden) {
     return res.status(204).end();
   }
 

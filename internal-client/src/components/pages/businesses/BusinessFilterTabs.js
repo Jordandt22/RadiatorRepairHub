@@ -2,6 +2,7 @@ import {
   BadgeCheckIcon,
   ChevronDownIcon,
   ClockIcon,
+  EyeOffIcon,
   HandshakeIcon,
   ListIcon,
   StarIcon,
@@ -25,6 +26,7 @@ export const TAB_FILTERS = {
 export const LISTING_TAB_FILTERS = {
   ...TAB_FILTERS,
   partnered: { claimed: null, featured: null, partnered: true, recent: null },
+  hidden: { claimed: null, featured: null, hidden: true, recent: null },
   edited: { claimed: true, featured: null, recent: true },
 };
 
@@ -52,6 +54,7 @@ const TAB_OPTIONS = [
   { value: "claimed", label: "Claimed", Icon: BadgeCheckIcon },
   { value: "featured", label: "Featured", Icon: StarIcon },
   { value: "partnered", label: "Partnered", Icon: HandshakeIcon },
+  { value: "hidden", label: "Hidden", Icon: EyeOffIcon },
   { value: "edited", label: "Recently edited", Icon: ClockIcon },
 ];
 
@@ -60,10 +63,12 @@ export default function BusinessFilterTabs({
   onValueChange,
   includeEdited = false,
   includePartnered = false,
+  includeHidden = false,
 }) {
   const options = TAB_OPTIONS.filter((tab) => {
     if (tab.value === "edited" && !includeEdited) return false;
     if (tab.value === "partnered" && !includePartnered) return false;
+    if (tab.value === "hidden" && !includeHidden) return false;
     return true;
   });
   const triggerClassName =
