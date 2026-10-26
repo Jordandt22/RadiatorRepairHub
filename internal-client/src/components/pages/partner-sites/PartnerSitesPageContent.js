@@ -4,10 +4,28 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon, PencilIcon } from "lucide-react";
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  CopyIcon,
+  EyeIcon,
+  EyeOffIcon,
+  MailIcon,
+  PencilIcon,
+  StarIcon,
+  StoreIcon,
+} from "lucide-react";
 import { useAuth } from "@/contexts/Auth.context";
+import useUrlQueryState from "@/hooks/useUrlQueryState";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -26,6 +45,86 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import PartnerSiteMessageList from "@/components/pages/partner-sites/PartnerSiteMessageList";
+
+const PARTNER_TABS = [
+  { id: "businesses", label: "Businesses", Icon: StoreIcon },
+  { id: "leads", label: "Lead Follow-Up", Icon: MailIcon },
+  { id: "reviews", label: "Review Request", Icon: StarIcon },
+];
+
+const QUERY_SCHEMA = {
+  tab: {
+    type: "option",
+    options: PARTNER_TABS,
+    resetPageOnChange: true,
+  },
+  page: { type: "page", defaultValue: 1 },
+  q: { type: "string", defaultValue: "", resetPageOnChange: true },
+};
+
+const TAB_COPY = {
+  businesses:
+    "Save the shop domain and copy the API key into that website's env file. Allowed origins are the https hosts the form may send from.",
+  leads: "Lead follow-up messages sent from partner website forms, across every shop.",
+  reviews: "Review request emails sent for every shop.",
+};
+
+function PartnerSiteTabs({ value, onValueChange }) {
+  const activeTab = PARTNER_TABS.find((tab) => tab.id === value) ?? PARTNER_TABS[0];
+  const ActiveIcon = activeTab.Icon;
+
+  return (
+    <>
+      <div className="md:hidden">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="outline"
+                className="h-11 w-full justify-between rounded-full px-3 text-base font-medium"
+              />
+            }
+          >
+            <span className="ml-2 flex items-center gap-2.5">
+              <ActiveIcon className="size-4" />
+              {activeTab.label}
+            </span>
+            <ChevronDownIcon className="size-5 text-muted-foreground" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-(--anchor-width) text-sm">
+            <DropdownMenuRadioGroup value={value} onValueChange={onValueChange}>
+              {PARTNER_TABS.map(({ id, label, Icon }) => (
+                <DropdownMenuRadioItem
+                  key={id}
+                  value={id}
+                  className="min-h-9 py-2 text-sm [&_svg]:size-4"
+                >
+                  <Icon />
+                  {label}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <Tabs value={value} onValueChange={onValueChange} className="hidden md:block">
+        <TabsList className="rounded-full">
+          {PARTNER_TABS.map(({ id, label, Icon }) => (
+            <TabsTrigger
+              key={id}
+              value={id}
+              className="cursor-pointer px-6 transition-all duration-200 hover:translate-y-[-2px] md:px-8"
+            >
+              <Icon data-icon="inline-center" />
+              {label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+    </>
+  );
+}
 
 function errorText(error, fallback) {
   const message = error?.message;
@@ -267,6 +366,8 @@ export default function PartnerSitesPageContent() {
   const queryClient = useQueryClient();
   const { accessToken, isReady } = useAuth();
   const [savingId, setSavingId] = useState("");
+  const query = useUrlQueryState(QUERY_SCHEMA);
+  const activeTab = query.tab?.id ?? "businesses";
 
   useEffect(() => {
     if (isReady && !accessToken) {
@@ -276,7 +377,7 @@ export default function PartnerSitesPageContent() {
 
   const { data, error, isLoading, isFetching } = useQuery({
     queryKey: ["partner-sites"],
-    enabled: Boolean(isReady && accessToken),
+    enabled: Boolean(isReady && accessToken && activeTab === "businesses"),
     queryFn: async () => {
       const result = await fetchApi("/admin/partner-sites", { accessToken });
       if (result.error) {
@@ -327,11 +428,26 @@ export default function PartnerSitesPageContent() {
       <div>
         <h1 className="font-heading text-2xl font-semibold">Partner Sites</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Save the shop domain and copy the API key into that website&apos;s env file.
-          Allowed origins are the https hosts the form may send from.
+          {TAB_COPY[activeTab]}
         </p>
       </div>
-      {isLoading ? (
+      <PartnerSiteTabs
+        value={activeTab}
+        onValueChange={(tabId) => {
+          const option = PARTNER_TABS.find((tab) => tab.id === tabId);
+          if (option) query.setField("tab", option);
+        }}
+      />
+      {activeTab === "leads" || activeTab === "reviews" ? (
+        <PartnerSiteMessageList
+          kind={activeTab}
+          page={query.page}
+          search={query.q}
+          accessToken={accessToken}
+          onPageChange={(nextPage) => query.setField("page", nextPage)}
+          onSearchChange={(value) => query.setField("q", value)}
+        />
+      ) : isLoading ? (
         <p className="text-sm text-muted-foreground">Loading partner sites.</p>
       ) : error ? (
         <p className="text-sm text-destructive">{error.message}</p>

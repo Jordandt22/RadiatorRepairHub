@@ -250,7 +250,6 @@ export const getBusinessBySlug = async (business_slug) => {
     .from("businesses")
     .select(fullBusinessSelect)
     .eq("slug", business_slug)
-    .eq("is_hidden", false)
     .maybeSingle();
 
   if (error) {

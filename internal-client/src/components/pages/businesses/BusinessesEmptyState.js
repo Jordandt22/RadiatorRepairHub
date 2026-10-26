@@ -34,7 +34,7 @@ const EMPTY_BY_TAB = {
   hidden: {
     icon: EyeOffIcon,
     title: "No hidden businesses",
-    description: "Shops you hide from the public site will appear here.",
+    description: "Shops hidden from search and directory pages will appear here.",
   },
   edited: {
     icon: ClockIcon,

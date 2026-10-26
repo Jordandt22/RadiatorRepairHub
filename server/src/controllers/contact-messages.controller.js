@@ -52,7 +52,7 @@ export const createContactMessage = async (req, res) => {
     const { data: businessData, error: businessError } =
       await getBusinessById(businessId);
 
-    if (businessError || !businessData || businessData.is_hidden) {
+    if (businessError || !businessData) {
       return res
         .status(404)
         .json(

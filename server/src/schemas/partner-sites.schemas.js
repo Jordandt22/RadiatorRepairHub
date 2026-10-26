@@ -5,6 +5,11 @@ export const PartnerSiteParamsSchema = Yup.object({
   businessId: Yup.string().trim().uuid("Invalid business ID").required(),
 });
 
+export const PartnerSiteMessagesQuerySchema = Yup.object({
+  page: Yup.number().min(1).max(100).required(),
+  q: Yup.string().trim().max(100).optional(),
+});
+
 export const UpdatePartnerSiteSchema = Yup.object({
   domain: Yup.string()
     .trim()
