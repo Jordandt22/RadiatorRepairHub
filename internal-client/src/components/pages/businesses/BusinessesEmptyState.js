@@ -2,6 +2,7 @@ import {
   BadgeCheckIcon,
   Building2Icon,
   ClockIcon,
+  EyeOffIcon,
   HandshakeIcon,
   SearchIcon,
   StarIcon,
@@ -29,6 +30,11 @@ const EMPTY_BY_TAB = {
     title: "No partnered businesses",
     description:
       "Partnered listings will appear here once a Partner plan is active.",
+  },
+  hidden: {
+    icon: EyeOffIcon,
+    title: "No hidden businesses",
+    description: "Shops you hide from the public site will appear here.",
   },
   edited: {
     icon: ClockIcon,

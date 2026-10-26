@@ -83,6 +83,54 @@ export async function revalidateClientCache({
  * After claim / unclaim / account delete: clear Redis + Next.js caches so
  * Verified badge and Top Verified home strip update immediately.
  */
+const PUBLIC_DIRECTORY_CACHE_PREFIXES = [
+  "BUSINESS_SITEMAP_SLUGS",
+  "CITIES_SITEMAP",
+  "CITY_CATEGORIES_SITEMAP",
+  "STATE_CATEGORIES_SITEMAP",
+  "CITY_CATEGORY_COUNTS",
+  "STATE_CATEGORY_COUNTS",
+  "CATEGORY_CITY_COUNTS",
+  "CATEGORY_STATE_COUNTS",
+  "PRIMARY_CATEGORY_BUSINESS_COUNTS",
+  "PRIMARY_CATEGORIES_TOP",
+  "STATE_BUSINESS_COUNTS",
+  "CITY_BUSINESS_COUNTS",
+  "FEATURED_BUSINESSES",
+  "SEARCHED_BUSINESSES",
+];
+
+/**
+ * After an admin hides or shows a shop: drop the public listing, directory
+ * counts, sitemap, and the Next.js page for that slug.
+ */
+export async function invalidateHiddenBusinessCaches(business) {
+  if (!business?.id) return;
+
+  try {
+    await invalidateBusinessListingCache(business);
+    await deleteCacheData(getTopVerifiedBusinessesKey().key);
+    for (const prefix of PUBLIC_DIRECTORY_CACHE_PREFIXES) {
+      await deleteCacheDataByPrefix(prefix);
+    }
+  } catch {
+    // best-effort
+  }
+
+  await revalidateClientCache({
+    paths: [
+      "/",
+      "/sitemap.xml",
+      business.slug ? `/business/${business.slug}` : null,
+    ],
+    tags: [
+      "top-verified",
+      "business-listings",
+      business.slug ? `business:${business.slug}` : null,
+    ],
+  });
+}
+
 export async function invalidateClaimStatusCaches(businesses) {
   const list = (Array.isArray(businesses) ? businesses : [businesses]).filter(
     Boolean

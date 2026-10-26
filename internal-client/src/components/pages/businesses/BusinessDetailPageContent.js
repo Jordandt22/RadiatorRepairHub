@@ -9,8 +9,10 @@ import { useAuth } from "@/contexts/Auth.context";
 import { useSite } from "@/contexts/Site.context";
 import { fetchApi } from "@/lib/api/fetchApi";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
 import BusinessFeaturedBadge from "@/components/pages/businesses/BusinessFeaturedBadge";
+import BusinessHiddenBadge from "@/components/pages/businesses/BusinessHiddenBadge";
 import BusinessDetailAnalyticsTab from "@/components/pages/businesses/analytics/BusinessDetailAnalyticsTab";
 import BusinessDetailInsightsTab from "@/components/pages/businesses/insights/BusinessDetailInsightsTab";
 import BusinessDetailEmailTab from "@/components/pages/businesses/BusinessDetailEmailTab";
@@ -51,6 +53,7 @@ export default function BusinessDetailPageContent() {
   const [editError, setEditError] = useState(null);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [categoriesError, setCategoriesError] = useState(null);
+  const [hiddenError, setHiddenError] = useState(null);
   const [markStatusError, setMarkStatusError] = useState(null);
   const [markPhoneStatusError, setMarkPhoneStatusError] = useState(null);
   const [checkLineTypeError, setCheckLineTypeError] = useState(null);
@@ -121,6 +124,47 @@ export default function BusinessDetailPageContent() {
     },
     onError: (err) => {
       setEditError(err.message || "Failed to update listing");
+    },
+  });
+
+  const updateHiddenMutation = useMutation({
+    mutationFn: async (isHidden) => {
+      const result = await fetchApi(`/admin/businesses/${id}/hidden`, {
+        method: "PATCH",
+        accessToken,
+        body: JSON.stringify({ isHidden }),
+      });
+
+      if (result.status === 401) {
+        logout();
+        throw new Error("Session expired");
+      }
+
+      if (result.error) {
+        throw new Error(formatListingError(result.error));
+      }
+
+      return result.data;
+    },
+    onMutate: async (isHidden) => {
+      setHiddenError(null);
+      await queryClient.cancelQueries({ queryKey: ["admin-business", id] });
+      const previous = queryClient.getQueryData(["admin-business", id]);
+      queryClient.setQueryData(["admin-business", id], (current) =>
+        current ? { ...current, is_hidden: isHidden } : current
+      );
+      return { previous };
+    },
+    onSuccess: async () => {
+      setHiddenError(null);
+      await queryClient.invalidateQueries({ queryKey: ["admin-business", id] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-businesses"] });
+    },
+    onError: (err, _isHidden, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["admin-business", id], context.previous);
+      }
+      setHiddenError(err.message || "Failed to update visibility");
     },
   });
 
@@ -354,6 +398,7 @@ export default function BusinessDetailPageContent() {
               Partnered
             </span>
           ) : null}
+          {data.is_hidden ? <BusinessHiddenBadge /> : null}
         </div>
         {data.slug ? (
           <p className="text-sm text-muted-foreground">{data.slug}</p>
@@ -371,6 +416,23 @@ export default function BusinessDetailPageContent() {
             <ExternalLinkIcon />
             View on site
           </Button>
+        ) : null}
+        <label className="mt-2 flex w-fit cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2">
+          <Switch
+            checked={Boolean(data.is_hidden)}
+            disabled={updateHiddenMutation.isPending}
+            onCheckedChange={(checked) => updateHiddenMutation.mutate(checked)}
+            aria-label="Hidden from the public site"
+          />
+          <span className="flex flex-col gap-0.5">
+            <span className="text-sm font-medium">Hidden</span>
+            <span className="text-xs text-muted-foreground">
+              Off the public site. The owner dashboard stays available.
+            </span>
+          </span>
+        </label>
+        {hiddenError ? (
+          <p className="text-xs text-destructive">{hiddenError}</p>
         ) : null}
       </div>
 

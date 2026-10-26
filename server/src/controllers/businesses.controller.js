@@ -311,7 +311,7 @@ export const claimBusiness = async (req, res) => {
   const { data: business, error: businessError } =
     await getBusinessClaimInfo(businessId);
 
-  if (businessError || !business) {
+  if (businessError || !business || business.is_hidden) {
     return res
       .status(404)
       .json(
@@ -770,7 +770,7 @@ export const getClaimRequest = async (req, res) => {
   }
 
   const business = claim.business;
-  if (!business) {
+  if (!business || business.is_hidden) {
     return res
       .status(404)
       .json(
@@ -979,7 +979,7 @@ export const completeClaim = async (req, res) => {
   }
 
   const business = claim.business;
-  if (!business) {
+  if (!business || business.is_hidden) {
     return res
       .status(404)
       .json(
@@ -1407,7 +1407,7 @@ export const resendClaim = async (req, res) => {
   }
 
   const business = claim.business;
-  if (!business) {
+  if (!business || business.is_hidden) {
     return res
       .status(404)
       .json(

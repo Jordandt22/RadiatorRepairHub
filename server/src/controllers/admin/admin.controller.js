@@ -38,6 +38,7 @@ import {
   getAdminExportBusinessStats as fetchAdminExportBusinessStats,
   getAdminBusinessById as fetchAdminBusinessById,
   updateAdminBusinessNotificationEmail as patchAdminBusinessNotificationEmail,
+  updateAdminBusinessHidden as patchAdminBusinessHidden,
   getAdminBusinessExists as fetchAdminBusinessExists,
   getBusinessStatsForAdmin as fetchBusinessStatsForAdmin,
   getCompetitorInsightsForAdmin as fetchCompetitorInsightsForAdmin,
@@ -110,7 +111,7 @@ import {
   cancelFeaturedSubscriptionForBusiness,
   cancelFeaturedSubscriptionsForOwner,
 } from "../../lib/cancelFeaturedSubscriptions.js";
-import { invalidateClaimStatusCaches } from "../../lib/invalidateListingCaches.js";
+import { invalidateClaimStatusCaches, invalidateHiddenBusinessCaches } from "../../lib/invalidateListingCaches.js";
 import {
   deleteAdminBusinessImage,
   formatAdminGalleryImages,
@@ -2121,6 +2122,8 @@ export const getBusinesses = async (req, res) => {
     req.query.partnered === true || req.query.partnered === "true"
       ? true
       : null;
+  const hidden =
+    req.query.hidden === true || req.query.hidden === "true" ? true : null;
   const rawQ = typeof req.query.q === "string" ? req.query.q.trim() : "";
   const q = rawQ ? rawQ.slice(0, 100) : null;
   const stateCode =
@@ -2195,7 +2198,8 @@ export const getBusinesses = async (req, res) => {
     phoneStatus,
     phoneLineType,
     phoneReach,
-    claimFilter
+    claimFilter,
+    hidden
   );
   const cachedData = await getCacheData(key);
   if (cachedData) {
@@ -2209,6 +2213,7 @@ export const getBusinesses = async (req, res) => {
       claimed,
       featured,
       partnered,
+      hidden,
       recent,
       q,
       stateCode,
@@ -2295,6 +2300,7 @@ export const exportBusinesses = async (req, res) => {
     body.featured === true || body.featured === "true" ? true : null;
   const partnered =
     body.partnered === true || body.partnered === "true" ? true : null;
+  const hidden = body.hidden === true || body.hidden === "true" ? true : null;
   const rawQ = typeof body.q === "string" ? body.q.trim() : "";
   const q = rawQ ? rawQ.slice(0, 100) : null;
   const stateCode =
@@ -2356,6 +2362,7 @@ export const exportBusinesses = async (req, res) => {
     claimed,
     featured,
     partnered,
+    hidden,
     recent,
     q,
     stateCode,
@@ -2496,6 +2503,49 @@ export const updateBusinessNotificationEmail = async (req, res) => {
     successHandler({
       id: data.id,
       notificationEmail: data.notification_email,
+    })
+  );
+};
+
+export const updateBusinessHidden = async (req, res) => {
+  const { id } = req.params;
+  const isHidden = Boolean(req.body?.isHidden);
+
+  const { data, error } = await patchAdminBusinessHidden(id, isHidden);
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res
+        .status(404)
+        .json(customErrorHandler(SUPABASE_ERROR, "Business not found.", error));
+    }
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "There was an error updating listing visibility.",
+        error
+      )
+    );
+  }
+
+  if (!data) {
+    return res
+      .status(404)
+      .json(customErrorHandler(SUPABASE_ERROR, "Business not found."));
+  }
+
+  try {
+    await invalidateHiddenBusinessCaches(data);
+  } catch {
+    // best-effort cache cleanup
+  }
+
+  await deleteCacheDataByPrefix("ADMIN_BUSINESSES");
+
+  return res.status(200).json(
+    successHandler({
+      id: data.id,
+      isHidden: Boolean(data.is_hidden),
     })
   );
 };

@@ -15,6 +15,7 @@ import { formatDate } from "@/components/pages/dashboard/formatDate";
 import { isManagedListingTab } from "@/components/pages/businesses/BusinessFilterTabs";
 import BusinessClaimedBadge from "@/components/pages/businesses/BusinessClaimedBadge";
 import BusinessFeaturedBadge from "@/components/pages/businesses/BusinessFeaturedBadge";
+import BusinessHiddenBadge from "@/components/pages/businesses/BusinessHiddenBadge";
 import BusinessPartnerBadge from "@/components/pages/businesses/BusinessPartnerBadge";
 import BusinessScoreBadge from "@/components/pages/businesses/BusinessScoreBadge";
 import BusinessReviewsBadge from "@/components/pages/businesses/BusinessReviewsBadge";
@@ -188,6 +189,7 @@ function BusinessesTableView({
                       isFeatured={Boolean(row.is_featured)}
                       isPartner={Boolean(row.is_partner)}
                     />
+                    {row.is_hidden ? <BusinessHiddenBadge /> : null}
                   </div>
                 </TableCell>
                 {showLastEdited ? (
@@ -288,6 +290,7 @@ function BusinessesCardList({
                     isFeatured={Boolean(row.is_featured)}
                     isPartner={Boolean(row.is_partner)}
                   />
+                  {row.is_hidden ? <BusinessHiddenBadge /> : null}
                   {showScore ? (
                     <BusinessScoreBadge score={row.total_score} />
                   ) : null}

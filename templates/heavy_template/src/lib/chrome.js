@@ -45,9 +45,12 @@ export const CHROME = {
         phoneRequired: "Phone is required.",
         phone: "Please enter a valid phone number.",
         email: "Please enter a valid email address.",
+        emailMax: "Email must be 254 characters or fewer.",
         service: "Please select a service.",
         vehicle: "Vehicle is required.",
+        vehicleMax: "Vehicle must be 120 characters or fewer.",
         issue: "Please describe the issue in at least 5 characters.",
+        issueMax: "Issue must be 1000 characters or fewer.",
     },
     formPrivacy: "We use this to get back to you. We don't sell your info. Prefer to talk? Just call us.",
     placeholders: {

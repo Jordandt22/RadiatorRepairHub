@@ -35,6 +35,7 @@ export const CreateTemplateLeadSchema = Yup.object({
     .transform((value) => (value === "" || value == null ? null : value))
     .nullable()
     .notRequired()
+    .max(254, "Email must be 254 characters or fewer")
     .email("Please enter a valid email address"),
   service: Yup.string()
     .trim()
@@ -42,12 +43,12 @@ export const CreateTemplateLeadSchema = Yup.object({
     .required("Service is required"),
   vehicle: Yup.string()
     .trim()
-    .max(200, "Vehicle must be 200 characters or fewer")
+    .max(120, "Vehicle must be 120 characters or fewer")
     .required("Vehicle is required"),
   issue: Yup.string()
     .trim()
     .min(5, "Please describe the issue in at least 5 characters")
-    .max(5000, "Issue must be 5000 characters or fewer")
+    .max(1000, "Issue must be 1000 characters or fewer")
     .required("Please describe the issue"),
   company: Yup.string().max(500).nullable().notRequired(),
 });

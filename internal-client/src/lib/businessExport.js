@@ -103,6 +103,7 @@ export function buildBusinessExportFilename({
   claimed = null,
   featured = null,
   partnered = null,
+  hidden = null,
   recent = null,
   websiteFilter = null,
   emailFilter = null,
@@ -124,6 +125,7 @@ export function buildBusinessExportFilename({
 
   if (recent) parts.push("recent");
   else if (partnered) parts.push("partnered");
+  else if (hidden) parts.push("hidden");
   else if (featured) parts.push("featured");
   else if (claimed) parts.push("claimed");
 

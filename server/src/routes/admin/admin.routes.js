@@ -33,6 +33,7 @@ import {
   exportBusinesses,
   getBusinessById,
   updateBusinessNotificationEmail,
+  updateBusinessHidden,
   hideBusinessImage,
   deleteBusinessImage,
   getBusinessStats,
@@ -178,6 +179,7 @@ import {
   MarkBusinessEmailStatusSchema,
   UpdateBusinessEmailSchema,
   UpdateAdminBusinessNotificationEmailSchema,
+  UpdateAdminBusinessHiddenSchema,
   ClearBusinessPhonesSchema,
   MarkBusinessPhoneStatusSchema,
   UpdateBusinessPhoneSchema,
@@ -461,6 +463,13 @@ adminRouter.patch(
   paramsValidator(GetAdminBusinessParamsSchema),
   bodyValidator(UpdateAdminBusinessNotificationEmailSchema),
   serverErrorCatcherWrapper(updateBusinessNotificationEmail)
+);
+
+adminRouter.patch(
+  "/businesses/:id/hidden",
+  paramsValidator(GetAdminBusinessParamsSchema),
+  bodyValidator(UpdateAdminBusinessHiddenSchema),
+  serverErrorCatcherWrapper(updateBusinessHidden)
 );
 
 adminRouter.patch(
