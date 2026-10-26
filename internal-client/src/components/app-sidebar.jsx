@@ -27,6 +27,7 @@ import {
   PhoneIcon,
   SmartphoneIcon,
   MailSearchIcon,
+  Ban as BanIcon,
   UsersIcon,
   FlaskConicalIcon,
   DatabaseIcon,
@@ -184,6 +185,11 @@ const data = {
       title: "Email Cleaner",
       url: "/email-cleaner?tab=cleaner",
       icon: <MailXIcon />,
+    },
+    {
+      title: "Email Suppressions",
+      url: "/email-suppressions",
+      icon: <BanIcon />,
     },
     {
       title: "Email Scrape",

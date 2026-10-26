@@ -422,12 +422,12 @@ export default function BusinessDetailPageContent() {
             checked={Boolean(data.is_hidden)}
             disabled={updateHiddenMutation.isPending}
             onCheckedChange={(checked) => updateHiddenMutation.mutate(checked)}
-            aria-label="Hidden from the public site"
+            aria-label="Hidden from search and directory pages"
           />
           <span className="flex flex-col gap-0.5">
             <span className="text-sm font-medium">Hidden</span>
             <span className="text-xs text-muted-foreground">
-              Off the public site. The owner dashboard stays available.
+              The shop page stays up. It drops out of search and other listings.
             </span>
           </span>
         </label>

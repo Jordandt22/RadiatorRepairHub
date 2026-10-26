@@ -29,6 +29,7 @@ const SEGMENT_LABELS = {
   cities: "Cities",
   outreach: "Outreach",
   "email-cleaner": "Email Cleaner",
+  "email-suppressions": "Email Suppressions",
   "phone-cleaner": "Phone Cleaner",
   "phone-line-type": "Line Type",
   "email-scrape": "Email Scrape",

@@ -33,7 +33,7 @@ export const createListingReport = async (req, res) => {
   const { data: business, error: businessError } =
     await getBusinessClaimInfo(businessId);
 
-  if (businessError || !business || business.is_hidden) {
+  if (businessError || !business) {
     return res
       .status(404)
       .json(

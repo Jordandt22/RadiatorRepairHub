@@ -146,7 +146,7 @@ export async function generateMetadata({ params }) {
       alternates: {
         canonical: `${SITE_URL}/business/${slug}`,
       },
-      robots: INDEX_ROBOTS,
+      robots: business.is_test ? NOINDEX_ROBOTS : INDEX_ROBOTS,
     };
   } catch {
     return NOT_FOUND_METADATA;

@@ -246,13 +246,18 @@ import {
 } from "../../middleware/validators.js";
 import { authAdmin } from "../../middleware/admin.mw.js";
 import {
+  listPartnerLeadFollowUpsHandler,
+  listPartnerReviewRequestsHandler,
   listPartnerSitesHandler,
   updatePartnerSiteHandler,
 } from "../../controllers/admin/partner-sites.controller.js";
 import {
+  PartnerSiteMessagesQuerySchema,
   PartnerSiteParamsSchema,
   UpdatePartnerSiteSchema,
 } from "../../schemas/partner-sites.schemas.js";
+import { listEmailSuppressionsHandler } from "../../controllers/admin/email-suppressions.controller.js";
+import { GetEmailSuppressionsQuerySchema } from "../../schemas/email-suppressions.schemas.js";
 
 const ingestUpload = multer({
   storage: multer.memoryStorage(),
@@ -275,11 +280,29 @@ adminRouter.get(
   serverErrorCatcherWrapper(listPartnerSitesHandler)
 );
 
+adminRouter.get(
+  "/partner-sites/lead-follow-ups",
+  queryValidator(PartnerSiteMessagesQuerySchema),
+  serverErrorCatcherWrapper(listPartnerLeadFollowUpsHandler)
+);
+
+adminRouter.get(
+  "/partner-sites/review-requests",
+  queryValidator(PartnerSiteMessagesQuerySchema),
+  serverErrorCatcherWrapper(listPartnerReviewRequestsHandler)
+);
+
 adminRouter.patch(
   "/partner-sites/:businessId",
   paramsValidator(PartnerSiteParamsSchema),
   bodyValidator(UpdatePartnerSiteSchema),
   serverErrorCatcherWrapper(updatePartnerSiteHandler)
+);
+
+adminRouter.get(
+  "/email-suppressions",
+  queryValidator(GetEmailSuppressionsQuerySchema),
+  serverErrorCatcherWrapper(listEmailSuppressionsHandler)
 );
 
 adminRouter.get(
