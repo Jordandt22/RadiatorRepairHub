@@ -178,8 +178,13 @@ async function insertWebsiteLead(target, lead) {
     status: "new",
   });
   if (error) {
-    logger.error({ err: error }, "Template lead row was not saved");
+    logger.error(
+      { err: error, businessId: target.businessId },
+      "Template lead row was not saved"
+    );
+    return { ok: false, error };
   }
+  return { ok: true };
 }
 
 export const createTemplateLead = async (req, res) => {
@@ -297,6 +302,22 @@ export const createTemplateLead = async (req, res) => {
       );
   }
 
+  // Persist before email so a Resend outage cannot "succeed" without a dashboard lead.
+  // Duplicate key is set only after the owner email succeeds so a failed notify can retry.
+  if (target.persist) {
+    const saved = await insertWebsiteLead(target, lead);
+    if (!saved.ok) {
+      return res
+        .status(503)
+        .json(
+          customErrorHandler(
+            SERVER_ERROR,
+            "Couldn't send your message. Please call the shop or try again."
+          )
+        );
+    }
+  }
+
   const from = formatReviewFromAddress(site.shopName, SENDER_EMAIL);
   const ownerPayload = {
     from,
@@ -308,7 +329,14 @@ export const createTemplateLead = async (req, res) => {
 
   const { error: ownerError } = await resendClient().emails.send(ownerPayload);
   if (ownerError) {
-    logger.error({ err: ownerError }, "Template lead owner email failed");
+    logger.error(
+      {
+        err: ownerError,
+        businessId: target.businessId,
+        ownerEmail: target.ownerEmail,
+      },
+      "Template lead owner email failed"
+    );
     return res
       .status(503)
       .json(
@@ -320,7 +348,6 @@ export const createTemplateLead = async (req, res) => {
   }
 
   await rememberTemplateLead(duplicateParts);
-  if (target.persist) await insertWebsiteLead(target, lead);
 
   if (lead.email) {
     const confirmPayload = {
@@ -333,7 +360,15 @@ export const createTemplateLead = async (req, res) => {
     if (shopReplyEmail) confirmPayload.replyTo = shopReplyEmail;
     const { error: confirmError } = await resendClient().emails.send(confirmPayload);
     if (confirmError) {
-      logger.error({ err: confirmError }, "Template lead confirmation email failed");
+      // Confirmation is best-effort: the shop already has the lead and notification.
+      logger.error(
+        {
+          err: confirmError,
+          businessId: target.businessId,
+          customerEmail: lead.email,
+        },
+        "Template lead confirmation email failed"
+      );
     }
   }
 

@@ -24,6 +24,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -174,7 +175,24 @@ const LEAD_STATUS_OPTIONS = [
   { value: "review_sent", label: "Review sent" },
 ];
 
-function LeadFollowUp({ business, onRequestReview, reloadKey = 0 }) {
+function leadDefaultReviewMessage(business, customerName, messageTemplate = null) {
+  const saved =
+    typeof messageTemplate === "string" && messageTemplate.trim()
+      ? messageTemplate.trim()
+      : typeof business?.review_message_template === "string" &&
+        business.review_message_template.trim()
+        ? business.review_message_template.trim()
+        : defaultReviewMessageTemplate(business?.title);
+  return applyReviewMessageTemplate(saved, customerName);
+}
+
+function LeadFollowUp({
+  business,
+  onCustomizeReview,
+  onReviewSent,
+  reloadKey = 0,
+}) {
+  const { showCustomSuccess, showCustomError } = useToast();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [leads, setLeads] = useState([]);
@@ -187,7 +205,10 @@ function LeadFollowUp({ business, onRequestReview, reloadKey = 0 }) {
   const [service, setService] = useState("all");
   const [services, setServices] = useState([]);
   const [openLeadIds, setOpenLeadIds] = useState(() => new Set());
+  const [confirmLead, setConfirmLead] = useState(null);
+  const [sendingLeadId, setSendingLeadId] = useState("");
   const queryRef = useRef("");
+  const reviewUrl = googleReviewUrl(business.place_id);
 
   useEffect(() => {
     setSearch("");
@@ -198,6 +219,8 @@ function LeadFollowUp({ business, onRequestReview, reloadKey = 0 }) {
     setService("all");
     setServices([]);
     setOpenLeadIds(new Set());
+    setConfirmLead(null);
+    setSendingLeadId("");
     setPage(1);
   }, [business.id]);
 
@@ -253,6 +276,76 @@ function LeadFollowUp({ business, onRequestReview, reloadKey = 0 }) {
     }
   }, [service, services]);
 
+  const closeConfirm = () => {
+    if (sendingLeadId) return;
+    setConfirmLead(null);
+  };
+
+  const sendDefaultReview = async () => {
+    if (!confirmLead || sendingLeadId) return;
+    if (!business.is_featured) {
+      showCustomError("Review emails are included with a Featured listing.");
+      return;
+    }
+    if (!reviewUrl) {
+      showCustomError("This listing does not have a Google place ID yet.");
+      return;
+    }
+    const customerName = String(confirmLead.customerName || "").trim();
+    const customerEmail = String(confirmLead.customerEmail || "").trim();
+    if (!customerEmail) {
+      showCustomError("This lead has no email address.");
+      return;
+    }
+
+    setSendingLeadId(confirmLead.id);
+    let savedTemplate = null;
+    const templateResult = await fetchReviewRequests(business.id, 1);
+    if (
+      !templateResult.error &&
+      typeof templateResult.data?.messageTemplate === "string"
+    ) {
+      savedTemplate = templateResult.data.messageTemplate;
+    }
+    const message = leadDefaultReviewMessage(
+      business,
+      customerName,
+      savedTemplate
+    ).trim();
+    if (!message) {
+      setSendingLeadId("");
+      showCustomError("Unable to build the default review message.");
+      return;
+    }
+
+    const { data, error: apiError } = await sendReviewRequest(business.id, {
+      customerName,
+      customerEmail,
+      message,
+      websiteLeadId: confirmLead.id,
+    });
+    setSendingLeadId("");
+    if (apiError || !data?.request) {
+      showCustomError(errorText(apiError, "Unable to send this review email."));
+      return;
+    }
+    const sentAt = data.request.createdAt || new Date().toISOString();
+    const sentLeadId = confirmLead.id;
+    setLeads((current) => {
+      if (status === "new") {
+        return current.filter((lead) => lead.id !== sentLeadId);
+      }
+      return current.map((lead) =>
+        lead.id === sentLeadId
+          ? { ...lead, status: "review_sent", reviewSentAt: sentAt }
+          : lead
+      );
+    });
+    setConfirmLead(null);
+    showCustomSuccess("Review email sent.");
+    onReviewSent?.();
+  };
+
   if (!business.is_partner) {
     return (
       <div className="flex items-start gap-3 rounded-lg border border-border bg-card px-5 py-6">
@@ -274,248 +367,344 @@ function LeadFollowUp({ business, onRequestReview, reloadKey = 0 }) {
   const infoClassNames = "flex w-full items-center gap-1.5 rounded-md bg-primary/20 px-2 py-1 font-medium text-primary sm:w-auto";
   const serviceClassNames = "flex w-full items-center gap-1.5 rounded-md bg-violet-100 px-2 py-1 font-medium text-violet-800 sm:w-auto dark:bg-violet-500/20 dark:text-violet-300";
   const vehicleClassNames = "flex w-full items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 font-medium text-amber-800 sm:w-auto dark:bg-amber-500/20 dark:text-amber-300";
+  const confirmOpen = Boolean(confirmLead);
+  const confirmSending = Boolean(confirmLead && sendingLeadId === confirmLead.id);
   return (
-    <div className="rounded-lg border border-border bg-card">
-      <div className="border-b border-border px-5 py-3 bg-muted-foreground/5">
-        <h3 className="font-heading text-lg font-semibold text-foreground">
-          Website Leads
-        </h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Leads submitted from your website. After the job, send a review email to customers.
-        </p>
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-          <label className="relative block w-full max-w-md">
-            <span className="sr-only">Search leads</span>
-            <Search
-              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
+    <>
+      <div className="rounded-lg border border-border bg-card">
+        <div className="border-b border-border px-5 py-3 bg-muted-foreground/5">
+          <h3 className="font-heading text-lg font-semibold text-foreground">
+            Website Leads
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Leads submitted from your website. After the job, send a review email with your default message.
+          </p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+            <label className="relative block w-full max-w-md">
+              <span className="sr-only">Search leads</span>
+              <Search
+                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search name, email, phone, or vehicle..."
+                maxLength={100}
+                className={`bg-card pl-9 text-sm ${search ? "pr-9" : ""}`}
+              />
+              {search ? (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute top-1/2 right-2 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center text-muted-foreground duration-200 hover:text-destructive"
+                  aria-label="Clear lead search"
+                >
+                  <X className="size-4" aria-hidden="true" />
+                </button>
+              ) : null}
+            </label>
+            <SelectMenu
+              id="lead-sort"
+              aria-label="Sort leads"
+              value={sort}
+              onValueChange={(value) => {
+                setSort(value);
+                setPage(1);
+              }}
+              options={LEAD_SORT_OPTIONS}
+              className="w-full sm:w-36"
+              triggerClassName="bg-card capitalize"
             />
-            <Input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search name, email, phone, or vehicle..."
-              maxLength={100}
-              className={`bg-card pl-9 text-sm ${search ? "pr-9" : ""}`}
+            <SelectMenu
+              id="lead-status"
+              aria-label="Filter by status"
+              value={status}
+              onValueChange={(value) => {
+                setStatus(value);
+                setPage(1);
+              }}
+              options={LEAD_STATUS_OPTIONS}
+              className="w-full sm:w-40"
+              triggerClassName="bg-card capitalize"
             />
-            {search ? (
-              <button
-                type="button"
-                onClick={() => setSearch("")}
-                className="absolute top-1/2 right-2 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center text-muted-foreground duration-200 hover:text-destructive"
-                aria-label="Clear lead search"
-              >
-                <X className="size-4" aria-hidden="true" />
-              </button>
-            ) : null}
-          </label>
-          <SelectMenu
-            id="lead-sort"
-            aria-label="Sort leads"
-            value={sort}
-            onValueChange={(value) => {
-              setSort(value);
-              setPage(1);
-            }}
-            options={LEAD_SORT_OPTIONS}
-            className="w-full sm:w-36"
-            triggerClassName="bg-card capitalize"
-          />
-          <SelectMenu
-            id="lead-status"
-            aria-label="Filter by status"
-            value={status}
-            onValueChange={(value) => {
-              setStatus(value);
-              setPage(1);
-            }}
-            options={LEAD_STATUS_OPTIONS}
-            className="w-full sm:w-40"
-            triggerClassName="bg-card capitalize"
-          />
-          <SelectMenu
-            id="lead-service"
-            aria-label="Filter by service"
-            value={services.includes(service) ? service : "all"}
-            onValueChange={(value) => {
-              setService(value);
-              setPage(1);
-            }}
-            options={[
-              { value: "all", label: "All services" },
-              ...services.map((name) => ({ value: name, label: name })),
-            ]}
-            className="w-full sm:w-48"
-            triggerClassName="bg-card capitalize"
-          />
+            <SelectMenu
+              id="lead-service"
+              aria-label="Filter by service"
+              value={services.includes(service) ? service : "all"}
+              onValueChange={(value) => {
+                setService(value);
+                setPage(1);
+              }}
+              options={[
+                { value: "all", label: "All services" },
+                ...services.map((name) => ({ value: name, label: name })),
+              ]}
+              className="w-full sm:w-48"
+              triggerClassName="bg-card capitalize"
+            />
+          </div>
+        </div>
+        <div>
+          {loading && leads.length === 0 ? (
+            <div role="status" aria-live="polite">
+              <p className="sr-only">Loading website leads.</p>
+              <div className="space-y-3 px-5 py-4">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </div>
+            </div>
+          ) : error ? (
+            <p className="px-5 py-4 text-sm text-destructive">{error}</p>
+          ) : leads.length === 0 ? (
+            <p className="px-5 py-4 text-sm text-muted-foreground">
+              {query || status !== "all" || service !== "all"
+                ? "No leads match."
+                : "No website leads yet."}
+            </p>
+          ) : (
+            <ul className={`divide-y divide-border ${loading ? "opacity-60" : ""}`}>
+              {leads.map((lead) => (
+                <li key={lead.id} className="px-5 py-4 text-sm">
+                  <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="mb-2 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                        <p className="flex w-full items-center gap-1.5 rounded-md bg-foreground/10 px-2 py-1 font-medium text-foreground sm:w-auto">
+                          <User className="size-3.5 shrink-0" aria-hidden="true" />
+                          {lead.customerName}
+                        </p>
+                        {lead.customerEmail ? (
+                          <a
+                            href={`mailto:${lead.customerEmail}`}
+                            className={`${infoClassNames} cursor-pointer no-underline hover:bg-primary/30 transition-all duration-200`}
+                          >
+                            <Mail className="size-3.5 shrink-0" aria-hidden="true" />
+                            <span className="font-medium">{lead.customerEmail}</span>
+                          </a>
+                        ) : null}
+                        {leadTelHref(lead.customerPhone) ? (
+                          <a
+                            href={leadTelHref(lead.customerPhone)}
+                            className={`${infoClassNames} cursor-pointer no-underline hover:bg-primary/30 transition-all duration-200`}
+                          >
+                            <Phone className="size-3.5 shrink-0" aria-hidden="true" />
+                            <span className="font-medium">{lead.customerPhone}</span>
+                          </a>
+                        ) : (
+                          <p className={infoClassNames}>
+                            <Phone className="size-3.5 shrink-0" aria-hidden="true" />
+                            <span className="font-medium">{lead.customerPhone}</span>
+                          </p>
+                        )}
+                        <p className={serviceClassNames}>
+                          <Wrench className="size-3.5 shrink-0" aria-hidden="true" />
+                          <span className="font-medium capitalize">{lead.service}</span>
+                        </p>
+                        <p className={vehicleClassNames}>
+                          <Car className="size-3.5 shrink-0" aria-hidden="true" />
+                          <span className="font-medium">{lead.vehicle}</span>
+                        </p>
+                      </div>
+                      <div className="mt-2 w-xl max-w-full">
+                        <button
+                          type="button"
+                          className="flex w-full cursor-pointer items-center gap-2 rounded-md bg-muted-foreground/5 px-2 py-1.5 text-left hover:bg-muted-foreground/15 transition-all duration-200"
+                          aria-expanded={openLeadIds.has(lead.id)}
+                          onClick={() => {
+                            setOpenLeadIds((current) => {
+                              const next = new Set(current);
+                              if (next.has(lead.id)) next.delete(lead.id);
+                              else next.add(lead.id);
+                              return next;
+                            });
+                          }}
+                        >
+                          <ChevronRight
+                            className={`size-4 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none ${openLeadIds.has(lead.id) ? "rotate-90" : ""}`}
+                            aria-hidden="true"
+                          />
+                          <span className="shrink-0 font-medium text-foreground">
+                            Customer&apos;s Message
+                          </span>
+                          {openLeadIds.has(lead.id) ? null : (
+                            <span className="min-w-0 truncate text-muted-foreground">
+                              {leadIssuePreview(lead.issue)}
+                            </span>
+                          )}
+                        </button>
+                        {openLeadIds.has(lead.id) ? (
+                          <p className="mt-1 whitespace-pre-wrap rounded-md bg-muted-foreground/5 p-3 leading-relaxed text-foreground">
+                            {lead.issue}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 flex-row items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                        <span className={leadStatusClass(lead.status)}>
+                          {lead.status === "review_sent" ? (
+                            <Check className="size-3 shrink-0" aria-hidden="true" />
+                          ) : (
+                            <span
+                              className="relative flex size-1.5 shrink-0"
+                              aria-hidden="true"
+                            >
+                              <span className="absolute inline-flex size-full animate-ping rounded-full bg-sky-500/60 motion-reduce:animate-none" />
+                              <span className="relative inline-flex size-1.5 rounded-full bg-sky-500" />
+                            </span>
+                          )}
+                          {leadStatusLabel(lead.status)}
+                        </span>
+                        {lead.createdAt ? (
+                          <span className="text-muted-foreground text-xs">
+                            {formatSentAt(lead.createdAt)}
+                          </span>
+                        ) : null}
+                      </div>
+                      {lead.customerEmail && lead.status !== "review_sent" ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={Boolean(sendingLeadId)}
+                          onClick={() => setConfirmLead(lead)}
+                        >
+                          Request Review
+                          <Send aria-hidden="true" />
+                        </Button>
+                      ) : lead.reviewSentAt ? (
+                        <span className="rounded-sm bg-muted-foreground/10 text-foreground px-2 py-1 text-xs font-medium">
+                          Review sent on {formatSentAt(lead.reviewSentAt)}
+                        </span>
+                      ) : !lead.customerEmail ? (
+                        <span className="text-xs text-muted-foreground">
+                          No email on this lead
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={page <= 1 || loading}
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+          >
+            <ChevronLeft aria-hidden="true" />
+            Previous
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            {page} of {totalPages}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages || loading}
+            onClick={() => setPage((current) => current + 1)}
+          >
+            Next
+            <ChevronRight aria-hidden="true" />
+          </Button>
         </div>
       </div>
-      <div>
-        {loading && leads.length === 0 ? (
-          <div role="status" aria-live="polite">
-            <p className="sr-only">Loading website leads.</p>
-            <div className="space-y-3 px-5 py-4">
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-16 w-full" />
-            </div>
-          </div>
-        ) : error ? (
-          <p className="px-5 py-4 text-sm text-destructive">{error}</p>
-        ) : leads.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-muted-foreground">
-            {query || status !== "all" || service !== "all"
-              ? "No leads match."
-              : "No website leads yet."}
-          </p>
-        ) : (
-          <ul className={`divide-y divide-border ${loading ? "opacity-60" : ""}`}>
-            {leads.map((lead) => (
-              <li key={lead.id} className="px-5 py-4 text-sm">
-                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <div className="mb-2 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-                      <p className="flex w-full items-center gap-1.5 rounded-md bg-foreground/10 px-2 py-1 font-medium text-foreground sm:w-auto">
-                        <User className="size-3.5 shrink-0" aria-hidden="true" />
-                        {lead.customerName}
-                      </p>
-                      {lead.customerEmail ? (
-                        <a
-                          href={`mailto:${lead.customerEmail}`}
-                          className={`${infoClassNames} cursor-pointer no-underline hover:bg-primary/30 transition-all duration-200`}
-                        >
-                          <Mail className="size-3.5 shrink-0" aria-hidden="true" />
-                          <span className="font-medium">{lead.customerEmail}</span>
-                        </a>
-                      ) : null}
-                      {leadTelHref(lead.customerPhone) ? (
-                        <a
-                          href={leadTelHref(lead.customerPhone)}
-                          className={`${infoClassNames} cursor-pointer no-underline hover:bg-primary/30 transition-all duration-200`}
-                        >
-                          <Phone className="size-3.5 shrink-0" aria-hidden="true" />
-                          <span className="font-medium">{lead.customerPhone}</span>
-                        </a>
-                      ) : (
-                        <p className={infoClassNames}>
-                          <Phone className="size-3.5 shrink-0" aria-hidden="true" />
-                          <span className="font-medium">{lead.customerPhone}</span>
-                        </p>
-                      )}
-                      <p className={serviceClassNames}>
-                        <Wrench className="size-3.5 shrink-0" aria-hidden="true" />
-                        <span className="font-medium capitalize">{lead.service}</span>
-                      </p>
-                      <p className={vehicleClassNames}>
-                        <Car className="size-3.5 shrink-0" aria-hidden="true" />
-                        <span className="font-medium">{lead.vehicle}</span>
-                      </p>
-                    </div>
-                    <div className="mt-2 w-xl max-w-full">
-                      <button
-                        type="button"
-                        className="flex w-full cursor-pointer items-center gap-2 rounded-md bg-muted-foreground/5 px-2 py-1.5 text-left hover:bg-muted-foreground/15 transition-all duration-200"
-                        aria-expanded={openLeadIds.has(lead.id)}
-                        onClick={() => {
-                          setOpenLeadIds((current) => {
-                            const next = new Set(current);
-                            if (next.has(lead.id)) next.delete(lead.id);
-                            else next.add(lead.id);
-                            return next;
-                          });
-                        }}
-                      >
-                        <ChevronRight
-                          className={`size-4 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none ${openLeadIds.has(lead.id) ? "rotate-90" : ""}`}
-                          aria-hidden="true"
-                        />
-                        <span className="shrink-0 font-medium text-foreground">
-                          Customer&apos;s Message
-                        </span>
-                        {openLeadIds.has(lead.id) ? null : (
-                          <span className="min-w-0 truncate text-muted-foreground">
-                            {leadIssuePreview(lead.issue)}
-                          </span>
-                        )}
-                      </button>
-                      {openLeadIds.has(lead.id) ? (
-                        <p className="mt-1 whitespace-pre-wrap rounded-md bg-muted-foreground/5 p-3 leading-relaxed text-foreground">
-                          {lead.issue}
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 flex-row items-center justify-between gap-2">
-                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                      <span className={leadStatusClass(lead.status)}>
-                        {lead.status === "review_sent" ? (
-                          <Check className="size-3 shrink-0" aria-hidden="true" />
-                        ) : (
-                          <span
-                            className="relative flex size-1.5 shrink-0"
-                            aria-hidden="true"
-                          >
-                            <span className="absolute inline-flex size-full animate-ping rounded-full bg-sky-500/60 motion-reduce:animate-none" />
-                            <span className="relative inline-flex size-1.5 rounded-full bg-sky-500" />
-                          </span>
-                        )}
-                        {leadStatusLabel(lead.status)}
-                      </span>
-                      {lead.createdAt ? (
-                        <span className="text-muted-foreground text-xs">
-                          {formatSentAt(lead.createdAt)}
-                        </span>
-                      ) : null}
-                    </div>
-                    {lead.customerEmail && lead.status !== "review_sent" ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => onRequestReview(lead)}
-                      >
-                        Request Review
-                        <ArrowRight aria-hidden="true" />
-                      </Button>
-                    ) : lead.reviewSentAt ? (
-                      <span className="rounded-sm bg-muted-foreground/10 text-foreground px-2 py-1 text-xs font-medium">
-                        Review sent on {formatSentAt(lead.reviewSentAt)}
-                      </span>
-                    ) : !lead.customerEmail ? (
-                      <span className="text-xs text-muted-foreground">
-                        No email on this lead
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-      <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-3">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={page <= 1 || loading}
-          onClick={() => setPage((current) => Math.max(1, current - 1))}
-        >
-          <ChevronLeft aria-hidden="true" />
-          Previous
-        </Button>
-        <p className="text-xs text-muted-foreground">
-          {page} of {totalPages}
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={page >= totalPages || loading}
-          onClick={() => setPage((current) => current + 1)}
-        >
-          Next
-          <ChevronRight aria-hidden="true" />
-        </Button>
-      </div>
-    </div>
+
+      <Dialog
+        open={confirmOpen}
+        onOpenChange={(open) => {
+          if (confirmSending) return;
+          if (!open) closeConfirm();
+        }}
+      >
+        <DialogContent className="sm:max-w-md" showCloseButton={!confirmSending}>
+          <DialogHeader>
+            <DialogTitle>Send Review Email?</DialogTitle>
+            <DialogDescription>
+              {!business.is_featured ? (
+                <>
+                  Review emails are included with a Featured listing. Upgrade to
+                  email a Google review link from website leads.
+                </>
+              ) : !reviewUrl ? (
+                <>
+                  This listing does not have a Google place ID yet, so a review
+                  link cannot be sent.
+                </>
+              ) : (
+                <>
+                  Send your default review message to{" "}
+                  <strong className="font-medium text-foreground">
+                    {confirmLead?.customerName}
+                  </strong>{" "}
+                  at{" "}
+                  <strong className="font-medium text-foreground">
+                    {confirmLead?.customerEmail}
+                  </strong>
+                  .
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {!business.is_featured ? (
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={closeConfirm}>
+                Cancel
+              </Button>
+              <Link
+                href={`/pricing?business=${encodeURIComponent(business.id)}`}
+                className={buttonVariants({ className: "justify-center" })}
+                prefetch={false}
+              >
+                View Featured pricing
+              </Link>
+            </DialogFooter>
+          ) : !reviewUrl ? (
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={closeConfirm}>
+                Close
+              </Button>
+            </DialogFooter>
+          ) : (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={confirmSending}
+                onClick={closeConfirm}
+              >
+                Cancel
+              </Button>
+              {typeof onCustomizeReview === "function" ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={confirmSending}
+                  onClick={() => {
+                    const lead = confirmLead;
+                    setConfirmLead(null);
+                    onCustomizeReview(lead);
+                  }}
+                >
+                  Customize
+                </Button>
+              ) : null}
+              <Button
+                type="button"
+                disabled={confirmSending}
+                onClick={sendDefaultReview}
+              >
+                {confirmSending ? "Sending..." : "Send"}
+              </Button>
+            </DialogFooter>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -861,7 +1050,12 @@ function SentEmailsSkeleton() {
   );
 }
 
-function ReviewFollowUp({ business, prefill = null, onLeadReviewed }) {
+function ReviewFollowUp({
+  business,
+  prefill = null,
+  onLeadReviewed,
+  reloadKey: parentReloadKey = 0,
+}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [requests, setRequests] = useState([]);
@@ -909,7 +1103,7 @@ function ReviewFollowUp({ business, prefill = null, onLeadReviewed }) {
     return () => {
       mounted = false;
     };
-  }, [business.id, business.is_featured, page, reloadKey]);
+  }, [business.id, business.is_featured, page, reloadKey, parentReloadKey]);
 
   if (!business.is_featured) {
     return <FeaturedReviewLock business={business} />;
@@ -1093,6 +1287,7 @@ export default function AutomationPanel({
   const [selectedId, setSelectedId] = useState("");
   const [reviewPrefill, setReviewPrefill] = useState(null);
   const [leadReloadKey, setLeadReloadKey] = useState(0);
+  const [reviewReloadKey, setReviewReloadKey] = useState(0);
   const requestedSection = searchParams.get("section");
   const [section, setSection] = useState(
     requestedSection === "lead" || requestedSection === "review"
@@ -1203,7 +1398,10 @@ export default function AutomationPanel({
             <LeadFollowUp
               business={selected}
               reloadKey={leadReloadKey}
-              onRequestReview={(lead) => {
+              onReviewSent={() => {
+                setReviewReloadKey((value) => value + 1);
+              }}
+              onCustomizeReview={(lead) => {
                 setReviewPrefill({
                   id: lead.id,
                   name: lead.customerName,
@@ -1217,6 +1415,7 @@ export default function AutomationPanel({
             <ReviewFollowUp
               business={selected}
               prefill={reviewPrefill}
+              reloadKey={reviewReloadKey}
               onLeadReviewed={() => {
                 setReviewPrefill(null);
                 setLeadReloadKey((value) => value + 1);
