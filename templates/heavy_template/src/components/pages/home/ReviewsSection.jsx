@@ -1,12 +1,17 @@
+import dynamic from "next/dynamic";
 import { ArrowRight, Star } from "lucide-react";
 import { CHROME } from "@/lib/chrome";
 import { getConfig, homeReviews } from "@/lib/config";
 import { googleReviewsHref, googleWriteReviewHref } from "@/lib/maps";
 import { btnPrimary, btnRow, btnSecondary, eyebrow, h2, wrap } from "@/lib/ui";
 import { StarRow } from "@/components/pages/shared/StarRow";
-import { ReviewCarousel } from "./ReviewCarousel";
 import { OpensInNewTab } from "@/components/pages/shared/OpensInNewTab";
 import { ReviewQrButton } from "./ReviewQrButton";
+
+const ReviewCarousel = dynamic(
+  () => import("./ReviewCarousel").then((m) => m.ReviewCarousel),
+  { ssr: true },
+);
 
 export function ReviewsSection() {
   const config = getConfig();

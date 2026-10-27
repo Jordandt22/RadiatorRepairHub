@@ -1,7 +1,12 @@
+import dynamic from "next/dynamic";
 import { CHROME } from "@/lib/chrome";
 import { getConfig, homeGallery, showGallery } from "@/lib/config";
 import { eyebrow, h2, section, wrap } from "@/lib/ui";
-import { GalleryPhotos } from "@/components/pages/shared/GalleryPhotos";
+
+const GalleryPhotos = dynamic(
+  () => import("@/components/pages/shared/GalleryPhotos").then((m) => m.GalleryPhotos),
+  { ssr: true },
+);
 
 export function GalleryGrid() {
   const config = getConfig();

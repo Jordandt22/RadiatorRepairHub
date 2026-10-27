@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { CHROME } from "@/lib/chrome";
 import { getConfig } from "@/lib/config";
@@ -17,12 +18,16 @@ import {
   split,
   wrap,
 } from "@/lib/ui";
-import { ContactForm } from "./ContactForm";
 import { MapEmbed } from "./MapEmbed";
 import { HoursTable } from "@/components/pages/shared/HoursTable";
 import { ServiceAreas } from "@/components/pages/shared/ServiceAreas";
 import { OpensInNewTab } from "@/components/pages/shared/OpensInNewTab";
 import { RrhLink } from "@/components/pages/shared/RrhLink";
+
+const ContactForm = dynamic(
+  () => import("./ContactForm").then((m) => m.ContactForm),
+  { ssr: true },
+);
 
 const linkClass =
   "inline-flex items-center gap-2 text-accent-text no-underline hover:underline";

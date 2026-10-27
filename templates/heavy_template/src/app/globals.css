@@ -127,6 +127,20 @@ button {
   }
 }
 
+/* Hero photo: full-width slide from the right on first paint. No opacity — keeps LCP. */
+@keyframes hero-photo-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.hero-photo-enter {
+  animation: hero-photo-in 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
 /* Hero marquee: service names and city, looping. Static under reduced motion. */
 .marquee-track {
   width: max-content;
@@ -165,6 +179,10 @@ button {
   }
 
   .route-fade {
+    animation: none;
+  }
+
+  .hero-photo-enter {
     animation: none;
   }
 
