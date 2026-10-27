@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import {
   getAuthRedirectError,
   hydrateSessionFromRedirect,
 } from "@/lib/auth/redirectSession";
+import { safeRedirectPath } from "@/lib/auth/safeRedirectPath";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
   getPasswordStrengthError,
@@ -19,8 +20,10 @@ import {
 } from "@/lib/validation/password";
 import { usePostHog } from "posthog-js/react";
 
-export default function ResetPasswordForm() {
+function ResetPasswordFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = safeRedirectPath(searchParams.get("next")) || "/dashboard";
   const { showCustomError, showCustomSuccess } = useToast();
   const posthog = usePostHog();
   const [status, setStatus] = useState("checking");
@@ -113,7 +116,7 @@ export default function ResetPasswordForm() {
 
       posthog?.capture("owner_password_reset_completed");
       showCustomSuccess("Your password has been updated.");
-      router.push("/dashboard");
+      router.push(nextPath);
     } catch {
       showCustomError("Unable to update password. Please try again.");
     } finally {
@@ -251,5 +254,21 @@ export default function ResetPasswordForm() {
         </Button>
       </form>
     </div>
+  );
+}
+
+export default function ResetPasswordForm() {
+  return (
+    <Suspense
+      fallback={
+        <div className="rounded-lg border border-border bg-card p-8">
+          <p className="text-center text-sm text-muted-foreground">
+            Checking reset link…
+          </p>
+        </div>
+      }
+    >
+      <ResetPasswordFormContent />
+    </Suspense>
   );
 }

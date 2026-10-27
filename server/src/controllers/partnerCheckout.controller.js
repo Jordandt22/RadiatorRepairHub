@@ -4,6 +4,7 @@ import {
   successHandler,
 } from "../helpers/customErrorHandler.js";
 import { getWebBaseUrl } from "../lib/constants/messages.js";
+import { partnerAgreementUrl } from "../lib/partnerAgreement.js";
 import {
   stripe,
   PARTNER_PRICE_ID,
@@ -101,6 +102,7 @@ export const createPartnerCheckoutSession = async (req, res) => {
     business_title: businessTitle.slice(0, 500),
   };
 
+  const agreementUrl = partnerAgreementUrl(webUrl);
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     client_reference_id: businessId,
@@ -114,6 +116,11 @@ export const createPartnerCheckoutSession = async (req, res) => {
     managed_payments: { enabled: false },
     allow_promotion_codes: true,
     metadata,
+    custom_text: {
+      submit: {
+        message: `By confirming, you agree to the RadiatorRepairHub Partner Agreement at ${agreementUrl} and our Terms of Service.`,
+      },
+    },
     subscription_data: {
       metadata,
       description: `Partner Listing: ${businessTitle}`.slice(0, 500),

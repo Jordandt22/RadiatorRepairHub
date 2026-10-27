@@ -66,6 +66,11 @@ const MAIN_ITEMS = [
     icon: Scale,
   },
   {
+    title: "Partner Agreement",
+    url: "/partner-agreement",
+    icon: Scale,
+  },
+  {
     title: "Support",
     url: "/contact",
     icon: LifeBuoy,

@@ -41,7 +41,7 @@ async function accountEmailsByOwner(businesses) {
   return emails;
 }
 
-function mapPartnerSite(business, site, accountEmail = null) {
+function mapPartnerSite(business, site, accountEmail = null, intake = null) {
   const domain = site?.domain || null;
   return {
     businessId: business.id,
@@ -50,6 +50,8 @@ function mapPartnerSite(business, site, accountEmail = null) {
     allowedOrigins: allowedOriginsForDomain(domain),
     apiKey: site?.api_key || null,
     notificationEmail: resolveNotificationRecipient(business, accountEmail),
+    intakeStatus: intake?.status === "submitted" ? "submitted" : "needs_info",
+    intakeSubmittedAt: intake?.submitted_at ?? null,
   };
 }
 
@@ -68,6 +70,7 @@ export const listPartnerSitesHandler = async (req, res) => {
 
   const ids = (businesses ?? []).map((business) => business.id);
   let sites = [];
+  let intakes = [];
   if (ids.length) {
     const { data, error: siteError } = await supabase
       .from("partner_sites")
@@ -79,9 +82,25 @@ export const listPartnerSitesHandler = async (req, res) => {
       );
     }
     sites = data ?? [];
+
+    const { data: intakeRows, error: intakeError } = await supabase
+      .from("partner_website_intakes")
+      .select("business_id, status, submitted_at")
+      .in("business_id", ids);
+    if (intakeError) {
+      return res.status(500).json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Unable to load website intake status.",
+          intakeError
+        )
+      );
+    }
+    intakes = intakeRows ?? [];
   }
 
   const byId = new Map(sites.map((site) => [site.business_id, site]));
+  const intakeById = new Map(intakes.map((row) => [row.business_id, row]));
   const accountEmails = await accountEmailsByOwner(businesses);
   return res.status(200).json(
     successHandler({
@@ -89,7 +108,8 @@ export const listPartnerSitesHandler = async (req, res) => {
         mapPartnerSite(
           business,
           byId.get(business.id),
-          accountEmails.get(business.owner_uid) ?? null
+          accountEmails.get(business.owner_uid) ?? null,
+          intakeById.get(business.id) ?? null
         )
       ),
     })
@@ -162,12 +182,18 @@ export const updatePartnerSiteHandler = async (req, res) => {
 
   clearPartnerSiteOriginCache();
   const accountEmails = await accountEmailsByOwner([business]);
+  const { data: intake } = await supabase
+    .from("partner_website_intakes")
+    .select("business_id, status, submitted_at")
+    .eq("business_id", businessId)
+    .maybeSingle();
   return res.status(200).json(
     successHandler({
       site: mapPartnerSite(
         business,
         { domain, api_key: apiKey },
-        accountEmails.get(business.owner_uid) ?? null
+        accountEmails.get(business.owner_uid) ?? null,
+        intake
       ),
     })
   );

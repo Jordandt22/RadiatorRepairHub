@@ -17,6 +17,7 @@ const EXACT_PATHS = new Set([
   "/email/unsubscribe",
   "/privacy",
   "/terms",
+  "/partner-agreement",
   "/maintenance",
 ]);
 

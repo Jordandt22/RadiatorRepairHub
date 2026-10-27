@@ -33,6 +33,10 @@ import {
   buildBusinessClaimLink,
   getWebBaseUrl,
 } from "./constants/messages.js";
+import {
+  PARTNER_AGREEMENT_VERSION,
+  partnerAgreementUrl,
+} from "./partnerAgreement.js";
 
 function isEmailTakenError(error) {
   const message = String(error?.message || "").toLowerCase();
@@ -247,15 +251,46 @@ export async function fulfillPartnerCheckout({ session, subscription }) {
 
   await invalidatePartnerCaches(businessId);
 
+  const stripeCheckoutSessionId =
+    typeof session?.id === "string" ? session.id : null;
+  try {
+    const { error: acceptanceError } = await supabase
+      .from("partner_agreement_acceptances")
+      .insert({
+        business_id: businessId,
+        owner_uid: ownerUid,
+        customer_email: email,
+        agreement_version: PARTNER_AGREEMENT_VERSION,
+        stripe_checkout_session_id: stripeCheckoutSessionId,
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: stripeCustomerId || null,
+      });
+    // 23505 = unique_violation (webhook retry with the same checkout session)
+    if (acceptanceError && acceptanceError.code !== "23505") {
+      logger.error(
+        { err: acceptanceError, businessId, subscriptionId: subscription.id },
+        "Failed to log Partner agreement acceptance"
+      );
+    }
+  } catch (acceptanceErr) {
+    logger.error(
+      { err: acceptanceErr, businessId, subscriptionId: subscription.id },
+      "Failed to log Partner agreement acceptance"
+    );
+  }
+
   const baseUrl = getWebBaseUrl();
   const businessPageUrl = buildBusinessClaimLink(business.slug);
-  const signInUrl = `${baseUrl}/signin`;
+  const websiteDashboardPath = `/dashboard?tab=website&business=${encodeURIComponent(businessId)}`;
+  const signInUrl = `${baseUrl}/signin?redirect=${encodeURIComponent(websiteDashboardPath)}`;
+  const agreementUrl = partnerAgreementUrl(baseUrl);
+  const resetPasswordRedirect = `${baseUrl}/reset-password?next=${encodeURIComponent(websiteDashboardPath)}`;
 
   try {
     if (createdAccount) {
       const { data: linkData, error: linkError } = await generateRecoveryLink({
         email,
-        redirectTo: `${baseUrl}/reset-password`,
+        redirectTo: resetPasswordRedirect,
       });
       const setPasswordUrl = linkData?.properties?.action_link || null;
       if (linkError || !setPasswordUrl) {
@@ -268,6 +303,7 @@ export async function fulfillPartnerCheckout({ session, subscription }) {
           setPasswordUrl,
           businessPageUrl,
           signInUrl,
+          agreementUrl,
         }),
         context: { businessId, ownerUid },
       });
@@ -278,6 +314,7 @@ export async function fulfillPartnerCheckout({ session, subscription }) {
         html: OWNER_PARTNER_SIGN_IN_MESSAGE.html(business.title, {
           signInUrl,
           businessPageUrl,
+          agreementUrl,
         }),
         context: { businessId, ownerUid },
       });

@@ -183,12 +183,23 @@ function KeyCell({ apiKey }) {
   );
 }
 
+function formatIntakeSubmittedAt(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 function PartnerSiteRow({ site, onSave, saving }) {
   const [open, setOpen] = useState(false);
   const [keyOpen, setKeyOpen] = useState(false);
   const [domain, setDomain] = useState(site.domain || "");
   const [error, setError] = useState("");
   const [keyError, setKeyError] = useState("");
+  const intakeSubmitted = site.intakeStatus === "submitted";
 
   function startEdit() {
     setDomain(site.domain || "");
@@ -214,6 +225,20 @@ function PartnerSiteRow({ site, onSave, saving }) {
           <span className="break-all">{site.notificationEmail}</span>
         ) : (
           <span className="text-muted-foreground">Not set</span>
+        )}
+      </TableCell>
+      <TableCell className="text-sm">
+        {intakeSubmitted ? (
+          <span className="inline-flex flex-col gap-0.5">
+            <span className="font-medium text-foreground">Submitted</span>
+            {site.intakeSubmittedAt ? (
+              <span className="text-xs text-muted-foreground">
+                {formatIntakeSubmittedAt(site.intakeSubmittedAt)}
+              </span>
+            ) : null}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">Needs info</span>
         )}
       </TableCell>
       <TableCell>
@@ -458,6 +483,7 @@ export default function PartnerSitesPageContent() {
               <TableRow>
                 <TableHead>Listing</TableHead>
                 <TableHead>Notification email</TableHead>
+                <TableHead>Website intake</TableHead>
                 <TableHead>Domain</TableHead>
                 <TableHead>Allowed origins</TableHead>
                 <TableHead>API key</TableHead>
@@ -469,7 +495,7 @@ export default function PartnerSitesPageContent() {
             <TableBody>
               {(data ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-sm text-muted-foreground">
+                  <TableCell colSpan={7} className="text-sm text-muted-foreground">
                     No partner listings yet.
                   </TableCell>
                 </TableRow>

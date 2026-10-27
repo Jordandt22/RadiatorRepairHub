@@ -8,6 +8,7 @@ import OwnedBusinessCard from "@/components/dashboard/OwnedBusinessCard";
 import BusinessAnalyticsPanel from "@/components/dashboard/BusinessAnalyticsPanel";
 import BusinessInsightsPanel from "@/components/dashboard/BusinessInsightsPanel";
 import AutomationPanel from "@/components/dashboard/AutomationPanel";
+import WebsitePanel from "@/components/dashboard/WebsitePanel";
 import { SelectMenu } from "@/components/ui/select-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { buttonVariants } from "@/components/ui/button";
@@ -24,7 +25,7 @@ function DashboardContentInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, onTabChange] = useQueryTab(
-    ["analytics", "insights", "automation"],
+    ["analytics", "insights", "automation", "website"],
     "my-businesses"
   );
 
@@ -87,6 +88,7 @@ function DashboardContentInner() {
     { value: "analytics", label: "Analytics" },
     { value: "insights", label: "Insights" },
     { value: "automation", label: "Automations" },
+    { value: "website", label: "Website" },
   ];
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
@@ -189,6 +191,13 @@ function DashboardContentInner() {
 
         <TabsContent value="automation" className="min-w-0">
           <AutomationPanel
+            businesses={businesses}
+            initialBusinessId={searchParams.get("business") || ""}
+          />
+        </TabsContent>
+
+        <TabsContent value="website" className="min-w-0">
+          <WebsitePanel
             businesses={businesses}
             initialBusinessId={searchParams.get("business") || ""}
           />

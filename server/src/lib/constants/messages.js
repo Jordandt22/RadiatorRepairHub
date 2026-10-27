@@ -376,16 +376,14 @@ export const LISTING_SAVE_MESSAGE = Object.freeze({
 
   <p><strong>${safeBusiness}</strong></p>
   <table style="width: 100%; border-collapse: collapse; margin: 12px 0 20px;">
-    ${
-      safePhone
+    ${safePhone
         ? `<tr>
       <td style="padding: 8px 0; font-weight: bold; width: 100px; vertical-align: top;">Phone:</td>
       <td style="padding: 8px 0;"><a href="tel:${safePhone}" style="color: #1a73e8;">${safePhone}</a></td>
     </tr>`
         : ""
-    }
-    ${
-      safeAddress
+      }
+    ${safeAddress
         ? `<tr>
       <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Address:</td>
       <td style="padding: 8px 0;">${safeAddress}${safeLocation ? `<br>${safeLocation}` : ""}</td>
@@ -396,7 +394,7 @@ export const LISTING_SAVE_MESSAGE = Object.freeze({
       <td style="padding: 8px 0;">${safeLocation}</td>
     </tr>`
           : ""
-    }
+      }
   </table>
 
   ${listingLink}
@@ -717,14 +715,13 @@ export const ADMIN_BUSINESS_CLAIMED_MESSAGE = Object.freeze({
       <td style="padding: 8px 0; font-weight: bold;">Owner email:</td>
       <td style="padding: 8px 0;">${email ?? "N/A"}</td>
     </tr>
-    ${
-      showListing
+    ${showListing
         ? `<tr>
       <td style="padding: 8px 0; font-weight: bold;">Listing email:</td>
       <td style="padding: 8px 0;">${listingEmail}</td>
     </tr>`
         : ""
-    }
+      }
     <tr>
       <td style="padding: 8px 0; font-weight: bold;">Listing:</td>
       <td style="padding: 8px 0;"><a href="${businessPageUrl}" style="color: #1a73e8;">${businessPageUrl}</a></td>
@@ -941,19 +938,28 @@ export const ADMIN_PARTNER_CLAIM_CONFLICT_MESSAGE = Object.freeze({
 export const OWNER_PARTNER_SET_PASSWORD_MESSAGE = Object.freeze({
   subject: (businessName) =>
     `Set your password for ${businessName ?? "your Partner listing"}`,
-  html: (businessName, { setPasswordUrl, businessPageUrl, signInUrl } = {}) => `
+  html: (
+    businessName,
+    { setPasswordUrl, businessPageUrl, signInUrl, agreementUrl } = {},
+  ) => `
   <p>Hi there,</p>
 
   <p>Thanks for joining RadiatorRepairHub as a Partner. <strong>${escapeEmailHtml(businessName ?? "Your shop")}</strong> is claimed and your Partner listing is active.</p>
 
-  <p>Set a password to sign in:<br>
+  <p><strong>Set a password to sign in:</strong><br>
   <a href="${escapeEmailHtml(setPasswordUrl ?? "#")}" style="color: #1a73e8;">Set your password</a></p>
 
-  <p>After that, sign in here:<br>
-  <a href="${escapeEmailHtml(signInUrl ?? "#")}" style="color: #1a73e8;">${escapeEmailHtml(signInUrl ?? "")}</a></p>
+  <p>After you set your password, you will go to the Website tab in your dashboard to submit details for your Partner site.</p>
+
+  <p>You can also sign in later here:<br>
+  <a href="${escapeEmailHtml(signInUrl ?? "#")}" style="color: #1a73e8;">Sign in</a></p>
 
   <p>View your listing:<br>
   <a href="${escapeEmailHtml(businessPageUrl ?? "#")}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl ?? "")}</a></p>
+
+  ${agreementUrl
+      ? `<p>Reminder: at checkout you agreed to the <a href="${escapeEmailHtml(agreementUrl)}" style="color: #1a73e8;">Partner Agreement</a>.</p>`
+      : ""}
 
   <p>Your Partner listing includes Featured placement and a Partner badge. You can manage billing from Settings after you sign in.</p>
 
@@ -964,16 +970,22 @@ export const OWNER_PARTNER_SET_PASSWORD_MESSAGE = Object.freeze({
 export const OWNER_PARTNER_SIGN_IN_MESSAGE = Object.freeze({
   subject: (businessName) =>
     `Your Partner listing is active${businessName ? `: ${businessName}` : ""}`,
-  html: (businessName, { signInUrl, businessPageUrl } = {}) => `
+  html: (businessName, { signInUrl, businessPageUrl, agreementUrl } = {}) => `
   <p>Hi there,</p>
 
   <p><strong>${escapeEmailHtml(businessName ?? "Your shop")}</strong> is now a Partner listing on RadiatorRepairHub. This listing was added to your existing account.</p>
 
-  <p>Sign in to manage it:<br>
-  <a href="${escapeEmailHtml(signInUrl ?? "#")}" style="color: #1a73e8;">${escapeEmailHtml(signInUrl ?? "")}</a></p>
+  <p><strong>Sign in to finish Website setup:</strong><br>
+  <a href="${escapeEmailHtml(signInUrl ?? "#")}" style="color: #1a73e8;">Sign in</a></p>
+
+  <p>After you sign in, open the Website tab to submit details for your Partner site.</p>
 
   <p>View your listing:<br>
   <a href="${escapeEmailHtml(businessPageUrl ?? "#")}" style="color: #1a73e8;">${escapeEmailHtml(businessPageUrl ?? "")}</a></p>
+
+  ${agreementUrl
+      ? `<p>Reminder: at checkout you agreed to the <a href="${escapeEmailHtml(agreementUrl)}" style="color: #1a73e8;">Partner Agreement</a>.</p>`
+      : ""}
 
   <p>Thanks,<br>RadiatorRepairHub Team</p>
   `,
@@ -1148,22 +1160,19 @@ export const WEBSITE_OFFER_OUTREACH_MESSAGE = Object.freeze({
 // Outreach SMS: copy-paste bodies for manual sends (no auto-delivery)
 export const CLAIM_INVITE_OUTREACH_SMS = Object.freeze({
   body: (businessName, { businessPageUrl }) =>
-    `Hi, this is ${OUTREACH_SMS_SENDER_NAME} with RadiatorRepairHub. We listed ${
-      businessName ?? "your shop"
+    `Hi, this is ${OUTREACH_SMS_SENDER_NAME} with RadiatorRepairHub. We listed ${businessName ?? "your shop"
     } on our website, so customers can find radiator repair services near them.\n\nYou can claim the page for free to update your info and show as verified: ${businessPageUrl}.\n\nIf you have any questions, let me know!`,
 });
 
 export const CLAIM_FOLLOWUP_OUTREACH_SMS = Object.freeze({
   body: (businessName, { businessPageUrl }) =>
-    `Hi, ${OUTREACH_SMS_SENDER_NAME} with RadiatorRepairHub following up. The free listing for ${
-      businessName ?? "your shop"
+    `Hi, ${OUTREACH_SMS_SENDER_NAME} with RadiatorRepairHub following up. The free listing for ${businessName ?? "your shop"
     } is still unclaimed: ${businessPageUrl}`,
 });
 
 export const CUSTOM_CLAIM_INVITE_OUTREACH_SMS = Object.freeze({
   body: (businessName, { businessPageUrl }) =>
-    `Hi, this is ${OUTREACH_SMS_SENDER_NAME} with RadiatorRepairHub about the free listing for ${
-      businessName ?? "your shop"
+    `Hi, this is ${OUTREACH_SMS_SENDER_NAME} with RadiatorRepairHub about the free listing for ${businessName ?? "your shop"
     }: ${businessPageUrl}`,
 });
 

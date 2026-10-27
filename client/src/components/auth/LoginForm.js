@@ -11,13 +11,7 @@ import { loginOwner } from "@/lib/api/auth";
 import { persistSession } from "@/lib/auth/session";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { usePostHog } from "posthog-js/react";
-
-function safeRedirectPath(value) {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) {
-    return null;
-  }
-  return value;
-}
+import { safeRedirectPath } from "@/lib/auth/safeRedirectPath";
 
 function LoginFormContent() {
   const router = useRouter();

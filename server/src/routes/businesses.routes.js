@@ -42,6 +42,10 @@ import {
 } from "../controllers/reviewRequests.controller.js";
 import { listWebsiteLeadsHandler } from "../controllers/website-leads.controller.js";
 import {
+  getPartnerWebsiteIntakeHandler,
+  submitPartnerWebsiteIntakeHandler,
+} from "../controllers/partner-website-intakes.controller.js";
+import {
   BusinessSlugSchema,
   SearchBusinessesSchema,
   ClaimBusinessSchema,
@@ -54,6 +58,7 @@ import {
   UnclaimOwnedBusinessSchema,
   OwnedBusinessIdParamsSchema,
   OwnedBusinessStatsQuerySchema,
+  SubmitPartnerWebsiteIntakeSchema,
   SaveReviewMessageTemplateSchema,
   ListReviewRequestsQuerySchema,
   ListWebsiteLeadsQuerySchema,
@@ -146,6 +151,21 @@ businessesRouter.get(
   paramsValidator(OwnedBusinessIdParamsSchema),
   queryValidator(ListWebsiteLeadsQuerySchema),
   serverErrorCatcherWrapper(listWebsiteLeadsHandler)
+);
+
+businessesRouter.get(
+  "/owned/:businessId/website-intake",
+  authUser,
+  paramsValidator(OwnedBusinessIdParamsSchema),
+  serverErrorCatcherWrapper(getPartnerWebsiteIntakeHandler)
+);
+
+businessesRouter.post(
+  "/owned/:businessId/website-intake",
+  authUser,
+  paramsValidator(OwnedBusinessIdParamsSchema),
+  bodyValidator(SubmitPartnerWebsiteIntakeSchema),
+  serverErrorCatcherWrapper(submitPartnerWebsiteIntakeHandler)
 );
 
 businessesRouter.get(

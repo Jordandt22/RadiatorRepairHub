@@ -179,6 +179,12 @@ function Footer({
             >
               Terms of Service
             </Link>
+            <Link
+              href="/partner-agreement"
+              className="text-white/60 transition-colors hover:text-white"
+            >
+              Partner Agreement
+            </Link>
           </div>
         </div>
       </div>
