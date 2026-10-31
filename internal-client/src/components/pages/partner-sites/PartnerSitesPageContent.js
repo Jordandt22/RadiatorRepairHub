@@ -183,7 +183,7 @@ function KeyCell({ apiKey }) {
   );
 }
 
-function formatIntakeSubmittedAt(value) {
+function formatIntakeDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   return date.toLocaleDateString(undefined, {
@@ -200,6 +200,14 @@ function PartnerSiteRow({ site, onSave, saving }) {
   const [error, setError] = useState("");
   const [keyError, setKeyError] = useState("");
   const intakeSubmitted = site.intakeStatus === "submitted";
+  const priorityLabel = intakeSubmitted
+    ? "—"
+    : site.intakePriorityActive
+      ? "Priority"
+      : "Paused";
+  const reminderLabel = site.intakeReminder2dSentAt
+    ? formatIntakeDate(site.intakeReminder2dSentAt)
+    : "—";
 
   function startEdit() {
     setDomain(site.domain || "");
@@ -233,13 +241,39 @@ function PartnerSiteRow({ site, onSave, saving }) {
             <span className="font-medium text-foreground">Submitted</span>
             {site.intakeSubmittedAt ? (
               <span className="text-xs text-muted-foreground">
-                {formatIntakeSubmittedAt(site.intakeSubmittedAt)}
+                {formatIntakeDate(site.intakeSubmittedAt)}
               </span>
             ) : null}
           </span>
         ) : (
-          <span className="text-muted-foreground">Needs info</span>
+          <span className="inline-flex flex-col gap-0.5">
+            <span className="text-muted-foreground">Needs info</span>
+            <span className="text-xs text-muted-foreground">
+              Step {site.intakeCurrentStep || 1} of 4
+            </span>
+          </span>
         )}
+      </TableCell>
+      <TableCell className="text-sm">
+        <span className="inline-flex flex-col gap-0.5">
+          <span
+            className={
+              site.intakePriorityActive
+                ? "font-medium text-foreground"
+                : "text-muted-foreground"
+            }
+          >
+            {priorityLabel}
+          </span>
+          {site.intakePriorityUntil && !intakeSubmitted ? (
+            <span className="text-xs text-muted-foreground">
+              Until {formatIntakeDate(site.intakePriorityUntil)}
+            </span>
+          ) : null}
+        </span>
+      </TableCell>
+      <TableCell className="text-sm text-muted-foreground">
+        {reminderLabel}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
@@ -484,6 +518,8 @@ export default function PartnerSitesPageContent() {
                 <TableHead>Listing</TableHead>
                 <TableHead>Notification email</TableHead>
                 <TableHead>Website intake</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Day-2 reminder</TableHead>
                 <TableHead>Domain</TableHead>
                 <TableHead>Allowed origins</TableHead>
                 <TableHead>API key</TableHead>
@@ -495,7 +531,7 @@ export default function PartnerSitesPageContent() {
             <TableBody>
               {(data ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-sm text-muted-foreground">
+                  <TableCell colSpan={9} className="text-sm text-muted-foreground">
                     No partner listings yet.
                   </TableCell>
                 </TableRow>

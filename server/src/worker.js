@@ -58,6 +58,10 @@ import {
 } from "./digest-scheduler/handlers.js";
 import { closeDigestQueues } from "./digest-scheduler/queues.js";
 import { reconcileDigestScheduler } from "./digest-scheduler/scheduler.js";
+import { PARTNER_INTAKE_REMINDER_QUEUE_NAME } from "./partner-intake-reminder/constants.js";
+import { processPartnerIntakeReminderJob } from "./partner-intake-reminder/handlers.js";
+import { closePartnerIntakeReminderQueue } from "./partner-intake-reminder/queues.js";
+import { reconcilePartnerIntakeReminderScheduler } from "./partner-intake-reminder/scheduler.js";
 import { logger } from "./lib/logger.js";
 
 const connection = getBullmqConnectionOptions();
@@ -153,6 +157,12 @@ const digestSendWorker = new Worker(
   { connection, concurrency: 1 }
 );
 
+const partnerIntakeReminderWorker = new Worker(
+  PARTNER_INTAKE_REMINDER_QUEUE_NAME,
+  async () => processPartnerIntakeReminderJob(),
+  { connection, concurrency: 1 }
+);
+
 function attachLogging(worker, label) {
   const log = logger.child({ worker: label });
   worker.on("completed", (job, result) => {
@@ -174,6 +184,7 @@ attachLogging(outreachDispatchWorker, "outreach-dispatch");
 attachLogging(outreachSendWorker, "outreach-send");
 attachLogging(digestDispatchWorker, "digest-dispatch");
 attachLogging(digestSendWorker, "digest-send");
+attachLogging(partnerIntakeReminderWorker, "partner-intake-reminder");
 
 logger.info(
   {
@@ -187,6 +198,7 @@ logger.info(
       OUTREACH_SEND_QUEUE_NAME,
       DIGEST_DISPATCH_QUEUE_NAME,
       DIGEST_SEND_QUEUE_NAME,
+      PARTNER_INTAKE_REMINDER_QUEUE_NAME,
     ],
   },
   "Worker listening"
@@ -211,6 +223,17 @@ reconcileDigestScheduler()
     logger.error(
       { err: err?.message || err },
       "Digest scheduler reconciliation failed"
+    );
+  });
+
+reconcilePartnerIntakeReminderScheduler()
+  .then((scheduler) => {
+    logger.info({ scheduler }, "Partner intake reminder scheduler reconciled");
+  })
+  .catch((err) => {
+    logger.error(
+      { err: err?.message || err },
+      "Partner intake reminder scheduler reconciliation failed"
     );
   });
 
@@ -244,8 +267,10 @@ async function shutdown() {
     outreachSendWorker.close(),
     digestDispatchWorker.close(),
     digestSendWorker.close(),
+    partnerIntakeReminderWorker.close(),
     closeOutreachQueues(),
     closeDigestQueues(),
+    closePartnerIntakeReminderQueue(),
     closeApifyScrapeQueue(),
     closeEmailScrapeQueue(),
     closePhoneLineTypeQueue(),

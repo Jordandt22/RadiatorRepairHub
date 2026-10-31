@@ -159,16 +159,16 @@ export const OwnedBusinessIdParamsSchema = Yup.object({
   businessId: Yup.string().trim().uuid("Invalid business ID").required(),
 });
 
-export const SubmitPartnerWebsiteIntakeSchema = Yup.object({
-  preferredDomain: Yup.string().trim().max(253).optional(),
-  accentColor: Yup.string().trim().max(32).optional(),
-  about: Yup.string().trim().max(2000).optional(),
-  servicesNotes: Yup.string().trim().max(2000).optional(),
-  hoursNotes: Yup.string().trim().max(2000).optional(),
-  googleUrl: Yup.string().trim().max(500).optional(),
-  logoPhotoNotes: Yup.string().trim().max(2000).optional(),
-  otherNotes: Yup.string().trim().max(2000).optional(),
-  contactEmail: Yup.string().trim().max(320).optional(),
+export const PatchPartnerWebsiteIntakeSchema = Yup.object({
+  step: Yup.number().integer().oneOf([1, 2, 3, 4]).required(),
+  soft: Yup.boolean().optional(),
+}).unknown(true);
+
+export const SubmitPartnerWebsiteIntakeSchema = Yup.object({}).unknown(true);
+
+export const PartnerWebsiteIntakeImageParamsSchema = Yup.object({
+  businessId: Yup.string().trim().uuid("Invalid business ID").required(),
+  imageId: Yup.string().trim().uuid("Invalid image ID").required(),
 });
 
 export const SaveReviewMessageTemplateSchema = Yup.object({

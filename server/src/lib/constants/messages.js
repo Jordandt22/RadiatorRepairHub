@@ -991,6 +991,22 @@ export const OWNER_PARTNER_SIGN_IN_MESSAGE = Object.freeze({
   `,
 });
 
+export const OWNER_PARTNER_WEBSITE_INTAKE_REMINDER_MESSAGE = Object.freeze({
+  subject: (businessName) =>
+    `Finish Website setup for ${businessName ?? "your Partner listing"}`,
+  html: (businessName, { signInUrl } = {}) => `
+  <p>Hi there,</p>
+
+  <p>A quick reminder: Website setup for <strong>${escapeEmailHtml(businessName ?? "your shop")}</strong> is still incomplete.</p>
+
+  <p>Sign in and open the Website tab to finish the form so we can start on your Partner site:</p>
+
+  <p><a href="${escapeEmailHtml(signInUrl ?? "#")}" style="color: #1a73e8;">Sign in / Website setup</a></p>
+
+  <p>Thanks,<br>RadiatorRepairHub Team</p>
+  `,
+});
+
 // Thank-you email sent to the business owner after a successful claim
 export const OWNER_CLAIM_THANK_YOU_MESSAGE = Object.freeze({
   subject: (businessName) =>

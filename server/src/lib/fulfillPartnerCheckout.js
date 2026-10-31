@@ -37,6 +37,7 @@ import {
   PARTNER_AGREEMENT_VERSION,
   partnerAgreementUrl,
 } from "./partnerAgreement.js";
+import { partnerIntakePriorityUntil } from "./partnerWebsiteIntake.js";
 
 function isEmailTakenError(error) {
   const message = String(error?.message || "").toLowerCase();
@@ -71,6 +72,45 @@ async function loadBusiness(businessId) {
     .maybeSingle();
   if (error) throw error;
   return data;
+}
+
+/** Create needs_info intake once; never reset submitted or an existing draft clock. */
+async function ensurePartnerWebsiteIntakeStarted(businessId) {
+  const { data: existing, error: readError } = await supabase
+    .from("partner_website_intakes")
+    .select("business_id, status")
+    .eq("business_id", businessId)
+    .maybeSingle();
+
+  if (readError) {
+    logger.error(
+      { err: readError, businessId },
+      "Failed to read Partner website intake"
+    );
+    return;
+  }
+
+  if (existing) return;
+
+  const now = new Date();
+  const startedAt = now.toISOString();
+  const { error } = await supabase.from("partner_website_intakes").insert({
+    business_id: businessId,
+    status: "needs_info",
+    payload: {},
+    current_step: 1,
+    started_at: startedAt,
+    priority_until: partnerIntakePriorityUntil(now),
+    submitted_at: null,
+    updated_at: startedAt,
+  });
+
+  if (error && error.code !== "23505") {
+    logger.error(
+      { err: error, businessId },
+      "Failed to start Partner website intake"
+    );
+  }
 }
 
 async function resolveOwner({ email }) {
@@ -250,6 +290,7 @@ export async function fulfillPartnerCheckout({ session, subscription }) {
   if (applyError) throw applyError;
 
   await invalidatePartnerCaches(businessId);
+  await ensurePartnerWebsiteIntakeStarted(businessId);
 
   const stripeCheckoutSessionId =
     typeof session?.id === "string" ? session.id : null;

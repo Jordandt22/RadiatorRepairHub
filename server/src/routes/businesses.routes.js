@@ -42,8 +42,12 @@ import {
 } from "../controllers/reviewRequests.controller.js";
 import { listWebsiteLeadsHandler } from "../controllers/website-leads.controller.js";
 import {
+  deletePartnerWebsiteIntakeImageHandler,
   getPartnerWebsiteIntakeHandler,
+  patchPartnerWebsiteIntakeHandler,
   submitPartnerWebsiteIntakeHandler,
+  uploadPartnerWebsiteIntakeImageHandler,
+  uploadPartnerWebsiteIntakeLogoHandler,
 } from "../controllers/partner-website-intakes.controller.js";
 import {
   BusinessSlugSchema,
@@ -58,6 +62,8 @@ import {
   UnclaimOwnedBusinessSchema,
   OwnedBusinessIdParamsSchema,
   OwnedBusinessStatsQuerySchema,
+  PatchPartnerWebsiteIntakeSchema,
+  PartnerWebsiteIntakeImageParamsSchema,
   SubmitPartnerWebsiteIntakeSchema,
   SaveReviewMessageTemplateSchema,
   ListReviewRequestsQuerySchema,
@@ -160,12 +166,43 @@ businessesRouter.get(
   serverErrorCatcherWrapper(getPartnerWebsiteIntakeHandler)
 );
 
+businessesRouter.patch(
+  "/owned/:businessId/website-intake",
+  authUser,
+  paramsValidator(OwnedBusinessIdParamsSchema),
+  bodyValidator(PatchPartnerWebsiteIntakeSchema),
+  serverErrorCatcherWrapper(patchPartnerWebsiteIntakeHandler)
+);
+
 businessesRouter.post(
   "/owned/:businessId/website-intake",
   authUser,
   paramsValidator(OwnedBusinessIdParamsSchema),
   bodyValidator(SubmitPartnerWebsiteIntakeSchema),
   serverErrorCatcherWrapper(submitPartnerWebsiteIntakeHandler)
+);
+
+businessesRouter.post(
+  "/owned/:businessId/website-intake/logo",
+  authUser,
+  paramsValidator(OwnedBusinessIdParamsSchema),
+  handleOwnerImageUpload,
+  serverErrorCatcherWrapper(uploadPartnerWebsiteIntakeLogoHandler)
+);
+
+businessesRouter.post(
+  "/owned/:businessId/website-intake/images",
+  authUser,
+  paramsValidator(OwnedBusinessIdParamsSchema),
+  handleOwnerImageUpload,
+  serverErrorCatcherWrapper(uploadPartnerWebsiteIntakeImageHandler)
+);
+
+businessesRouter.delete(
+  "/owned/:businessId/website-intake/images/:imageId",
+  authUser,
+  paramsValidator(PartnerWebsiteIntakeImageParamsSchema),
+  serverErrorCatcherWrapper(deletePartnerWebsiteIntakeImageHandler)
 );
 
 businessesRouter.get(

@@ -14,6 +14,23 @@ export function buildBusinessImagePublicId(businessId, imageId) {
   return `${getCdnEnvFolder()}/business/${businessId}/${imageId}`;
 }
 
+/** Partner intake media: {env}/partner-intake/{businessId}/logo|gallery/{imageId} */
+export function buildPartnerIntakeImagePublicId(businessId, kind, imageId) {
+  const folder = kind === "logo" ? "logo" : "gallery";
+  return `${getCdnEnvFolder()}/partner-intake/${businessId}/${folder}/${imageId}`;
+}
+
+export function buildPartnerIntakeImageDeliveryUrl(
+  businessId,
+  kind,
+  imageId,
+  variant = ADMIN_GALLERY_VARIANT
+) {
+  const base = getCfImagesDeliveryBase();
+  if (!base || !businessId || !imageId) return null;
+  return `${base}/${buildPartnerIntakeImagePublicId(businessId, kind, imageId)}/${variant}`;
+}
+
 const ADMIN_GALLERY_VARIANT = "w=800,fit=cover,f=auto,q=80";
 
 const PUBLIC_CF_IMAGES_BASE = "https://images.radiatorrepairhub.com/images";

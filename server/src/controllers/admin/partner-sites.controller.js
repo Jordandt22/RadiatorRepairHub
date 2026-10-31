@@ -10,6 +10,7 @@ import {
   allowedOriginsForDomain,
   normalizePartnerDomain,
 } from "../../lib/partnerSiteDomain.js";
+import { isPartnerIntakePriorityActive } from "../../lib/partnerWebsiteIntake.js";
 import {
   buildIlikeOrFilter,
   sanitizeIlikeSearch,
@@ -43,6 +44,9 @@ async function accountEmailsByOwner(businesses) {
 
 function mapPartnerSite(business, site, accountEmail = null, intake = null) {
   const domain = site?.domain || null;
+  const intakeStatus =
+    intake?.status === "submitted" ? "submitted" : "needs_info";
+  const priorityUntil = intake?.priority_until ?? null;
   return {
     businessId: business.id,
     title: business.title,
@@ -50,8 +54,18 @@ function mapPartnerSite(business, site, accountEmail = null, intake = null) {
     allowedOrigins: allowedOriginsForDomain(domain),
     apiKey: site?.api_key || null,
     notificationEmail: resolveNotificationRecipient(business, accountEmail),
-    intakeStatus: intake?.status === "submitted" ? "submitted" : "needs_info",
+    intakeStatus,
     intakeSubmittedAt: intake?.submitted_at ?? null,
+    intakeCurrentStep: Math.min(
+      4,
+      Math.max(1, Number(intake?.current_step) || 1)
+    ),
+    intakePriorityUntil: priorityUntil,
+    intakePriorityActive: isPartnerIntakePriorityActive(
+      priorityUntil,
+      intakeStatus
+    ),
+    intakeReminder2dSentAt: intake?.reminder_2d_sent_at ?? null,
   };
 }
 
@@ -85,7 +99,9 @@ export const listPartnerSitesHandler = async (req, res) => {
 
     const { data: intakeRows, error: intakeError } = await supabase
       .from("partner_website_intakes")
-      .select("business_id, status, submitted_at")
+      .select(
+        "business_id, status, submitted_at, current_step, priority_until, reminder_2d_sent_at"
+      )
       .in("business_id", ids);
     if (intakeError) {
       return res.status(500).json(
@@ -184,7 +200,9 @@ export const updatePartnerSiteHandler = async (req, res) => {
   const accountEmails = await accountEmailsByOwner([business]);
   const { data: intake } = await supabase
     .from("partner_website_intakes")
-    .select("business_id, status, submitted_at")
+    .select(
+      "business_id, status, submitted_at, current_step, priority_until, reminder_2d_sent_at"
+    )
     .eq("business_id", businessId)
     .maybeSingle();
   return res.status(200).json(
