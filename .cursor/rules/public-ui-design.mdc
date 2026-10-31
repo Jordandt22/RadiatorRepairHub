@@ -1,0 +1,33 @@
+---
+description: Design system constraints for the public RadiatorRepairHub client UI
+globs: client/src/**/*.js,client/src/**/*.jsx,client/src/**/*.css
+alwaysApply: false
+---
+
+# Public UI Design Constraints
+
+All public `client` UI follows `client/DESIGN.md`. Read it before styling work.
+
+- Use design tokens: `bg-primary`, `bg-background`, `bg-card`, `text-foreground`,
+  `text-muted-foreground`, `border-border`, `bg-tint`, `text-interactive`.
+- Do NOT use raw Tailwind palette classes for chrome (`bg-blue-600`, `text-gray-900`,
+  `bg-gray-50`, etc.). Semantic green/red for open/closed status is fine.
+- One type family (IBM Plex Sans). Never add a second heading font.
+- Surfaces: cards/panels use `rounded-lg` + `bg-card border border-border`.
+  Buttons, search fields, and primary CTAs use `rounded-full`.
+  Borders over shadows; `shadow-sm` max for cards, no `shadow-lg` + hover-lift.
+- Motion: color/opacity/height for interaction. No decorative `hover:scale-*`,
+  `hover:-translate-y-*`, animated gradients, or floating icons. Respect reduced motion.
+- Buttons: one filled (`bg-primary`) and one outline/text style, both pills.
+  No hover invert-to-solid-blue on chips or outline buttons.
+- Signature: home full-bleed shop photo + ~80svh viewport + centered pill search.
+  Below the fold: soft grain/radial atmosphere on key bands; one dark signature
+  section (How It Works). Listing/search pages use navy `PageHeader` (not
+  `bg-primary` slabs), pill search/filter CTAs, and a result count above grids.
+  No WebGL demo backgrounds as default chrome.
+  Consumer-app / SaaS product patterns are fine — not limited to “directory only.”
+  Restrained flair (step numbers, tint icon wells) is fine; no rainbow icon boxes.
+- Nav: Home, Browse, Resources (incl. How to Claim + FAQ), About, Contact, Search.
+  Home page only: transparent nav over the hero; other pages solid light bar.
+
+This does not apply to `internal-client` (admin UI).

@@ -1,10 +1,10 @@
 APP_OVERVIEW.md
 
-.agents/
+# .agents/
 
-skills-lock.json
+# skills-lock.json
 
-.cursor/
+# .cursor/
 
 .env
 

@@ -1,0 +1,10 @@
+{
+  "plugins": {
+    "posthog": {
+      "enabled": true
+    },
+    "twilio-developer-kit": {
+      "enabled": true
+    }
+  }
+}
