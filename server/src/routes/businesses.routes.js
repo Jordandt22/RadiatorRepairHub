@@ -45,6 +45,7 @@ import {
   deletePartnerWebsiteIntakeImageHandler,
   getPartnerWebsiteIntakeHandler,
   patchPartnerWebsiteIntakeHandler,
+  patchPartnerWebsiteIntakeImageHandler,
   submitPartnerWebsiteIntakeHandler,
   uploadPartnerWebsiteIntakeImageHandler,
   uploadPartnerWebsiteIntakeLogoHandler,
@@ -63,6 +64,7 @@ import {
   OwnedBusinessIdParamsSchema,
   OwnedBusinessStatsQuerySchema,
   PatchPartnerWebsiteIntakeSchema,
+  PatchPartnerWebsiteIntakeImageSchema,
   PartnerWebsiteIntakeImageParamsSchema,
   SubmitPartnerWebsiteIntakeSchema,
   SaveReviewMessageTemplateSchema,
@@ -196,6 +198,14 @@ businessesRouter.post(
   paramsValidator(OwnedBusinessIdParamsSchema),
   handleOwnerImageUpload,
   serverErrorCatcherWrapper(uploadPartnerWebsiteIntakeImageHandler)
+);
+
+businessesRouter.patch(
+  "/owned/:businessId/website-intake/images/:imageId",
+  authUser,
+  paramsValidator(PartnerWebsiteIntakeImageParamsSchema),
+  bodyValidator(PatchPartnerWebsiteIntakeImageSchema),
+  serverErrorCatcherWrapper(patchPartnerWebsiteIntakeImageHandler)
 );
 
 businessesRouter.delete(

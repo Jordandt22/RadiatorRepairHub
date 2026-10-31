@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import path from "node:path";
 import {
   customErrorHandler,
   errorCodes,
@@ -21,7 +22,7 @@ import {
   INTAKE_SELECT_FIELDS,
   mapPartnerWebsiteIntake,
   mergeIntakePayload,
-  MAX_IMAGES,
+  MIN_IMAGES,
   normalizeStep1,
   normalizeStep2,
   normalizeStep3,
@@ -30,6 +31,20 @@ import {
   TOTAL_INTAKE_STEPS,
   validateReadyToSubmit,
 } from "../lib/partnerWebsiteIntake.js";
+import {
+  MAX_MEDIA_CAPTION_LENGTH,
+  PARTNER_MEDIA_CONSENT_VERSION,
+  assertGalleryCapacity,
+  countGalleryImages,
+  deletePartnerWebsiteLogo,
+  deletePartnerWebsiteMediaByImageId,
+  insertPartnerWebsiteMedia,
+  listPartnerWebsiteMedia,
+  mediaPayloadFromRows,
+  nextGallerySortOrder,
+  updatePartnerWebsiteMediaCaption,
+} from "../lib/partnerWebsiteMedia.js";
+import { processPartnerIntakeImage } from "../lib/processPartnerIntakeImage.js";
 import { supabase } from "../supabase/supabase.js";
 import { getOwnedBusiness } from "../supabase/supabase.functions.js";
 
@@ -175,6 +190,61 @@ function validateUploadFile(file) {
   return null;
 }
 
+function hasMediaConsent(row) {
+  return Boolean(row?.media_usage_consented_at);
+}
+
+function consentUpdateFromBody(body, existing, nowIso) {
+  if (body?.mediaUsageConsent === true) {
+    if (hasMediaConsent(existing)) return null;
+    return {
+      media_usage_consented_at: nowIso,
+      media_usage_consent_version: PARTNER_MEDIA_CONSENT_VERSION,
+    };
+  }
+  if (body?.mediaUsageConsent === false) {
+    if (!hasMediaConsent(existing)) return null;
+    return {
+      media_usage_consented_at: null,
+      media_usage_consent_version: null,
+    };
+  }
+  return null;
+}
+
+async function buildIntakeResponse(business, row) {
+  const { rows, error } = await listPartnerWebsiteMedia(business.id);
+  if (error) return { intake: null, error };
+  const listing = await loadListingSnapshot(business);
+  const mediaPayload = mediaPayloadFromRows(rows);
+  return {
+    listing,
+    mediaPayload,
+    intake: mapPartnerWebsiteIntake(row, listing, { mediaPayload }),
+    error: null,
+  };
+}
+
+async function syncPayloadMedia(businessId, existingPayload, mediaPayload) {
+  const nextPayload = mergeIntakePayload(existingPayload, {
+    logo: mediaPayload.logo,
+    images: mediaPayload.images,
+  });
+  const now = new Date().toISOString();
+  return supabase
+    .from("partner_website_intakes")
+    .update({ payload: nextPayload, updated_at: now })
+    .eq("business_id", businessId)
+    .select(INTAKE_SELECT_FIELDS)
+    .single();
+}
+
+function safeOriginalFilename(file) {
+  const raw = String(file?.originalname || "").trim();
+  if (!raw) return null;
+  return path.basename(raw).slice(0, 200) || null;
+}
+
 export const getPartnerWebsiteIntakeHandler = async (req, res) => {
   const business = await loadOwnedPartnerBusiness(req, res);
   if (!business) return;
@@ -190,12 +260,22 @@ export const getPartnerWebsiteIntakeHandler = async (req, res) => {
     );
   }
 
-  const listing = await loadListingSnapshot(business);
+  const built = await buildIntakeResponse(business, data);
+  if (built.error) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to load website media.",
+        built.error
+      )
+    );
+  }
+
   return res.status(200).json(
     successHandler({
       businessId: business.id,
-      listing,
-      intake: mapPartnerWebsiteIntake(data, listing),
+      listing: built.listing,
+      intake: built.intake,
     })
   );
 };
@@ -218,6 +298,56 @@ export const patchPartnerWebsiteIntakeHandler = async (req, res) => {
   }
   if (rejectIfSubmitted(res, existing)) return;
 
+  const body = req.body || {};
+  const soft = body.soft === true;
+
+  if (
+    soft &&
+    body.consentOnly === true &&
+    (body.mediaUsageConsent === true || body.mediaUsageConsent === false)
+  ) {
+    const now = new Date().toISOString();
+    const consentFields = consentUpdateFromBody(body, existing, now) || {};
+    const { data, error } = await supabase
+      .from("partner_website_intakes")
+      .update({
+        updated_at: now,
+        ...consentFields,
+      })
+      .eq("business_id", business.id)
+      .select(INTAKE_SELECT_FIELDS)
+      .single();
+
+    if (error) {
+      return res.status(500).json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Unable to save website setup details.",
+          error
+        )
+      );
+    }
+
+    const built = await buildIntakeResponse(business, data);
+    if (built.error) {
+      return res.status(500).json(
+        customErrorHandler(
+          SUPABASE_ERROR,
+          "Unable to load website media.",
+          built.error
+        )
+      );
+    }
+
+    return res.status(200).json(
+      successHandler({
+        businessId: business.id,
+        listing: built.listing,
+        intake: built.intake,
+      })
+    );
+  }
+
   const step = Number(req.body?.step);
   if (![1, 2, 3, 4].includes(step)) {
     return res.status(422).json(
@@ -226,21 +356,48 @@ export const patchPartnerWebsiteIntakeHandler = async (req, res) => {
       })
     );
   }
+  const { rows: mediaRows, error: mediaError } = await listPartnerWebsiteMedia(
+    business.id
+  );
+  if (mediaError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to load website media.",
+        mediaError
+      )
+    );
+  }
+  const mediaPayload = mediaPayloadFromRows(mediaRows);
+  const bodyWithMedia = {
+    ...body,
+    logo: mediaPayload.logo,
+    images: mediaPayload.images,
+  };
 
-  const body = req.body || {};
-  const soft = body.soft === true;
   let stepResult;
-  if (step === 1) stepResult = normalizeStep1(body, { soft });
+  if (step === 1) stepResult = normalizeStep1(bodyWithMedia, { soft });
   else if (step === 2) {
-    stepResult = normalizeStep2(body, { requireMedia: true, soft });
-  } else if (step === 3) stepResult = normalizeStep3(body, { soft });
-  else stepResult = normalizeStep4(body);
+    stepResult = normalizeStep2(bodyWithMedia, { requireMedia: true, soft });
+  } else if (step === 3) stepResult = normalizeStep3(bodyWithMedia, { soft });
+  else stepResult = normalizeStep4(bodyWithMedia);
+
+  const consentIncoming = body.mediaUsageConsent === true;
+  const consented = hasMediaConsent(existing) || consentIncoming;
+  if (!soft && step === 2 && !consented) {
+    stepResult.errors.mediaUsageConsent =
+      "Confirm permission to store and use these photos.";
+  }
 
   if (Object.keys(stepResult.errors).length) {
     return res.status(422).json(customErrorHandler(YUP_ERROR, stepResult.errors));
   }
 
-  const nextPayload = mergeIntakePayload(existing.payload, stepResult.payload);
+  const nextPayload = mergeIntakePayload(existing.payload, {
+    ...stepResult.payload,
+    logo: mediaPayload.logo,
+    images: mediaPayload.images,
+  });
   const nextStep = soft
     ? Math.min(
         TOTAL_INTAKE_STEPS,
@@ -251,6 +408,7 @@ export const patchPartnerWebsiteIntakeHandler = async (req, res) => {
         Math.max(step + 1, Number(existing.current_step) || 1)
       );
   const now = new Date().toISOString();
+  const consentFields = consentUpdateFromBody(body, existing, now) || {};
 
   const { data, error } = await supabase
     .from("partner_website_intakes")
@@ -258,6 +416,7 @@ export const patchPartnerWebsiteIntakeHandler = async (req, res) => {
       payload: nextPayload,
       current_step: nextStep,
       updated_at: now,
+      ...consentFields,
     })
     .eq("business_id", business.id)
     .select(INTAKE_SELECT_FIELDS)
@@ -278,7 +437,7 @@ export const patchPartnerWebsiteIntakeHandler = async (req, res) => {
     successHandler({
       businessId: business.id,
       listing,
-      intake: mapPartnerWebsiteIntake(data, listing),
+      intake: mapPartnerWebsiteIntake(data, listing, { mediaPayload }),
     })
   );
 };
@@ -301,16 +460,43 @@ export const submitPartnerWebsiteIntakeHandler = async (req, res) => {
   }
   if (rejectIfSubmitted(res, existing)) return;
 
+  const { rows: mediaRows, error: mediaError } = await listPartnerWebsiteMedia(
+    business.id
+  );
+  if (mediaError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to load website media.",
+        mediaError
+      )
+    );
+  }
+  const mediaPayload = mediaPayloadFromRows(mediaRows);
+
   const merged = mergeIntakePayload(
     existing.payload,
     req.body && typeof req.body === "object" ? req.body : {}
   );
+  merged.logo = mediaPayload.logo;
+  merged.images = mediaPayload.images;
+
   const { payload, errors } = validateReadyToSubmit(merged);
+  const now = new Date().toISOString();
+  const consentIncoming = req.body?.mediaUsageConsent === true;
+  const consented = hasMediaConsent(existing) || consentIncoming;
+  if (!consented) {
+    errors.mediaUsageConsent =
+      "Confirm permission to store and use these photos.";
+  }
+  if ((mediaPayload.images?.length || 0) < MIN_IMAGES) {
+    errors.images = `Upload at least ${MIN_IMAGES} images.`;
+  }
   if (Object.keys(errors).length) {
     return res.status(422).json(customErrorHandler(YUP_ERROR, errors));
   }
 
-  const now = new Date().toISOString();
+  const consentFields = consentUpdateFromBody(req.body, existing, now) || {};
   const { data, error } = await supabase
     .from("partner_website_intakes")
     .update({
@@ -319,6 +505,7 @@ export const submitPartnerWebsiteIntakeHandler = async (req, res) => {
       current_step: TOTAL_INTAKE_STEPS,
       submitted_at: now,
       updated_at: now,
+      ...consentFields,
     })
     .eq("business_id", business.id)
     .select(INTAKE_SELECT_FIELDS)
@@ -337,7 +524,7 @@ export const submitPartnerWebsiteIntakeHandler = async (req, res) => {
   return res.status(200).json(
     successHandler({
       businessId: business.id,
-      intake: mapPartnerWebsiteIntake(data),
+      intake: mapPartnerWebsiteIntake(data, null, { mediaPayload }),
     })
   );
 };
@@ -360,17 +547,43 @@ export const uploadPartnerWebsiteIntakeLogoHandler = async (req, res) => {
   }
   if (rejectIfSubmitted(res, existing)) return;
 
+  if (!hasMediaConsent(existing)) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        mediaUsageConsent:
+          "Confirm permission to store and use these photos before uploading.",
+      })
+    );
+  }
+
   const fileError = validateUploadFile(req.file);
   if (fileError) {
     return res.status(422).json(customErrorHandler(YUP_ERROR, fileError));
   }
 
-  const previousLogo = existing.payload?.logo;
+  let processed;
+  try {
+    processed = await processPartnerIntakeImage(req.file.buffer, {
+      kind: "logo",
+    });
+  } catch {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        image:
+          "Unable to process this image. Try a different JPEG, PNG, or WebP.",
+      })
+    );
+  }
+
+  const { rows: existingMediaRows } = await listPartnerWebsiteMedia(business.id);
+  const previousLogo =
+    existingMediaRows.find((row) => row.kind === "logo") || null;
+
   const imageId = crypto.randomUUID();
   const publicId = buildPartnerIntakeImagePublicId(business.id, "logo", imageId);
 
   try {
-    await uploadBufferToCloudflareImages(req.file.buffer, { publicId });
+    await uploadBufferToCloudflareImages(processed.buffer, { publicId });
   } catch (uploadError) {
     return res.status(500).json(
       customErrorHandler(
@@ -381,24 +594,56 @@ export const uploadPartnerWebsiteIntakeLogoHandler = async (req, res) => {
     );
   }
 
+  await deletePartnerWebsiteLogo(business.id);
+
   const url = buildPartnerIntakeImageDeliveryUrl(business.id, "logo", imageId);
-  const logo = { imageId, url };
-  const nextPayload = mergeIntakePayload(existing.payload, { logo });
-  const now = new Date().toISOString();
+  const { error: insertError } = await insertPartnerWebsiteMedia({
+    businessId: business.id,
+    kind: "logo",
+    imageId,
+    url,
+    sortOrder: 0,
+    originalFilename: safeOriginalFilename(req.file),
+    contentType: processed.contentType,
+    byteSize: processed.byteSize,
+    width: processed.width,
+    height: processed.height,
+  });
 
-  const { data, error } = await supabase
-    .from("partner_website_intakes")
-    .update({ payload: nextPayload, updated_at: now })
-    .eq("business_id", business.id)
-    .select(INTAKE_SELECT_FIELDS)
-    .single();
-
-  if (error) {
+  if (insertError) {
     try {
       await deleteCloudflareImage(publicId);
     } catch {
       // best-effort cleanup
     }
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to save website logo.",
+        insertError
+      )
+    );
+  }
+
+  const { rows: mediaRows, error: listError } = await listPartnerWebsiteMedia(
+    business.id
+  );
+  if (listError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to load website media.",
+        listError
+      )
+    );
+  }
+  const mediaPayload = mediaPayloadFromRows(mediaRows);
+  const { data, error } = await syncPayloadMedia(
+    business.id,
+    existing.payload,
+    mediaPayload
+  );
+  if (error) {
     return res.status(500).json(
       customErrorHandler(
         SUPABASE_ERROR,
@@ -408,13 +653,13 @@ export const uploadPartnerWebsiteIntakeLogoHandler = async (req, res) => {
     );
   }
 
-  if (previousLogo?.imageId && previousLogo.imageId !== imageId) {
+  if (previousLogo?.image_id && previousLogo.image_id !== imageId) {
     try {
       await deleteCloudflareImage(
         buildPartnerIntakeImagePublicId(
           business.id,
           "logo",
-          previousLogo.imageId
+          previousLogo.image_id
         )
       );
     } catch {
@@ -426,8 +671,8 @@ export const uploadPartnerWebsiteIntakeLogoHandler = async (req, res) => {
   return res.status(200).json(
     successHandler({
       businessId: business.id,
-      logo,
-      intake: mapPartnerWebsiteIntake(data, listing),
+      logo: mediaPayload.logo,
+      intake: mapPartnerWebsiteIntake(data, listing, { mediaPayload }),
     })
   );
 };
@@ -450,19 +695,61 @@ export const uploadPartnerWebsiteIntakeImageHandler = async (req, res) => {
   }
   if (rejectIfSubmitted(res, existing)) return;
 
+  if (!hasMediaConsent(existing)) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        mediaUsageConsent:
+          "Confirm permission to store and use these photos before uploading.",
+      })
+    );
+  }
+
   const fileError = validateUploadFile(req.file);
   if (fileError) {
     return res.status(422).json(customErrorHandler(YUP_ERROR, fileError));
   }
 
-  const currentImages = Array.isArray(existing.payload?.images)
-    ? existing.payload.images.filter((item) => item?.imageId && item?.url)
-    : [];
-  if (currentImages.length >= MAX_IMAGES) {
+  const { count, error: countError } = await countGalleryImages(business.id);
+  if (countError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to load website media.",
+        countError
+      )
+    );
+  }
+  const capacityError = assertGalleryCapacity(count);
+  if (capacityError) {
+    return res
+      .status(422)
+      .json(customErrorHandler(YUP_ERROR, { images: capacityError }));
+  }
+
+  let processed;
+  try {
+    processed = await processPartnerIntakeImage(req.file.buffer, {
+      kind: "gallery",
+    });
+  } catch {
     return res.status(422).json(
       customErrorHandler(YUP_ERROR, {
-        images: `You can upload up to ${MAX_IMAGES} images.`,
+        image:
+          "Unable to process this image. Try a different JPEG, PNG, or WebP.",
       })
+    );
+  }
+
+  const { sortOrder, error: sortError } = await nextGallerySortOrder(
+    business.id
+  );
+  if (sortError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to load website media.",
+        sortError
+      )
     );
   }
 
@@ -474,7 +761,7 @@ export const uploadPartnerWebsiteIntakeImageHandler = async (req, res) => {
   );
 
   try {
-    await uploadBufferToCloudflareImages(req.file.buffer, { publicId });
+    await uploadBufferToCloudflareImages(processed.buffer, { publicId });
   } catch (uploadError) {
     return res.status(500).json(
       customErrorHandler(
@@ -485,28 +772,54 @@ export const uploadPartnerWebsiteIntakeImageHandler = async (req, res) => {
     );
   }
 
-  const media = {
+  const url = buildPartnerIntakeImageDeliveryUrl(business.id, "gallery", imageId);
+  const { error: insertError } = await insertPartnerWebsiteMedia({
+    businessId: business.id,
+    kind: "gallery",
     imageId,
-    url: buildPartnerIntakeImageDeliveryUrl(business.id, "gallery", imageId),
-  };
-  const nextPayload = mergeIntakePayload(existing.payload, {
-    images: [...currentImages, media],
+    url,
+    sortOrder,
+    originalFilename: safeOriginalFilename(req.file),
+    contentType: processed.contentType,
+    byteSize: processed.byteSize,
+    width: processed.width,
+    height: processed.height,
   });
-  const now = new Date().toISOString();
 
-  const { data, error } = await supabase
-    .from("partner_website_intakes")
-    .update({ payload: nextPayload, updated_at: now })
-    .eq("business_id", business.id)
-    .select(INTAKE_SELECT_FIELDS)
-    .single();
-
-  if (error) {
+  if (insertError) {
     try {
       await deleteCloudflareImage(publicId);
     } catch {
       // best-effort cleanup
     }
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to save website image.",
+        insertError
+      )
+    );
+  }
+
+  const { rows: mediaRows, error: listError } = await listPartnerWebsiteMedia(
+    business.id
+  );
+  if (listError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to load website media.",
+        listError
+      )
+    );
+  }
+  const mediaPayload = mediaPayloadFromRows(mediaRows);
+  const { data, error } = await syncPayloadMedia(
+    business.id,
+    existing.payload,
+    mediaPayload
+  );
+  if (error) {
     return res.status(500).json(
       customErrorHandler(
         SUPABASE_ERROR,
@@ -520,8 +833,8 @@ export const uploadPartnerWebsiteIntakeImageHandler = async (req, res) => {
   return res.status(200).json(
     successHandler({
       businessId: business.id,
-      image: media,
-      intake: mapPartnerWebsiteIntake(data, listing),
+      image: { imageId, url },
+      intake: mapPartnerWebsiteIntake(data, listing, { mediaPayload }),
     })
   );
 };
@@ -551,28 +864,41 @@ export const deletePartnerWebsiteIntakeImageHandler = async (req, res) => {
       .json(customErrorHandler(YUP_ERROR, { imageId: "Missing image id." }));
   }
 
-  const currentImages = Array.isArray(existing.payload?.images)
-    ? existing.payload.images.filter((item) => item?.imageId && item?.url)
-    : [];
-  const nextImages = currentImages.filter((item) => item.imageId !== imageId);
-  if (nextImages.length === currentImages.length) {
+  const { rows: deletedRows, error: deleteError } =
+    await deletePartnerWebsiteMediaByImageId(business.id, imageId);
+  if (deleteError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to remove website image.",
+        deleteError
+      )
+    );
+  }
+  if (!deletedRows.length) {
     return res
       .status(404)
       .json(customErrorHandler(YUP_ERROR, { imageId: "Image not found." }));
   }
 
-  const nextPayload = mergeIntakePayload(existing.payload, {
-    images: nextImages,
-  });
-  const now = new Date().toISOString();
-
-  const { data, error } = await supabase
-    .from("partner_website_intakes")
-    .update({ payload: nextPayload, updated_at: now })
-    .eq("business_id", business.id)
-    .select(INTAKE_SELECT_FIELDS)
-    .single();
-
+  const { rows: mediaRows, error: listError } = await listPartnerWebsiteMedia(
+    business.id
+  );
+  if (listError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to load website media.",
+        listError
+      )
+    );
+  }
+  const mediaPayload = mediaPayloadFromRows(mediaRows);
+  const { data, error } = await syncPayloadMedia(
+    business.id,
+    existing.payload,
+    mediaPayload
+  );
   if (error) {
     return res.status(500).json(
       customErrorHandler(
@@ -595,7 +921,121 @@ export const deletePartnerWebsiteIntakeImageHandler = async (req, res) => {
   return res.status(200).json(
     successHandler({
       businessId: business.id,
-      intake: mapPartnerWebsiteIntake(data, listing),
+      intake: mapPartnerWebsiteIntake(data, listing, { mediaPayload }),
+    })
+  );
+};
+
+export const patchPartnerWebsiteIntakeImageHandler = async (req, res) => {
+  const business = await loadOwnedPartnerBusiness(req, res);
+  if (!business) return;
+
+  const { data: existing, error: existingError } = await ensureIntakeRow(
+    business.id
+  );
+  if (existingError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to load website setup details.",
+        existingError
+      )
+    );
+  }
+  if (rejectIfSubmitted(res, existing)) return;
+
+  const imageId = String(req.params.imageId || "").trim();
+  if (!imageId) {
+    return res
+      .status(422)
+      .json(customErrorHandler(YUP_ERROR, { imageId: "Missing image id." }));
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(req.body || {}, "caption")) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        caption: "Provide a caption (or an empty string to clear it).",
+      })
+    );
+  }
+
+  const rawCaption = req.body?.caption;
+  if (rawCaption != null && typeof rawCaption !== "string") {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        caption: "Caption must be text.",
+      })
+    );
+  }
+  if (
+    typeof rawCaption === "string" &&
+    rawCaption.trim().length > MAX_MEDIA_CAPTION_LENGTH
+  ) {
+    return res.status(422).json(
+      customErrorHandler(YUP_ERROR, {
+        caption: `Keep captions to ${MAX_MEDIA_CAPTION_LENGTH} characters or fewer.`,
+      })
+    );
+  }
+
+  const { row, error: updateError } = await updatePartnerWebsiteMediaCaption(
+    business.id,
+    imageId,
+    rawCaption
+  );
+  if (updateError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to save photo caption.",
+        updateError
+      )
+    );
+  }
+  if (!row) {
+    return res
+      .status(404)
+      .json(customErrorHandler(YUP_ERROR, { imageId: "Image not found." }));
+  }
+
+  const { rows: mediaRows, error: listError } = await listPartnerWebsiteMedia(
+    business.id
+  );
+  if (listError) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to load website media.",
+        listError
+      )
+    );
+  }
+  const mediaPayload = mediaPayloadFromRows(mediaRows);
+  const { data, error } = await syncPayloadMedia(
+    business.id,
+    existing.payload,
+    mediaPayload
+  );
+  if (error) {
+    return res.status(500).json(
+      customErrorHandler(
+        SUPABASE_ERROR,
+        "Unable to save website setup details.",
+        error
+      )
+    );
+  }
+
+  const listing = await loadListingSnapshot(business);
+  return res.status(200).json(
+    successHandler({
+      businessId: business.id,
+      image: {
+        imageId: row.image_id,
+        url: row.url,
+        caption: row.caption || "",
+      },
+      intake: mapPartnerWebsiteIntake(data, listing, { mediaPayload }),
     })
   );
 };

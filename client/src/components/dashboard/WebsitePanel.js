@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Check,
   ExternalLink,
+  Loader2,
   Lock,
   Plus,
   RotateCcw,
@@ -30,6 +31,7 @@ import {
   deletePartnerWebsiteIntakeImage,
   fetchPartnerWebsiteIntake,
   patchPartnerWebsiteIntake,
+  patchPartnerWebsiteIntakeImage,
   submitPartnerWebsiteIntake,
   uploadPartnerWebsiteIntakeImage,
   uploadPartnerWebsiteIntakeLogo,
@@ -54,6 +56,45 @@ const DEFAULT_PROCESS_STEPS = [
   "We complete the repair and check it before you leave.",
 ];
 
+const SOCIAL_PLATFORM_OPTIONS = [
+  { value: "facebook", label: "Facebook" },
+  { value: "instagram", label: "Instagram" },
+  { value: "youtube", label: "YouTube" },
+  { value: "tiktok", label: "TikTok" },
+];
+
+const MAX_SOCIAL_LINKS = SOCIAL_PLATFORM_OPTIONS.length;
+const MAX_FAQ_ITEMS = 12;
+
+/** Matches the Partner website template’s default FAQ. */
+const DEFAULT_FAQ_ITEMS = [
+  {
+    question: "Do I need an appointment, or can I walk in?",
+    answer:
+      "Walk-ins are welcome. If every bay is full we will still look at it and tell you when we can pull it in. Diagnostics and brake jobs are usually the same day or the next morning. Bigger jobs get a finish time before we keep the car.",
+  },
+  {
+    question: "How do you decide what to repair?",
+    answer:
+      "We test first and show you what we found. You get a price before we start. If the job grows, we call before we keep going.",
+  },
+  {
+    question: "What should I bring?",
+    answer:
+      "Bring the vehicle, plus the year, make, and what it is doing. If a light is on, leave it on. A previous estimate helps if you have one. You do not need a diagnosis.",
+  },
+  {
+    question: "Do you work on cars and light trucks?",
+    answer:
+      "Yes. Daily drivers and light trucks, domestic and import. We do not do bodywork, paint, or heavy diesel. If a job is outside the shop, we say so before we take it in.",
+  },
+  {
+    question: "Is the work under warranty?",
+    answer:
+      "12-month workmanship on our labor. Parts carry the manufacturer's warranty. Ask at pickup if you want the labor warranty in writing.",
+  },
+];
+
 const CONFIRM_ACTIONS = {
   "restore-hours": {
     title: "Restore listing hours?",
@@ -73,13 +114,108 @@ const CONFIRM_ACTIONS = {
       "This removes all steps. We’ll use the generic process if you leave this empty.",
     confirmLabel: "Clear steps",
   },
+  "reset-faq": {
+    title: "Reset to recommended FAQ?",
+    description:
+      "This replaces your current FAQ with the template’s standard questions.",
+    confirmLabel: "Reset FAQ",
+  },
+  "clear-faq": {
+    title: "Clear FAQ?",
+    description:
+      "This removes all FAQ items. The site will use the template’s generic FAQ until you add questions again.",
+    confirmLabel: "Clear FAQ",
+  },
 };
+
+function socialsToRows(socials) {
+  if (Array.isArray(socials)) {
+    const seen = new Set();
+    return socials
+      .map((item) => ({
+        platform: String(item?.platform || "").toLowerCase(),
+        url: String(item?.url || ""),
+      }))
+      .filter((item) => {
+        if (!SOCIAL_PLATFORM_OPTIONS.some((opt) => opt.value === item.platform)) {
+          return false;
+        }
+        if (seen.has(item.platform)) return false;
+        seen.add(item.platform);
+        return true;
+      });
+  }
+  if (!socials || typeof socials !== "object") return [];
+  return SOCIAL_PLATFORM_OPTIONS.map(({ value }) => ({
+    platform: value,
+    url: String(socials[value] || ""),
+  })).filter((item) => item.url.trim());
+}
+
+function socialsRowsToObject(rows = []) {
+  const out = Object.fromEntries(
+    SOCIAL_PLATFORM_OPTIONS.map(({ value }) => [value, ""])
+  );
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const platform = String(row?.platform || "").toLowerCase();
+    if (!Object.prototype.hasOwnProperty.call(out, platform)) continue;
+    if (out[platform]) continue;
+    out[platform] = String(row?.url || "").trim();
+  }
+  return out;
+}
 
 const MAX_PROCESS_STEPS = 5;
 const MIN_SERVICES_REQUIRED = 4;
 const MAX_SERVICES = 20;
 const MIN_GALLERY_PHOTOS = 4;
 const MAX_GALLERY_PHOTOS = 10;
+const MAX_IMAGE_CAPTION = 120;
+const CAPTION_DEBOUNCE_MS = 400;
+const DEFAULT_ACCENT_PREVIEW = "#E31B16";
+
+const THEME_OPTIONS = [
+  { value: "dark", label: "Dark" },
+  { value: "light", label: "Light" },
+];
+
+const ACCENT_PRESETS = [
+  "#E31B16",
+  "#0F766E",
+  "#1D4ED8",
+  "#B45309",
+  "#7C3AED",
+  "#111827",
+];
+
+function normalizeImageCaption(value) {
+  return String(value || "")
+    .trim()
+    .slice(0, MAX_IMAGE_CAPTION);
+}
+
+function expandShortHex(value) {
+  const match = /^#([0-9A-Fa-f]{3})$/.exec(value);
+  if (!match) return value;
+  const [r, g, b] = match[1].split("");
+  return `#${r}${r}${g}${g}${b}${b}`.toUpperCase();
+}
+
+function hexForColorInput(value) {
+  const raw = String(value || "").trim();
+  if (/^#[0-9A-Fa-f]{6}$/.test(raw)) return raw.toUpperCase();
+  if (/^#[0-9A-Fa-f]{3}$/.test(raw)) return expandShortHex(raw);
+  return DEFAULT_ACCENT_PREVIEW;
+}
+
+function captionsMapFromImages(images = []) {
+  const map = new Map();
+  for (const image of Array.isArray(images) ? images : []) {
+    if (!image?.imageId) continue;
+    map.set(image.imageId, normalizeImageCaption(image.caption));
+  }
+  return map;
+}
 const MAX_HOURS_PERIODS = 2;
 
 function normalizeProcessSteps(raw) {
@@ -127,14 +263,15 @@ const EMPTY_FORM = {
   preferredDomain: "",
   logo: null,
   images: [],
+  mediaUsageConsent: false,
   description: "",
   yearsOfService: "",
   services: EMPTY_SERVICES(),
   newCustomerProcess: DEFAULT_PROCESS_STEPS.map((text) => ({ text })),
   theme: "dark",
   accentColor: "",
-  socials: { facebook: "", instagram: "", youtube: "", tiktok: "" },
-  faq: [],
+  socials: [],
+  faq: DEFAULT_FAQ_ITEMS.map((item) => ({ ...item })),
   extraNotes: "",
 };
 
@@ -439,13 +576,32 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
   const [form, setForm] = useState(EMPTY_FORM);
   const [fieldErrors, setFieldErrors] = useState({});
   const [confirmAction, setConfirmAction] = useState(null);
+  const [lightbox, setLightbox] = useState(null);
   const lastInitialIdRef = useRef("");
   const logoInputRef = useRef(null);
   const galleryInputRef = useRef(null);
+  const savedCaptionsRef = useRef(new Map());
+  const captionTimersRef = useRef(new Map());
+  const captionInFlightRef = useRef(new Set());
+  const formRef = useRef(form);
+  const selectedBusinessRef = useRef(null);
+
+  useEffect(() => {
+    formRef.current = form;
+  }, [form]);
 
   useEffect(() => {
     setFurthestStep((prev) => Math.max(prev, step));
   }, [step]);
+
+  useEffect(() => {
+    return () => {
+      for (const timer of captionTimersRef.current.values()) {
+        clearTimeout(timer);
+      }
+      captionTimersRef.current.clear();
+    };
+  }, []);
 
   useEffect(() => {
     if (!businesses.length) {
@@ -472,6 +628,10 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
     [businesses, selectedId]
   );
 
+  useEffect(() => {
+    selectedBusinessRef.current = selectedBusiness;
+  }, [selectedBusiness]);
+
   const businessOptions = useMemo(
     () =>
       businesses.map((business) => ({
@@ -490,12 +650,17 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
       setStep(1);
       setFurthestStep(1);
       setLoading(false);
+      savedCaptionsRef.current = new Map();
+      for (const timer of captionTimersRef.current.values()) clearTimeout(timer);
+      captionTimersRef.current.clear();
       return undefined;
     }
 
     let cancelled = false;
     setLoading(true);
     setFieldErrors({});
+    for (const timer of captionTimersRef.current.values()) clearTimeout(timer);
+    captionTimersRef.current.clear();
     fetchPartnerWebsiteIntake(selectedBusiness.id).then(
       ({ data, error, status }) => {
         if (cancelled) return;
@@ -514,6 +679,7 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
         setIntake(nextIntake);
         setListing(data?.listing ?? null);
         const payload = nextIntake?.payload || EMPTY_FORM;
+        const nextImages = Array.isArray(payload.images) ? payload.images : [];
         setForm({
           ...EMPTY_FORM,
           ...payload,
@@ -524,14 +690,16 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
             Array.isArray(payload.services) && payload.services.length
               ? payload.services
               : EMPTY_SERVICES(),
-          socials: {
-            ...EMPTY_FORM.socials,
-            ...(payload.socials || {}),
-          },
-          faq: Array.isArray(payload.faq) ? payload.faq : [],
-          images: Array.isArray(payload.images) ? payload.images : [],
+          socials: socialsToRows(payload.socials),
+          faq:
+            Array.isArray(payload.faq) && payload.faq.length > 0
+              ? payload.faq
+              : DEFAULT_FAQ_ITEMS.map((item) => ({ ...item })),
+          images: nextImages,
           newCustomerProcess: normalizeProcessSteps(payload.newCustomerProcess),
+          mediaUsageConsent: Boolean(nextIntake?.mediaUsageConsented),
         });
+        savedCaptionsRef.current = captionsMapFromImages(nextImages);
         const resumeStep = Math.min(
           TOTAL_STEPS,
           Math.max(1, Number(nextIntake?.currentStep) || 1)
@@ -579,13 +747,59 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
     clearFieldError(field);
   };
 
-  const onSocialChange = (key) => (event) => {
-    const value = event.target.value;
+  const addSocialLink = () => {
+    setForm((prev) => {
+      const rows = Array.isArray(prev.socials) ? prev.socials : [];
+      if (rows.length >= MAX_SOCIAL_LINKS) return prev;
+      const used = new Set(rows.map((row) => row.platform));
+      const nextPlatform = SOCIAL_PLATFORM_OPTIONS.find(
+        (option) => !used.has(option.value)
+      )?.value;
+      if (!nextPlatform) return prev;
+      return {
+        ...prev,
+        socials: [...rows, { platform: nextPlatform, url: "" }],
+      };
+    });
+    clearFieldError("socials");
+  };
+
+  const updateSocialLink = (index, field, value) => {
+    setForm((prev) => {
+      const rows = [...(prev.socials || [])];
+      if (!rows[index]) return prev;
+      if (field === "platform") {
+        const platform = String(value || "").toLowerCase();
+        const taken = rows.some(
+          (row, i) => i !== index && row.platform === platform
+        );
+        if (taken) return prev;
+        rows[index] = { ...rows[index], platform };
+      } else {
+        rows[index] = { ...rows[index], url: value };
+      }
+      return { ...prev, socials: rows };
+    });
+    setFieldErrors((prev) => {
+      if (!prev.socials && !Object.keys(prev).some((key) => key.startsWith("socials."))) {
+        return prev;
+      }
+      const next = { ...prev };
+      delete next.socials;
+      delete next.form;
+      for (const key of Object.keys(next)) {
+        if (key.startsWith("socials.")) delete next[key];
+      }
+      return next;
+    });
+  };
+
+  const removeSocialLink = (index) => {
     setForm((prev) => ({
       ...prev,
-      socials: { ...prev.socials, [key]: value },
+      socials: (prev.socials || []).filter((_, i) => i !== index),
     }));
-    clearFieldError(`socials.${key}`);
+    clearFieldError("socials");
   };
 
   const onServiceChange = (index, key) => (event) => {
@@ -612,7 +826,9 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
         Array.isArray(payload.services) && payload.services.length
           ? payload.services
           : prev.services,
-      socials: { ...prev.socials, ...(payload.socials || {}) },
+      socials: Object.prototype.hasOwnProperty.call(payload, "socials")
+        ? socialsToRows(payload.socials)
+        : prev.socials,
       faq: Array.isArray(payload.faq) ? payload.faq : prev.faq,
       images: Array.isArray(payload.images) ? payload.images : prev.images,
       logo: payload.logo ?? prev.logo,
@@ -622,7 +838,11 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
       )
         ? normalizeProcessSteps(payload.newCustomerProcess)
         : prev.newCustomerProcess,
+      mediaUsageConsent: Boolean(nextIntake.mediaUsageConsented),
     }));
+    if (Array.isArray(payload.images)) {
+      savedCaptionsRef.current = captionsMapFromImages(payload.images);
+    }
     if (syncStep && nextIntake.currentStep) {
       setStep(
         Math.min(TOTAL_STEPS, Math.max(1, Number(nextIntake.currentStep)))
@@ -630,13 +850,129 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
     }
   };
 
+  const saveCaption = async (imageId, rawCaption) => {
+    const business = selectedBusinessRef.current;
+    if (!business?.is_partner || uploading) return true;
+    const caption = normalizeImageCaption(rawCaption);
+    if (savedCaptionsRef.current.get(imageId) === caption) return true;
+    if (captionInFlightRef.current.has(imageId)) return false;
+
+    captionInFlightRef.current.add(imageId);
+    const { data, error, status } = await patchPartnerWebsiteIntakeImage(
+      business.id,
+      imageId,
+      { caption }
+    );
+    captionInFlightRef.current.delete(imageId);
+
+    if (status === 422 && error?.message && typeof error.message === "object") {
+      setFieldErrors(error.message);
+      return false;
+    }
+    if (error || status >= 400) {
+      showCustomError(
+        typeof error?.message === "string"
+          ? error.message
+          : "Unable to save photo caption."
+      );
+      return false;
+    }
+
+    savedCaptionsRef.current.set(imageId, caption);
+    if (data?.intake) applyIntake(data.intake);
+    else {
+      setForm((prev) => ({
+        ...prev,
+        images: (prev.images || []).map((image) =>
+          image.imageId === imageId ? { ...image, caption } : image
+        ),
+      }));
+    }
+    return true;
+  };
+
+  const clearCaptionTimer = (imageId) => {
+    const timer = captionTimersRef.current.get(imageId);
+    if (!timer) return;
+    clearTimeout(timer);
+    captionTimersRef.current.delete(imageId);
+  };
+
+  const scheduleCaptionSave = (imageId, caption) => {
+    clearCaptionTimer(imageId);
+    const timer = setTimeout(() => {
+      captionTimersRef.current.delete(imageId);
+      void saveCaption(imageId, caption);
+    }, CAPTION_DEBOUNCE_MS);
+    captionTimersRef.current.set(imageId, timer);
+  };
+
+  const flushCaptionSave = async (imageId) => {
+    clearCaptionTimer(imageId);
+    const image = (formRef.current.images || []).find(
+      (item) => item.imageId === imageId
+    );
+    if (!image) return true;
+    return saveCaption(imageId, image.caption);
+  };
+
+  const flushPendingCaptions = async () => {
+    const pendingIds = new Set([
+      ...captionTimersRef.current.keys(),
+      ...[...(formRef.current.images || [])]
+        .filter(
+          (image) =>
+            image?.imageId &&
+            savedCaptionsRef.current.get(image.imageId) !==
+              normalizeImageCaption(image.caption)
+        )
+        .map((image) => image.imageId),
+    ]);
+    for (const imageId of pendingIds) {
+      clearCaptionTimer(imageId);
+    }
+    await Promise.all(
+      [...pendingIds].map((imageId) => {
+        const image = (formRef.current.images || []).find(
+          (item) => item.imageId === imageId
+        );
+        return saveCaption(imageId, image?.caption);
+      })
+    );
+  };
+
+  const onCaptionChange = (imageId, caption) => {
+    const nextCaption = caption.slice(0, MAX_IMAGE_CAPTION);
+    setForm((prev) => ({
+      ...prev,
+      images: (prev.images || []).map((image) =>
+        image.imageId === imageId
+          ? { ...image, caption: nextCaption }
+          : image
+      ),
+    }));
+    scheduleCaptionSave(imageId, nextCaption);
+  };
+
+  const onCaptionBlur = (imageId) => {
+    void flushCaptionSave(imageId);
+  };
+
   const saveStep = async (currentStep, { soft = false } = {}) => {
     if (!selectedBusiness?.is_partner || saving) return false;
+    await flushPendingCaptions();
     setSaving(true);
     setFieldErrors({});
+    const currentForm = formRef.current;
     const { data, error, status } = await patchPartnerWebsiteIntake(
       selectedBusiness.id,
-      { ...form, step: currentStep, soft }
+      {
+        ...currentForm,
+        socials: socialsRowsToObject(currentForm.socials),
+        step: currentStep,
+        soft,
+        mediaUsageConsent: Boolean(currentForm.mediaUsageConsent),
+      }
     );
     setSaving(false);
 
@@ -685,7 +1021,11 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
     setFieldErrors({});
     const { data, error, status } = await submitPartnerWebsiteIntake(
       selectedBusiness.id,
-      form
+      {
+        ...form,
+        socials: socialsRowsToObject(form.socials),
+        mediaUsageConsent: Boolean(form.mediaUsageConsent),
+      }
     );
     setSaving(false);
 
@@ -711,10 +1051,51 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
     showCustomSuccess("Website details submitted. We’ll take it from here.");
   };
 
+  const onMediaConsentChange = async (checked) => {
+    const previous = Boolean(form.mediaUsageConsent);
+    setForm((prev) => ({ ...prev, mediaUsageConsent: checked }));
+    clearFieldError("mediaUsageConsent");
+    if (!selectedBusiness?.is_partner || saving) return;
+
+    setSaving(true);
+    const { data, error, status } = await patchPartnerWebsiteIntake(
+      selectedBusiness.id,
+      {
+        mediaUsageConsent: checked,
+        consentOnly: true,
+        soft: true,
+      }
+    );
+    setSaving(false);
+    if (status === 422 && error?.message && typeof error.message === "object") {
+      setForm((prev) => ({ ...prev, mediaUsageConsent: previous }));
+      setFieldErrors(error.message);
+      return;
+    }
+    if (error || status >= 400) {
+      setForm((prev) => ({ ...prev, mediaUsageConsent: previous }));
+      showCustomError(
+        typeof error?.message === "string"
+          ? error.message
+          : "Unable to save photo permission."
+      );
+      return;
+    }
+    applyIntake(data?.intake);
+  };
+
   const onLogoPick = async (event) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file || !selectedBusiness) return;
+    if (!form.mediaUsageConsent) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        mediaUsageConsent:
+          "Confirm permission to store and use these photos before uploading.",
+      }));
+      return;
+    }
     setUploading(true);
     const { data, error, status } = await uploadPartnerWebsiteIntakeLogo(
       selectedBusiness.id,
@@ -741,6 +1122,14 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
     const files = Array.from(event.target.files || []);
     event.target.value = "";
     if (!files.length || !selectedBusiness) return;
+    if (!form.mediaUsageConsent) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        mediaUsageConsent:
+          "Confirm permission to store and use these photos before uploading.",
+      }));
+      return;
+    }
     setUploading(true);
     let lastIntake = null;
     for (const file of files) {
@@ -776,7 +1165,15 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
 
   const onDeleteImage = async (imageId) => {
     if (!selectedBusiness || uploading) return;
+    clearCaptionTimer(imageId);
+    savedCaptionsRef.current.delete(imageId);
     setUploading(true);
+    if (lightbox?.url) {
+      const match = (form.images || []).find(
+        (image) => image.imageId === imageId
+      );
+      if (match?.url && match.url === lightbox.url) setLightbox(null);
+    }
     const { data, error, status } = await deletePartnerWebsiteIntakeImage(
       selectedBusiness.id,
       imageId
@@ -970,22 +1367,55 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
     setConfirmAction("clear-process");
   };
 
+  const applyResetFaqToRecommended = () => {
+    setForm((prev) => ({
+      ...prev,
+      faq: DEFAULT_FAQ_ITEMS.map((item) => ({ ...item })),
+    }));
+    clearFieldError("faq");
+  };
+
+  const applyClearFaq = () => {
+    setForm((prev) => ({
+      ...prev,
+      faq: [],
+    }));
+    clearFieldError("faq");
+  };
+
+  const resetFaqToRecommended = () => {
+    if (saving) return;
+    setConfirmAction("reset-faq");
+  };
+
+  const clearFaqItems = () => {
+    if (saving) return;
+    if ((form.faq?.length || 0) === 0) return;
+    setConfirmAction("clear-faq");
+  };
+
   const closeConfirm = () => setConfirmAction(null);
 
   const runConfirmAction = () => {
     if (confirmAction === "restore-hours") applyRestoreListingHours();
     else if (confirmAction === "reset-process") applyResetProcessToRecommended();
     else if (confirmAction === "clear-process") applyClearProcessSteps();
+    else if (confirmAction === "reset-faq") applyResetFaqToRecommended();
+    else if (confirmAction === "clear-faq") applyClearFaq();
     setConfirmAction(null);
   };
 
   const confirmCopy = confirmAction ? CONFIRM_ACTIONS[confirmAction] : null;
 
   const addFaq = () => {
-    setForm((prev) => ({
-      ...prev,
-      faq: [...(prev.faq || []), { question: "", answer: "" }],
-    }));
+    setForm((prev) => {
+      if ((prev.faq?.length || 0) >= MAX_FAQ_ITEMS) return prev;
+      return {
+        ...prev,
+        faq: [...(prev.faq || []), { question: "", answer: "" }],
+      };
+    });
+    clearFieldError("faq");
   };
 
   const onFaqChange = (index, key) => (event) => {
@@ -1003,6 +1433,7 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
       ...prev,
       faq: (prev.faq || []).filter((_, i) => i !== index),
     }));
+    clearFieldError("faq");
   };
 
   if (!businesses.length) {
@@ -1389,97 +1820,200 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
                   <FieldError message={fieldErrors.preferredDomain} />
                 </label>
 
-                <div className="grid gap-2">
-                  <span className="text-sm font-medium">Logo</span>
-                  <p className="text-sm text-muted-foreground">
-                    Optional — you can skip this if you don’t have a logo yet.
-                  </p>
-                  <input
-                    ref={logoInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    onChange={onLogoPick}
-                  />
-                  <div className="flex flex-wrap items-center gap-3">
-                    {form.logo?.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={form.logo.url}
-                        alt="Logo preview"
-                        className="size-16 rounded-md border border-border object-contain bg-muted"
+                <div className="relative space-y-6">
+                  {uploading ? (
+                    <div
+                      className="absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-background/70 backdrop-blur-[1px]"
+                      aria-live="polite"
+                      aria-busy="true"
+                    >
+                      <div className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground shadow-sm">
+                        <Loader2 className="size-4 animate-spin" />
+                        Updating photos…
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="grid gap-2">
+                    <label className="flex items-start gap-3 text-sm font-medium">
+                      <input
+                        type="checkbox"
+                        className="mt-1 rounded border-border text-primary focus:ring-ring"
+                        checked={Boolean(form.mediaUsageConsent)}
+                        disabled={saving || uploading}
+                        onChange={(e) => onMediaConsentChange(e.target.checked)}
                       />
-                    ) : null}
+                      <span>
+                        I grant Radiator Repair Hub permission to store these
+                        photos and use them on my Partner website and related
+                        materials.
+                        <span className="text-destructive"> *</span>
+                      </span>
+                    </label>
+                    <FieldError message={fieldErrors.mediaUsageConsent} />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <span className="text-sm font-medium">Logo</span>
+                    <p className="text-sm text-muted-foreground">
+                      Optional — JPEG, PNG, or WebP up to 5 MB. Images are
+                      compressed and metadata is removed before storage.
+                    </p>
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={onLogoPick}
+                    />
+                    <div className="flex flex-wrap items-center gap-3">
+                      {form.logo?.url ? (
+                        <button
+                          type="button"
+                          className="rounded-md border border-border bg-muted p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          disabled={uploading}
+                          onClick={() =>
+                            setLightbox({
+                              url: form.logo.url,
+                              alt: "Logo preview",
+                            })
+                          }
+                          aria-label="View logo larger"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={form.logo.url}
+                            alt="Logo preview"
+                            className="size-16 object-contain"
+                          />
+                        </button>
+                      ) : null}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={
+                          saving ||
+                          uploading ||
+                          !form.mediaUsageConsent
+                        }
+                        onClick={() => logoInputRef.current?.click()}
+                      >
+                        <Upload className="size-4" />
+                        {form.logo ? "Replace logo" : "Upload logo"}
+                      </Button>
+                    </div>
+                    <FieldError message={fieldErrors.logo} />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <span className="text-sm font-medium">
+                      Gallery photos{" "}
+                      <span className="text-destructive">*</span>
+                    </span>
+                    <p className="text-sm text-muted-foreground">
+                      JPEG, PNG, or WebP up to 5 MB each. Photos are compressed
+                      and metadata is removed before storage. Captions are
+                      optional.
+                    </p>
+                    <LimitProgress
+                      current={form.images?.length || 0}
+                      max={MAX_GALLERY_PHOTOS}
+                      min={MIN_GALLERY_PHOTOS}
+                      unitLabel="photos"
+                    />
+                    <input
+                      ref={galleryInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      multiple
+                      className="hidden"
+                      onChange={onGalleryPick}
+                    />
+                    <div className="space-y-3">
+                      {(form.images || []).map((image, index) => {
+                        const caption = String(image.caption || "");
+                        return (
+                          <div
+                            key={image.imageId}
+                            className="flex flex-wrap items-start gap-3 rounded-md border border-border p-3"
+                          >
+                            <div className="relative size-20 shrink-0 overflow-hidden rounded-md border border-border">
+                              <button
+                                type="button"
+                                className="size-full p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                disabled={uploading}
+                                onClick={() =>
+                                  setLightbox({
+                                    url: image.url,
+                                    alt: caption || `Gallery photo ${index + 1}`,
+                                    caption: caption || "",
+                                  })
+                                }
+                                aria-label={`View gallery photo ${index + 1} larger`}
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={image.url}
+                                  alt={caption || ""}
+                                  className="size-full object-cover"
+                                />
+                              </button>
+                              <button
+                                type="button"
+                                className="absolute right-1 top-1 rounded bg-background/90 p-1 text-destructive"
+                                aria-label="Remove image"
+                                disabled={uploading}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  onDeleteImage(image.imageId);
+                                }}
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </div>
+                            <label className="grid min-w-[12rem] flex-1 gap-1.5 text-sm font-medium">
+                              Caption{" "}
+                              <span className="font-normal text-muted-foreground">
+                                (optional)
+                              </span>
+                              <Input
+                                value={caption}
+                                maxLength={MAX_IMAGE_CAPTION}
+                                placeholder="e.g. Front bay"
+                                disabled={saving || uploading}
+                                onChange={(e) =>
+                                  onCaptionChange(
+                                    image.imageId,
+                                    e.target.value
+                                  )
+                                }
+                                onBlur={() => onCaptionBlur(image.imageId)}
+                              />
+                              <span className="text-xs font-normal text-muted-foreground tabular-nums">
+                                {caption.length}/{MAX_IMAGE_CAPTION}
+                              </span>
+                            </label>
+                          </div>
+                        );
+                      })}
+                    </div>
                     <Button
                       type="button"
                       variant="outline"
-                      disabled={saving || uploading}
-                      onClick={() => logoInputRef.current?.click()}
+                      className="w-fit"
+                      disabled={
+                        saving ||
+                        uploading ||
+                        !form.mediaUsageConsent ||
+                        (form.images?.length || 0) >= MAX_GALLERY_PHOTOS
+                      }
+                      onClick={() => galleryInputRef.current?.click()}
                     >
                       <Upload className="size-4" />
-                      {form.logo ? "Replace logo" : "Upload logo"}
+                      Add photos
                     </Button>
+                    <FieldError message={fieldErrors.images} />
                   </div>
-                  <FieldError message={fieldErrors.logo} />
-                </div>
-
-                <div className="grid gap-2">
-                  <span className="text-sm font-medium">
-                    Gallery photos <span className="text-destructive">*</span>
-                  </span>
-                  <LimitProgress
-                    current={form.images?.length || 0}
-                    max={MAX_GALLERY_PHOTOS}
-                    min={MIN_GALLERY_PHOTOS}
-                    unitLabel="photos"
-                  />
-                  <input
-                    ref={galleryInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    multiple
-                    className="hidden"
-                    onChange={onGalleryPick}
-                  />
-                  <div className="flex flex-wrap gap-3">
-                    {(form.images || []).map((image) => (
-                      <div
-                        key={image.imageId}
-                        className="relative size-20 overflow-hidden rounded-md border border-border"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={image.url}
-                          alt=""
-                          className="size-full object-cover"
-                        />
-                        <button
-                          type="button"
-                          className="absolute right-1 top-1 rounded bg-background/90 p-1 text-destructive"
-                          aria-label="Remove image"
-                          disabled={uploading}
-                          onClick={() => onDeleteImage(image.imageId)}
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-fit"
-                    disabled={
-                      saving ||
-                      uploading ||
-                      (form.images?.length || 0) >= MAX_GALLERY_PHOTOS
-                    }
-                    onClick={() => galleryInputRef.current?.click()}
-                  >
-                    <Upload className="size-4" />
-                    Add photos
-                  </Button>
-                  <FieldError message={fieldErrors.images} />
                 </div>
 
                 <label className="grid gap-1.5 text-sm font-medium">
@@ -1692,108 +2226,338 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
             {step === 4 ? (
               <>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <label className="grid gap-1.5 text-sm font-medium">
-                    Theme
-                    <select
-                      className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                      value={form.theme}
-                      onChange={onChange("theme")}
-                      disabled={saving}
-                    >
-                      <option value="dark">Dark</option>
-                      <option value="light">Light</option>
-                    </select>
-                  </label>
-                  <label className="grid gap-1.5 text-sm font-medium">
-                    Accent color
-                    <Input
-                      value={form.accentColor}
-                      onChange={onChange("accentColor")}
-                      placeholder="#E31B16"
-                      disabled={saving}
-                      aria-invalid={Boolean(fieldErrors.accentColor)}
-                    />
-                    <FieldError message={fieldErrors.accentColor} />
-                  </label>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {["facebook", "instagram", "youtube", "tiktok"].map((key) => (
-                    <label
-                      key={key}
-                      className="grid gap-1.5 text-sm font-medium capitalize"
-                    >
-                      {key}
+                  <SelectMenu
+                    id="partner-intake-theme"
+                    label="Theme"
+                    value={form.theme === "light" ? "light" : "dark"}
+                    onValueChange={(value) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        theme: value === "light" ? "light" : "dark",
+                      }));
+                      clearFieldError("theme");
+                    }}
+                    options={THEME_OPTIONS}
+                    disabled={saving}
+                    triggerClassName="h-10"
+                  />
+                  <div className="grid gap-1.5">
+                    <span className="text-sm font-medium">Accent color</span>
+                    <p className="text-sm text-muted-foreground">
+                      Optional brand color for buttons and highlights.
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label
+                        className={`relative size-10 shrink-0 overflow-hidden rounded-md border border-border shadow-sm ${
+                          saving
+                            ? "cursor-not-allowed opacity-50"
+                            : "cursor-pointer"
+                        }`}
+                        title="Pick accent color"
+                      >
+                        <span
+                          className="absolute inset-0"
+                          style={{
+                            backgroundColor: hexForColorInput(form.accentColor),
+                          }}
+                          aria-hidden="true"
+                        />
+                        <input
+                          type="color"
+                          className="absolute inset-0 cursor-pointer opacity-0 disabled:cursor-not-allowed"
+                          value={hexForColorInput(form.accentColor)}
+                          disabled={saving}
+                          aria-label="Accent color picker"
+                          onChange={(event) => {
+                            const next = String(event.target.value || "")
+                              .trim()
+                              .toUpperCase();
+                            setForm((prev) => ({
+                              ...prev,
+                              accentColor: next,
+                            }));
+                            clearFieldError("accentColor");
+                          }}
+                        />
+                      </label>
                       <Input
-                        value={form.socials?.[key] || ""}
-                        onChange={onSocialChange(key)}
-                        placeholder="https://"
+                        value={form.accentColor}
+                        onChange={onChange("accentColor")}
+                        placeholder="#E31B16"
                         disabled={saving}
-                        aria-invalid={Boolean(fieldErrors[`socials.${key}`])}
+                        className="min-w-[8rem] flex-1 font-mono uppercase"
+                        aria-invalid={Boolean(fieldErrors.accentColor)}
                       />
-                      <FieldError message={fieldErrors[`socials.${key}`]} />
-                    </label>
-                  ))}
+                      {form.accentColor ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={saving}
+                          onClick={() => {
+                            setForm((prev) => ({
+                              ...prev,
+                              accentColor: "",
+                            }));
+                            clearFieldError("accentColor");
+                          }}
+                        >
+                          Clear
+                        </Button>
+                      ) : null}
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {ACCENT_PRESETS.map((preset) => {
+                        const selected =
+                          hexForColorInput(form.accentColor) === preset &&
+                          Boolean(form.accentColor);
+                        return (
+                          <button
+                            key={preset}
+                            type="button"
+                            disabled={saving}
+                            title={preset}
+                            aria-label={`Use accent ${preset}`}
+                            aria-pressed={selected}
+                            className={`size-7 rounded-full border border-border transition-[transform,box-shadow] disabled:opacity-50 ${
+                              selected
+                                ? "ring-2 ring-ring ring-offset-2 ring-offset-background"
+                                : "hover:scale-105"
+                            }`}
+                            style={{ backgroundColor: preset }}
+                            onClick={() => {
+                              setForm((prev) => ({
+                                ...prev,
+                                accentColor: preset,
+                              }));
+                              clearFieldError("accentColor");
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                    <FieldError message={fieldErrors.accentColor} />
+                  </div>
                 </div>
-
                 <div className="grid gap-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-medium">FAQ</span>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <span className="text-sm font-medium">Social links</span>
+                      <LimitProgress
+                        current={form.socials?.length || 0}
+                        max={MAX_SOCIAL_LINKS}
+                        min={0}
+                        unitLabel="links"
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        Optional — add the profiles you want on the site. Each
+                        platform can only be used once.
+                      </p>
+                    </div>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      disabled={saving || (form.faq?.length || 0) >= 12}
-                      onClick={addFaq}
+                      disabled={
+                        saving ||
+                        (form.socials?.length || 0) >= MAX_SOCIAL_LINKS
+                      }
+                      onClick={addSocialLink}
                     >
-                      Add FAQ
+                      <Plus className="size-4" />
+                      Add link
                     </Button>
                   </div>
-                  <FieldError message={fieldErrors.faq} />
-                  {(form.faq || []).map((item, index) => (
-                    <div
-                      key={`faq-${index}`}
-                      className="grid gap-2 rounded-md border border-border p-3"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <label className="grid flex-1 gap-1.5 text-sm font-medium">
-                          Question
-                          <Input
-                            value={item.question}
-                            onChange={onFaqChange(index, "question")}
+                  <FieldError message={fieldErrors.socials} />
+                  <div className="space-y-2">
+                    {(form.socials || []).length === 0 ? (
+                      <p className="rounded-md border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+                        No social links yet. Add Facebook, Instagram, YouTube,
+                        or TikTok if you want them on the site.
+                      </p>
+                    ) : null}
+                    {(form.socials || []).map((item, index) => {
+                      const usedElsewhere = new Set(
+                        (form.socials || [])
+                          .filter((_, i) => i !== index)
+                          .map((row) => row.platform)
+                      );
+                      const platformOptions = SOCIAL_PLATFORM_OPTIONS.filter(
+                        (option) =>
+                          option.value === item.platform ||
+                          !usedElsewhere.has(option.value)
+                      );
+                      return (
+                        <div
+                          key={`social-${index}-${item.platform}`}
+                          className="flex flex-wrap items-end gap-2 rounded-md border border-border p-3"
+                        >
+                          <SelectMenu
+                            className="w-full sm:w-44"
+                            triggerClassName="h-10"
+                            label="Platform"
+                            aria-label={`Social platform ${index + 1}`}
+                            value={item.platform}
+                            onValueChange={(value) =>
+                              updateSocialLink(index, "platform", value)
+                            }
+                            options={platformOptions}
                             disabled={saving}
                           />
-                        </label>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label="Remove FAQ"
-                          disabled={saving}
-                          onClick={() => removeFaq(index)}
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </div>
-                      <label className="grid gap-1.5 text-sm font-medium">
-                        Answer
-                        <Textarea
-                          value={item.answer}
-                          onChange={onFaqChange(index, "answer")}
-                          rows={3}
-                          disabled={saving}
-                        />
-                      </label>
+                          <label className="grid min-w-[12rem] flex-1 gap-1.5 text-sm font-medium">
+                            Profile URL
+                            <Input
+                              value={item.url}
+                              onChange={(event) =>
+                                updateSocialLink(
+                                  index,
+                                  "url",
+                                  event.target.value
+                                )
+                              }
+                              placeholder="https://"
+                              disabled={saving}
+                              aria-invalid={Boolean(
+                                fieldErrors[`socials.${item.platform}`]
+                              )}
+                            />
+                          </label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label={`Remove ${item.platform} link`}
+                            disabled={saving}
+                            onClick={() => removeSocialLink(index)}
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                          <FieldError
+                            message={fieldErrors[`socials.${item.platform}`]}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <span className="text-sm font-medium">FAQ</span>
+                      <LimitProgress
+                        current={form.faq?.length || 0}
+                        max={MAX_FAQ_ITEMS}
+                        min={0}
+                        unitLabel="questions"
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        Optional Q&amp;A for the site. We’ve prefilled the
+                        template’s standard questions — edit them, add more, or
+                        clear to use the generic FAQ as-is.
+                      </p>
                     </div>
-                  ))}
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={saving}
+                        onClick={resetFaqToRecommended}
+                      >
+                        <RotateCcw className="size-4" />
+                        Reset to recommended
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={saving || (form.faq?.length || 0) === 0}
+                        onClick={clearFaqItems}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={
+                          saving || (form.faq?.length || 0) >= MAX_FAQ_ITEMS
+                        }
+                        onClick={addFaq}
+                      >
+                        <Plus className="size-4" />
+                        Add question
+                      </Button>
+                    </div>
+                  </div>
+                  <FieldError message={fieldErrors.faq} />
+                  <div className="space-y-2">
+                    {(form.faq || []).length === 0 ? (
+                      <p className="rounded-md border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+                        No custom FAQ. We’ll use the template’s generic FAQ on
+                        the site. Use Reset to recommended to bring the default
+                        questions back.
+                      </p>
+                    ) : null}
+                    {(form.faq || []).map((item, index) => (
+                      <div
+                        key={`faq-${index}`}
+                        className="grid gap-2 rounded-md border border-border p-3"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex min-w-0 flex-1 items-start gap-2">
+                            <span
+                              className="mt-7 flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground"
+                              aria-hidden="true"
+                            >
+                              {index + 1}
+                            </span>
+                            <label className="grid min-w-0 flex-1 gap-1.5 text-sm font-medium">
+                              Question
+                              <Input
+                                value={item.question}
+                                onChange={onFaqChange(index, "question")}
+                                disabled={saving}
+                                placeholder="e.g. Do I need an appointment?"
+                              />
+                            </label>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            className="mt-7"
+                            aria-label={`Remove FAQ ${index + 1}`}
+                            disabled={saving}
+                            onClick={() => removeFaq(index)}
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                        <label className="grid gap-1.5 pl-9 text-sm font-medium">
+                          Answer
+                          <Textarea
+                            value={item.answer}
+                            onChange={onFaqChange(index, "answer")}
+                            rows={3}
+                            disabled={saving}
+                            placeholder="Short answer customers will see on the site."
+                          />
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <label className="grid gap-1.5 text-sm font-medium">
-                  Anything else
+                  Extra notes
                   <Textarea
                     value={form.extraNotes}
                     onChange={onChange("extraNotes")}
                     rows={4}
                     disabled={saving}
+                    placeholder="Anything else we should know — awards, certificates, warranties, special equipment, or other details for the site."
                   />
                 </label>
               </>
@@ -1812,7 +2576,16 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
                 Back
               </Button>
             ) : null}
-            <Button type="submit" disabled={saving || uploading} size="lg">
+            <Button
+              type="submit"
+              disabled={saving || uploading}
+              size="lg"
+              className={
+                step === TOTAL_STEPS
+                  ? "border-transparent bg-emerald-600 text-white hover:bg-emerald-600/90"
+                  : undefined
+              }
+            >
               {saving
                 ? step === TOTAL_STEPS
                   ? "Submitting…"
@@ -1820,8 +2593,8 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
                 : step === TOTAL_STEPS
                   ? (
                       <>
-                        Submit website details
                         <Check className="size-4" />
+                        Submit
                       </>
                     )
                   : (
@@ -1866,6 +2639,41 @@ export default function WebsitePanel({ businesses = [], initialBusinessId = "" }
               {confirmCopy?.confirmLabel || "Confirm"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(lightbox?.url)}
+        onOpenChange={(open) => {
+          if (!open) setLightbox(null);
+        }}
+      >
+        <DialogContent
+          className="gap-3 overflow-hidden border-none bg-transparent p-0 shadow-none sm:max-w-4xl"
+          overlayClassName="bg-black/70"
+          closeButtonClassName="bg-background/90 text-foreground"
+        >
+          <DialogHeader className="sr-only">
+            <DialogTitle>Photo preview</DialogTitle>
+            <DialogDescription>
+              Enlarged view of the selected photo.
+            </DialogDescription>
+          </DialogHeader>
+          {lightbox?.url ? (
+            <div className="space-y-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={lightbox.url}
+                alt={lightbox.alt || "Photo preview"}
+                className="max-h-[80vh] w-full rounded-lg bg-black/40 object-contain"
+              />
+              {lightbox.caption ? (
+                <p className="px-1 text-center text-sm text-background">
+                  {lightbox.caption}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>

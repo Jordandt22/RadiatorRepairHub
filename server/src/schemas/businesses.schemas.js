@@ -160,8 +160,17 @@ export const OwnedBusinessIdParamsSchema = Yup.object({
 });
 
 export const PatchPartnerWebsiteIntakeSchema = Yup.object({
-  step: Yup.number().integer().oneOf([1, 2, 3, 4]).required(),
+  step: Yup.number()
+    .integer()
+    .oneOf([1, 2, 3, 4])
+    .when(["consentOnly", "soft"], {
+      is: (consentOnly, soft) => consentOnly === true && soft === true,
+      then: (schema) => schema.optional(),
+      otherwise: (schema) => schema.required(),
+    }),
   soft: Yup.boolean().optional(),
+  consentOnly: Yup.boolean().optional(),
+  mediaUsageConsent: Yup.boolean().optional(),
 }).unknown(true);
 
 export const SubmitPartnerWebsiteIntakeSchema = Yup.object({}).unknown(true);
@@ -170,6 +179,16 @@ export const PartnerWebsiteIntakeImageParamsSchema = Yup.object({
   businessId: Yup.string().trim().uuid("Invalid business ID").required(),
   imageId: Yup.string().trim().uuid("Invalid image ID").required(),
 });
+
+export const PatchPartnerWebsiteIntakeImageSchema = Yup.object({
+  caption: Yup.string()
+    .nullable()
+    .transform((value, originalValue) => {
+      if (originalValue === null || originalValue === undefined) return "";
+      return typeof value === "string" ? value : String(value ?? "");
+    })
+    .max(120, "Keep captions to 120 characters or fewer"),
+}).unknown(true);
 
 export const SaveReviewMessageTemplateSchema = Yup.object({
   messageTemplate: Yup.string()

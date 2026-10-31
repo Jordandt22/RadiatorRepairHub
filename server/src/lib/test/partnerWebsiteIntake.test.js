@@ -107,6 +107,27 @@ describe("normalizeStep4", () => {
     const bad = normalizeStep4({ accentColor: "red" });
     assert.equal(bad.errors.accentColor, "Use a hex color like #E31B16.");
   });
+
+  it("accepts social rows and rejects duplicate platforms", () => {
+    const ok = normalizeStep4({
+      socials: [
+        { platform: "facebook", url: "https://facebook.com/shop" },
+        { platform: "instagram", url: "https://instagram.com/shop" },
+      ],
+    });
+    assert.deepEqual(ok.errors, {});
+    assert.equal(ok.payload.socials.facebook, "https://facebook.com/shop");
+    assert.equal(ok.payload.socials.instagram, "https://instagram.com/shop");
+    assert.equal(ok.payload.socials.youtube, "");
+
+    const dup = normalizeStep4({
+      socials: [
+        { platform: "facebook", url: "https://facebook.com/a" },
+        { platform: "facebook", url: "https://facebook.com/b" },
+      ],
+    });
+    assert.equal(dup.errors.socials, "Each social platform can only be added once.");
+  });
 });
 
 describe("applyListingPrefill", () => {
@@ -182,6 +203,37 @@ describe("mapPartnerWebsiteIntake", () => {
     assert.equal(mapped.status, "submitted");
     assert.equal(mapped.payload.name, "Hi");
     assert.equal(mapped.priorityActive, false);
+    assert.equal(mapped.mediaUsageConsented, false);
+  });
+
+  it("overlays media table payload and consent", () => {
+    const mapped = mapPartnerWebsiteIntake(
+      {
+        status: "needs_info",
+        payload: { name: "Hi", logo: null, images: [] },
+        current_step: 2,
+        media_usage_consented_at: "2026-10-30T00:00:00.000Z",
+        media_usage_consent_version: "partner_media_v1",
+      },
+      null,
+      {
+        mediaPayload: {
+          logo: {
+            imageId: "00000000-0000-4000-8000-000000000099",
+            url: "https://images.example.com/logo",
+          },
+          images: [
+            {
+              imageId: "00000000-0000-4000-8000-000000000001",
+              url: "https://images.example.com/1",
+            },
+          ],
+        },
+      }
+    );
+    assert.equal(mapped.mediaUsageConsented, true);
+    assert.equal(mapped.payload.logo.imageId, "00000000-0000-4000-8000-000000000099");
+    assert.equal(mapped.payload.images.length, 1);
   });
 });
 

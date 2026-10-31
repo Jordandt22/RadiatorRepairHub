@@ -157,7 +157,8 @@ function normalizeMedia(value) {
   const imageId = trimString(value.imageId, 120);
   const url = trimString(value.url, MAX_URL);
   if (!imageId || !url) return null;
-  return { imageId, url };
+  const caption = trimString(value.caption, 120);
+  return caption ? { imageId, url, caption } : { imageId, url, caption: "" };
 }
 
 function normalizeServices(list) {
@@ -171,6 +172,34 @@ function normalizeServices(list) {
     .filter((item) => item.name || item.description);
 }
 
+export const DEFAULT_FAQ_ITEMS = [
+  {
+    question: "Do I need an appointment, or can I walk in?",
+    answer:
+      "Walk-ins are welcome. If every bay is full we will still look at it and tell you when we can pull it in. Diagnostics and brake jobs are usually the same day or the next morning. Bigger jobs get a finish time before we keep the car.",
+  },
+  {
+    question: "How do you decide what to repair?",
+    answer:
+      "We test first and show you what we found. You get a price before we start. If the job grows, we call before we keep going.",
+  },
+  {
+    question: "What should I bring?",
+    answer:
+      "Bring the vehicle, plus the year, make, and what it is doing. If a light is on, leave it on. A previous estimate helps if you have one. You do not need a diagnosis.",
+  },
+  {
+    question: "Do you work on cars and light trucks?",
+    answer:
+      "Yes. Daily drivers and light trucks, domestic and import. We do not do bodywork, paint, or heavy diesel. If a job is outside the shop, we say so before we take it in.",
+  },
+  {
+    question: "Is the work under warranty?",
+    answer:
+      "12-month workmanship on our labor. Parts carry the manufacturer's warranty. Ask at pickup if you want the labor warranty in writing.",
+  },
+];
+
 function normalizeFaq(list) {
   if (!Array.isArray(list)) return [];
   return list
@@ -182,14 +211,39 @@ function normalizeFaq(list) {
     .filter((item) => item.question || item.answer);
 }
 
-function normalizeSocials(value) {
-  const src = value && typeof value === "object" ? value : {};
-  return {
-    facebook: trimString(src.facebook, MAX_URL),
-    instagram: trimString(src.instagram, MAX_URL),
-    youtube: trimString(src.youtube, MAX_URL),
-    tiktok: trimString(src.tiktok, MAX_URL),
-  };
+export const SOCIAL_PLATFORMS = [
+  "facebook",
+  "instagram",
+  "youtube",
+  "tiktok",
+];
+
+function emptySocialsObject() {
+  return Object.fromEntries(SOCIAL_PLATFORMS.map((platform) => [platform, ""]));
+}
+
+/** Accepts object map or [{ platform, url }] rows. Always returns the map shape. */
+export function normalizeSocials(value) {
+  const out = emptySocialsObject();
+  let hasDuplicate = false;
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const platform = trimString(item?.platform, 40).toLowerCase();
+      if (!SOCIAL_PLATFORMS.includes(platform)) continue;
+      if (out[platform]) {
+        hasDuplicate = true;
+        continue;
+      }
+      out[platform] = trimString(item?.url, MAX_URL);
+    }
+  } else if (value && typeof value === "object") {
+    for (const platform of SOCIAL_PLATFORMS) {
+      out[platform] = trimString(value[platform], MAX_URL);
+    }
+  }
+
+  return { socials: out, hasDuplicate };
 }
 
 export function partnerIntakePriorityUntil(from = new Date()) {
@@ -230,8 +284,8 @@ export function emptyPartnerWebsiteIntakePayload() {
     })),
     theme: "dark",
     accentColor: "",
-    socials: { facebook: "", instagram: "", youtube: "", tiktok: "" },
-    faq: [],
+    socials: emptySocialsObject(),
+    faq: DEFAULT_FAQ_ITEMS.map((item) => ({ ...item })),
     extraNotes: "",
   };
 }
@@ -389,7 +443,7 @@ export function normalizeStep3(body = {}, { soft = false } = {}) {
 export function normalizeStep4(body = {}) {
   const theme = body.theme === "light" ? "light" : "dark";
   const accentColor = trimString(body.accentColor, 32);
-  const socials = normalizeSocials(body.socials);
+  const { socials, hasDuplicate } = normalizeSocials(body.socials);
   const faq = normalizeFaq(body.faq);
   const payload = {
     theme,
@@ -402,6 +456,9 @@ export function normalizeStep4(body = {}) {
   const errors = {};
   if (accentColor && !isHexColor(accentColor)) {
     errors.accentColor = "Use a hex color like #E31B16.";
+  }
+  if (hasDuplicate) {
+    errors.socials = "Each social platform can only be added once.";
   }
   for (const [key, value] of Object.entries(socials)) {
     if (value && !isHttpUrl(value)) {
@@ -448,7 +505,11 @@ export function validateReadyToSubmit(payload) {
   };
 }
 
-export function mapPartnerWebsiteIntake(row, listing = null) {
+export function mapPartnerWebsiteIntake(
+  row,
+  listing = null,
+  { mediaPayload = null } = {}
+) {
   if (!row) {
     return {
       status: "needs_info",
@@ -458,6 +519,9 @@ export function mapPartnerWebsiteIntake(row, listing = null) {
       priorityUntil: null,
       priorityActive: false,
       reminder2dSentAt: null,
+      mediaUsageConsented: false,
+      mediaUsageConsentedAt: null,
+      mediaUsageConsentVersion: null,
       submittedAt: null,
       updatedAt: null,
     };
@@ -467,12 +531,24 @@ export function mapPartnerWebsiteIntake(row, listing = null) {
   const priorityUntil = row.priority_until ?? null;
   const rawPayload =
     row.payload && typeof row.payload === "object" ? row.payload : {};
+  const basePayload =
+    status === "submitted"
+      ? rawPayload
+      : applyListingPrefill(rawPayload, listing);
+  const payload =
+    mediaPayload && typeof mediaPayload === "object"
+      ? {
+          ...basePayload,
+          logo: mediaPayload.logo ?? null,
+          images: Array.isArray(mediaPayload.images)
+            ? mediaPayload.images
+            : [],
+        }
+      : basePayload;
+
   return {
     status,
-    payload:
-      status === "submitted"
-        ? rawPayload
-        : applyListingPrefill(rawPayload, listing),
+    payload,
     currentStep: Math.min(
       TOTAL_INTAKE_STEPS,
       Math.max(1, Number(row.current_step) || 1)
@@ -481,13 +557,16 @@ export function mapPartnerWebsiteIntake(row, listing = null) {
     priorityUntil,
     priorityActive: isPartnerIntakePriorityActive(priorityUntil, status),
     reminder2dSentAt: row.reminder_2d_sent_at ?? null,
+    mediaUsageConsented: Boolean(row.media_usage_consented_at),
+    mediaUsageConsentedAt: row.media_usage_consented_at ?? null,
+    mediaUsageConsentVersion: row.media_usage_consent_version ?? null,
     submittedAt: row.submitted_at ?? null,
     updatedAt: row.updated_at ?? null,
   };
 }
 
 export const INTAKE_SELECT_FIELDS =
-  "business_id, status, payload, current_step, started_at, priority_until, reminder_2d_sent_at, submitted_at, updated_at";
+  "business_id, status, payload, current_step, started_at, priority_until, reminder_2d_sent_at, media_usage_consented_at, media_usage_consent_version, submitted_at, updated_at";
 
 export {
   MIN_SERVICES,

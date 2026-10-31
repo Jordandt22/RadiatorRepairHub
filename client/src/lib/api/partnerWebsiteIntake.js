@@ -42,6 +42,21 @@ export async function uploadPartnerWebsiteIntakeImage(businessId, file) {
   });
 }
 
+export async function patchPartnerWebsiteIntakeImage(
+  businessId,
+  imageId,
+  payload
+) {
+  return fetchAuthenticatedApi(
+    intakePath(businessId, `/images/${encodeURIComponent(imageId)}`),
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
 export async function deletePartnerWebsiteIntakeImage(businessId, imageId) {
   return fetchAuthenticatedApi(
     intakePath(businessId, `/images/${encodeURIComponent(imageId)}`),
